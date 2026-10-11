@@ -5,11 +5,13 @@ import { culturePoints, culturesPassed } from './culture';
 import { CARRIER_SPECS, carrierDestinations, carrierKindSentBy } from './carriers';
 import { adjacentRoadTiles, agoraAt } from './commands';
 import { hasWorkingPalace, houseTax } from './economy';
-import { GRANARY_CAPACITY, HARVEST_MONTH, UNITS_PER_LOAD, VENDOR_CAPACITY, monthlyFood } from './food';
+import { GRANARY_CAPACITY, HARVEST_MONTH, UNITS_PER_LOAD, VENDOR_CAPACITY, monthlyFleece, monthlyFood } from './food';
 import { HOUSE_LEVELS, NEXT_LEVEL, houseCapacity, houseLevel, houseName, lacksCulture, missingNeeds } from './housing';
 import { ROAMER_SPECS, hasService, isGood, type RoamerSpec, roamerKindSentBy, serviceLeft } from './roamers';
 import { TRAINEE_SPECS, isPerforming, staffedVenues, traineeKindFor, traineeKindSentBy } from './schools';
 import { canSettlersReach } from './settlers';
+import { SHEARING_RANGE, SHED_CAPACITY, hasFullFleece, sheepTile, sheepToShear, shepherdAfter } from './sheep';
+import { STOREHOUSE_SLOTS, SLOT_SIZE, slotsUsed } from './storehouse';
 import {
   NO_BUILDING,
   buildingById,
@@ -17,8 +19,11 @@ import {
   type Building,
   type Carrier,
   type GameState,
+  type Good,
   type Roamer,
   type Settler,
+  type Sheep,
+  type Shepherd,
   type Trainee,
   type Walk,
 } from './state';
@@ -52,6 +57,10 @@ export function describeTile(state: GameState, x: number, y: number): Descriptio
   if (carrier) return describeCarrier(state, carrier);
   const trainee = state.trainees.find(standsHere);
   if (trainee) return describeTrainee(state, trainee);
+  const shepherd = state.shepherds.find(standsHere);
+  if (shepherd) return describeShepherd(state, shepherd);
+  const sheep = state.sheep.find(standsHere);
+  if (sheep) return describeSheep(state, sheep);
 
   if (state.roadblocks[i]) return { title: 'Roadblock', lines: [`Tile ${x}, ${y}`, 'Stops roaming walkers; settlers pass'] };
   if (state.roads[i]) return { title: 'Road', lines: [`Tile ${x}, ${y}`] };
@@ -72,8 +81,13 @@ function drachmas(value: number): string {
 }
 
 function loads(units: number): string {
-  return `${amount(units / UNITS_PER_LOAD)} loads`;
+  const count = units / UNITS_PER_LOAD;
+  return `${amount(count)} ${count === 1 ? 'load' : 'loads'}`;
 }
+
+const GOOD_NAMES: Record<Good, string> = { food: 'wheat', fleece: 'fleece' };
+
+const CARRIER_HOMES: Record<Carrier['kind'], string> = { cartPusher: 'farm', buyer: 'stall', fleeceCart: 'shed', fleeceBuyer: 'stall' };
 
 function describeHouse(state: GameState, house: Building): Description {
   const lines = [`Tile ${house.x}, ${house.y}`, `Residents ${house.residents}/${houseCapacity(house)}`];
@@ -83,8 +97,10 @@ function describeHouse(state: GameState, house: Building): Description {
     return { title: houseName(house), lines };
   }
   const appeal = houseAppeal(state, house);
-  lines.push(`Appeal ${appeal}`, foodStatus(house), waterStatus(state, house), cultureStatus(state, house), taxStatus(state, house));
   const next = NEXT_LEVEL[level];
+  lines.push(`Appeal ${appeal}`, foodStatus(house));
+  if ([level, next].some((l) => l && HOUSE_LEVELS[l].needs.includes('fleece'))) lines.push(fleeceStatus(house));
+  lines.push(waterStatus(state, house), cultureStatus(state, house), taxStatus(state, house));
   if (next) lines.push(nextLevelStatus(state, house, next, appeal));
   return { title: houseName(house), lines };
 }
@@ -94,6 +110,13 @@ function foodStatus(house: Building): string {
   const eaten = monthlyFood(house);
   const lasts = eaten > 0 ? ` (${amount(house.food / eaten)} months)` : '';
   return `Food: ${amount(house.food)} units${lasts}`;
+}
+
+function fleeceStatus(house: Building): string {
+  if (house.fleece <= 0) return 'No fleece';
+  const used = monthlyFleece(house);
+  const lasts = used > 0 ? ` (${amount(house.fleece / used)} months)` : '';
+  return `Fleece: ${amount(house.fleece)} units${lasts}`;
 }
 
 function nextLevelStatus(state: GameState, house: Building, next: keyof typeof HOUSE_LEVELS, appeal: number): string {
@@ -160,8 +183,18 @@ function stockLines(state: GameState, building: Building): string[] {
     }
     case 'granary':
       return [`Wheat: ${amount(building.food / UNITS_PER_LOAD)} of ${GRANARY_CAPACITY / UNITS_PER_LOAD} loads`];
+    case 'storehouse':
+      return building.fleece > 0
+        ? [`Fleece: ${loads(building.fleece)} in ${slotsUsed(building)} of ${STOREHOUSE_SLOTS} slots`]
+        : [`Empty: ${STOREHOUSE_SLOTS} slots of ${loads(SLOT_SIZE)}`];
+    case 'cardingShed':
+      return building.fleece > 0 ? [`Fleece waiting: ${loads(building.fleece)}`] : [];
     case 'foodVendor':
-      return [`Stock: ${amount(building.food)} of ${VENDOR_CAPACITY} units`];
+    case 'fleeceVendor': {
+      const kind = carrierKindSentBy(building.type);
+      if (!kind) throw new Error(`Vendor ${building.id} sends no buyer`);
+      return [`Stock: ${amount(building[CARRIER_SPECS[kind].good])} of ${VENDOR_CAPACITY} units`];
+    }
     case 'agora': {
       const vendors = state.buildings.filter((b) => isAgoraVendor(b.type) && agoraAt(state, b) === building);
       return vendors.length > 0
@@ -190,6 +223,7 @@ function walkerLines(state: GameState, building: Building): string[] {
     const out = state.roamers.some((r) => r.homeId === building.id);
     lines.push(`${spec.name} ${out ? 'out in the streets' : (roamerWaitsFor(state, building, spec) ?? 'getting ready')}`);
   }
+  if (building.type === 'cardingShed') lines.push(shepherdStatus(state, building));
   const carrierKind = carrierKindSentBy(building.type);
   if (carrierKind) lines.push(carrierStatus(state, building, carrierKind));
   const traineeKind = traineeKindSentBy(building.type);
@@ -212,13 +246,33 @@ function traineeStatus(state: GameState, school: Building, kind: Trainee['kind']
   return `${name} in training`;
 }
 
+function shepherdStatus(state: GameState, shed: Building): string {
+  const shepherd = state.shepherds.find((s) => s.homeId === shed.id);
+  const sheep = shepherd && state.sheep.find((s) => s.id === shepherd.sheepId);
+  if (shepherd && !shepherd.returning && sheep) {
+    const at = sheepTile(sheep);
+    return `Shepherd out to shear the sheep at ${at.x}, ${at.y}`;
+  }
+  if (shepherd) return `Shepherd ${shepherd.fleece > 0 ? 'bringing fleece home' : 'returning home'}`;
+  if (shed.fleece >= SHED_CAPACITY) return 'Shepherd waits: the shed is full';
+  if (sheepToShear(state, shed).length === 0) return `Shepherd waits for a sheep with a full fleece within ${SHEARING_RANGE} tiles`;
+  return 'Shepherd resting';
+}
+
 function carrierStatus(state: GameState, building: Building, kind: Carrier['kind']): string {
-  const { name } = CARRIER_SPECS[kind];
+  const { name, good, store, delivers } = CARRIER_SPECS[kind];
+  const goodName = GOOD_NAMES[good];
+  const storeName = BUILDING_SPECS[store].name.toLowerCase();
   const carrier = state.carriers.find((c) => c.homeId === building.id);
-  if (kind === 'cartPusher') return `${name} ${carrier ? 'out with a load' : 'at the farm'}`;
-  if (carrier) return `${name} ${carrier.returning ? 'bringing wheat home' : 'out fetching wheat'}`;
-  if (carrierDestinations(state, kind).length === 0) return `${name} waits for a granary with wheat`;
-  return `${name} at the stall`;
+  const atHome = `${name} at the ${CARRIER_HOMES[kind]}`;
+  if (delivers) {
+    if (carrier) return `${name} out with a load`;
+    if (building[good] > 0 && carrierDestinations(state, kind).length === 0) return `${name} waits for a ${storeName} with room`;
+    return atHome;
+  }
+  if (carrier) return `${name} ${carrier.returning ? `bringing ${goodName} home` : `out fetching ${goodName}`}`;
+  if (carrierDestinations(state, kind).length === 0) return `${name} waits for a ${storeName} with ${goodName}`;
+  return atHome;
 }
 
 function describeSettler(state: GameState, settler: Settler): Description {
@@ -244,17 +298,18 @@ function describeRoamer(state: GameState, roamer: Roamer): Description {
 }
 
 function describeCarrier(state: GameState, carrier: Carrier): Description {
+  const { name, good, store, delivers } = CARRIER_SPECS[carrier.kind];
   const lines = [homeLine(state, carrier.homeId)];
-  const granary = buildingById(state, carrier.destinationId);
+  const destination = buildingById(state, carrier.destinationId);
   if (carrier.returning) {
-    lines.push(carrier.kind === 'buyer' ? `Bringing home ${amount(carrier.food)} units` : 'Returning home');
-  } else if (granary) {
-    const at = `the Granary at ${granary.x}, ${granary.y}`;
-    lines.push(carrier.kind === 'buyer' ? `Fetching wheat from ${at}` : `Carrying ${loads(carrier.food)} to ${at}`);
+    lines.push(delivers ? 'Returning home' : `Bringing home ${amount(carrier[good])} units`);
+  } else if (destination) {
+    const at = `the ${BUILDING_SPECS[store].name} at ${destination.x}, ${destination.y}`;
+    lines.push(delivers ? `Carrying ${loads(carrier[good])} to ${at}` : `Fetching ${GOOD_NAMES[good]} from ${at}`);
   } else {
-    lines.push('Looking for another granary');
+    lines.push(`Looking for another ${BUILDING_SPECS[store].name.toLowerCase()}`);
   }
-  return { title: CARRIER_SPECS[carrier.kind].name, lines };
+  return { title: name, lines };
 }
 
 function describeTrainee(state: GameState, trainee: Trainee): Description {
@@ -263,4 +318,21 @@ function describeTrainee(state: GameState, trainee: Trainee): Description {
   const venueName = BUILDING_SPECS[venue].name;
   const heading = destination ? `Heading to the ${venueName} at ${destination.x}, ${destination.y}` : `Looking for another ${venueName}`;
   return { title: name, lines: [homeLine(state, trainee.homeId), heading] };
+}
+
+function describeShepherd(state: GameState, shepherd: Shepherd): Description {
+  return { title: 'Shepherd', lines: [homeLine(state, shepherd.homeId), shepherdErrand(state, shepherd)] };
+}
+
+function shepherdErrand(state: GameState, shepherd: Shepherd): string {
+  const sheep = state.sheep.find((s) => s.id === shepherd.sheepId);
+  if (!shepherd.returning && sheep) return `Going to shear the sheep at ${sheepTile(sheep).x}, ${sheepTile(sheep).y}`;
+  return shepherd.fleece > 0 ? `Bringing ${loads(shepherd.fleece)} of fleece home` : 'Returning home';
+}
+
+function describeSheep(state: GameState, sheep: Sheep): Description {
+  const lines = [`Grazing near ${sheep.home.x}, ${sheep.home.y}`];
+  lines.push(hasFullFleece(sheep) ? 'Full fleece: ready to shear' : `Fleece ${Math.round(sheep.fleece * 100)}% grown`);
+  if (shepherdAfter(state, sheep)) lines.push('A shepherd is on the way');
+  return { title: 'Sheep', lines };
 }

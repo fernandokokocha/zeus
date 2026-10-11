@@ -127,11 +127,11 @@ Create `src/sim/storehouse.ts`, `tests/sim/storehouse.test.ts`.
 
 **Files:** Modify `src/sim/inspect.ts`, `tests/sim/inspect.test.ts`.
 
-- [ ] **Step 1:** Write failing tests: a house shows its fleece once it is a Hovel and
+- [x] **Step 1:** Write failing tests: a house shows its fleece once it is a Hovel and
   what blocks the Homestead ("Needs for Homestead: fleece"); a storehouse shows its
   fleece and slots; a shed shows its fleece, shepherd and cart; a sheep shows its
   fleece; a shepherd describes his errand.
-- [ ] **Step 2:** Implement. Tests pass.
+- [x] **Step 2:** Implement. Tests pass.
 
 ### Task 8: UI and rendering
 
