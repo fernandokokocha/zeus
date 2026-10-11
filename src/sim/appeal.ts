@@ -1,11 +1,12 @@
-import { BUILDING_SPECS, footprintDistance } from './buildings';
+import { BUILDING_SPECS, buildingSize, footprintDistance } from './buildings';
 import { footprint } from './commands';
 import { tileIndex, type Building, type GameState } from './state';
 
 export function appealMap(state: GameState): number[] {
   const map = new Array<number>(state.size * state.size).fill(0);
   for (const building of state.buildings) {
-    const { width, height, appeal } = BUILDING_SPECS[building.type];
+    const { appeal } = BUILDING_SPECS[building.type];
+    const { width, height } = buildingSize(building.type, building.rotation);
     const reach = appeal.length;
     for (let y = Math.max(0, building.y - reach); y <= Math.min(state.size - 1, building.y + height - 1 + reach); y++) {
       for (let x = Math.max(0, building.x - reach); x <= Math.min(state.size - 1, building.x + width - 1 + reach); x++) {
@@ -18,7 +19,7 @@ export function appealMap(state: GameState): number[] {
 }
 
 export function houseAppeal(state: GameState, house: Building, map = appealMap(state)): number {
-  const tiles = footprint(house.type, house.x, house.y);
+  const tiles = footprint(house);
   const total = tiles.reduce((sum, p) => sum + map[tileIndex(state, p.x, p.y)], 0);
   return Math.floor(total / tiles.length);
 }

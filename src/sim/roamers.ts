@@ -1,4 +1,4 @@
-import { BUILDING_SPECS, footprintDistance, type BuildingType } from './buildings';
+import { BUILDING_SPECS, buildingSize, footprintDistance, type BuildingType } from './buildings';
 import { TICKS_PER_MONTH } from './clock';
 import { adjacentRoadTiles, roadSite } from './commands';
 import { stockHouse } from './food';
@@ -40,7 +40,7 @@ export function serviceLeft(state: GameState, house: Building, service: Coverage
 
 export function exitTile(state: GameState, building: Building): Point | null {
   const site = roadSite(state, building);
-  const { width, height } = BUILDING_SPECS[site.type];
+  const { width, height } = buildingSize(site.type, site.rotation);
   const { x, y } = site;
   const along = (count: number, at: (i: number) => Point) => Array.from({ length: count }, (_, i) => at(i));
   const clockwiseFromNorth = [

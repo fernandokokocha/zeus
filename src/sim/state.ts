@@ -1,4 +1,4 @@
-import type { BuildingType } from './buildings';
+import type { BuildingType, Rotation } from './buildings';
 import type { HouseLevel } from './housing';
 import { DEFAULT_SEED, ENTRY_ROAD_LENGTH, MAP_SIZE, generateTerrain } from './map';
 import { clampPoint, type Point } from './point';
@@ -16,6 +16,7 @@ export interface Building {
   type: BuildingType;
   x: number;
   y: number;
+  rotation: Rotation;
   residents: number;
   workers: number;
   walkerRest: number;

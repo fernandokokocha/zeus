@@ -1,3 +1,5 @@
+import type { Point } from './point';
+
 export type BuildingType =
   | 'house'
   | 'fountain'
@@ -35,8 +37,22 @@ export const BUILDING_SPECS: Record<BuildingType, BuildingSpec> = {
   flowerGarden: { name: 'Flower Garden', width: 2, height: 2, cost: 20, workers: 0, appeal: [8, 7, 6], needsRoad: false },
 };
 
-export function footprintDistance(building: { type: BuildingType; x: number; y: number }, p: { x: number; y: number }): number {
-  const { width, height } = BUILDING_SPECS[building.type];
+export type Rotation = 0 | 1 | 2 | 3;
+
+export interface Placement {
+  type: BuildingType;
+  x: number;
+  y: number;
+  rotation: Rotation;
+}
+
+export function buildingSize(type: BuildingType, rotation: Rotation): { width: number; height: number } {
+  const { width, height } = BUILDING_SPECS[type];
+  return rotation % 2 === 0 ? { width, height } : { width: height, height: width };
+}
+
+export function footprintDistance(building: Placement, p: Point): number {
+  const { width, height } = buildingSize(building.type, building.rotation);
   const dx = Math.max(building.x - p.x, 0, p.x - (building.x + width - 1));
   const dy = Math.max(building.y - p.y, 0, p.y - (building.y + height - 1));
   return Math.max(dx, dy);

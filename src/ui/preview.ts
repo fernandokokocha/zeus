@@ -23,7 +23,7 @@ function buildingPreview(state: GameState, type: BuildingType, origin: Point): P
   const check = checkBuildingPlacement(state, type, origin.x, origin.y);
   const lacksRoad = BUILDING_SPECS[type].needsRoad && !check.roadAccess;
   const kind: PreviewKind = check.obstacle ? 'invalid' : lacksRoad ? 'warning' : 'valid';
-  return footprint(type, origin.x, origin.y)
+  return footprint({ type, ...origin, rotation: 0 })
     .filter((p) => inBounds(state, p.x, p.y))
     .map((p) => ({ ...p, kind }));
 }
