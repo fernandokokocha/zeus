@@ -260,9 +260,9 @@ describe('a peddler', () => {
     shack.food = 2;
     vendor.food = 100;
     runTicks(game, ROAMER_REST_TICKS + ticksToWalk(10));
-    expect(hut.food).toBe(8 * 0.25 * 3);
+    expect(hut.food).toBe(hut.residents * 0.25 * 3);
     expect(shack.food).toBe(16 * 0.25 * 3);
-    expect(vendor.food).toBe(100 - 6 - 10);
+    expect(vendor.food).toBe(100 - hut.food - 10);
   });
 
   it('hands out no more than the stall holds', () => {
