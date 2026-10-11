@@ -2308,4 +2308,4 @@ session-specific, which is why this plan cannot write them.
 - [x] **Step 6: Wait for the deploy**
 
 Wait until CI is green and its deploy job has published the PR's build to Pages. Do not
-merge; the owner merges after the playtest.
+merge; the PR waits for the owner's approval.

@@ -17,15 +17,19 @@ binding. In short:
 - **Never stop to ask.** Decide, using the option closest to the original Zeus, record
   the decision in the PR, and keep going.
 - **One slice per session**, finished completely.
-- **The owner merges, never a session.** Done means CI green, Pages showing the PR's
-  build, roadmap ticked in the PR.
+- **The owner approves, a session merges.** Done means CI green, Pages showing the PR's
+  build, roadmap ticked in the PR. After the playtest the owner approves the PR; a
+  session then squash-merges it. Never merge a PR the owner hasn't approved.
 - **If truly blocked,** leave the PR open with the blocker at the top of its description.
 
 ## Session routine
 
-1. **Check for an open slice PR.** If one exists, the owner hasn't accepted it: fix its
-   comments on that branch in their own commits, push, reply to each comment with what
-   changed, and stop. That is the whole session.
+1. **Check for an open slice PR.** If one exists:
+   - **Approved** (an approving review, a comment from the owner saying "approved", or
+     the session prompt saying so): squash-merge it, delete its branch, pull `main`,
+     and continue with step 2.
+   - **Not approved:** fix its comments on that branch in their own commits, push,
+     reply to each comment with what changed, and stop. That is the whole session.
 2. **Find the slice.** Read the spec and the roadmap. The slice is the first unchecked
    one. Fix any feedback left on the last merged PR or in the session prompt first, in
    its own commits.
@@ -41,8 +45,8 @@ binding. In short:
    - **Left out:** anything cut to protect quality.
 
    Tick the slice in `docs/roadmap.md` in the same PR.
-7. **Wait for CI** to go green and deploy the PR's build to Pages, then stop. Never
-   merge; the owner merges after the playtest.
+7. **Wait for CI** to go green and deploy the PR's build to Pages, then stop. The PR
+   waits for the owner's approval.
 
 ## Commands
 
@@ -69,6 +73,9 @@ gh api $R/pulls/<n>/comments                                  # inline review co
 gh api $R/pulls -f title=... -f head=<branch> -f base=main -F body=@body.md
 gh api "$R/actions/runs?branch=<branch>&per_page=1"           # CI status
 gh api -X POST $R/issues/<n>/comments -f body=...             # reply on the PR
+gh api $R/pulls/<n>/reviews                                   # approval, if any
+gh api -X PUT $R/pulls/<n>/merge -f merge_method=squash       # merge once approved
+gh api -X DELETE $R/git/refs/heads/<branch>                   # delete merged branch
 ```
 
 If the preinstalled Chromium does not match the Playwright version, run the e2e test

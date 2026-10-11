@@ -34,8 +34,8 @@ the roadmap as the budget allows **without lowering the quality of earlier slice
 - **Plain DOM + CSS** for UI panels. No UI framework.
 - **Vitest** for simulation tests. **Playwright** for one smoke test that the page boots
   and renders a frame.
-- **GitHub Actions** runs typecheck, tests and build on every PR, and deploys `main` to
-  **GitHub Pages**.
+- **GitHub Actions** runs typecheck, tests and build on every PR, and deploys every
+  build, PRs included, to **GitHub Pages**.
 
 ## Architecture
 
@@ -89,8 +89,10 @@ expected to deliver it, finished and deployed, without anyone watching.
   Act on it first. If there is none, the slice was fine.
 - **The PR is the report.** The owner reads the PR and plays the deployed link, nothing
   else. The playtest checklist must let them verify the slice without reading code.
-- **The owner merges, never a session.** Every PR build deploys to Pages, so the open
-  slice PR is what the owner playtests. Only one slice PR is open at a time.
+- **The owner approves, a session merges.** Every PR build deploys to Pages, so the open
+  slice PR is what the owner playtests. Only one slice PR is open at a time. When the
+  owner approves it, the next session squash-merges it, so `main` gets one commit per
+  PR.
 - **Done means deployed for review.** CI is green, Pages shows the PR's build, and the
   roadmap box is ticked in the PR.
 - **If truly blocked** (CI cannot go green, or a deploy fails for reasons outside the
@@ -101,10 +103,11 @@ expected to deliver it, finished and deployed, without anyone watching.
 ## How a cloud session runs a slice
 
 1. **Orient.** Read `CLAUDE.md`, the roadmap, this spec and the zeus-numbers reference.
-   If a slice PR is still open, the owner has not accepted it yet: this session is a
-   feedback session. Fix its comments on that branch, push, reply to each comment with
-   what changed, and stop. Otherwise find the first unchecked slice and read any
-   feedback left on the last merged PR or in the session prompt.
+   If a slice PR is still open and approved, squash-merge it and carry on. If it is open
+   and not approved, this session is a feedback session: fix its comments on that
+   branch, push, reply to each comment with what changed, and stop. Otherwise find the
+   first unchecked slice and read any feedback left on the last merged PR or in the
+   session prompt.
 2. **Fix feedback first**, in its own commits.
 3. **Plan.** Write `docs/slices/NN-name.md`, a detailed plan for this slice only.
 4. **Build test-first** on a branch `slice-NN-name`.
@@ -114,7 +117,7 @@ expected to deliver it, finished and deployed, without anyone watching.
      closest to Zeus preferred;
    - **"Left out"**: anything cut to protect quality.
 6. **Stop** when CI is green and Pages shows the PR's build. Tick the slice in the
-   roadmap in the same PR. The owner playtests, comments, and merges when satisfied.
+   roadmap in the same PR. The owner playtests, comments, and approves when satisfied.
 
 Sessions cannot ask the owner questions mid-run. They decide, then record the decision
 under "Decisions I made".
