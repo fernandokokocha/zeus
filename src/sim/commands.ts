@@ -175,7 +175,7 @@ function build(state: GameState, placement: Placement): void {
     residents: 0,
     workers: 0,
     walkerRest: 0,
-    coveredUntil: { water: 0, tax: 0 },
+    coveredUntil: { water: 0, tax: 0, philosophy: 0, athletics: 0, drama: 0 },
     level: 'hut' as const,
     food: 0,
     growth: 0,

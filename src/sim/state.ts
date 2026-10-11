@@ -8,7 +8,8 @@ import { STARTING_TREASURY } from './treasury';
 export type Speed = 0 | 1 | 2 | 4;
 export type PlayingSpeed = Exclude<Speed, 0>;
 
-export type Service = 'water' | 'tax' | 'food';
+export type Culture = 'philosophy' | 'athletics' | 'drama';
+export type Service = 'water' | 'tax' | 'food' | Culture;
 export type Coverage = Exclude<Service, 'food'>;
 
 export interface Building {
@@ -39,7 +40,7 @@ export interface Settler extends Walk {
   people: number;
 }
 
-export type RoamerKind = 'waterCarrier' | 'taxCollector' | 'peddler';
+export type RoamerKind = 'waterCarrier' | 'taxCollector' | 'peddler' | 'philosopher' | 'athlete' | 'actor';
 
 export interface Roamer extends Walk {
   id: number;

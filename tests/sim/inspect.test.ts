@@ -89,7 +89,7 @@ describe('describeTile for services', () => {
   it('says when a Hut has water and pays tax', () => {
     const game = town();
     placeBuilding(game, 'palace', 6, 4);
-    game.buildings[0].coveredUntil = { water: TICKS_PER_MONTH, tax: TICKS_PER_MONTH };
+    Object.assign(game.buildings[0].coveredUntil, { water: TICKS_PER_MONTH, tax: TICKS_PER_MONTH });
     expect(describeTile(game, 2, 8).lines).toEqual([
       'Tile 2, 8',
       'Residents 8/8',

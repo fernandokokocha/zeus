@@ -85,11 +85,11 @@ shared by settlers and carriers is extracted first so trainees can use it too.
 **Files:** Modify `src/sim/roamers.ts`, `src/sim/state.ts`. Create `src/sim/culture.ts`,
 `tests/sim/culture.test.ts`.
 
-- [ ] **Step 1:** Write failing tests: a performing podium sends a philosopher roaming
+- [x] **Step 1:** Write failing tests: a performing podium sends a philosopher roaming
   35 tiles; a podium that is not performing sends nobody; a gymnasium sends athletes
   with no school; passing houses get 15 / 20 / 25 culture points for 2 months, summed
   over kinds, not stacked within a kind.
-- [ ] **Step 2:** Implement. Tests pass.
+- [x] **Step 2:** Implement. Tests pass.
 
 ### Task 5: Hovel
 
