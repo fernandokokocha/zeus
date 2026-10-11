@@ -69,7 +69,7 @@ test('boots, builds a street with services, food, culture, fleece and decoration
   await place(page, /^Storehouse/, [27, 47]);
   await place(page, /^Carding Shed/, [29, 46]);
   await place(page, /^Fleece Vendor/, [17, 53]);
-  for (const at of [[14, 55], [15, 56], [16, 55], [13, 57]] as [number, number][]) await place(page, /^Sheep/, at);
+  for (const at of [[27, 58], [29, 59], [31, 58], [28, 60]] as [number, number][]) await place(page, /^Sheep/, at);
   await page.keyboard.press('r');
   await expect(page.locator('#status')).toHaveText('Rotated 90°');
   await page.keyboard.press('Escape');

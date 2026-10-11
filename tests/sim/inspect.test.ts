@@ -429,6 +429,7 @@ describe('describeTile for fleece', () => {
       title: 'Carding Shed',
       lines: ['Tile 6, 13', 'Workers 8/8', 'Shepherd waits for a sheep with a full fleece within 40 tiles', 'Cart Pusher at the shed'],
     });
+    setMeadow(game, 7, 5, 7, 7);
     placeSheep(game, { x: 10, y: 8 });
     expect(describeTile(game, 6, 13).lines).toContain('Shepherd resting');
     runTicks(game, SHEARING_REST_TICKS);
@@ -452,6 +453,7 @@ describe('describeTile for fleece', () => {
 
   it('describes a sheep', () => {
     const { game } = street();
+    setMeadow(game, 7, 5, 7, 7);
     placeSheep(game, { x: 10, y: 8 });
     expect(describeTile(game, 10, 8)).toEqual({ title: 'Sheep', lines: ['Grazing near 10, 8', 'Full fleece: ready to shear'] });
     game.sheep[0].fleece = 0.426;

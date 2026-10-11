@@ -79,7 +79,7 @@ export function placeRoadblock(state: GameState, at: Point): Result {
 
 export function sheepObstacle(state: GameState, at: Point): string | null {
   if (!inBounds(state, at.x, at.y)) return 'Outside the map';
-  return isPasture(state, at) ? null : 'Sheep graze on open grass or meadow';
+  return isPasture(state, at) ? null : 'Sheep graze on open meadow';
 }
 
 export function placeSheep(state: GameState, at: Point): Result {

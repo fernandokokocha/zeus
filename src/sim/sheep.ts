@@ -6,7 +6,7 @@ import { NEIGHBOUR_STEPS, findOpenPath, isOpenGround } from './pathfinding';
 import { samePoint, type Point } from './point';
 import { nextRandom } from './rng';
 import { exitTile } from './roamers';
-import { buildingById, inBounds, type Building, type GameState, type Sheep, type Shepherd } from './state';
+import { buildingById, inBounds, tileIndex, type Building, type GameState, type Sheep, type Shepherd } from './state';
 import { WALKER_TILES_PER_TICK, isRoad, walkPath } from './walking';
 
 export const GRAZE_RADIUS = 3;
@@ -20,7 +20,7 @@ export const FLEECE_PER_SHEARING = UNITS_PER_LOAD;
 export const SHED_CAPACITY = CART_LOAD;
 
 export function isPasture(state: GameState, p: Point): boolean {
-  return inBounds(state, p.x, p.y) && isOpenGround(state, p) && !isRoad(state, p);
+  return inBounds(state, p.x, p.y) && state.terrain[tileIndex(state, p.x, p.y)] === 'meadow' && isOpenGround(state, p) && !isRoad(state, p);
 }
 
 export function sheepTile(sheep: Sheep): Point {

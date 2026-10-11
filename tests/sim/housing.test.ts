@@ -351,6 +351,7 @@ describe('a city of Hovels with sheep', () => {
     placeBuilding(game, 'fleeceVendor', 0, 21);
     placeBuilding(game, 'storehouse', 20, 21);
     placeBuilding(game, 'cardingShed', 24, 18);
+    setMeadow(game, 16, 26, 16, 8);
     for (const x of [20, 24, 28]) placeSheep(game, { x, y: 30 });
 
     runTicks(game, TICKS_PER_MONTH);

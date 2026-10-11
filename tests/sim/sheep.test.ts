@@ -7,10 +7,10 @@ import type { Building, GameState } from '../../src/sim/state';
 import { tick } from '../../src/sim/tick';
 import { STARTING_TREASURY } from '../../src/sim/treasury';
 import { walkerTile } from '../../src/sim/walking';
-import { grassGame, placeHouse, runTicks, setTerrain } from './helpers';
+import { meadowGame, placeHouse, runTicks, setTerrain } from './helpers';
 
 function pasture(people = 100, size = 30): { game: GameState; shed: Building } {
-  const game = grassGame(size);
+  const game = meadowGame(size);
   placeRoad(game, { x: 0, y: 15 }, { x: size - 1, y: 15 });
   placeHouse(game, 0, size - 2);
   game.buildings[0].residents = people;
@@ -23,27 +23,27 @@ function untilShepherdsGone(game: GameState): void {
 }
 
 describe('placeSheep', () => {
-  it('puts a sheep with a full fleece on open grass for 4 dr', () => {
-    const game = grassGame();
+  it('puts a sheep with a full fleece on open meadow for 4 dr', () => {
+    const game = meadowGame();
     expect(placeSheep(game, { x: 5, y: 5 })).toEqual({ ok: true });
     expect(game.sheep).toHaveLength(1);
     expect(game.sheep[0]).toMatchObject({ home: { x: 5, y: 5 }, fleece: 1 });
     expect(game.treasury).toBe(STARTING_TREASURY - 4);
   });
 
-  it('takes meadow too', () => {
-    const game = grassGame();
-    setTerrain(game, 5, 5, 'meadow');
-    expect(placeSheep(game, { x: 5, y: 5 }).ok).toBe(true);
+  it('refuses grass', () => {
+    const game = meadowGame();
+    setTerrain(game, 5, 5, 'grass');
+    expect(placeSheep(game, { x: 5, y: 5 })).toEqual({ ok: false, reason: 'Sheep graze on open meadow' });
   });
 
   it('refuses roads, buildings, rock, water and the map edge', () => {
-    const game = grassGame();
+    const game = meadowGame();
     placeRoad(game, { x: 2, y: 2 }, { x: 2, y: 2 });
     placeBuilding(game, 'park', 4, 4);
     setTerrain(game, 6, 6, 'marble');
     setTerrain(game, 7, 7, 'water');
-    const refused = { ok: false, reason: 'Sheep graze on open grass or meadow' };
+    const refused = { ok: false, reason: 'Sheep graze on open meadow' };
     expect(placeSheep(game, { x: 2, y: 2 })).toEqual(refused);
     expect(placeSheep(game, { x: 4, y: 4 })).toEqual(refused);
     expect(placeSheep(game, { x: 6, y: 6 })).toEqual(refused);
@@ -55,7 +55,7 @@ describe('placeSheep', () => {
 
 describe('a sheep', () => {
   it(`grazes about, never more than ${GRAZE_RADIUS} tiles from where it was placed, and off the road`, () => {
-    const game = grassGame();
+    const game = meadowGame();
     placeRoad(game, { x: 0, y: 11 }, { x: 19, y: 11 });
     placeSheep(game, { x: 10, y: 10 });
     const visited = new Set<string>();
@@ -69,8 +69,18 @@ describe('a sheep', () => {
     expect(visited.size).toBeGreaterThan(5);
   });
 
+  it('stays on the meadow', () => {
+    const game = meadowGame();
+    for (let y = 0; y < 20; y++) for (let x = 0; x < 20; x++) if (x > 10 || y > 10) setTerrain(game, x, y, 'grass');
+    placeSheep(game, { x: 10, y: 10 });
+    for (let i = 0; i < 6 * TICKS_PER_MONTH; i++) {
+      tick(game);
+      expect(isPasture(game, walkerTile(game.sheep[0]))).toBe(true);
+    }
+  });
+
   it('regrows its fleece in a year', () => {
-    const game = grassGame();
+    const game = meadowGame();
     placeSheep(game, { x: 10, y: 10 });
     game.sheep[0].fleece = 0;
     runTicks(game, 6 * TICKS_PER_MONTH);
@@ -80,7 +90,7 @@ describe('a sheep', () => {
   });
 
   it('walks off a tile that is built over', () => {
-    const game = grassGame();
+    const game = meadowGame();
     placeSheep(game, { x: 5, y: 5 });
     placeBuilding(game, 'fountain', 5, 5);
     runTicks(game, 20);
@@ -88,7 +98,7 @@ describe('a sheep', () => {
   });
 
   it('is lost when built over with nowhere to go', () => {
-    const game = grassGame();
+    const game = meadowGame();
     placeSheep(game, { x: 0, y: 0 });
     placeBuilding(game, 'flowerGarden', 0, 0);
     tick(game);
@@ -96,7 +106,7 @@ describe('a sheep', () => {
   });
 
   it('is removed by demolish', () => {
-    const game = grassGame();
+    const game = meadowGame();
     placeSheep(game, { x: 5, y: 5 });
     placeSheep(game, { x: 12, y: 12 });
     demolish(game, { x: 4, y: 4 }, { x: 6, y: 6 });
