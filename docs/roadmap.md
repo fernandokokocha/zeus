@@ -7,7 +7,7 @@ delivers it.
 - [x] 2 · Settlers & treasury
 - [x] 3 · Workers & services
 - [x] 4 · Food & appeal
-- [ ] 5 · Culture
+- [x] 5 · Culture
 - [ ] 6 · Storehouse & fleece
 - [ ] 7 · Olive oil
 - [ ] 8 · Safety
