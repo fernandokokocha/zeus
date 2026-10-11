@@ -138,8 +138,8 @@ Create `src/sim/storehouse.ts`, `tests/sim/storehouse.test.ts`.
 **Files:** Modify `src/ui/tools.ts`, `src/ui/tool-input.ts`, `src/ui/preview.ts`,
 `src/render/models.ts`, `src/render/palette.ts`, `src/render/walker-layer.ts`.
 
-- [ ] **Step 1:** Tools for the Storehouse, Carding Shed, Fleece Vendor and Sheep.
-- [ ] **Step 2:** Models: Storehouse (a yard of 8 fenced slots with a roofed shed; bales
+- [x] **Step 1:** Tools for the Storehouse, Carding Shed, Fleece Vendor and Sheep.
+- [x] **Step 2:** Models: Storehouse (a yard of 8 fenced slots with a roofed shed; bales
   fill the slots), Carding Shed (a timber shed with a fleece-strewn yard and a
   carding bench), Fleece Vendor (a stall hung with fleeces), Homestead (a larger house
   with an upper storey and a vine-shaded yard), Tenement (a two-storey block around a
@@ -150,9 +150,9 @@ Create `src/sim/storehouse.ts`, `tests/sim/storehouse.test.ts`.
 
 **Files:** Modify `e2e/smoke.spec.ts`.
 
-- [ ] **Step 1:** Extend the smoke test: place a storehouse, carding shed, fleece
+- [x] **Step 1:** Extend the smoke test: place a storehouse, carding shed, fleece
   vendor and sheep, screenshot.
-- [ ] **Step 2:** Run `npm run typecheck`, `npm test`, `npm run build` and
+- [x] **Step 2:** Run `npm run typecheck`, `npm test`, `npm run build` and
   `npm run test:e2e`. Open the screenshot and check it.
 
 ### Task 10: PR

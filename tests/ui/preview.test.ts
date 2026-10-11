@@ -19,6 +19,13 @@ describe('previewTiles', () => {
     ]);
   });
 
+  it('marks the sheep tile valid on open grass and invalid on a road', () => {
+    const game = grassGame();
+    placeRoad(game, { x: 2, y: 1 }, { x: 2, y: 1 });
+    expect(previewTiles(game, 'sheep', null, { x: 3, y: 1 })).toEqual([{ x: 3, y: 1, kind: 'valid' }]);
+    expect(previewTiles(game, 'sheep', null, { x: 2, y: 1 })).toEqual([{ x: 2, y: 1, kind: 'invalid' }]);
+  });
+
   it('warns about a building without road access', () => {
     const tiles = previewTiles(grassGame(), 'house', null, { x: 2, y: 2 });
     expect(tiles).toHaveLength(4);

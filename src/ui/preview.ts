@@ -1,5 +1,5 @@
 import { BUILDING_SPECS, buildingSize, isAgoraVendor, type BuildingType, type Rotation } from '../sim/buildings';
-import { checkBuildingPlacement, footprint, vendorSpotAt, lotOrigins, roadObstacle, roadPath, roadblockObstacle } from '../sim/commands';
+import { checkBuildingPlacement, footprint, vendorSpotAt, lotOrigins, roadObstacle, roadPath, roadblockObstacle, sheepObstacle } from '../sim/commands';
 import { rectBetween, tilesIn, type Point } from '../sim/point';
 import { clampToMap, inBounds, type GameState } from '../sim/state';
 import type { Tool } from './tools';
@@ -45,6 +45,8 @@ export function previewTiles(
         .map((p) => ({ ...p, kind: roadObstacle(state, p.x, p.y) ? 'invalid' : 'valid' }));
     case 'roadblock':
       return [{ ...hover, kind: roadblockObstacle(state, hover) ? 'invalid' : 'valid' }];
+    case 'sheep':
+      return [{ ...hover, kind: sheepObstacle(state, hover) ? 'invalid' : 'valid' }];
     case 'demolish':
       return tilesIn(rectBetween(clampToMap(state, start), clampToMap(state, hover))).map((p) => ({
         ...p,

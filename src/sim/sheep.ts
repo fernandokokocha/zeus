@@ -10,6 +10,7 @@ import { buildingById, inBounds, type Building, type GameState, type Sheep, type
 import { WALKER_TILES_PER_TICK, isRoad, walkPath } from './walking';
 
 export const GRAZE_RADIUS = 3;
+export const FULL_FLEECE = 1;
 export const GRAZE_PAUSE_TICKS = TICKS_PER_MONTH / 6;
 export const FLEECE_GROWTH_TICKS = TICKS_PER_YEAR;
 export const SHEARING_RANGE = 40;
@@ -29,7 +30,7 @@ export function sheepTile(sheep: Sheep): Point {
 }
 
 export function hasFullFleece(sheep: Sheep): boolean {
-  return sheep.fleece >= 1;
+  return sheep.fleece >= FULL_FLEECE;
 }
 
 export function shepherdAfter(state: GameState, sheep: Sheep): Shepherd | null {
@@ -49,7 +50,7 @@ export function tickSheep(state: GameState): void {
 }
 
 function graze(state: GameState, sheep: Sheep): void {
-  sheep.fleece = Math.min(1, sheep.fleece + 1 / FLEECE_GROWTH_TICKS);
+  sheep.fleece = Math.min(FULL_FLEECE, sheep.fleece + FULL_FLEECE / FLEECE_GROWTH_TICKS);
   if (sheep.step < sheep.path.length - 1) {
     sheep.progress += WALKER_TILES_PER_TICK;
     if (sheep.progress >= 1) {

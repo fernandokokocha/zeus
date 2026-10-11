@@ -1,8 +1,8 @@
 import { BUILDING_SPECS, type BuildingType } from '../sim/buildings';
-import { ROADBLOCK_COST, ROAD_TILE_COST } from '../sim/treasury';
+import { ROADBLOCK_COST, ROAD_TILE_COST, SHEEP_COST } from '../sim/treasury';
 
 export type SingleBuilding = Exclude<BuildingType, 'house'>;
-export type Tool = 'road' | 'roadblock' | 'house' | SingleBuilding | 'demolish';
+export type Tool = 'road' | 'roadblock' | 'house' | SingleBuilding | 'sheep' | 'demolish';
 
 const priced = (type: BuildingType) => `${BUILDING_SPECS[type].name} (${BUILDING_SPECS[type].cost} dr)`;
 
@@ -28,5 +28,6 @@ export const TOOL_LABELS: Record<Tool, string> = {
   theater: priced('theater'),
   storehouse: priced('storehouse'),
   cardingShed: priced('cardingShed'),
+  sheep: `Sheep (${SHEEP_COST} dr)`,
   demolish: 'Demolish',
 };

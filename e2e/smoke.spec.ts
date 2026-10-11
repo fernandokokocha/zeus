@@ -28,7 +28,7 @@ async function place(page: Page, tool: RegExp, at: [number, number]): Promise<vo
   await drag(page, at, at);
 }
 
-test('boots, builds a street with services, food, culture and decorations, and settlers move in', async ({ page }) => {
+test('boots, builds a street with services, food, culture, fleece and decorations, and settlers move in', async ({ page }) => {
   test.setTimeout(90_000);
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
@@ -40,7 +40,7 @@ test('boots, builds a street with services, food, culture and decorations, and s
   await expect(page.locator('#date')).toHaveText('January, Year 1');
   await expect(page.locator('#population')).toHaveText('Population 0');
   await expect(page.locator('#treasury')).toHaveText('5,000 dr');
-  await expect(page.locator('#toolbar button')).toHaveCount(19);
+  await expect(page.locator('#toolbar button')).toHaveCount(23);
 
   await page.getByRole('button', { name: 'Demolish' }).click();
   await drag(page, [8, 38], [30, 57]);
@@ -66,6 +66,10 @@ test('boots, builds a street with services, food, culture and decorations, and s
   await place(page, /^Gymnasium/, [17, 43]);
   await place(page, /^Drama School/, [21, 43]);
   await place(page, /^Theater/, [26, 42]);
+  await place(page, /^Storehouse/, [27, 47]);
+  await place(page, /^Carding Shed/, [29, 46]);
+  await place(page, /^Fleece Vendor/, [17, 53]);
+  for (const at of [[14, 55], [15, 56], [16, 55], [13, 57]] as [number, number][]) await place(page, /^Sheep/, at);
   await page.keyboard.press('r');
   await expect(page.locator('#status')).toHaveText('Rotated 90°');
   await page.keyboard.press('Escape');
