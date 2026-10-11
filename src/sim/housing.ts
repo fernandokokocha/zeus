@@ -1,25 +1,29 @@
 import { appealMap, houseAppeal } from './appeal';
+import { culturePoints } from './culture';
+import { hasService } from './roamers';
 import type { Building, GameState } from './state';
 
-export type HouseLevel = 'hut' | 'shack';
+export type HouseLevel = 'hut' | 'shack' | 'hovel';
 
-export type HouseNeed = 'food';
+export type HouseNeed = 'food' | 'water';
 
 export interface HouseLevelSpec {
   name: string;
   capacity: number;
   needs: HouseNeed[];
+  culture: number;
   taxMultiplier: number;
   appeal: { evolve: number; devolve: number };
 }
 
 export const HOUSE_LEVELS: Record<HouseLevel, HouseLevelSpec> = {
-  hut: { name: 'Hut', capacity: 8, needs: [], taxMultiplier: 1, appeal: { evolve: -10, devolve: -99 } },
-  shack: { name: 'Shack', capacity: 16, needs: ['food'], taxMultiplier: 1, appeal: { evolve: 0, devolve: -12 } },
+  hut: { name: 'Hut', capacity: 8, needs: [], culture: 0, taxMultiplier: 1, appeal: { evolve: -10, devolve: -99 } },
+  shack: { name: 'Shack', capacity: 16, needs: ['food'], culture: 0, taxMultiplier: 1, appeal: { evolve: 0, devolve: -12 } },
+  hovel: { name: 'Hovel', capacity: 24, needs: ['food', 'water'], culture: 15, taxMultiplier: 1, appeal: { evolve: 10, devolve: -2 } },
 };
 
-export const NEXT_LEVEL: Record<HouseLevel, HouseLevel | null> = { hut: 'shack', shack: null };
-export const PREVIOUS_LEVEL: Record<HouseLevel, HouseLevel | null> = { hut: null, shack: 'hut' };
+export const NEXT_LEVEL: Record<HouseLevel, HouseLevel | null> = { hut: 'shack', shack: 'hovel', hovel: null };
+export const PREVIOUS_LEVEL: Record<HouseLevel, HouseLevel | null> = { hut: null, shack: 'hut', hovel: 'shack' };
 
 export const VACANT_LOT_NAME = 'Vacant Lot';
 
@@ -36,8 +40,20 @@ export function houseName(house: Building): string {
   return level ? HOUSE_LEVELS[level].name : VACANT_LOT_NAME;
 }
 
-export function missingNeeds(house: Building, level: HouseLevel): HouseNeed[] {
-  return HOUSE_LEVELS[level].needs.filter((need) => need === 'food' && house.food <= 0);
+function hasNeed(state: GameState, house: Building, need: HouseNeed): boolean {
+  return need === 'food' ? house.food > 0 : hasService(state, house, need);
+}
+
+export function missingNeeds(state: GameState, house: Building, level: HouseLevel): HouseNeed[] {
+  return HOUSE_LEVELS[level].needs.filter((need) => !hasNeed(state, house, need));
+}
+
+export function lacksCulture(state: GameState, house: Building, level: HouseLevel): boolean {
+  return culturePoints(state, house) < HOUSE_LEVELS[level].culture;
+}
+
+function meetsNeeds(state: GameState, house: Building, level: HouseLevel): boolean {
+  return missingNeeds(state, house, level).length === 0 && !lacksCulture(state, house, level);
 }
 
 export function evolveHouses(state: GameState): void {
@@ -48,9 +64,9 @@ export function evolveHouses(state: GameState): void {
     const appeal = houseAppeal(state, house, map);
     const previous = PREVIOUS_LEVEL[level];
     const next = NEXT_LEVEL[level];
-    if (previous && (missingNeeds(house, level).length > 0 || appeal <= HOUSE_LEVELS[level].appeal.devolve)) {
+    if (previous && (!meetsNeeds(state, house, level) || appeal <= HOUSE_LEVELS[level].appeal.devolve)) {
       setLevel(state, house, previous);
-    } else if (next && missingNeeds(house, next).length === 0 && appeal >= HOUSE_LEVELS[next].appeal.evolve) {
+    } else if (next && meetsNeeds(state, house, next) && appeal >= HOUSE_LEVELS[next].appeal.evolve) {
       setLevel(state, house, next);
     }
   }

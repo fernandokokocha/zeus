@@ -80,7 +80,7 @@ function describeHouse(state: GameState, house: Building): Description {
   const appeal = houseAppeal(state, house);
   lines.push(`Appeal ${appeal}`, foodStatus(house), waterStatus(state, house), taxStatus(state, house));
   const next = NEXT_LEVEL[level];
-  if (next) lines.push(nextLevelStatus(house, next, appeal));
+  if (next) lines.push(nextLevelStatus(state, house, next, appeal));
   return { title: houseName(house), lines };
 }
 
@@ -91,9 +91,9 @@ function foodStatus(house: Building): string {
   return `Food: ${amount(house.food)} units${lasts}`;
 }
 
-function nextLevelStatus(house: Building, next: keyof typeof HOUSE_LEVELS, appeal: number): string {
+function nextLevelStatus(state: GameState, house: Building, next: keyof typeof HOUSE_LEVELS, appeal: number): string {
   const { name, appeal: thresholds } = HOUSE_LEVELS[next];
-  const blockers: string[] = missingNeeds(house, next);
+  const blockers: string[] = missingNeeds(state, house, next);
   if (appeal < thresholds.evolve) blockers.push(`appeal ${thresholds.evolve} (has ${appeal})`);
   return blockers.length > 0 ? `Needs for ${name}: ${blockers.join(', ')}` : `Ready to become a ${name}`;
 }

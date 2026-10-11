@@ -216,12 +216,11 @@ describe('describeTile for food and appeal', () => {
     expect(describeTile(game, 2, 13).lines).toContain('Needs for Shack: food, appeal 0 (has -2)');
   });
 
-  it("shows how long a Shack's food lasts, and no next level", () => {
+  it("shows how long a Shack's food lasts", () => {
     const { game, house } = street();
     Object.assign(house, { level: 'shack', residents: 16, food: 6 });
     const lines = describeTile(game, 2, 13).lines;
     expect(lines).toContain('Food: 6 units (1.5 months)');
-    expect(lines.some((line) => line.startsWith('Needs'))).toBe(false);
   });
 
   it('describes a farm, its crop and its cart', () => {

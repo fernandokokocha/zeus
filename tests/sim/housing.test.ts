@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { houseAppeal } from '../../src/sim/appeal';
 import { TICKS_PER_MONTH } from '../../src/sim/clock';
 import { placeBuilding, placeHouses, placeRoad } from '../../src/sim/commands';
+import { houseCapacity } from '../../src/sim/housing';
 import { SETTLER_SPAWN_INTERVAL_TICKS } from '../../src/sim/settlers';
 import type { Building, GameState } from '../../src/sim/state';
 import { tick } from '../../src/sim/tick';
@@ -99,5 +100,97 @@ describe('a city with the whole food chain', () => {
     expect(houses.every((h) => h.level === 'hut')).toBe(true);
     runTicks(game, 2 * TICKS_PER_MONTH);
     expect(houses.filter((h) => h.level === 'shack').length).toBeGreaterThanOrEqual(6);
+  });
+});
+
+describe('a Shack on its way to a Hovel', () => {
+  const LONG = 10 * TICKS_PER_MONTH;
+
+  function servedShack(): { game: GameState; house: Building } {
+    const { game, house } = street();
+    shackOn(game, house);
+    Object.assign(house.coveredUntil, { water: LONG, philosophy: LONG });
+    placeBuilding(game, 'flowerGarden', 2, 6);
+    return { game, house };
+  }
+
+  it('becomes a Hovel with food, water, 15 culture and appeal 10', () => {
+    const { game, house } = servedShack();
+    placeBuilding(game, 'park', 4, 8);
+    expect(houseAppeal(game, house)).toBe(10);
+    tick(game);
+    expect(house.level).toBe('hovel');
+    expect(houseCapacity(house)).toBe(24);
+  });
+
+  it('stays a Shack at appeal 9', () => {
+    const { game, house } = servedShack();
+    placeBuilding(game, 'park', 5, 8);
+    expect(houseAppeal(game, house)).toBe(9);
+    tick(game);
+    expect(house.level).toBe('shack');
+  });
+
+  it('stays a Shack without water', () => {
+    const { game, house } = servedShack();
+    placeBuilding(game, 'park', 4, 8);
+    house.coveredUntil.water = 0;
+    tick(game);
+    expect(house.level).toBe('shack');
+  });
+
+  it('stays a Shack without culture', () => {
+    const { game, house } = servedShack();
+    placeBuilding(game, 'park', 4, 8);
+    house.coveredUntil.philosophy = 0;
+    tick(game);
+    expect(house.level).toBe('shack');
+  });
+});
+
+describe('a Hovel', () => {
+  const LONG = 10 * TICKS_PER_MONTH;
+
+  function hovelOn(house: Building): void {
+    Object.assign(house, { level: 'hovel', residents: 24, food: 50 });
+    Object.assign(house.coveredUntil, { water: LONG, athletics: LONG });
+  }
+
+  it('keeps its level at appeal -1', () => {
+    const { game, house } = street();
+    hovelOn(house);
+    placeBuilding(game, 'taxOffice', 5, 6);
+    placeBuilding(game, 'column', 1, 11);
+    expect(houseAppeal(game, house)).toBe(-1);
+    tick(game);
+    expect(house.level).toBe('hovel');
+  });
+
+  it('falls back to a Shack at appeal -2, sending away residents above 16', () => {
+    const { game, house } = street();
+    hovelOn(house);
+    placeBuilding(game, 'taxOffice', 5, 6);
+    expect(houseAppeal(game, house)).toBe(-2);
+    tick(game);
+    expect(house.level).toBe('shack');
+    expect(house.residents).toBe(16);
+  });
+
+  it('falls back to a Shack when its water runs out', () => {
+    const { game, house } = street();
+    hovelOn(house);
+    house.coveredUntil.water = 0;
+    tick(game);
+    expect(house.level).toBe('shack');
+  });
+
+  it('falls back to a Shack when no culture has passed for 2 months', () => {
+    const { game, house } = street();
+    hovelOn(house);
+    house.coveredUntil.athletics = 2 * TICKS_PER_MONTH;
+    runTicks(game, 2 * TICKS_PER_MONTH - 1);
+    expect(house.level).toBe('hovel');
+    tick(game);
+    expect(house.level).toBe('shack');
   });
 });

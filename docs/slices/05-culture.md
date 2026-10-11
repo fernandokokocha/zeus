@@ -95,11 +95,11 @@ shared by settlers and carriers is extracted first so trainees can use it too.
 
 **Files:** Modify `src/sim/housing.ts`, `tests/sim/housing.test.ts`.
 
-- [ ] **Step 1:** Write failing tests: a Shack with food, water, 15 culture and appeal
+- [x] **Step 1:** Write failing tests: a Shack with food, water, 15 culture and appeal
   10 becomes a Hovel and takes 24 residents; without water, culture, or at appeal 9 it
   stays a Shack; a Hovel keeps its level at appeal -1 and falls back at -2, or when it
   loses water or culture, sending away residents above 16.
-- [ ] **Step 2:** Implement. Tests pass.
+- [x] **Step 2:** Implement. Tests pass.
 
 ### Task 6: Inspector
 
