@@ -1,7 +1,7 @@
 import { BUILDING_SPECS } from './buildings';
 import { TICKS_PER_YEAR, monthOfYear } from './clock';
 import { HOUSE_LEVELS, houseLevel } from './housing';
-import type { Building, GameState } from './state';
+import type { Building, GameState, Good } from './state';
 
 export const UNITS_PER_LOAD = 100;
 export const WHEAT_LOADS_PER_YEAR = 8;
@@ -12,7 +12,8 @@ export const CART_LOAD = 4 * UNITS_PER_LOAD;
 export const BUYER_LOAD = 4 * UNITS_PER_LOAD;
 export const VENDOR_CAPACITY = 8 * UNITS_PER_LOAD;
 export const FOOD_PER_RESIDENT_PER_MONTH = 0.25;
-export const HOUSE_FOOD_MONTHS = 3;
+export const FLEECE_PER_HOUSE_PER_MONTH = 2;
+export const HOUSE_STOCK_MONTHS = 3;
 
 export function wholeLoads(units: number): number {
   return Math.floor(units / UNITS_PER_LOAD) * UNITS_PER_LOAD;
@@ -50,12 +51,13 @@ export function eat(state: GameState): void {
   }
 }
 
-export function houseFoodTarget(house: Building): number {
-  return house.residents * FOOD_PER_RESIDENT_PER_MONTH * HOUSE_FOOD_MONTHS;
+export function houseStockTarget(house: Building, good: Good): number {
+  const monthly = good === 'food' ? house.residents * FOOD_PER_RESIDENT_PER_MONTH : FLEECE_PER_HOUSE_PER_MONTH;
+  return monthly * HOUSE_STOCK_MONTHS;
 }
 
-export function stockHouse(stall: Building, house: Building): void {
-  const given = Math.min(Math.max(0, houseFoodTarget(house) - house.food), stall.food);
-  house.food += given;
-  stall.food -= given;
+export function stockHouse(stall: Building, house: Building, good: Good): void {
+  const given = Math.min(Math.max(0, houseStockTarget(house, good) - house[good]), stall[good]);
+  house[good] += given;
+  stall[good] -= given;
 }

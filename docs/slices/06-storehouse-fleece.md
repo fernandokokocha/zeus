@@ -108,9 +108,9 @@ Create `src/sim/storehouse.ts`, `tests/sim/storehouse.test.ts`.
 **Files:** Modify `src/sim/roamers.ts`, `src/sim/food.ts`. Extend
 `tests/sim/roamers.test.ts`.
 
-- [ ] **Step 1:** Write failing tests: a fleece peddler only sets out with fleece in
+- [x] **Step 1:** Write failing tests: a fleece peddler only sets out with fleece in
   his stall, and fills houses he passes to 6 units.
-- [ ] **Step 2:** Implement. Tests pass.
+- [x] **Step 2:** Implement. Tests pass.
 
 ### Task 6: Homestead and Tenement
 

@@ -10,8 +10,8 @@ export type PlayingSpeed = Exclude<Speed, 0>;
 
 export type Good = 'food' | 'fleece';
 export type Culture = 'philosophy' | 'athletics' | 'drama';
-export type Service = 'water' | 'tax' | 'food' | Culture;
-export type Coverage = Exclude<Service, 'food'>;
+export type Service = 'water' | 'tax' | Good | Culture;
+export type Coverage = Exclude<Service, Good>;
 
 export interface Building {
   id: number;
@@ -42,7 +42,7 @@ export interface Settler extends Walk {
   people: number;
 }
 
-export type RoamerKind = 'waterCarrier' | 'taxCollector' | 'peddler' | 'philosopher' | 'athlete' | 'actor';
+export type RoamerKind = 'waterCarrier' | 'taxCollector' | 'peddler' | 'fleecePeddler' | 'philosopher' | 'athlete' | 'actor';
 
 export interface Roamer extends Walk {
   id: number;

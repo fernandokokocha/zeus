@@ -72,7 +72,12 @@ athlete: [
 ],
 actor,
 actorTrainee: actor,
-fleeceCart: [
+fleecePeddler: [
+    ...body(PALETTE.fleeceAwning),
+    { geometry: new THREE.CylinderGeometry(0.09, 0.07, 0.06, 10).translate(0, 0.41, 0), color: PALETTE.reed },
+    { geometry: new THREE.SphereGeometry(0.07, 8, 6).scale(1.2, 0.6, 1.2).translate(0, 0.45, 0), color: PALETTE.wool },
+  ],
+  fleeceCart: [
     ...body(PALETTE.cartTunic),
     { geometry: new THREE.BoxGeometry(0.2, 0.08, 0.24).translate(0, 0.1, 0.22), color: PALETTE.trunk },
     { geometry: new THREE.CylinderGeometry(0.06, 0.06, 0.26, 10).rotateZ(Math.PI / 2).translate(0, 0.06, 0.24), color: PALETTE.doorway },
@@ -143,7 +148,7 @@ export function createWalkerLayer(): { group: THREE.Group; sync(state: GameState
     group,
     sync(state, ticksAhead) {
       sets.settler.show(state.settlers, ticksAhead);
-      for (const kind of ['waterCarrier', 'taxCollector', 'peddler', 'philosopher', 'athlete', 'actor'] as const) {
+      for (const kind of ['waterCarrier', 'taxCollector', 'peddler', 'fleecePeddler', 'philosopher', 'athlete', 'actor'] as const) {
         sets[kind].show(state.roamers.filter((r) => r.kind === kind), ticksAhead);
       }
       for (const kind of ['cartPusher', 'buyer', 'fleeceCart', 'fleeceBuyer'] as const) {

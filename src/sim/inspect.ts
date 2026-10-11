@@ -7,7 +7,7 @@ import { adjacentRoadTiles, agoraAt } from './commands';
 import { hasWorkingPalace, houseTax } from './economy';
 import { GRANARY_CAPACITY, HARVEST_MONTH, UNITS_PER_LOAD, VENDOR_CAPACITY, monthlyFood } from './food';
 import { HOUSE_LEVELS, NEXT_LEVEL, houseCapacity, houseLevel, houseName, lacksCulture, missingNeeds } from './housing';
-import { ROAMER_SPECS, hasService, type RoamerSpec, roamerKindSentBy, serviceLeft } from './roamers';
+import { ROAMER_SPECS, hasService, isGood, type RoamerSpec, roamerKindSentBy, serviceLeft } from './roamers';
 import { TRAINEE_SPECS, isPerforming, staffedVenues, traineeKindFor, traineeKindSentBy } from './schools';
 import { canSettlersReach } from './settlers';
 import {
@@ -198,7 +198,7 @@ function walkerLines(state: GameState, building: Building): string[] {
 }
 
 function roamerWaitsFor(state: GameState, building: Building, spec: RoamerSpec): string | null {
-  if (spec.service === 'food' && building.food === 0) return 'waits for food';
+  if (isGood(spec.service) && building[spec.service] === 0) return `waits for ${spec.service}`;
   if (traineeKindFor(building.type) && !isPerforming(state, building)) return 'waits for one to arrive';
   return null;
 }
