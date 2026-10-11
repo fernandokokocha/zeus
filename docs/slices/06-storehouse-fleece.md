@@ -159,4 +159,4 @@ Create `src/sim/storehouse.ts`, `tests/sim/storehouse.test.ts`.
 
 - [x] **Step 1:** Tick slice 6 in `docs/roadmap.md`. Record the new **ours** numbers in
   zeus-numbers.
-- [ ] **Step 2:** Open the PR `Slice 06: Storehouse & fleece`. Wait for CI and Pages.
+- [x] **Step 2:** Open the PR `Slice 06: Storehouse & fleece`. Wait for CI and Pages.
