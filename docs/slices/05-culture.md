@@ -138,4 +138,4 @@ shared by settlers and carriers is extracted first so trainees can use it too.
 
 - [x] **Step 1:** Tick slice 5 in `docs/roadmap.md`. Record the new **ours** numbers in
   zeus-numbers.
-- [ ] **Step 2:** Open the PR `Slice 05: Culture`. Wait for CI and Pages.
+- [x] **Step 2:** Open the PR `Slice 05: Culture`. Wait for CI and Pages.
