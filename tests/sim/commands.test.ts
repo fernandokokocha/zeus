@@ -3,6 +3,7 @@ import {
   checkBuildingPlacement,
   demolish,
   lotOrigins,
+  placeBuilding,
   placeHouses,
   placeRoad,
   roadPath,
@@ -205,5 +206,41 @@ describe('placeHouses', () => {
     expect(placeHouses(game, { x: 2, y: 2 }, { x: 5, y: 3 })).toEqual({ ok: false, reason: 'Cannot build on water' });
     expect(game.treasury).toBe(STARTING_TREASURY);
     expect(game.version).toBe(0);
+  });
+});
+
+describe('placeBuilding', () => {
+  it('places a service building and charges its price', () => {
+    const game = grassGame();
+    expect(placeBuilding(game, 'fountain', 2, 2)).toEqual({ ok: true });
+    expect(placeBuilding(game, 'taxOffice', 5, 2)).toEqual({ ok: true });
+    expect(placeBuilding(game, 'palace', 9, 2)).toEqual({ ok: true });
+    expect(game.buildings.map((b) => b.type)).toEqual(['fountain', 'taxOffice', 'palace']);
+    expect(game.treasury).toBe(STARTING_TREASURY - 16 - 25 - 125);
+    expect(game.version).toBe(3);
+  });
+
+  it('gives the Palace its 9×6 footprint', () => {
+    const game = grassGame();
+    placeBuilding(game, 'palace', 9, 2);
+    const id = game.buildings[0].id;
+    expect(game.buildingIdAt[tileIndex(game, 17, 7)]).toBe(id);
+    expect(game.buildingIdAt[tileIndex(game, 18, 7)]).toBe(NO_BUILDING);
+    expect(game.buildingIdAt[tileIndex(game, 17, 8)]).toBe(NO_BUILDING);
+  });
+
+  it('allows only one Palace', () => {
+    const game = grassGame();
+    placeBuilding(game, 'palace', 0, 0);
+    expect(placeBuilding(game, 'palace', 0, 10)).toEqual({ ok: false, reason: 'Only one palace is allowed' });
+    expect(checkBuildingPlacement(game, 'palace', 0, 10).obstacle).toBe('Only one palace is allowed');
+    expect(game.treasury).toBe(STARTING_TREASURY - 125);
+  });
+
+  it('rejects a blocked footprint and spends nothing', () => {
+    const game = grassGame();
+    setTerrain(game, 3, 3, 'water');
+    expect(placeBuilding(game, 'fountain', 2, 2)).toEqual({ ok: false, reason: 'Cannot build on water' });
+    expect(game.treasury).toBe(STARTING_TREASURY);
   });
 });

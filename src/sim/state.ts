@@ -7,12 +7,17 @@ import { STARTING_TREASURY } from './treasury';
 export type Speed = 0 | 1 | 2 | 4;
 export type PlayingSpeed = Exclude<Speed, 0>;
 
+export type Service = 'water' | 'tax';
+
 export interface Building {
   id: number;
   type: BuildingType;
   x: number;
   y: number;
   residents: number;
+  workers: number;
+  walkerRest: number;
+  coveredUntil: Record<Service, number>;
 }
 
 export interface Walk {
