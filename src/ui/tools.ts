@@ -31,3 +31,21 @@ export const TOOL_LABELS: Record<Tool, string> = {
   sheep: `Sheep (${SHEEP_COST} dr)`,
   demolish: 'Demolish',
 };
+
+export interface ToolGroup {
+  name: string;
+  tools: Tool[];
+}
+
+export const TOOL_GROUPS: ToolGroup[] = [
+  { name: 'Roads', tools: ['road', 'roadblock'] },
+  { name: 'Housing', tools: ['house'] },
+  { name: 'Husbandry', tools: ['wheatFarm', 'sheep'] },
+  { name: 'Industry', tools: ['cardingShed'] },
+  { name: 'Distribution', tools: ['granary', 'storehouse', 'agora', 'foodVendor', 'fleeceVendor'] },
+  { name: 'Hygiene', tools: ['fountain'] },
+  { name: 'Administration', tools: ['palace', 'taxOffice'] },
+  { name: 'Culture', tools: ['college', 'podium', 'gymnasium', 'dramaSchool', 'theater'] },
+  { name: 'Aesthetics', tools: ['park', 'column', 'flowerGarden'] },
+  { name: 'Demolish', tools: ['demolish'] },
+];

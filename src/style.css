@@ -21,6 +21,7 @@ body {
 
 #topbar,
 #toolbar,
+#tool-menu,
 #inspector,
 #appeal-legend {
   position: fixed;
@@ -84,6 +85,27 @@ body {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  width: 170px;
+}
+
+#toolbar button {
+  text-align: left;
+  padding: 3px 8px;
+}
+
+#toolbar button small {
+  display: block;
+  font-size: 12px;
+}
+
+#tool-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+#tool-menu[hidden] {
+  display: none;
 }
 
 #inspector {
