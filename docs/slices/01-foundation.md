@@ -2195,7 +2195,7 @@ git commit -m "Add top bar, toolbar, inspector and tool input; run the fixed-ste
 - Create: `playwright.config.ts`, `e2e/smoke.spec.ts`
 - Modify: `docs/roadmap.md` (tick slice 1)
 
-- [ ] **Step 1: Playwright config**
+- [x] **Step 1: Playwright config**
 
 `playwright.config.ts`:
 
@@ -2222,7 +2222,7 @@ export default defineConfig({
 });
 ```
 
-- [ ] **Step 2: Smoke test**
+- [x] **Step 2: Smoke test**
 
 `e2e/smoke.spec.ts`:
 
@@ -2249,7 +2249,7 @@ test('boots and renders the map without errors', async ({ page }) => {
 });
 ```
 
-- [ ] **Step 3: Run it**
+- [x] **Step 3: Run it**
 
 ```bash
 npx playwright install chromium
@@ -2258,7 +2258,7 @@ npm run test:e2e
 
 Expected: PASS.
 
-- [ ] **Step 4: Look at the screenshot**
+- [x] **Step 4: Look at the screenshot**
 
 Open `test-results/screenshot.png`. Check for:
 - an isometric diamond-shaped map, not a top-down square;
@@ -2270,7 +2270,7 @@ Open `test-results/screenshot.png`. Check for:
 Fix anything that looks wrong (camera angle, lighting too dark or washed out, colors
 too similar) and re-run.
 
-- [ ] **Step 5: Tick the roadmap and open the PR**
+- [x] **Step 5: Tick the roadmap and open the PR**
 
 In `docs/roadmap.md`, change `- [ ] 1 · Foundation` to `- [x] 1 · Foundation`.
 
@@ -2305,7 +2305,7 @@ EOF
 Fill in the two placeholder sections in the PR body before creating it. They are
 session-specific, which is why this plan cannot write them.
 
-- [ ] **Step 6: Merge**
+- [x] **Step 6: Merge**
 
 When CI is green, run `gh pr merge --squash --delete-branch`. Then confirm the Pages
 deploy job succeeded: `gh run list --branch main --limit 1`.
