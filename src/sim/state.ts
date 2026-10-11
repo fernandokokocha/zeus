@@ -32,6 +32,15 @@ export interface Settler extends Walk {
   people: number;
 }
 
+export type RoamerKind = 'waterCarrier' | 'taxCollector';
+
+export interface Roamer extends Walk {
+  id: number;
+  kind: RoamerKind;
+  homeId: number;
+  returning: boolean;
+}
+
 export interface GameState {
   size: number;
   terrain: Terrain[];
@@ -41,6 +50,9 @@ export interface GameState {
   nextBuildingId: number;
   settlers: Settler[];
   nextSettlerId: number;
+  roamers: Roamer[];
+  nextRoamerId: number;
+  rngState: number;
   entry: Point;
   treasury: number;
   tick: number;
@@ -64,6 +76,9 @@ export function newGameState(size: number, terrain: Terrain[], entry: Point): Ga
     nextBuildingId: 1,
     settlers: [],
     nextSettlerId: 1,
+    roamers: [],
+    nextRoamerId: 1,
+    rngState: DEFAULT_SEED,
     entry,
     treasury: STARTING_TREASURY,
     tick: 0,
