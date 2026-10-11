@@ -3,6 +3,8 @@ import {
   BUILDING_SPECS,
   buildingSize,
   footprintDistance,
+  localToWorld,
+  worldToLocal,
   type BuildingType,
   type Placement,
   type Rotation,
@@ -103,8 +105,12 @@ export function agoraAt(state: GameState, p: Point): Building | null {
 export function vendorSpotAt(state: GameState, p: Point): Point | null {
   const agora = agoraAt(state, p);
   if (!agora) return null;
-  const spots = AGORA_VENDOR_SPOTS.map((offset) => ({ x: agora.x + offset.x, y: agora.y + offset.y }));
-  return spots.find((spot) => p.y >= spot.y && p.y < spot.y + BUILDING_SPECS.foodVendor.height) ?? null;
+  const { width, height } = BUILDING_SPECS.foodVendor;
+  const local = worldToLocal(agora, p);
+  const spot = AGORA_VENDOR_SPOTS.find((s) => local.y >= s.y && local.y < s.y + height);
+  if (!spot) return null;
+  const corners = [spot, { x: spot.x + width - 1, y: spot.y + height - 1 }].map((c) => localToWorld(agora, c));
+  return { x: Math.min(...corners.map((c) => c.x)), y: Math.min(...corners.map((c) => c.y)) };
 }
 
 export function roadSite(state: GameState, building: Building): Building {
@@ -156,7 +162,8 @@ export function placeBuilding(state: GameState, type: BuildingType, x: number, y
   const placement = { type, x, y, rotation };
   const obstacle = placementObstacle(state, placement);
   if (obstacle) return fail(obstacle);
-  build(state, placement);
+  const agora = type === 'foodVendor' ? agoraAt(state, placement) : null;
+  build(state, agora ? { ...placement, rotation: agora.rotation } : placement);
   state.version++;
   return OK;
 }

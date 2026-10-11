@@ -58,4 +58,27 @@ export function footprintDistance(building: Placement, p: Point): number {
   return Math.max(dx, dy);
 }
 
+export function localToWorld(building: Placement, local: Point): Point {
+  const { width: w, height: h } = BUILDING_SPECS[building.type];
+  const turned = [
+    { x: local.x, y: local.y },
+    { x: h - 1 - local.y, y: local.x },
+    { x: w - 1 - local.x, y: h - 1 - local.y },
+    { x: local.y, y: w - 1 - local.x },
+  ][building.rotation];
+  return { x: building.x + turned.x, y: building.y + turned.y };
+}
+
+export function worldToLocal(building: Placement, p: Point): Point {
+  const { width: w, height: h } = BUILDING_SPECS[building.type];
+  const dx = p.x - building.x;
+  const dy = p.y - building.y;
+  return [
+    { x: dx, y: dy },
+    { x: dy, y: h - 1 - dx },
+    { x: w - 1 - dx, y: h - 1 - dy },
+    { x: w - 1 - dy, y: dx },
+  ][building.rotation];
+}
+
 export const AGORA_VENDOR_SPOTS = [{ x: 0, y: 0 }, { x: 0, y: 2 }, { x: 0, y: 4 }];

@@ -352,3 +352,48 @@ describe('a food vendor', () => {
     expect(game.buildingIdAt.every((id) => id === NO_BUILDING)).toBe(true);
   });
 });
+
+describe('a rotated building', () => {
+  it('swaps width and depth on a quarter turn', () => {
+    const game = grassGame();
+    expect(placeBuilding(game, 'palace', 0, 0, 1)).toEqual({ ok: true });
+    expect(game.buildings[0].rotation).toBe(1);
+    expect(game.buildingIdAt[tileIndex(game, 5, 8)]).toBe(game.buildings[0].id);
+    expect(game.buildingIdAt[tileIndex(game, 6, 0)]).toBe(NO_BUILDING);
+  });
+
+  it('keeps its footprint on a half turn', () => {
+    const game = grassGame();
+    placeBuilding(game, 'palace', 0, 0, 2);
+    expect(game.buildingIdAt[tileIndex(game, 8, 5)]).toBe(game.buildings[0].id);
+  });
+
+  it('reaches the road from its turned sides', () => {
+    const game = grassGame();
+    placeRoad(game, { x: 6, y: 0 }, { x: 6, y: 9 });
+    expect(checkBuildingPlacement(game, 'palace', 0, 0, 1).roadAccess).toBe(true);
+    expect(checkBuildingPlacement(game, 'palace', 0, 0, 0).obstacle).toBe('A road is in the way');
+  });
+});
+
+describe('a rotated agora', () => {
+  it('turns its vendor spots with it', () => {
+    const game = grassGame();
+    placeRoad(game, { x: 0, y: 4 }, { x: 19, y: 4 });
+    placeBuilding(game, 'agora', 5, 1, 1);
+    expect(vendorSpotAt(game, { x: 10, y: 3 })).toEqual({ x: 9, y: 1 });
+    expect(vendorSpotAt(game, { x: 7, y: 1 })).toEqual({ x: 7, y: 1 });
+    expect(vendorSpotAt(game, { x: 5, y: 2 })).toEqual({ x: 5, y: 1 });
+    expect(placeBuilding(game, 'foodVendor', 7, 1)).toEqual({ ok: true });
+    expect(placeBuilding(game, 'foodVendor', 7, 2)).toEqual({ ok: false, reason: 'A vendor goes on a free spot of an agora' });
+  });
+
+  it('gives its vendors its own rotation', () => {
+    const game = grassGame();
+    placeRoad(game, { x: 0, y: 18 }, { x: 19, y: 18 });
+    placeBuilding(game, 'agora', 5, 12, 2);
+    expect(vendorSpotAt(game, { x: 5, y: 17 })).toEqual({ x: 6, y: 16 });
+    placeBuilding(game, 'foodVendor', 6, 16);
+    expect(game.buildings[1].rotation).toBe(2);
+  });
+});
