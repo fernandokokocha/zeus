@@ -152,3 +152,4 @@ https://zeus.heavengames.com/gameinfo/gods/
   passes.
 - Roamer rest: a service building sends its next walker **a quarter month** after the
   last one returns, at full staff.
+- Roadblock cost: **6 dr**.

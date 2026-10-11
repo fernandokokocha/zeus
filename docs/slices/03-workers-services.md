@@ -152,3 +152,14 @@ walker layer draws each walker kind with its own figure.
 - [x] **Step 2:** Open the PR `Slice 03: Workers & services` with the playtest
   checklist, the decisions above, and what was left out. Wait for CI and the Pages
   deploy.
+
+### Task 10: Playtest feedback
+
+- [x] **Step 1:** The inspector shows a house's water as a percentage that runs down
+  until the next carrier.
+- [x] **Step 2:** Working buildings look different from idle ones: a staffed fountain
+  spills water from its bowl into the basin, an unstaffed one stands dry; a staffed Tax
+  Office has an open chest of coins. The version bumps when a building starts or stops
+  working.
+- [x] **Step 3:** Roadblock: placed on a road for 6 dr (**ours**); roaming walkers never
+  step onto it, settlers pass.
