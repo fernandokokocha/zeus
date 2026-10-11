@@ -32,6 +32,10 @@ export function hasService(state: GameState, house: Building, service: Service):
   return state.tick < house.coveredUntil[service];
 }
 
+export function serviceLeft(state: GameState, house: Building, service: Service): number {
+  return Math.max(0, house.coveredUntil[service] - state.tick) / (SERVICE_MONTHS * TICKS_PER_MONTH);
+}
+
 export function exitTile(state: GameState, building: Building): Point | null {
   const { width, height } = BUILDING_SPECS[building.type];
   const { x, y } = building;

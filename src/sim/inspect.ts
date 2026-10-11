@@ -2,7 +2,7 @@ import { BUILDING_SPECS } from './buildings';
 import { adjacentRoadTiles } from './commands';
 import { hasWorkingPalace, houseTax } from './economy';
 import { HOUSE_LEVELS, NEXT_LEVEL, houseCapacity, houseLevel, houseName } from './housing';
-import { ROAMER_SPECS, hasService, roamerKindSentBy } from './roamers';
+import { ROAMER_SPECS, hasService, roamerKindSentBy, serviceLeft } from './roamers';
 import { canSettlersReach } from './settlers';
 import { NO_BUILDING, buildingById, tileIndex, type Building, type GameState, type Roamer, type Settler } from './state';
 import { BUILDABLE, TERRAIN_NAMES } from './terrain';
@@ -49,13 +49,18 @@ function describeHouse(state: GameState, house: Building): Description {
   const lines = [`Tile ${house.x}, ${house.y}`, `Residents ${house.residents}/${houseCapacity(house)}`];
   const level = houseLevel(house);
   if (level) {
-    lines.push(hasService(state, house, 'water') ? 'Has water' : 'No water carrier has passed', taxStatus(state, house));
+    lines.push(waterStatus(state, house), taxStatus(state, house));
     const next = NEXT_LEVEL[level];
     if (next) lines.push(`Needs for ${HOUSE_LEVELS[next].name}: ${HOUSE_LEVELS[next].needs.join(', ')}`);
   } else {
     lines.push(settlementStatus(state, house));
   }
   return { title: houseName(house), lines };
+}
+
+function waterStatus(state: GameState, house: Building): string {
+  if (!hasService(state, house, 'water')) return 'No water carrier has passed';
+  return `Water: ${Math.ceil(serviceLeft(state, house, 'water') * 100)}% left`;
 }
 
 function taxStatus(state: GameState, house: Building): string {

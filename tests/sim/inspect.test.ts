@@ -85,10 +85,21 @@ describe('describeTile for services', () => {
     expect(describeTile(game, 2, 8).lines).toEqual([
       'Tile 2, 8',
       'Residents 8/8',
-      'Has water',
+      'Water: 50% left',
       'Pays 0.72 dr tax a month',
       'Needs for Shack: food',
     ]);
+  });
+
+it('shows the water running down until the next carrier', () => {
+    const game = town();
+    game.buildings[0].coveredUntil.water = TICKS_PER_MONTH;
+    game.tick = TICKS_PER_MONTH / 2;
+    expect(describeTile(game, 2, 8).lines).toContain('Water: 25% left');
+    game.tick = TICKS_PER_MONTH - 1;
+    expect(describeTile(game, 2, 8).lines).toContain('Water: 1% left');
+    game.tick = TICKS_PER_MONTH;
+    expect(describeTile(game, 2, 8).lines).toContain('No water carrier has passed');
   });
 
   it('says when a registered house has no palace to pay', () => {
