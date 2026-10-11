@@ -1605,7 +1605,7 @@ git commit -m "Render the map under an isometric orthographic camera with pan an
     `state.version` changes.
   - `createGhostLayer(mapSize): { mesh: THREE.InstancedMesh; show(tiles: PreviewTile[]): void }`.
 
-- [ ] **Step 1: Write the failing preview tests**
+- [x] **Step 1: Write the failing preview tests**
 
 `tests/ui/preview.test.ts`:
 
@@ -1660,12 +1660,12 @@ describe('previewTiles', () => {
 });
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `npm test`
 Expected: FAIL with "Failed to resolve import" for `src/ui/preview`.
 
-- [ ] **Step 3: Implement tools and preview**
+- [x] **Step 3: Implement tools and preview**
 
 `src/ui/tools.ts`:
 
@@ -1723,12 +1723,12 @@ export function previewTiles(
 }
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run: `npm test`
 Expected: PASS.
 
-- [ ] **Step 5: Models, world layer and ghost layer**
+- [x] **Step 5: Models, world layer and ghost layer**
 
 `src/render/models.ts`:
 
@@ -1853,7 +1853,7 @@ export function createGhostLayer(mapSize: number): { mesh: THREE.InstancedMesh; 
 `src/render` importing a *type* from `src/ui/preview` is allowed. The rule in
 `CLAUDE.md` restricts `src/sim` only.
 
-- [ ] **Step 6: Verify and commit**
+- [x] **Step 6: Verify and commit**
 
 Run: `npm run typecheck && npm test`
 Expected: PASS.
