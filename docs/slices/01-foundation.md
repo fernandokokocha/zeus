@@ -355,7 +355,7 @@ git commit -m "Scaffold Vite + TypeScript project with CI and Pages deploy"
   - `generateTerrain(seed: number): { terrain: Terrain[]; entry: Point }`. The terrain
     array is row-major, so tile (x, y) is at `y * MAP_SIZE + x`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 `tests/sim/rng.test.ts`:
 
@@ -422,12 +422,12 @@ describe('generateTerrain', () => {
 });
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `npm test`
 Expected: FAIL with "Failed to resolve import" for `src/sim/rng` and `src/sim/map`.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 `src/sim/rng.ts`:
 
@@ -588,14 +588,14 @@ function lerp(a: number, b: number, t: number): number {
 }
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run: `npm test`
 Expected: PASS. If "contains every terrain type" fails because forest or meadow is
 missing for seed 1500, try seeds 1501, 1502, … until it passes, and set
 `DEFAULT_SEED` to the first one that does. Do not loosen the test.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -A
