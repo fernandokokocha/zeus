@@ -22,7 +22,8 @@ const view = createView(
   byId<HTMLCanvasElement>('view'),
   new THREE.Vector3(state.entry.x + START_VIEW_OFFSET, 0, state.entry.y),
 );
-view.scene.add(createTerrainLayer(state));
+const terrain = createTerrainLayer();
+view.scene.add(terrain.group);
 const world = createWorldLayer();
 view.scene.add(world.group);
 const ghost = createGhostLayer(state.size);
@@ -58,6 +59,7 @@ function frame(now: number): void {
   }
   if (ticks === MAX_TICKS_PER_FRAME) pendingTicks = 0;
 
+  terrain.sync(state);
   world.sync(state);
   topbar.update();
   view.renderer.render(view.scene, view.camera);
