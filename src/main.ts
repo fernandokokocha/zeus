@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import './style.css';
 import { attachCameraControls } from './render/camera-controls';
+import { createAppealLayer } from './render/appeal-layer';
 import { createGhostLayer } from './render/ghost-layer';
 import { createTerrainLayer } from './render/terrain-layer';
 import { createView, resizeView } from './render/view';
@@ -9,6 +10,7 @@ import { createWorldLayer } from './render/world-layer';
 import { TICKS_PER_SECOND } from './sim/clock';
 import { tick } from './sim/tick';
 import { createGame } from './sim/state';
+import { createAppealToggle } from './ui/appeal-toggle';
 import { byId } from './ui/dom';
 import { createInspector } from './ui/inspector';
 import { attachToolInput } from './ui/tool-input';
@@ -30,12 +32,15 @@ const world = createWorldLayer();
 view.scene.add(world.group);
 const walkers = createWalkerLayer();
 view.scene.add(walkers.group);
+const appeal = createAppealLayer(state.size);
+view.scene.add(appeal.mesh);
 const ghost = createGhostLayer(state.size);
 view.scene.add(ghost.mesh);
 
 const controls = attachCameraControls(view, state.size);
 const topbar = createTopbar(state);
 const inspector = createInspector(state);
+const appealToggle = createAppealToggle();
 const input = attachToolInput({
   view,
   state,
@@ -66,6 +71,7 @@ function frame(now: number): void {
   terrain.sync(state);
   world.sync(state);
   walkers.sync(state, state.speed > 0 ? pendingTicks : 0);
+  appeal.sync(state, appealToggle.visible());
   topbar.update();
   view.renderer.render(view.scene, view.camera);
   requestAnimationFrame(frame);

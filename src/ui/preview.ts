@@ -1,5 +1,5 @@
 import { BUILDING_SPECS, type BuildingType } from '../sim/buildings';
-import { checkBuildingPlacement, footprint, lotOrigins, roadObstacle, roadPath, roadblockObstacle } from '../sim/commands';
+import { checkBuildingPlacement, footprint, vendorSpotAt, lotOrigins, roadObstacle, roadPath, roadblockObstacle } from '../sim/commands';
 import { rectBetween, tilesIn, type Point } from '../sim/point';
 import { clampToMap, inBounds, type GameState } from '../sim/state';
 import type { Tool } from './tools';
@@ -15,9 +15,14 @@ export function buildingOrigin(type: BuildingType, cursor: Point): Point {
   return { x: cursor.x - Math.floor((width - 1) / 2), y: cursor.y - Math.floor((height - 1) / 2) };
 }
 
+export function placementOrigin(state: GameState, type: BuildingType, cursor: Point): Point {
+  return (type === 'foodVendor' && vendorSpotAt(state, cursor)) || buildingOrigin(type, cursor);
+}
+
 function buildingPreview(state: GameState, type: BuildingType, origin: Point): PreviewTile[] {
   const check = checkBuildingPlacement(state, type, origin.x, origin.y);
-  const kind: PreviewKind = check.obstacle ? 'invalid' : check.roadAccess ? 'valid' : 'warning';
+  const lacksRoad = BUILDING_SPECS[type].needsRoad && !check.roadAccess;
+  const kind: PreviewKind = check.obstacle ? 'invalid' : lacksRoad ? 'warning' : 'valid';
   return footprint(type, origin.x, origin.y)
     .filter((p) => inBounds(state, p.x, p.y))
     .map((p) => ({ ...p, kind }));
@@ -46,9 +51,7 @@ export function previewTiles(
       }));
     case 'house':
       return lotOrigins(start, hover).flatMap((lot) => buildingPreview(state, tool, lot));
-    case 'fountain':
-    case 'taxOffice':
-    case 'palace':
-      return buildingPreview(state, tool, buildingOrigin(tool, hover));
+    default:
+      return buildingPreview(state, tool, placementOrigin(state, tool, hover));
   }
 }

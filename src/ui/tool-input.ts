@@ -4,7 +4,7 @@ import { describeTile, type Description } from '../sim/inspect';
 import type { Point } from '../sim/point';
 import { clampToMap, inBounds, type GameState } from '../sim/state';
 import { tileUnderPointer } from '../render/picking';
-import { buildingOrigin, previewTiles, type PreviewTile } from './preview';
+import { placementOrigin, previewTiles, type PreviewTile } from './preview';
 import type { Tool } from './tools';
 
 const LEFT_BUTTON = 0;
@@ -33,22 +33,20 @@ export function attachToolInput({ view, state, toolbar, ghost, inspector, topbar
     const result = applyTool(tool, from, to);
     if (!result.ok) topbar.showStatus(result.reason);
   }
-  
+
   function applyTool(tool: Tool, from: Point, to: Point): Result {
     switch (tool) {
       case 'road':
         return placeRoad(state, from, to);
-    case 'roadblock':
-      return placeRoadblock(state, to);
+      case 'roadblock':
+        return placeRoadblock(state, to);
       case 'house':
         return placeHouses(state, from, to);
       case 'demolish':
         demolish(state, from, to);
         return { ok: true };
-      case 'fountain':
-      case 'taxOffice':
-      case 'palace': {
-        const origin = buildingOrigin(tool, to);
+      default: {
+        const origin = placementOrigin(state, tool, to);
         return placeBuilding(state, tool, origin.x, origin.y);
       }
     }
