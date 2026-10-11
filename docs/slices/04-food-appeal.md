@@ -77,19 +77,19 @@ spot and reach the road through it.
 **Files:** Modify `src/sim/buildings.ts`. Create `src/sim/appeal.ts`,
 `tests/sim/appeal.test.ts`.
 
-- [ ] **Step 1:** Write failing tests: a building's appeal falls off by ring from its
+- [x] **Step 1:** Write failing tests: a building's appeal falls off by ring from its
   footprint; sources add up; a house's appeal is the floor of its tiles' average.
-- [ ] **Step 2:** Add the new buildings and every building's appeal to `BUILDING_SPECS`.
+- [x] **Step 2:** Add the new buildings and every building's appeal to `BUILDING_SPECS`.
   Implement. Tests pass.
 
 ### Task 3: New buildings
 
 **Files:** Modify `src/sim/commands.ts`, `tests/sim/commands.test.ts`.
 
-- [ ] **Step 1:** Write failing tests: a farm needs all-meadow ground; a vendor goes on
+- [x] **Step 1:** Write failing tests: a farm needs all-meadow ground; a vendor goes on
   a free agora spot only, reaches the road through its agora and hires workers;
   demolishing a vendor leaves the agora, demolishing the agora removes the vendors.
-- [ ] **Step 2:** Implement. Tests pass.
+- [x] **Step 2:** Implement. Tests pass.
 
 ### Task 4: Farms, carts and granaries
 
@@ -97,56 +97,56 @@ spot and reach the road through it.
 `tests/sim/carriers.test.ts`. Modify `src/sim/pathfinding.ts`, `src/sim/settlers.ts`,
 `src/sim/state.ts`, `src/sim/tick.ts`.
 
-- [ ] **Step 1:** Refactor: settlers find their lot through a shared
+- [x] **Step 1:** Refactor: settlers find their lot through a shared
   `nearestByRoad`. No behavior change.
-- [ ] **Step 2:** Write failing tests: a staffed farm grows a year's crop in a year,
+- [x] **Step 2:** Write failing tests: a staffed farm grows a year's crop in a year,
   half at half staff, none without workers; it harvests on 1 July; a cart takes 4 loads
   to the nearest staffed granary with room, then walks home; none goes without a
   granary; a full granary takes no more; a cart whose granary is demolished picks
   another or brings its load home; a cart vanishes with its farm.
-- [ ] **Step 3:** Implement. Tests pass.
+- [x] **Step 3:** Implement. Tests pass.
 
 ### Task 5: Agora, buyer, peddler, eating
 
 **Files:** Modify `src/sim/carriers.ts`, `src/sim/roamers.ts`, `src/sim/food.ts`, the
 tests.
 
-- [ ] **Step 1:** Write failing tests: a staffed vendor sends a buyer to a granary with
+- [x] **Step 1:** Write failing tests: a staffed vendor sends a buyer to a granary with
   wheat, who brings back up to 4 loads; no buyer when the stall is full or no granary
   has wheat; a peddler only leaves with food; he fills houses to 3 months of eating;
   Shacks eat 0.25 per resident each month, Huts don't.
-- [ ] **Step 2:** Implement. Tests pass.
+- [x] **Step 2:** Implement. Tests pass.
 
 ### Task 6: Evolution
 
 **Files:** Modify `src/sim/housing.ts`, `tests/sim/housing.test.ts`.
 
-- [ ] **Step 1:** Write failing tests: a Hut with food and appeal 0 becomes a Shack and
+- [x] **Step 1:** Write failing tests: a Hut with food and appeal 0 becomes a Shack and
   takes 16 residents; without food or at appeal -1 it stays a Hut; a Shack keeps its
   level at appeal -11 and devolves at -12 or when its food runs out, sending away
   residents above 8.
-- [ ] **Step 2:** Implement. Tests pass.
+- [x] **Step 2:** Implement. Tests pass.
 
 ### Task 7: Inspector
 
 **Files:** Modify `src/sim/inspect.ts`, `tests/sim/inspect.test.ts`.
 
-- [ ] **Step 1:** Write failing tests: a house shows its food and appeal and what blocks
+- [x] **Step 1:** Write failing tests: a house shows its food and appeal and what blocks
   its next level ("needs: food, appeal 0 (has -3)"); a farm shows crop growth; a
   granary shows its loads; a vendor shows its stock; an agora lists its vendors; a
   decoration shows its appeal; carriers and peddlers describe their errand.
-- [ ] **Step 2:** Implement. Tests pass.
+- [x] **Step 2:** Implement. Tests pass.
 
 ### Task 8: UI and rendering
 
 **Files:** Modify `index.html`, `src/style.css`, `src/ui/*`, `src/render/*`,
 `src/main.ts`, `tests/ui/preview.test.ts`.
 
-- [ ] **Step 1:** Write failing preview tests: a vendor previews its whole spot on an
+- [x] **Step 1:** Write failing preview tests: a vendor previews its whole spot on an
   agora and invalid elsewhere; a park without road is valid.
-- [ ] **Step 2:** Tools for the new buildings. Appeal overlay with a legend, toggled
+- [x] **Step 2:** Tools for the new buildings. Appeal overlay with a legend, toggled
   with O or its button.
-- [ ] **Step 3:** Models: Shack (whitewashed walls, terracotta roof, grain jars), Wheat
+- [x] **Step 3:** Models: Shack (whitewashed walls, terracotta roof, grain jars), Wheat
   Farm (rows of wheat that ripen as the crop grows, a barn), Granary (stone storehouse
   with domed silos, sacks as it fills), Agora (paved plaza, marked spots), Food Vendor
   (awning stall with bread and baskets), Park, Column, Flower Garden. Walkers: cart
@@ -157,13 +157,13 @@ tests.
 
 **Files:** Modify `e2e/smoke.spec.ts`.
 
-- [ ] **Step 1:** Extend the smoke test: place a farm, granary, agora, vendor and park,
+- [x] **Step 1:** Extend the smoke test: place a farm, granary, agora, vendor and park,
   toggle the appeal overlay, screenshot.
-- [ ] **Step 2:** Run `npm run typecheck`, `npm test`, `npm run build` and
+- [x] **Step 2:** Run `npm run typecheck`, `npm test`, `npm run build` and
   `npm run test:e2e`. Open the screenshot and check it.
 
 ### Task 10: PR
 
-- [ ] **Step 1:** Tick slice 4 in `docs/roadmap.md`. Record the new **ours** numbers in
+- [x] **Step 1:** Tick slice 4 in `docs/roadmap.md`. Record the new **ours** numbers in
   zeus-numbers.
-- [ ] **Step 2:** Open the PR `Slice 04: Food & appeal`. Wait for CI and Pages.
+- [x] **Step 2:** Open the PR `Slice 04: Food & appeal`. Wait for CI and Pages.

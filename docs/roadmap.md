@@ -6,7 +6,7 @@ delivers it.
 - [x] 1 · Foundation
 - [x] 2 · Settlers & treasury
 - [x] 3 · Workers & services
-- [ ] 4 · Food & appeal
+- [x] 4 · Food & appeal
 - [ ] 5 · Culture
 - [ ] 6 · Storehouse & fleece
 - [ ] 7 · Olive oil
