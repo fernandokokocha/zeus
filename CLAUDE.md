@@ -17,16 +17,18 @@ binding. In short:
 - **Never stop to ask.** Decide, using the option closest to the original Zeus, record
   the decision in the PR, and keep going.
 - **One slice per session**, finished completely.
-- **Done means deployed:** CI green, PR merged, Pages updated, roadmap ticked.
+- **The owner merges, never a session.** Done means CI green, Pages showing the PR's
+  build, roadmap ticked in the PR.
 - **If truly blocked,** leave the PR open with the blocker at the top of its description.
 
 ## Session routine
 
-1. **Find the slice.** Read the spec and the roadmap. The slice is the first unchecked
-   one.
-2. **Collect feedback.** Read the owner's comments on the PR of the previous slice
-   (see "GitHub from a cloud session" below) and the session prompt. Fix the feedback
-   first, in its own commits.
+1. **Check for an open slice PR.** If one exists, the owner hasn't accepted it: fix its
+   comments on that branch in their own commits, push, reply to each comment with what
+   changed, and stop. That is the whole session.
+2. **Find the slice.** Read the spec and the roadmap. The slice is the first unchecked
+   one. Fix any feedback left on the last merged PR or in the session prompt first, in
+   its own commits.
 3. **Get a plan.** If `docs/slices/NN-*.md` exists, execute it task by task and tick its
    boxes. Otherwise, write it first, in the same format as `docs/slices/01-foundation.md`.
 4. **Build test-first** on branch `slice-NN-name`.
@@ -39,8 +41,8 @@ binding. In short:
    - **Left out:** anything cut to protect quality.
 
    Tick the slice in `docs/roadmap.md` in the same PR.
-7. **Merge** with a squash merge once CI is green. If merging isn't possible
-   from the session, say so on the first line of the PR description.
+7. **Wait for CI** to go green and deploy the PR's build to Pages, then stop. Never
+   merge; the owner merges after the playtest.
 
 ## Commands
 
@@ -60,12 +62,13 @@ empty, run `git remote add origin https://github.com/fernandokokocha/zeus` first
 
 ```
 R=repos/fernandokokocha/zeus
+gh api "$R/pulls?state=open"                                  # open slice PR, if any
 gh api "$R/pulls?state=closed&per_page=1"                    # last merged PR
 gh api $R/issues/<n>/comments                                 # PR conversation
 gh api $R/pulls/<n>/comments                                  # inline review comments
 gh api $R/pulls -f title=... -f head=<branch> -f base=main -F body=@body.md
 gh api "$R/actions/runs?branch=<branch>&per_page=1"           # CI status
-gh api -X PUT $R/pulls/<n>/merge -f merge_method=squash
+gh api -X POST $R/issues/<n>/comments -f body=...             # reply on the PR
 ```
 
 If the preinstalled Chromium does not match the Playwright version, run the e2e test

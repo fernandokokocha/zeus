@@ -85,12 +85,14 @@ expected to deliver it, finished and deployed, without anyone watching.
   "Decisions I made" in the PR, and keep going.
 - **One slice per session.** Finish the current slice completely before starting the
   next one. Never start the next slice in the same session.
-- **The owner's only input is playtest feedback:** PR comments on the previous slice, or
-  the session prompt. Act on it first. If there is none, the previous slice was fine.
+- **The owner's only input is playtest feedback:** PR comments, or the session prompt.
+  Act on it first. If there is none, the slice was fine.
 - **The PR is the report.** The owner reads the PR and plays the deployed link, nothing
   else. The playtest checklist must let them verify the slice without reading code.
-- **Done means deployed.** CI is green, the PR is merged, Pages shows the new build, and
-  the roadmap box is ticked.
+- **The owner merges, never a session.** Every PR build deploys to Pages, so the open
+  slice PR is what the owner playtests. Only one slice PR is open at a time.
+- **Done means deployed for review.** CI is green, Pages shows the PR's build, and the
+  roadmap box is ticked in the PR.
 - **If truly blocked** (CI cannot go green, or a deploy fails for reasons outside the
   repo), leave the PR open and unmerged, explain the blocker at the top of its
   description, and stop. This is the only case in which the owner is needed before the
@@ -99,8 +101,10 @@ expected to deliver it, finished and deployed, without anyone watching.
 ## How a cloud session runs a slice
 
 1. **Orient.** Read `CLAUDE.md`, the roadmap, this spec and the zeus-numbers reference.
-   Find the first unchecked slice. Read the owner's feedback, given either as comments
-   on the previous slice's PR or as the session prompt.
+   If a slice PR is still open, the owner has not accepted it yet: this session is a
+   feedback session. Fix its comments on that branch, push, reply to each comment with
+   what changed, and stop. Otherwise find the first unchecked slice and read any
+   feedback left on the last merged PR or in the session prompt.
 2. **Fix feedback first**, in its own commits.
 3. **Plan.** Write `docs/slices/NN-name.md`, a detailed plan for this slice only.
 4. **Build test-first** on a branch `slice-NN-name`.
@@ -109,7 +113,8 @@ expected to deliver it, finished and deployed, without anyone watching.
    - **"Decisions I made"**: every choice not covered by this spec, with the option
      closest to Zeus preferred;
    - **"Left out"**: anything cut to protect quality.
-6. **Merge** when CI is green. Pages deploys. Tick the slice in the roadmap.
+6. **Stop** when CI is green and Pages shows the PR's build. Tick the slice in the
+   roadmap in the same PR. The owner playtests, comments, and merges when satisfied.
 
 Sessions cannot ask the owner questions mid-run. They decide, then record the decision
 under "Decisions I made".

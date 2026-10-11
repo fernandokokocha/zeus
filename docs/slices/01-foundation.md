@@ -2305,7 +2305,7 @@ EOF
 Fill in the two placeholder sections in the PR body before creating it. They are
 session-specific, which is why this plan cannot write them.
 
-- [x] **Step 6: Merge**
+- [x] **Step 6: Wait for the deploy**
 
-When CI is green, run `gh pr merge --squash --delete-branch`. Then confirm the Pages
-deploy job succeeded: `gh run list --branch main --limit 1`.
+Wait until CI is green and its deploy job has published the PR's build to Pages. Do not
+merge; the owner merges after the playtest.
