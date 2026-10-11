@@ -194,3 +194,26 @@ describe('a Hovel', () => {
     expect(house.level).toBe('shack');
   });
 });
+
+describe('a city with food, water and athletes', () => {
+  it('turns its Shacks into Hovels', () => {
+    const game = grassGame(40);
+    placeRoad(game, { x: 0, y: 20 }, { x: 39, y: 20 });
+    placeHouses(game, { x: 0, y: 18 }, { x: 11, y: 19 });
+    for (let x = 0; x < 12; x += 2) placeBuilding(game, 'flowerGarden', x, 16);
+    placeBuilding(game, 'agora', 0, 21);
+    placeBuilding(game, 'foodVendor', 0, 21);
+    placeBuilding(game, 'granary', 28, 21);
+    setMeadow(game, 32, 21, 6, 3);
+    placeBuilding(game, 'wheatFarm', 32, 21);
+    placeBuilding(game, 'wheatFarm', 35, 21);
+    placeBuilding(game, 'fountain', 12, 18);
+    placeBuilding(game, 'gymnasium', 6, 21);
+    const houses = game.buildings.filter((b) => b.type === 'house');
+
+    runTicks(game, 6 * TICKS_PER_MONTH);
+    expect(houses.some((h) => h.level === 'hovel')).toBe(false);
+    runTicks(game, 4 * TICKS_PER_MONTH);
+    expect(houses.filter((h) => h.level === 'hovel').length).toBeGreaterThanOrEqual(4);
+  });
+});
