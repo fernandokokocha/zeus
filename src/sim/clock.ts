@@ -1,7 +1,7 @@
 import type { GameState, Speed } from './state';
 
 export const TICKS_PER_SECOND = 10;
-export const SECONDS_PER_MONTH = 20;
+export const SECONDS_PER_MONTH = 30;
 export const TICKS_PER_MONTH = TICKS_PER_SECOND * SECONDS_PER_MONTH;
 
 const MONTH_NAMES = [

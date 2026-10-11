@@ -5,7 +5,8 @@ import { findRoadPath } from './pathfinding';
 import type { Point } from './point';
 import { buildingById, tileIndex, type Building, type GameState, type Settler } from './state';
 
-export const SETTLER_SPAWN_INTERVAL_TICKS = 20;
+export const SETTLERS_PER_MONTH = 10;
+export const SETTLER_SPAWN_INTERVAL_TICKS = TICKS_PER_MONTH / SETTLERS_PER_MONTH;
 export const WALKER_TILES_PER_MONTH = 54.4;
 export const WALKER_TILES_PER_TICK = WALKER_TILES_PER_MONTH / TICKS_PER_MONTH;
 

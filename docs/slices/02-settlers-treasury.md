@@ -22,7 +22,7 @@ adds a walker layer that draws settlers with instancing every frame.
   Re-laying an existing road tile is free. Demolishing is free and refunds nothing.
 - **Houses** are 2×2. A lot with no residents is a Vacant Lot; with residents it is a
   Hut (capacity 8). Shack needs food, which arrives in slice 4.
-- **Walker speed** is 54.4 tiles per month, and 1 month = 200 ticks.
+- **Walker speed** is 54.4 tiles per month, and 1 month = 300 ticks (30 s at 1×).
 - **The placeholder Test Building is removed.** The house replaces it.
 - Code rules from `CLAUDE.md` apply: numbers in definition tables, no *what* comments,
   no defensive `?.`/`!` in app code.
@@ -34,7 +34,7 @@ adds a walker layer that draws settlers with instancing every frame.
 2. Lots can be placed without road access, as in Zeus. Settlers only reach lots that
    touch a road connected to the entry.
 3. One settler is sent per lot and carries exactly the room left (8 for an empty lot).
-   A settler leaves the entry every 20 ticks (1 s at 1×, **ours**) while some
+   A settler leaves the entry 10 times a month (every 3 s at 1×, **ours**) while some
    reachable lot has room. Of those lots, it takes the closest by road.
 4. A lot becomes a Hut when its settler arrives. Appeal counts as 0 until slice 4,
    which already passes the Hut's evolve threshold of −10.
