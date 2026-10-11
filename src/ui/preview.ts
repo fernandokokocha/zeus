@@ -1,5 +1,5 @@
 import { BUILDING_SPECS, type BuildingType } from '../sim/buildings';
-import { checkBuildingPlacement, footprint, lotOrigins, roadObstacle, roadPath } from '../sim/commands';
+import { checkBuildingPlacement, footprint, lotOrigins, roadObstacle, roadPath, roadblockObstacle } from '../sim/commands';
 import { rectBetween, tilesIn, type Point } from '../sim/point';
 import { clampToMap, inBounds, type GameState } from '../sim/state';
 import type { Tool } from './tools';
@@ -37,6 +37,8 @@ export function previewTiles(
       return roadPath(start, hover)
         .filter((p) => inBounds(state, p.x, p.y))
         .map((p) => ({ ...p, kind: roadObstacle(state, p.x, p.y) ? 'invalid' : 'valid' }));
+    case 'roadblock':
+      return [{ ...hover, kind: roadblockObstacle(state, hover) ? 'invalid' : 'valid' }];
     case 'demolish':
       return tilesIn(rectBetween(clampToMap(state, start), clampToMap(state, hover))).map((p) => ({
         ...p,

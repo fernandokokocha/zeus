@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { tick } from '../../src/sim/tick';
-import { demolish, placeRoad } from '../../src/sim/commands';
+import { demolish, placeRoad, placeRoadblock } from '../../src/sim/commands';
 import { houseName } from '../../src/sim/housing';
 import { SETTLER_SPAWN_INTERVAL_TICKS, population } from '../../src/sim/settlers';
 import { WALKER_TILES_PER_TICK } from '../../src/sim/walking';
@@ -56,6 +56,14 @@ describe('settlers', () => {
     runTicks(game, ticksToWalk(16));
     expect(game.settlers).toEqual([]);
     expect(population(game)).toBe(16);
+  });
+
+it('walk through roadblocks', () => {
+    const game = gameWithLongRoad();
+    placeRoadblock(game, { x: 8, y: 10 });
+    placeHouse(game, 16, 8);
+    runTicks(game, SETTLER_SPAWN_INTERVAL_TICKS + ticksToWalk(16));
+    expect(game.buildings[0].residents).toBe(8);
   });
 
   it('fill the closest lot first', () => {

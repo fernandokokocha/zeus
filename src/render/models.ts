@@ -19,14 +19,14 @@ const water = lambert(PALETTE.water);
 const bronze = lambert(PALETTE.bronze);
 const gold = lambert(PALETTE.coins);
 const foliage = lambert(PALETTE.foliage);
-const falling = new THREE.MeshLambertMaterial({ color: PALETTE.water, transparent: true, opacity: 0.75 });
+const falling = new THREE.MeshBasicMaterial({ color: PALETTE.spray, transparent: true, opacity: 0.85 });
 
 const unitBox = new THREE.BoxGeometry(1, 1, 1);
 const stone = new THREE.DodecahedronGeometry(0.05);
 const column = new THREE.CylinderGeometry(0.07, 0.08, 1, 10).translate(0, 0.5, 0);
 const disc = new THREE.CylinderGeometry(1, 1, 1, 20).translate(0, 0.5, 0);
 const shrub = new THREE.SphereGeometry(0.22, 8, 6);
-const stream = new THREE.CylinderGeometry(0.02, 0.035, 1, 6);
+const stream = new THREE.CylinderGeometry(0.035, 0.06, 1, 8);
 const spray = new THREE.SphereGeometry(0.06, 8, 6);
 const beamEnd = new THREE.CylinderGeometry(0.025, 0.025, 0.12, 6).rotateX(Math.PI / 2);
 const oven = new THREE.SphereGeometry(0.16, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2);
@@ -166,7 +166,7 @@ function fountainModel(working: boolean): THREE.Object3D {
   const group = new THREE.Group();
   group.add(box(1.84, 0.04, 1.84, paving, 1, 0, 1));
   group.add(cylinder(0.7, 0.24, marble, 1, 0.04, 1));
-  group.add(cylinder(0.6, 0.02, working ? water : earth, 1, 0.25, 1));
+  group.add(cylinder(0.6, 0.02, working ? water : earth, 1, 0.27, 1));
   group.add(cylinder(0.14, 0.12, marble, 1, 0.04, 1));
   group.add(columnAt(0.55, marble, 1, 0.16, 1));
   group.add(cylinder(0.24, 0.07, marble, 1, 0.7, 1));
@@ -177,7 +177,7 @@ function fountainModel(working: boolean): THREE.Object3D {
     for (let i = 0; i < FOUNTAIN_STREAMS; i++) {
       const angle = (i / FOUNTAIN_STREAMS) * Math.PI * 2;
       const out = (r: number, y: number) => new THREE.Vector3(1 + Math.cos(angle) * r, y, 1 + Math.sin(angle) * r);
-      group.add(waterStream(out(0.24, 0.76), out(0.4, 0.27)));
+      group.add(waterStream(out(0.24, 0.76), out(0.38, 0.29)));
     }
   }
   for (const [x, z] of [[0.22, 0.22], [1.78, 0.22], [0.22, 1.78], [1.78, 1.78]]) group.add(placed(shrub, foliage, x, 0.16, z));
@@ -272,4 +272,17 @@ const MODELS: Record<Exclude<BuildingType, 'house'>, (working: boolean) => THREE
 export function buildingModel(building: Building): THREE.Object3D {
   if (building.type === 'house') return houseLevel(building) ? hutModel() : vacantLotModel();
   return MODELS[building.type](building.workers > 0);
+}
+
+export function roadblockModel(roadRunsAlongX: boolean): THREE.Object3D {
+  const barrier = new THREE.Group();
+  for (const x of [-0.36, 0.36]) {
+    barrier.add(box(0.12, 0.34, 0.12, marble, x, 0, 0));
+    barrier.add(box(0.15, 0.04, 0.15, clay, x, 0.34, 0));
+  }
+  barrier.add(box(0.72, 0.06, 0.06, timber, 0, 0.24, 0));
+  for (const x of [-0.18, 0, 0.18]) barrier.add(box(0.07, 0.065, 0.065, clay, x, 0.238, 0));
+  barrier.rotation.y = roadRunsAlongX ? Math.PI / 2 : 0;
+  barrier.position.set(0.5, 0, 0.5);
+  return barrier;
 }

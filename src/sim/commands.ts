@@ -2,7 +2,7 @@ import { BUILDING_SPECS, type BuildingType } from './buildings';
 import { rectBetween, tilesIn, type Point } from './point';
 import { NO_BUILDING, clampToMap, inBounds, tileIndex, type Building, type GameState } from './state';
 import { BUILDABLE, TERRAIN_NAMES } from './terrain';
-import { ROAD_TILE_COST } from './treasury';
+import { ROADBLOCK_COST, ROAD_TILE_COST } from './treasury';
 
 export type Result = { ok: true } | { ok: false; reason: string };
 
@@ -44,6 +44,22 @@ export function placeRoad(state: GameState, from: Point, to: Point): Result {
     if (!state.roads[i]) state.treasury -= ROAD_TILE_COST;
     state.roads[i] = true;
   }
+  state.version++;
+  return OK;
+}
+
+export function roadblockObstacle(state: GameState, at: Point): string | null {
+  const i = tileIndex(state, at.x, at.y);
+  if (!state.roads[i]) return 'A roadblock goes on a road';
+  if (state.roadblocks[i]) return 'A roadblock is already there';
+  return null;
+}
+
+export function placeRoadblock(state: GameState, at: Point): Result {
+  const obstacle = roadblockObstacle(state, at);
+  if (obstacle) return fail(obstacle);
+  state.roadblocks[tileIndex(state, at.x, at.y)] = true;
+  state.treasury -= ROADBLOCK_COST;
   state.version++;
   return OK;
 }
@@ -151,6 +167,7 @@ export function demolish(state: GameState, from: Point, to: Point): void {
   for (const p of tilesIn(rectBetween(clampToMap(state, from), clampToMap(state, to)))) {
     const i = tileIndex(state, p.x, p.y);
     state.roads[i] = false;
+    state.roadblocks[i] = false;
     if (state.terrain[i] === 'forest') state.terrain[i] = 'grass';
     if (state.buildingIdAt[i] !== NO_BUILDING) doomed.add(state.buildingIdAt[i]);
   }

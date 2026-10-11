@@ -29,6 +29,7 @@ export const PALETTE = {
   marble: 0xf6f3ec,
   paving: 0xd9cdb4,
   water: 0x5a9bd0,
+  spray: 0xa9d3f2,
   bronze: 0xb08d57,
   carrierTunic: 0xf2efe6,
   carrierJar: 0x3c6fb4,

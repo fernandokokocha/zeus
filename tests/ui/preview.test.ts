@@ -88,3 +88,11 @@ describe('previewTiles for a single building', () => {
     expect(previewTiles(game, 'palace', null, { x: 10, y: 14 }).every((t) => t.kind === 'invalid')).toBe(true);
   });
 });
+
+describe('previewTiles for a roadblock', () => {
+  it('is valid on a free road tile and invalid elsewhere', () => {
+    const game = grassGame();
+    expect(previewTiles(game, 'roadblock', null, { x: 3, y: 10 })).toEqual([{ x: 3, y: 10, kind: 'valid' }]);
+    expect(previewTiles(game, 'roadblock', null, { x: 3, y: 3 })).toEqual([{ x: 3, y: 3, kind: 'invalid' }]);
+  });
+});

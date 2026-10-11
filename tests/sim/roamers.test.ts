@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { TICKS_PER_MONTH } from '../../src/sim/clock';
-import { demolish, placeBuilding, placeRoad } from '../../src/sim/commands';
+import { demolish, placeBuilding, placeRoad, placeRoadblock } from '../../src/sim/commands';
 import {
   ROAMER_REST_TICKS,
   ROAMER_SPECS,
@@ -65,6 +65,13 @@ describe('nextRoamTile', () => {
     placeRoad(game, { x: 5, y: 5 }, { x: 6, y: 5 });
     const walked = [{ x: 5, y: 5 }, { x: 5, y: 4 }, { x: 6, y: 4 }, { x: 6, y: 5 }];
     expect(nextRoamTile(game, walked)).toEqual({ x: 5, y: 5 });
+  });
+
+it('never walks through a roadblock', () => {
+    const game = grassGame();
+    placeRoad(game, { x: 2, y: 2 }, { x: 6, y: 2 });
+    placeRoadblock(game, { x: 5, y: 2 });
+    expect(nextRoamTile(game, [{ x: 3, y: 2 }, { x: 4, y: 2 }])).toEqual({ x: 3, y: 2 });
   });
 
   it('turns back at a dead end', () => {

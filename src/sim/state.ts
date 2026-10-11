@@ -45,6 +45,7 @@ export interface GameState {
   size: number;
   terrain: Terrain[];
   roads: boolean[];
+  roadblocks: boolean[];
   buildings: Building[];
   buildingIdAt: number[];
   nextBuildingId: number;
@@ -72,6 +73,7 @@ export function newGameState(size: number, terrain: Terrain[], entry: Point): Ga
     size,
     terrain,
     roads,
+    roadblocks: new Array<boolean>(size * size).fill(false),
     buildings: [],
     buildingIdAt: new Array<number>(size * size).fill(NO_BUILDING),
     nextBuildingId: 1,

@@ -32,6 +32,7 @@ export function describeTile(state: GameState, x: number, y: number): Descriptio
   const roamer = state.roamers.find(standsHere);
   if (roamer) return describeRoamer(state, roamer);
 
+  if (state.roadblocks[i]) return { title: 'Roadblock', lines: [`Tile ${x}, ${y}`, 'Stops roaming walkers; settlers pass'] };
   if (state.roads[i]) return { title: 'Road', lines: [`Tile ${x}, ${y}`] };
 
   const terrain = state.terrain[i];

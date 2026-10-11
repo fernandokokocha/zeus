@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import type { GameState } from '../sim/state';
-import { buildingModel } from './models';
+import { buildingModel, roadblockModel } from './models';
 import { PALETTE } from './palette';
 
 const ROAD_HEIGHT = 0.02;
@@ -22,6 +22,7 @@ export function createWorldLayer(): { group: THREE.Group; sync(state: GameState)
       roads = roadMesh(state);
       group.add(roads);
 
+      for (const model of roadblockModels(state)) group.add(model);
       for (const building of state.buildings) {
         const model = buildingModel(building);
         model.position.set(building.x, 0, building.y);
@@ -40,4 +41,17 @@ function roadMesh(state: GameState): THREE.InstancedMesh {
     mesh.setMatrixAt(n, matrix);
   });
   return mesh;
+}
+
+function roadblockModels(state: GameState): THREE.Object3D[] {
+  return state.roadblocks.flatMap((blocked, i) => {
+    if (!blocked) return [];
+    const x = i % state.size;
+    const y = Math.floor(i / state.size);
+    const alongX = (x > 0 && state.roads[i - 1]) || (x < state.size - 1 && state.roads[i + 1]);
+    const model = roadblockModel(alongX);
+    model.position.x += x;
+    model.position.z += y;
+    return [model];
+  });
 }

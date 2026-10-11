@@ -4,7 +4,7 @@ import { adjacentRoadTiles } from './commands';
 import { NEIGHBOUR_STEPS, findRoadPath } from './pathfinding';
 import type { Point } from './point';
 import { nextRandom } from './rng';
-import { buildingById, inBounds, type Building, type GameState, type Roamer, type RoamerKind, type Service } from './state';
+import { buildingById, inBounds, tileIndex, type Building, type GameState, type Roamer, type RoamerKind, type Service } from './state';
 import { WALKER_TILES_PER_TICK, isRoad } from './walking';
 
 export interface RoamerSpec {
@@ -55,7 +55,7 @@ export function nextRoamTile(state: GameState, walked: Point[]): Point | null {
   const here = walked[walked.length - 1];
   const previous = walked.length > 1 ? walked[walked.length - 2] : null;
   const roads = NEIGHBOUR_STEPS.map((s) => ({ x: here.x + s.x, y: here.y + s.y })).filter(
-    (p) => inBounds(state, p.x, p.y) && isRoad(state, p),
+    (p) => inBounds(state, p.x, p.y) && isRoad(state, p) && !state.roadblocks[tileIndex(state, p.x, p.y)],
   );
   const fresh = roads.filter((p) => !walked.some((w) => samePoint(w, p)));
   const onward = roads.filter((p) => !previous || !samePoint(p, previous));

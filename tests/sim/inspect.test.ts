@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { demolish, placeBuilding, placeRoad } from '../../src/sim/commands';
+import { demolish, placeBuilding, placeRoad, placeRoadblock } from '../../src/sim/commands';
 import { TICKS_PER_MONTH } from '../../src/sim/clock';
 import { ROAMER_REST_TICKS } from '../../src/sim/roamers';
 import type { GameState } from '../../src/sim/state';
@@ -173,5 +173,16 @@ describe('describeTile after a demolition while paused', () => {
     demolish(game, { x: 0, y: 11 }, { x: 0, y: 11 });
     expect(game.roamers).toEqual([]);
     expect(describeTile(game, 0, 10).title).toBe('Road');
+  });
+});
+
+describe('describeTile for a roadblock', () => {
+  it('says what it stops', () => {
+    const game = grassGame();
+    placeRoadblock(game, { x: 4, y: 10 });
+    expect(describeTile(game, 4, 10)).toEqual({
+      title: 'Roadblock',
+      lines: ['Tile 4, 10', 'Stops roaming walkers; settlers pass'],
+    });
   });
 });

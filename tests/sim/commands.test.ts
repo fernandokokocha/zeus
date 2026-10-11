@@ -6,11 +6,12 @@ import {
   placeBuilding,
   placeHouses,
   placeRoad,
+  placeRoadblock,
   roadPath,
 } from '../../src/sim/commands';
 import { NO_BUILDING, createGame, tileIndex } from '../../src/sim/state';
 import { ENTRY_ROAD_LENGTH } from '../../src/sim/map';
-import { STARTING_TREASURY } from '../../src/sim/treasury';
+import { ROADBLOCK_COST, STARTING_TREASURY } from '../../src/sim/treasury';
 import { grassGame, placeHouse, setTerrain } from './helpers';
 
 describe('createGame', () => {
@@ -242,5 +243,31 @@ describe('placeBuilding', () => {
     setTerrain(game, 3, 3, 'water');
     expect(placeBuilding(game, 'fountain', 2, 2)).toEqual({ ok: false, reason: 'Cannot build on water' });
     expect(game.treasury).toBe(STARTING_TREASURY);
+  });
+});
+
+describe('placeRoadblock', () => {
+  it('goes on a road and charges its price', () => {
+    const game = grassGame();
+    expect(placeRoadblock(game, { x: 3, y: 10 })).toEqual({ ok: true });
+    expect(game.roadblocks[tileIndex(game, 3, 10)]).toBe(true);
+    expect(game.treasury).toBe(STARTING_TREASURY - ROADBLOCK_COST);
+    expect(game.version).toBe(1);
+  });
+
+  it('is refused off the road or on another roadblock', () => {
+    const game = grassGame();
+    expect(placeRoadblock(game, { x: 3, y: 3 })).toEqual({ ok: false, reason: 'A roadblock goes on a road' });
+    placeRoadblock(game, { x: 3, y: 10 });
+    expect(placeRoadblock(game, { x: 3, y: 10 })).toEqual({ ok: false, reason: 'A roadblock is already there' });
+    expect(game.treasury).toBe(STARTING_TREASURY - ROADBLOCK_COST);
+  });
+
+  it('is demolished with its road', () => {
+    const game = grassGame();
+    placeRoadblock(game, { x: 3, y: 10 });
+    demolish(game, { x: 3, y: 10 }, { x: 3, y: 10 });
+    expect(game.roadblocks[tileIndex(game, 3, 10)]).toBe(false);
+    expect(game.roads[tileIndex(game, 3, 10)]).toBe(false);
   });
 });
