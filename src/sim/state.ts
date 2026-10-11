@@ -55,6 +55,7 @@ export interface GameState {
   rngState: number;
   entry: Point;
   treasury: number;
+  lastMonth: { taxes: number; wages: number };
   tick: number;
   speed: Speed;
   lastPlayedSpeed: PlayingSpeed;
@@ -81,6 +82,7 @@ export function newGameState(size: number, terrain: Terrain[], entry: Point): Ga
     rngState: DEFAULT_SEED,
     entry,
     treasury: STARTING_TREASURY,
+    lastMonth: { taxes: 0, wages: 0 },
     tick: 0,
     speed: 1,
     lastPlayedSpeed: 1,

@@ -6,11 +6,12 @@ export interface HouseLevelSpec {
   name: string;
   capacity: number;
   needs: string[];
+  taxMultiplier: number;
 }
 
 export const HOUSE_LEVELS: Record<HouseLevel, HouseLevelSpec> = {
-  hut: { name: 'Hut', capacity: 8, needs: [] },
-  shack: { name: 'Shack', capacity: 16, needs: ['food'] },
+  hut: { name: 'Hut', capacity: 8, needs: [], taxMultiplier: 1 },
+  shack: { name: 'Shack', capacity: 16, needs: ['food'], taxMultiplier: 1 },
 };
 
 export const NEXT_LEVEL: Record<HouseLevel, HouseLevel | null> = { hut: 'shack', shack: null };
