@@ -62,7 +62,7 @@ together with `CLAUDE.md`.
 - Produces: the npm scripts `dev`, `build`, `typecheck`, `test`, `test:e2e` and
   `preview`. Later tasks run them.
 
-- [ ] **Step 1: Branch and initialize npm**
+- [x] **Step 1: Branch and initialize npm**
 
 ```bash
 git checkout -b slice-01-foundation
@@ -71,7 +71,7 @@ npm install three
 npm install -D typescript vite vitest @types/three @types/node @playwright/test
 ```
 
-- [ ] **Step 2: Set `package.json` fields**
+- [x] **Step 2: Set `package.json` fields**
 
 Edit `package.json` so it contains these fields (keep the generated dependency blocks):
 
@@ -93,7 +93,7 @@ Edit `package.json` so it contains these fields (keep the generated dependency b
 
 Remove the generated `main`, `keywords`, `author`, `license` and `description` fields.
 
-- [ ] **Step 3: Write config files**
+- [x] **Step 3: Write config files**
 
 `.gitignore`:
 
@@ -134,7 +134,7 @@ export default defineConfig({
 });
 ```
 
-- [ ] **Step 4: Minimal page**
+- [x] **Step 4: Minimal page**
 
 `index.html`:
 
@@ -262,7 +262,7 @@ import './style.css';
 document.getElementById('date')!.textContent = 'Zeus';
 ```
 
-- [ ] **Step 5: CI and Pages workflow**
+- [x] **Step 5: CI and Pages workflow**
 
 `.github/workflows/ci.yml`:
 
@@ -321,12 +321,12 @@ jobs:
         uses: actions/deploy-pages@v4
 ```
 
-- [ ] **Step 6: Verify the build**
+- [x] **Step 6: Verify the build**
 
 Run: `npm run build`
 Expected: succeeds and writes `dist/index.html`.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add -A

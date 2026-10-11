@@ -1,0 +1,85 @@
+:root {
+  --parchment: #f3ead8;
+  --ink: #3b2a1a;
+  --terracotta: #c0643b;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  font-family: Georgia, 'Times New Roman', serif;
+  color: var(--ink);
+}
+
+#view {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  display: block;
+}
+
+#topbar,
+#toolbar,
+#inspector {
+  position: fixed;
+  background: var(--parchment);
+  border: 2px solid var(--terracotta);
+  border-radius: 4px;
+  padding: 6px 10px;
+}
+
+#topbar {
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+#status {
+  color: var(--terracotta);
+  min-width: 12em;
+}
+
+#toolbar {
+  top: 8px;
+  left: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+#inspector {
+  top: 60px;
+  right: 8px;
+  width: 260px;
+}
+
+#inspector-close {
+  float: right;
+}
+
+#inspector h2 {
+  margin: 0 0 6px;
+  font-size: 18px;
+}
+
+#inspector ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+button {
+  font: inherit;
+  background: #fffaf0;
+  border: 1px solid var(--ink);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+button.active {
+  background: var(--terracotta);
+  color: var(--parchment);
+}
