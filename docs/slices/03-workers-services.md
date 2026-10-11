@@ -70,68 +70,68 @@ walker layer draws each walker kind with its own figure.
 **Files:** Modify `src/sim/buildings.ts`, `src/sim/commands.ts`, `src/sim/state.ts`,
 `src/sim/tick.ts`. Create `src/sim/labor.ts`, `tests/sim/labor.test.ts`.
 
-- [ ] **Step 1:** Write failing tests for `placeBuilding`: a Fountain, Tax Office and
+- [x] **Step 1:** Write failing tests for `placeBuilding`: a Fountain, Tax Office and
   Palace cost their price; a second Palace is rejected.
-- [ ] **Step 2:** Write failing tests for labor: the workforce is 52% of population,
+- [x] **Step 2:** Write failing tests for labor: the workforce is 52% of population,
   rounded down; buildings fill in placement order; a building without road access
   hires nobody; houses need no workers; the summary reports unemployed and missing
   workers.
-- [ ] **Step 3:** Implement. Run the tests and see them pass.
+- [x] **Step 3:** Implement. Run the tests and see them pass.
 
 ### Task 3: Shared walking
 
 **Files:** Create `src/sim/walking.ts`, `tests/sim/walking.test.ts`. Modify
 `src/sim/settlers.ts`, `src/sim/rng.ts`, the tests.
 
-- [ ] **Step 1:** Refactor: move walker speed, `walkerPosition` and `walkerTile` to
+- [x] **Step 1:** Refactor: move walker speed, `walkerPosition` and `walkerTile` to
   `walking.ts`. No behavior change.
-- [ ] **Step 2:** Refactor: `createRng` steps a plain `{ rngState }` holder through
+- [x] **Step 2:** Refactor: `createRng` steps a plain `{ rngState }` holder through
   `nextRandom`, so the game state can carry its RNG. No behavior change.
 
 ### Task 4: Roaming walkers
 
 **Files:** Create `src/sim/roamers.ts`, `tests/sim/roamers.test.ts`.
 
-- [ ] **Step 1:** Write failing tests: the exit tile is searched clockwise from north;
+- [x] **Step 1:** Write failing tests: the exit tile is searched clockwise from north;
   a staffed fountain sends a carrier from its exit tile; none without workers; a
   half-staffed one waits twice as long; one at a time; the carrier walks fresh road
   before turning back; it turns home after its range and disappears on arrival;
   houses within 2 tiles of its route get water for 2 months and farther ones don't;
   it vanishes when its home is demolished or the road under it removed, and
   re-routes home when the road ahead is cut.
-- [ ] **Step 2:** Implement. Run the tests and see them pass.
+- [x] **Step 2:** Implement. Run the tests and see them pass.
 
 ### Task 5: Wages and taxes
 
 **Files:** Create `src/sim/economy.ts`, `tests/sim/economy.test.ts`. Modify
 `src/sim/housing.ts`, `src/sim/treasury.ts`.
 
-- [ ] **Step 1:** Write failing tests: at each month start, wages are paid for employed
+- [x] **Step 1:** Write failing tests: at each month start, wages are paid for employed
   workers only; a covered house pays its tax with a Palace on a road; no Palace, a
   Palace without road, or an uncovered house pays nothing; last month's figures are
   kept for the inspector.
-- [ ] **Step 2:** Implement. Run the tests and see them pass.
+- [x] **Step 2:** Implement. Run the tests and see them pass.
 
 ### Task 6: Inspector
 
 **Files:** Modify `src/sim/inspect.ts`, `tests/sim/inspect.test.ts`.
 
-- [ ] **Step 1:** Write failing tests: a Hut shows water and tax status; a Fountain
+- [x] **Step 1:** Write failing tests: a Hut shows water and tax status; a Fountain
   shows workers and its carrier; a building without road says it doesn't work; the
   Palace shows last month's taxes and wages; a roamer shows its home and how far it
   has walked.
-- [ ] **Step 2:** Implement. Run the tests and see them pass.
+- [x] **Step 2:** Implement. Run the tests and see them pass.
 
 ### Task 7: UI and rendering
 
 **Files:** Modify `index.html`, `src/style.css`, `src/ui/*`, `src/render/*`,
 `src/main.ts`, `tests/ui/preview.test.ts`.
 
-- [ ] **Step 1:** Write failing preview tests: a Palace previews centered on the cursor;
+- [x] **Step 1:** Write failing preview tests: a Palace previews centered on the cursor;
   a second Palace previews invalid.
-- [ ] **Step 2:** Tools for Fountain, Tax Office and Palace. Top bar shows
+- [x] **Step 2:** Tools for Fountain, Tax Office and Palace. Top bar shows
   "Unemployed N" or "Need N workers".
-- [ ] **Step 3:** Models: Fountain (paved square, round basin with water, column with a
+- [x] **Step 3:** Models: Fountain (paved square, round basin with water, column with a
   bowl), Tax Office (plastered office, terracotta roof, porch columns, coin chest),
   Palace (marble podium, colonnaded hall with a pediment, two wings, courtyard).
   Walkers: water carrier in white with a blue jar on the shoulder; tax clerk in deep
@@ -141,14 +141,14 @@ walker layer draws each walker kind with its own figure.
 
 **Files:** Modify `e2e/smoke.spec.ts`.
 
-- [ ] **Step 1:** Extend the smoke test: place a Fountain, a Tax Office and a Palace on
+- [x] **Step 1:** Extend the smoke test: place a Fountain, a Tax Office and a Palace on
   the street, check the toolbar and the labor label, and screenshot with walkers out.
-- [ ] **Step 2:** Run `npm run typecheck`, `npm test`, `npm run build` and
+- [x] **Step 2:** Run `npm run typecheck`, `npm test`, `npm run build` and
   `npm run test:e2e`. Open the screenshot and check the new buildings and walkers.
 
 ### Task 9: PR
 
-- [ ] **Step 1:** Tick slice 3 in `docs/roadmap.md`.
-- [ ] **Step 2:** Open the PR `Slice 03: Workers & services` with the playtest
+- [x] **Step 1:** Tick slice 3 in `docs/roadmap.md`.
+- [x] **Step 2:** Open the PR `Slice 03: Workers & services` with the playtest
   checklist, the decisions above, and what was left out. Wait for CI and the Pages
   deploy.

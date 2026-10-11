@@ -148,3 +148,7 @@ https://zeus.heavengames.com/gameinfo/gods/
 - Road cost: **2 dr per tile** (re-laying an existing road tile is free).
 - Settler arrival: **10 settlers per month** (one every 3 s at 1×) while a reachable lot has
   room. Each settler carries the lot's remaining room.
+- Service memory: a house keeps water or tax coverage for **2 months** after a walker
+  passes.
+- Roamer rest: a service building sends its next walker **a quarter month** after the
+  last one returns, at full staff.
