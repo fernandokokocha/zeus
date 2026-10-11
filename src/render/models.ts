@@ -31,6 +31,8 @@ const lawn = lambert(PALETTE.lawn);
 const sand = lambert(PALETTE.sand);
 const wool = lambert(PALETTE.wool);
 const twine = lambert(PALETTE.twine);
+const vine = lambert(PALETTE.vine);
+const shutter = lambert(PALETTE.shutter);
 const fleeceAwning = lambert(PALETTE.fleeceAwning);
 const scroll = lambert(PALETTE.scroll);
 const skin = lambert(PALETTE.skin);
@@ -505,6 +507,69 @@ function hovelModel(): THREE.Object3D {
   return group;
 }
 
+function homesteadModel(): THREE.Object3D {
+  const group = new THREE.Group();
+  group.add(box(LOT_WIDTH - 0.1, 0.03, LOT_DEPTH - 0.1, paving, LOT_WIDTH / 2, 0, LOT_DEPTH / 2));
+  group.add(box(1.5, 0.07, 1.0, fieldstone, 0.85, 0.03, 0.62));
+  group.add(box(1.44, 0.55, 0.94, plaster, 0.85, 0.1, 0.62));
+  group.add(box(0.8, 0.4, 0.8, plaster, 0.6, 0.65, 0.6));
+  const upperRoof = gableRoof(0.92, 0.28, 0.94, plaster);
+  upperRoof.rotation.y = Math.PI / 2;
+  upperRoof.position.set(0.6, 1.05, 0.6);
+  group.add(upperRoof);
+  group.add(box(0.66, 0.05, 0.98, clay, 1.25, 0.65, 0.62));
+  group.add(box(0.24, 0.36, 0.02, doorway, 0.45, 0.1, 1.095));
+  for (const x of [0.95, 1.35]) group.add(box(0.14, 0.12, 0.02, shutter, x, 0.38, 1.095));
+  group.add(box(0.14, 0.12, 0.02, shutter, 0.6, 0.82, 1.005));
+  group.add(box(0.02, 0.12, 0.14, shutter, 1.575, 0.38, 0.62));
+
+  const yardEdge = LOT_WIDTH - 0.12;
+  group.add(box(0.08, 0.22, 0.75, plaster, yardEdge, 0.03, 1.5));
+  group.add(box(1.0, 0.22, 0.08, plaster, 1.38, 0.03, yardEdge));
+  for (const [x, z] of [[1.1, 1.3], [1.75, 1.3]]) group.add(columnAt(0.42, timber, x, 0.03, z));
+  group.add(box(0.75, 0.04, 0.5, vine, 1.42, 0.45, 1.55));
+  group.add(placed(amphora, clay, 1.7, 0.03, 1.75));
+  group.add(box(0.16, 0.12, 0.12, sack, 1.2, 0.03, 1.75));
+  group.add(placed(shrub, foliage, 0.3, 0.18, 1.6));
+  return group;
+}
+
+function tenementModel(): THREE.Object3D {
+  const group = new THREE.Group();
+  group.add(box(LOT_WIDTH - 0.06, 0.03, LOT_DEPTH - 0.06, paving, LOT_WIDTH / 2, 0, LOT_DEPTH / 2));
+  const storey = 0.48;
+  const wings: [number, number, number, number][] = [
+    [1.8, 0.62, 1.0, 0.41],
+    [0.62, 1.1, 0.41, 1.37],
+  ];
+  for (const [w, d, x, z] of wings) {
+    group.add(box(w + 0.06, 0.07, d + 0.06, fieldstone, x, 0.03, z));
+    group.add(box(w, 2 * storey, d, plaster, x, 0.1, z));
+    group.add(box(w + 0.02, 0.03, d + 0.02, mudBrick, x, 0.1 + storey, z));
+  }
+  const backRoof = gableRoof(0.74, 0.26, 1.9, plaster);
+  backRoof.rotation.y = Math.PI / 2;
+  backRoof.position.set(1.0, 0.1 + 2 * storey, 0.41);
+  group.add(backRoof);
+  const sideRoof = gableRoof(0.74, 0.26, 1.2, plaster);
+  sideRoof.position.set(0.41, 0.1 + 2 * storey, 1.37);
+  group.add(sideRoof);
+  for (const x of [0.95, 1.3, 1.65]) {
+    for (const y of [0.32, 0.32 + storey]) group.add(box(0.13, 0.14, 0.02, shutter, x, y, 0.725));
+  }
+  for (const z of [1.05, 1.45]) group.add(box(0.02, 0.14, 0.13, shutter, 0.725, 0.32 + storey, z));
+  group.add(box(0.24, 0.36, 0.02, doorway, 0.41, 0.1, 1.925));
+  group.add(box(0.02, 0.36, 0.24, doorway, 0.725, 0.1, 1.5));
+  const yardEdge = LOT_WIDTH - 0.08;
+  group.add(box(0.08, 0.26, 1.2, plaster, yardEdge, 0.03, 1.32));
+  group.add(box(1.2, 0.26, 0.08, plaster, 1.32, 0.03, yardEdge));
+  group.add(cylinder(0.14, 0.16, fieldstone, 1.3, 0.03, 1.3));
+  group.add(cylinder(0.1, 0.01, water, 1.3, 0.19, 1.3));
+  group.add(box(0.95, 0.04, 0.3, vine, 1.3, 0.5, 1.75));
+  group.add(placed(amphora, clay, 1.72, 0.03, 1.0));
+  return group;
+}
+
 function scrollRack(x: number, z: number): THREE.Object3D {
   const group = new THREE.Group();
   group.add(box(0.5, 0.36, 0.14, timber, x, 0.04, z));
@@ -763,7 +828,13 @@ const MODELS: Record<Exclude<BuildingType, 'house'>, (building: Building, state:
   fleeceVendor: fleeceVendorModel,
 };
 
-const HOUSE_MODELS: Record<HouseLevel, () => THREE.Object3D> = { hut: hutModel, shack: shackModel, hovel: hovelModel };
+const HOUSE_MODELS: Record<HouseLevel, () => THREE.Object3D> = {
+  hut: hutModel,
+  shack: shackModel,
+  hovel: hovelModel,
+  homestead: homesteadModel,
+  tenement: tenementModel,
+};
 
 export function buildingModel(building: Building, state: GameState): THREE.Object3D {
   if (building.type === 'house') {

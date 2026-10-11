@@ -45,9 +45,15 @@ export function monthlyFood(house: Building): number {
   return level && HOUSE_LEVELS[level].needs.includes('food') ? house.residents * FOOD_PER_RESIDENT_PER_MONTH : 0;
 }
 
+export function monthlyFleece(house: Building): number {
+  const level = houseLevel(house);
+  return level && HOUSE_LEVELS[level].needs.includes('fleece') ? FLEECE_PER_HOUSE_PER_MONTH : 0;
+}
+
 export function eat(state: GameState): void {
   for (const house of state.buildings.filter((b) => b.type === 'house')) {
     house.food = Math.max(0, house.food - monthlyFood(house));
+    house.fleece = Math.max(0, house.fleece - monthlyFleece(house));
   }
 }
 

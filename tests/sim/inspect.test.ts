@@ -313,11 +313,11 @@ describe('describeTile for culture', () => {
     );
   });
 
-  it('shows no next level for a Hovel', () => {
+  it('shows no next level for a Tenement', () => {
     const { game, house } = street();
-    Object.assign(house, { level: 'hovel', residents: 24, food: 6 });
+    Object.assign(house, { level: 'tenement', residents: 40, food: 6 });
     const { title, lines } = describeTile(game, 2, 13);
-    expect(title).toBe('Hovel');
+    expect(title).toBe('Tenement');
     expect(lines.some((line) => line.startsWith('Needs'))).toBe(false);
   });
 

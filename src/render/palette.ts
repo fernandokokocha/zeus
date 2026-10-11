@@ -61,6 +61,8 @@ export const PALETTE = {
   sheepFace: 0x3a302a,
   shepherdTunic: 0x7a8a3a,
   twine: 0x9c7a48,
+  vine: 0x5f8a3a,
+  shutter: 0x4f7a8f,
   fleeceAwning: 0x3d6a9e,
   fleeceBuyerTunic: 0xa0603a,
   appealHigh: 0x3fae4a,

@@ -116,12 +116,12 @@ Create `src/sim/storehouse.ts`, `tests/sim/storehouse.test.ts`.
 
 **Files:** Modify `src/sim/housing.ts`, `src/sim/food.ts`, `tests/sim/housing.test.ts`.
 
-- [ ] **Step 1:** Write failing tests: a Hovel with fleece and appeal 10 becomes a
+- [x] **Step 1:** Write failing tests: a Hovel with fleece and appeal 10 becomes a
   Homestead of 32; without fleece it stays. A Homestead with 35 culture and appeal 20
   becomes a Tenement of 40. A Homestead uses 2 units of fleece a month and falls back
   when it runs out. A Tenement stays at appeal 6 and falls back at 5. A whole city
   with sheep reaches Homesteads.
-- [ ] **Step 2:** Implement. Tests pass.
+- [x] **Step 2:** Implement. Tests pass.
 
 ### Task 7: Inspector
 
