@@ -1,7 +1,7 @@
 import { TICKS_PER_MONTH } from './clock';
 import { adjacentRoadTiles } from './commands';
 import { houseCapacity, houseLevel } from './housing';
-import { findRoadPath } from './pathfinding';
+import { findRoadPath, nearestByRoad } from './pathfinding';
 import type { Point } from './point';
 import { buildingById, type Building, type GameState, type Settler } from './state';
 import { WALKER_TILES_PER_TICK, isRoad } from './walking';
@@ -22,12 +22,8 @@ export function roomFor(state: GameState, house: Building): number {
 
 export function closestLotWithRoom(state: GameState, from: Point): { house: Building; path: Point[] } | null {
   const lots = state.buildings.filter((b) => b.type === 'house' && roomFor(state, b) > 0);
-  const path = findRoadPath(state, from, lots.flatMap((lot) => adjacentRoadTiles(state, lot)));
-  if (!path) return null;
-  const end = path[path.length - 1];
-  const house = lots.find((lot) => adjacentRoadTiles(state, lot).some((p) => p.x === end.x && p.y === end.y));
-  if (!house) throw new Error(`Path ends at ${end.x}, ${end.y}, which touches no lot`);
-  return { house, path };
+  const nearest = nearestByRoad(state, from, lots);
+  return nearest && { house: nearest.building, path: nearest.path };
 }
 
 export function tickSettlers(state: GameState): void {
