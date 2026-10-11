@@ -1,10 +1,24 @@
+import { houseAppeal } from './appeal';
 import { BUILDING_SPECS } from './buildings';
-import { adjacentRoadTiles } from './commands';
+import { MONTH_NAMES } from './clock';
+import { CARRIER_SPECS, carrierDestinations, carrierKindSentBy } from './carriers';
+import { adjacentRoadTiles, agoraAt } from './commands';
 import { hasWorkingPalace, houseTax } from './economy';
-import { HOUSE_LEVELS, NEXT_LEVEL, houseCapacity, houseLevel, houseName } from './housing';
+import { GRANARY_CAPACITY, HARVEST_MONTH, UNITS_PER_LOAD, VENDOR_CAPACITY, monthlyFood } from './food';
+import { HOUSE_LEVELS, NEXT_LEVEL, houseCapacity, houseLevel, houseName, missingNeeds } from './housing';
 import { ROAMER_SPECS, hasService, roamerKindSentBy, serviceLeft } from './roamers';
 import { canSettlersReach } from './settlers';
-import { NO_BUILDING, buildingById, tileIndex, type Building, type GameState, type Roamer, type Settler } from './state';
+import {
+  NO_BUILDING,
+  buildingById,
+  tileIndex,
+  type Building,
+  type Carrier,
+  type GameState,
+  type Roamer,
+  type Settler,
+  type Walk,
+} from './state';
 import { BUILDABLE, TERRAIN_NAMES } from './terrain';
 import { walkerTile } from './walking';
 
@@ -23,7 +37,7 @@ export function describeTile(state: GameState, x: number, y: number): Descriptio
     return building.type === 'house' ? describeHouse(state, building) : describeWorkplace(state, building);
   }
 
-  const standsHere = (walker: Settler | Roamer) => {
+  const standsHere = (walker: Walk) => {
     const tile = walkerTile(walker);
     return tile.x === x && tile.y === y;
   };
@@ -31,6 +45,8 @@ export function describeTile(state: GameState, x: number, y: number): Descriptio
   if (settler) return describeSettler(state, settler);
   const roamer = state.roamers.find(standsHere);
   if (roamer) return describeRoamer(state, roamer);
+  const carrier = state.carriers.find(standsHere);
+  if (carrier) return describeCarrier(state, carrier);
 
   if (state.roadblocks[i]) return { title: 'Roadblock', lines: [`Tile ${x}, ${y}`, 'Stops roaming walkers; settlers pass'] };
   if (state.roads[i]) return { title: 'Road', lines: [`Tile ${x}, ${y}`] };
@@ -42,21 +58,44 @@ export function describeTile(state: GameState, x: number, y: number): Descriptio
   };
 }
 
-function drachmas(amount: number): string {
-  return `${amount.toLocaleString('en-US', { maximumFractionDigits: 2 })} dr`;
+function amount(value: number): string {
+  return value.toLocaleString('en-US', { maximumFractionDigits: 1 });
+}
+
+function drachmas(value: number): string {
+  return `${value.toLocaleString('en-US', { maximumFractionDigits: 2 })} dr`;
+}
+
+function loads(units: number): string {
+  return `${amount(units / UNITS_PER_LOAD)} loads`;
 }
 
 function describeHouse(state: GameState, house: Building): Description {
   const lines = [`Tile ${house.x}, ${house.y}`, `Residents ${house.residents}/${houseCapacity(house)}`];
   const level = houseLevel(house);
-  if (level) {
-    lines.push(waterStatus(state, house), taxStatus(state, house));
-    const next = NEXT_LEVEL[level];
-    if (next) lines.push(`Needs for ${HOUSE_LEVELS[next].name}: ${HOUSE_LEVELS[next].needs.join(', ')}`);
-  } else {
+  if (!level) {
     lines.push(settlementStatus(state, house));
+    return { title: houseName(house), lines };
   }
+  const appeal = houseAppeal(state, house);
+  lines.push(`Appeal ${appeal}`, foodStatus(house), waterStatus(state, house), taxStatus(state, house));
+  const next = NEXT_LEVEL[level];
+  if (next) lines.push(nextLevelStatus(house, next, appeal));
   return { title: houseName(house), lines };
+}
+
+function foodStatus(house: Building): string {
+  if (house.food <= 0) return 'No food';
+  const eaten = monthlyFood(house);
+  const lasts = eaten > 0 ? ` (${amount(house.food / eaten)} months)` : '';
+  return `Food: ${amount(house.food)} units${lasts}`;
+}
+
+function nextLevelStatus(house: Building, next: keyof typeof HOUSE_LEVELS, appeal: number): string {
+  const { name, appeal: thresholds } = HOUSE_LEVELS[next];
+  const blockers: string[] = missingNeeds(house, next);
+  if (appeal < thresholds.evolve) blockers.push(`appeal ${thresholds.evolve} (has ${appeal})`);
+  return blockers.length > 0 ? `Needs for ${name}: ${blockers.join(', ')}` : `Ready to become a ${name}`;
 }
 
 function waterStatus(state: GameState, house: Building): string {
@@ -80,6 +119,10 @@ function settlementStatus(state: GameState, lot: Building): string {
 function describeWorkplace(state: GameState, building: Building): Description {
   const spec = BUILDING_SPECS[building.type];
   const lines = [`Tile ${building.x}, ${building.y}`];
+  if (!spec.needsRoad) {
+    lines.push(`Appeal ${spec.appeal.join(', ')} by distance`);
+    return { title: spec.name, lines };
+  }
   if (adjacentRoadTiles(state, building).length === 0) {
     lines.push('No road access: does not work');
     return { title: spec.name, lines };
@@ -87,19 +130,59 @@ function describeWorkplace(state: GameState, building: Building): Description {
   if (spec.workers > 0) {
     lines.push(`Workers ${building.workers}/${spec.workers}`);
     if (building.workers === 0) {
-      lines.push('No workers: does not work');
+      lines.push('No workers: does not work', ...stockLines(state, building));
       return { title: spec.name, lines };
     }
   }
-  const kind = roamerKindSentBy(building.type);
-  if (kind) {
-    const out = state.roamers.some((r) => r.homeId === building.id);
-    lines.push(`${ROAMER_SPECS[kind].name} ${out ? 'out in the streets' : 'getting ready'}`);
-  }
+  lines.push(...stockLines(state, building), ...walkerLines(state, building));
   if (building.type === 'palace') {
     lines.push(`Taxes last month: ${drachmas(state.lastMonth.taxes)}`, `Wages last month: ${drachmas(state.lastMonth.wages)}`);
   }
   return { title: spec.name, lines };
+}
+
+function stockLines(state: GameState, building: Building): string[] {
+  switch (building.type) {
+    case 'wheatFarm': {
+      const crop = `Crop ${Math.round(building.growth * 100)}% grown, harvest in ${MONTH_NAMES[HARVEST_MONTH]}`;
+      return building.food > 0 ? [crop, `Harvest waiting: ${loads(building.food)}`] : [crop];
+    }
+    case 'granary':
+      return [`Wheat: ${amount(building.food / UNITS_PER_LOAD)} of ${GRANARY_CAPACITY / UNITS_PER_LOAD} loads`];
+    case 'foodVendor':
+      return [`Stock: ${amount(building.food)} of ${VENDOR_CAPACITY} units`];
+    case 'agora': {
+      const vendors = state.buildings.filter((b) => b.type === 'foodVendor' && agoraAt(state, b) === building);
+      return vendors.length > 0
+        ? [`Vendors: ${vendors.map((v) => BUILDING_SPECS[v.type].name).join(', ')}`]
+        : ['No vendors yet: place one on a free spot'];
+    }
+    default:
+      return [];
+  }
+}
+
+function walkerLines(state: GameState, building: Building): string[] {
+  const lines: string[] = [];
+  const roamerKind = roamerKindSentBy(building.type);
+  if (roamerKind) {
+    const spec = ROAMER_SPECS[roamerKind];
+    const out = state.roamers.some((r) => r.homeId === building.id);
+    const waits = spec.service === 'food' && building.food === 0;
+    lines.push(`${spec.name} ${out ? 'out in the streets' : waits ? 'waits for food' : 'getting ready'}`);
+  }
+  const carrierKind = carrierKindSentBy(building.type);
+  if (carrierKind) lines.push(carrierStatus(state, building, carrierKind));
+  return lines;
+}
+
+function carrierStatus(state: GameState, building: Building, kind: Carrier['kind']): string {
+  const { name } = CARRIER_SPECS[kind];
+  const carrier = state.carriers.find((c) => c.homeId === building.id);
+  if (kind === 'cartPusher') return `${name} ${carrier ? 'out with a load' : 'at the farm'}`;
+  if (carrier) return `${name} ${carrier.returning ? 'bringing wheat home' : 'out fetching wheat'}`;
+  if (carrierDestinations(state, kind).length === 0) return `${name} waits for a granary with wheat`;
+  return `${name} at the stall`;
 }
 
 function describeSettler(state: GameState, settler: Settler): Description {
@@ -110,15 +193,30 @@ function describeSettler(state: GameState, settler: Settler): Description {
   return { title: 'Settler', lines: [`Carrying ${settler.people} people`, heading] };
 }
 
+function homeLine(state: GameState, homeId: number): string {
+  const home = buildingById(state, homeId);
+  if (!home) throw new Error(`Walker comes from missing building ${homeId}`);
+  return `From the ${BUILDING_SPECS[home.type].name} at ${home.x}, ${home.y}`;
+}
+
 function describeRoamer(state: GameState, roamer: Roamer): Description {
-  const home = buildingById(state, roamer.homeId);
-  if (!home) throw new Error(`Roamer ${roamer.id} comes from missing building ${roamer.homeId}`);
   const spec = ROAMER_SPECS[roamer.kind];
   return {
     title: spec.name,
-    lines: [
-      `From the ${BUILDING_SPECS[home.type].name} at ${home.x}, ${home.y}`,
-      roamer.returning ? 'Returning home' : `Walked ${roamer.step} of ${spec.range} tiles`,
-    ],
+    lines: [homeLine(state, roamer.homeId), roamer.returning ? 'Returning home' : `Walked ${roamer.step} of ${spec.range} tiles`],
   };
+}
+
+function describeCarrier(state: GameState, carrier: Carrier): Description {
+  const lines = [homeLine(state, carrier.homeId)];
+  const granary = buildingById(state, carrier.destinationId);
+  if (carrier.returning) {
+    lines.push(carrier.kind === 'buyer' ? `Bringing home ${amount(carrier.food)} units` : 'Returning home');
+  } else if (granary) {
+    const at = `the Granary at ${granary.x}, ${granary.y}`;
+    lines.push(carrier.kind === 'buyer' ? `Fetching wheat from ${at}` : `Carrying ${loads(carrier.food)} to ${at}`);
+  } else {
+    lines.push('Looking for another granary');
+  }
+  return { title: CARRIER_SPECS[carrier.kind].name, lines };
 }

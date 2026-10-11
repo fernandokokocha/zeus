@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { demolish, placeBuilding, placeRoad, placeRoadblock } from '../../src/sim/commands';
 import { TICKS_PER_MONTH } from '../../src/sim/clock';
 import { ROAMER_REST_TICKS } from '../../src/sim/roamers';
-import type { GameState } from '../../src/sim/state';
+import type { Building, GameState } from '../../src/sim/state';
 import { describeTile } from '../../src/sim/inspect';
 import { SETTLER_SPAWN_INTERVAL_TICKS } from '../../src/sim/settlers';
-import { grassGame, placeHouse, runTicks, setTerrain } from './helpers';
+import { grassGame, placeHouse, runTicks, setMeadow, setTerrain } from './helpers';
 
 describe('describeTile', () => {
   it('describes buildable terrain', () => {
@@ -54,7 +54,15 @@ describe('describeTile', () => {
     runTicks(game, 2 * SETTLER_SPAWN_INTERVAL_TICKS);
     expect(describeTile(game, 2, 8)).toEqual({
       title: 'Hut',
-      lines: ['Tile 2, 8', 'Residents 8/8', 'No water carrier has passed', 'No tax collector has passed', 'Needs for Shack: food'],
+      lines: [
+        'Tile 2, 8',
+        'Residents 8/8',
+        'Appeal 0',
+        'No food',
+        'No water carrier has passed',
+        'No tax collector has passed',
+        'Needs for Shack: food',
+      ],
     });
   });
 
@@ -85,6 +93,8 @@ describe('describeTile for services', () => {
     expect(describeTile(game, 2, 8).lines).toEqual([
       'Tile 2, 8',
       'Residents 8/8',
+      'Appeal 16',
+      'No food',
       'Water: 50% left',
       'Pays 0.72 dr tax a month',
       'Needs for Shack: food',
@@ -184,5 +194,92 @@ describe('describeTile for a roadblock', () => {
       title: 'Roadblock',
       lines: ['Tile 4, 10', 'Stops roaming walkers; settlers pass'],
     });
+  });
+});
+
+describe('describeTile for food and appeal', () => {
+  function street(): { game: GameState; house: Building } {
+    const game = grassGame(30);
+    placeRoad(game, { x: 0, y: 15 }, { x: 29, y: 15 });
+    placeHouse(game, 2, 13);
+    const house = game.buildings[0];
+    house.residents = 8;
+    return { game, house };
+  }
+
+  it('shows what keeps a Hut from becoming a Shack', () => {
+    const { game, house } = street();
+    placeBuilding(game, 'taxOffice', 5, 11);
+    house.food = 3;
+    expect(describeTile(game, 2, 13).lines).toEqual(expect.arrayContaining(['Appeal -2', 'Food: 3 units', 'Needs for Shack: appeal 0 (has -2)']));
+    house.food = 0;
+    expect(describeTile(game, 2, 13).lines).toContain('Needs for Shack: food, appeal 0 (has -2)');
+  });
+
+  it("shows how long a Shack's food lasts, and no next level", () => {
+    const { game, house } = street();
+    Object.assign(house, { level: 'shack', residents: 16, food: 6 });
+    const lines = describeTile(game, 2, 13).lines;
+    expect(lines).toContain('Food: 6 units (1.5 months)');
+    expect(lines.some((line) => line.startsWith('Needs'))).toBe(false);
+  });
+
+  it('describes a farm, its crop and its cart', () => {
+    const { game } = street();
+    game.buildings[0].residents = 100;
+    setMeadow(game, 6, 12, 3, 3);
+    placeBuilding(game, 'wheatFarm', 6, 12);
+    placeBuilding(game, 'granary', 14, 11);
+    const farm = game.buildings[1];
+    farm.growth = 0.426;
+    runTicks(game, 1);
+    expect(describeTile(game, 7, 13)).toEqual({
+      title: 'Wheat Farm',
+      lines: ['Tile 6, 12', 'Workers 10/10', 'Crop 43% grown, harvest in July', 'Cart Pusher at the farm'],
+    });
+    farm.food = 600;
+    runTicks(game, 1);
+    expect(describeTile(game, 7, 13).lines).toEqual(expect.arrayContaining(['Harvest waiting: 2 loads', 'Cart Pusher out with a load']));
+    expect(describeTile(game, game.carriers[0].path[0].x, 15)).toEqual({
+      title: 'Cart Pusher',
+      lines: ['From the Wheat Farm at 6, 12', 'Carrying 4 loads to the Granary at 14, 11'],
+    });
+  });
+
+  it('describes a granary', () => {
+    const { game } = street();
+    placeBuilding(game, 'granary', 14, 11);
+    game.buildings[1].food = 1250;
+    expect(describeTile(game, 14, 11).lines).toContain('Wheat: 12.5 of 32 loads');
+  });
+
+  it('describes an agora, its vendor and the buyer', () => {
+    const { game } = street();
+    game.buildings[0].residents = 100;
+    placeBuilding(game, 'agora', 10, 16);
+    expect(describeTile(game, 11, 18).lines).toEqual(['Tile 10, 16', 'No vendors yet: place one on a free spot']);
+    placeBuilding(game, 'foodVendor', 10, 16);
+    placeBuilding(game, 'granary', 20, 11);
+    expect(describeTile(game, 12, 18).lines).toEqual(['Tile 10, 16', 'Vendors: Food Vendor']);
+    runTicks(game, 1);
+    expect(describeTile(game, 10, 17)).toEqual({
+      title: 'Food Vendor',
+      lines: ['Tile 10, 16', 'Workers 4/4', 'Stock: 0 of 800 units', 'Peddler waits for food', 'Buyer waits for a granary with wheat'],
+    });
+    game.buildings[3].food = 1000;
+    runTicks(game, 1);
+    expect(describeTile(game, 10, 15)).toEqual({
+      title: 'Buyer',
+      lines: ['From the Food Vendor at 10, 16', 'Fetching wheat from the Granary at 20, 11'],
+    });
+    game.carriers[0].returning = true;
+    game.carriers[0].food = 400;
+    expect(describeTile(game, 10, 15).lines).toContain('Bringing home 400 units');
+  });
+
+  it('describes a decoration by its appeal', () => {
+    const game = grassGame();
+    placeBuilding(game, 'flowerGarden', 4, 4);
+    expect(describeTile(game, 5, 5)).toEqual({ title: 'Flower Garden', lines: ['Tile 4, 4', 'Appeal 8, 7, 6 by distance'] });
   });
 });

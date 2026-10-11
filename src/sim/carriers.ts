@@ -29,7 +29,7 @@ export function granaryRoom(state: GameState, granary: Building): number {
   return GRANARY_CAPACITY - granary.food - incoming;
 }
 
-function destinations(state: GameState, kind: CarrierKind): Building[] {
+export function carrierDestinations(state: GameState, kind: CarrierKind): Building[] {
   const granaries = state.buildings.filter((b) => b.type === 'granary' && b.workers > 0);
   return kind === 'cartPusher' ? granaries.filter((g) => granaryRoom(state, g) > 0) : granaries.filter((g) => g.food > 0);
 }
@@ -49,7 +49,7 @@ function sendCarrier(state: GameState, building: Building): void {
   if (state.carriers.some((c) => c.homeId === building.id)) return;
   const exit = exitTile(state, building);
   if (!exit) throw new Error(`Building ${building.id} has workers but no road to leave by`);
-  const target = nearestByRoad(state, exit, destinations(state, kind));
+  const target = nearestByRoad(state, exit, carrierDestinations(state, kind));
   if (!target) return;
   const food = kind === 'cartPusher' ? Math.min(CART_LOAD, building.food, granaryRoom(state, target.building)) : 0;
   building.food -= food;
@@ -85,7 +85,7 @@ function moveCarrier(state: GameState, carrier: Carrier): void {
 function replan(state: GameState, carrier: Carrier, home: Building): boolean {
   if (!carrier.returning) {
     carrier.destinationId = NO_BUILDING;
-    const target = nearestByRoad(state, carrier.path[carrier.step], destinations(state, carrier.kind));
+    const target = nearestByRoad(state, carrier.path[carrier.step], carrierDestinations(state, carrier.kind));
     if (target) {
       carrier.destinationId = target.building.id;
       restartOn(carrier, target.path);
