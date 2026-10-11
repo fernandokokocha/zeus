@@ -74,6 +74,28 @@ at default zoom, before they are pretty. Walkers are small figures with a distin
 color or prop (a water carrier with a jar, a cart pusher with a cart). Animation stays
 minimal: walking bob, smoke from industry.
 
+## Working agreement with the owner
+
+The owner works **hands-off until the playtest**. A session is given a slice and is
+expected to deliver it, finished and deployed, without anyone watching.
+
+- **Never stop to ask.** No clarifying questions, no "should I proceed?", no waiting for
+  approval of a plan. The design decisions were made in this spec. For anything the spec
+  does not cover, choose the option closest to the original Zeus, record it under
+  "Decisions I made" in the PR, and keep going.
+- **One slice per session.** Finish the current slice completely before starting the
+  next one. Never start the next slice in the same session.
+- **The owner's only input is playtest feedback:** PR comments on the previous slice, or
+  the session prompt. Act on it first. If there is none, the previous slice was fine.
+- **The PR is the report.** The owner reads the PR and plays the deployed link, nothing
+  else. The playtest checklist must let them verify the slice without reading code.
+- **Done means deployed.** CI is green, the PR is merged, Pages shows the new build, and
+  the roadmap box is ticked.
+- **If truly blocked** (CI cannot go green, or a deploy fails for reasons outside the
+  repo), leave the PR open and unmerged, explain the blocker at the top of its
+  description, and stop. This is the only case in which the owner is needed before the
+  playtest.
+
 ## How a cloud session runs a slice
 
 1. **Orient.** Read `CLAUDE.md`, the roadmap, this spec and the zeus-numbers reference.
