@@ -101,7 +101,7 @@ describe('describeTile for services', () => {
     ]);
   });
 
-it('shows the water running down until the next carrier', () => {
+  it('shows the water running down until the next carrier', () => {
     const game = town();
     game.buildings[0].coveredUntil.water = TICKS_PER_MONTH;
     game.tick = TICKS_PER_MONTH / 2;

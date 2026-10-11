@@ -67,7 +67,7 @@ describe('nextRoamTile', () => {
     expect(nextRoamTile(game, walked)).toEqual({ x: 5, y: 5 });
   });
 
-it('never walks through a roadblock', () => {
+  it('never walks through a roadblock', () => {
     const game = grassGame();
     placeRoad(game, { x: 2, y: 2 }, { x: 6, y: 2 });
     placeRoadblock(game, { x: 5, y: 2 });

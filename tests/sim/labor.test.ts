@@ -36,15 +36,15 @@ describe('assignWorkers', () => {
     expect(game.buildings.map((b) => b.workers)).toEqual([0, 4, 6]);
   });
 
-it('staffs a vendor whose agora touches the road', () => {
-  const game = gameWithPopulation(20);
-  placeBuilding(game, 'agora', 2, 11);
-  placeBuilding(game, 'foodVendor', 2, 13);
-  assignWorkers(game);
-  expect(game.buildings.map((b) => b.workers)).toEqual([0, 0, 4]);
-});
+  it('staffs a vendor whose agora touches the road', () => {
+    const game = gameWithPopulation(20);
+    placeBuilding(game, 'agora', 2, 11);
+    placeBuilding(game, 'foodVendor', 2, 13);
+    assignWorkers(game);
+    expect(game.buildings.map((b) => b.workers)).toEqual([0, 0, 4]);
+  });
 
-it('hires nobody for a building without road access', () => {
+  it('hires nobody for a building without road access', () => {
     const game = gameWithPopulation(20);
     placeBuilding(game, 'fountain', 2, 14);
     placeBuilding(game, 'taxOffice', 5, 11);
