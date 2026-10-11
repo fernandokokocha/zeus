@@ -2,6 +2,7 @@ import type { BuildingType } from './buildings';
 import { DEFAULT_SEED, ENTRY_ROAD_LENGTH, MAP_SIZE, generateTerrain } from './map';
 import { clampPoint, type Point } from './point';
 import type { Terrain } from './terrain';
+import { STARTING_TREASURY } from './treasury';
 
 export type Speed = 0 | 1 | 2 | 4;
 
@@ -20,6 +21,7 @@ export interface GameState {
   buildingIdAt: number[];
   nextBuildingId: number;
   entry: Point;
+  treasury: number;
   tick: number;
   speed: Speed;
   speedBeforeInspection: Speed | null;
@@ -39,6 +41,7 @@ export function newGameState(size: number, terrain: Terrain[], entry: Point): Ga
     buildingIdAt: new Array<number>(size * size).fill(NO_BUILDING),
     nextBuildingId: 1,
     entry,
+    treasury: STARTING_TREASURY,
     tick: 0,
     speed: 1,
     speedBeforeInspection: null,

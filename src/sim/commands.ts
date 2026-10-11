@@ -2,6 +2,7 @@ import { BUILDING_SPECS, type BuildingType } from './buildings';
 import { rectBetween, tilesIn, type Point } from './point';
 import { NO_BUILDING, clampToMap, inBounds, tileIndex, type GameState } from './state';
 import { BUILDABLE, TERRAIN_NAMES } from './terrain';
+import { ROAD_TILE_COST } from './treasury';
 
 export type Result = { ok: true } | { ok: false; reason: string };
 
@@ -38,7 +39,11 @@ export function placeRoad(state: GameState, from: Point, to: Point): Result {
     const obstacle = roadObstacle(state, p.x, p.y);
     if (obstacle) return fail(obstacle);
   }
-  for (const p of path) state.roads[tileIndex(state, p.x, p.y)] = true;
+  for (const p of path) {
+    const i = tileIndex(state, p.x, p.y);
+    if (!state.roads[i]) state.treasury -= ROAD_TILE_COST;
+    state.roads[i] = true;
+  }
   state.version++;
   return OK;
 }
