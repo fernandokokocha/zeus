@@ -12,12 +12,13 @@ const KIND_COLORS: Record<PreviewKind, THREE.Color> = {
 export function createGhostLayer(mapSize: number): { mesh: THREE.InstancedMesh; show(tiles: PreviewTile[]): void } {
   const mesh = new THREE.InstancedMesh(
     new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2),
-    new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.45, depthWrite: false }),
+    new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.6, depthWrite: false }),
     mapSize * mapSize,
   );
   const colors = new THREE.InstancedBufferAttribute(new Float32Array(mapSize * mapSize * 3), 3);
   mesh.instanceColor = colors;
   mesh.count = 0;
+  mesh.frustumCulled = false;
   const matrix = new THREE.Matrix4();
 
   return {

@@ -19,7 +19,7 @@ export const PALETTE = {
   marbleRock: 0xeeeae0,
   copperRock: 0xa0623a,
   ghostValid: 0x4caf50,
-  ghostWarning: 0xf2c94c,
+  ghostWarning: 0xf28c28,
   ghostInvalid: 0xe0533d,
 };
 
