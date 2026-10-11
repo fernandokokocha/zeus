@@ -74,7 +74,7 @@ need.
 **Files:** Modify `src/sim/buildings.ts`, `src/sim/commands.ts`, `src/sim/inspect.ts`,
 `src/ui/preview.ts`.
 
-- [ ] **Step 1:** Refactor: code that asks "is this the food vendor?" to place, reach
+- [x] **Step 1:** Refactor: code that asks "is this the food vendor?" to place, reach
   or demolish a vendor asks "is this an agora vendor?". No behavior change.
 
 ### Task 3: Sheep and shearing

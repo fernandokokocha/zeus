@@ -1,5 +1,5 @@
 import { houseAppeal } from './appeal';
-import { BUILDING_SPECS } from './buildings';
+import { BUILDING_SPECS, isAgoraVendor } from './buildings';
 import { MONTH_NAMES, TICKS_PER_MONTH } from './clock';
 import { culturePoints, culturesPassed } from './culture';
 import { CARRIER_SPECS, carrierDestinations, carrierKindSentBy } from './carriers';
@@ -163,7 +163,7 @@ function stockLines(state: GameState, building: Building): string[] {
     case 'foodVendor':
       return [`Stock: ${amount(building.food)} of ${VENDOR_CAPACITY} units`];
     case 'agora': {
-      const vendors = state.buildings.filter((b) => b.type === 'foodVendor' && agoraAt(state, b) === building);
+      const vendors = state.buildings.filter((b) => isAgoraVendor(b.type) && agoraAt(state, b) === building);
       return vendors.length > 0
         ? [`Vendors: ${vendors.map((v) => BUILDING_SPECS[v.type].name).join(', ')}`]
         : ['No vendors yet: place one on a free spot'];

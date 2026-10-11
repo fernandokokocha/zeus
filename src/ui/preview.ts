@@ -1,4 +1,4 @@
-import { BUILDING_SPECS, buildingSize, type BuildingType, type Rotation } from '../sim/buildings';
+import { BUILDING_SPECS, buildingSize, isAgoraVendor, type BuildingType, type Rotation } from '../sim/buildings';
 import { checkBuildingPlacement, footprint, vendorSpotAt, lotOrigins, roadObstacle, roadPath, roadblockObstacle } from '../sim/commands';
 import { rectBetween, tilesIn, type Point } from '../sim/point';
 import { clampToMap, inBounds, type GameState } from '../sim/state';
@@ -16,7 +16,7 @@ export function buildingOrigin(type: BuildingType, cursor: Point, rotation: Rota
 }
 
 export function placementOrigin(state: GameState, type: BuildingType, cursor: Point, rotation: Rotation): Point {
-  return (type === 'foodVendor' && vendorSpotAt(state, cursor)) || buildingOrigin(type, cursor, rotation);
+  return (isAgoraVendor(type) && vendorSpotAt(state, cursor)) || buildingOrigin(type, cursor, rotation);
 }
 
 function buildingPreview(state: GameState, type: BuildingType, origin: Point, rotation: Rotation): PreviewTile[] {

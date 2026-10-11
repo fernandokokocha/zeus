@@ -91,4 +91,10 @@ export function worldToLocal(building: Placement, p: Point): Point {
   ][building.rotation];
 }
 
+export const AGORA_VENDORS: ReadonlySet<BuildingType> = new Set<BuildingType>(['foodVendor']);
+
+export function isAgoraVendor(type: BuildingType): boolean {
+  return AGORA_VENDORS.has(type);
+}
+
 export const AGORA_VENDOR_SPOTS = [{ x: 0, y: 0 }, { x: 0, y: 2 }, { x: 0, y: 4 }];
