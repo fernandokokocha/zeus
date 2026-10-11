@@ -1,4 +1,5 @@
 import type { BuildingType } from './buildings';
+import type { HouseLevel } from './housing';
 import { DEFAULT_SEED, ENTRY_ROAD_LENGTH, MAP_SIZE, generateTerrain } from './map';
 import { clampPoint, type Point } from './point';
 import type { Terrain } from './terrain';
@@ -18,6 +19,9 @@ export interface Building {
   workers: number;
   walkerRest: number;
   coveredUntil: Record<Service, number>;
+  level: HouseLevel;
+  food: number;
+  growth: number;
 }
 
 export interface Walk {
@@ -41,6 +45,17 @@ export interface Roamer extends Walk {
   returning: boolean;
 }
 
+export type CarrierKind = 'cartPusher' | 'buyer';
+
+export interface Carrier extends Walk {
+  id: number;
+  kind: CarrierKind;
+  homeId: number;
+  destinationId: number;
+  food: number;
+  returning: boolean;
+}
+
 export interface GameState {
   size: number;
   terrain: Terrain[];
@@ -53,6 +68,8 @@ export interface GameState {
   nextSettlerId: number;
   roamers: Roamer[];
   nextRoamerId: number;
+  carriers: Carrier[];
+  nextCarrierId: number;
   rngState: number;
   entry: Point;
   treasury: number;
@@ -81,6 +98,8 @@ export function newGameState(size: number, terrain: Terrain[], entry: Point): Ga
     nextSettlerId: 1,
     roamers: [],
     nextRoamerId: 1,
+    carriers: [],
+    nextCarrierId: 1,
     rngState: DEFAULT_SEED,
     entry,
     treasury: STARTING_TREASURY,

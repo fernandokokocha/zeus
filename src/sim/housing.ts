@@ -2,10 +2,12 @@ import type { Building } from './state';
 
 export type HouseLevel = 'hut' | 'shack';
 
+export type HouseNeed = 'food';
+
 export interface HouseLevelSpec {
   name: string;
   capacity: number;
-  needs: string[];
+  needs: HouseNeed[];
   taxMultiplier: number;
 }
 
@@ -19,7 +21,7 @@ export const NEXT_LEVEL: Record<HouseLevel, HouseLevel | null> = { hut: 'shack',
 export const VACANT_LOT_NAME = 'Vacant Lot';
 
 export function houseLevel(house: Building): HouseLevel | null {
-  return house.residents > 0 ? 'hut' : null;
+  return house.residents > 0 ? house.level : null;
 }
 
 export function houseCapacity(house: Building): number {

@@ -160,6 +160,9 @@ function build(state: GameState, type: BuildingType, x: number, y: number): void
     workers: 0,
     walkerRest: 0,
     coveredUntil: { water: 0, tax: 0 },
+    level: 'hut' as const,
+    food: 0,
+    growth: 0,
   };
   state.buildings.push(building);
   for (const p of footprint(type, x, y)) state.buildingIdAt[tileIndex(state, p.x, p.y)] = building.id;
@@ -203,14 +206,15 @@ export function demolish(state: GameState, from: Point, to: Point): void {
     if (state.terrain[i] === 'forest') state.terrain[i] = 'grass';
     if (state.buildingIdAt[i] !== NO_BUILDING) doomed.add(state.buildingIdAt[i]);
   }
-const agoraOfVendor = new Map<number, number>();
-for (const vendor of state.buildings.filter((b) => b.type === 'foodVendor')) {
-  const agoraId = roadSite(state, vendor).id;
-  if (doomed.has(agoraId)) doomed.add(vendor.id);
-  else agoraOfVendor.set(vendor.id, agoraId);
-}
-state.buildings = state.buildings.filter((b) => !doomed.has(b.id));
-state.roamers = state.roamers.filter((r) => !doomed.has(r.homeId));
-state.buildingIdAt = state.buildingIdAt.map((id) => (doomed.has(id) ? (agoraOfVendor.get(id) ?? NO_BUILDING) : id));
+  const agoraOfVendor = new Map<number, number>();
+  for (const vendor of state.buildings.filter((b) => b.type === 'foodVendor')) {
+    const agoraId = roadSite(state, vendor).id;
+    if (doomed.has(agoraId)) doomed.add(vendor.id);
+    else agoraOfVendor.set(vendor.id, agoraId);
+  }
+  state.buildings = state.buildings.filter((b) => !doomed.has(b.id));
+  state.roamers = state.roamers.filter((r) => !doomed.has(r.homeId));
+  state.carriers = state.carriers.filter((c) => !doomed.has(c.homeId));
+  state.buildingIdAt = state.buildingIdAt.map((id) => (doomed.has(id) ? (agoraOfVendor.get(id) ?? NO_BUILDING) : id));
   state.version++;
 }

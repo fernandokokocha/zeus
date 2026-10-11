@@ -1,11 +1,10 @@
+import { MONTHS_PER_YEAR } from './clock';
 import { adjacentRoadTiles } from './commands';
 import { HOUSE_LEVELS, houseLevel } from './housing';
 import { laborSummary } from './labor';
 import { hasService } from './roamers';
 import type { Building, GameState } from './state';
 import { TAX_RATE, WAGE_PER_WORKER_PER_YEAR } from './treasury';
-
-const MONTHS_PER_YEAR = 12;
 
 export function houseTax(house: Building): number {
   const level = houseLevel(house);
