@@ -167,3 +167,11 @@ tests.
 - [x] **Step 1:** Tick slice 4 in `docs/roadmap.md`. Record the new **ours** numbers in
   zeus-numbers.
 - [x] **Step 2:** Open the PR `Slice 04: Food & appeal`. Wait for CI and Pages.
+
+### Task 11: Playtest feedback
+
+- [x] **Step 1:** Buyers buy whole loads only, and only set out when the stall has room
+  for a load and a granary holds one. Harvests come in whole loads, rounded to the
+  nearest.
+- [x] **Step 2:** The granary shows one sack per load: eight stone bins of four sacks in
+  front of the storehouse, filling bin by bin, updated on every delivery and purchase.

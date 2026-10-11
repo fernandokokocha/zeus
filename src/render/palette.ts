@@ -39,7 +39,7 @@ export const PALETTE = {
   furrow: 0x8a6b45,
   sprout: 0x8fb04a,
   wheat: 0xe3c35c,
-  sack: 0xd8c49a,
+  sack: 0xc49a52,
   bread: 0xc4873f,
   awning: 0xb5452e,
   lawn: 0x7fa84a,

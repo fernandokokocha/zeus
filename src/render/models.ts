@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { AGORA_VENDOR_SPOTS, BUILDING_SPECS, type BuildingType } from '../sim/buildings';
-import { CROP_STAGES, GRANARY_CAPACITY, cropStage } from '../sim/food';
+import { CROP_STAGES, UNITS_PER_LOAD, cropStage } from '../sim/food';
 import { houseLevel, type HouseLevel } from '../sim/housing';
 import type { Building } from '../sim/state';
 import { PALETTE, tileHash } from './palette';
@@ -40,7 +40,6 @@ const shrub = new THREE.SphereGeometry(0.22, 8, 6);
 const stream = new THREE.CylinderGeometry(0.035, 0.06, 1, 8);
 const spray = new THREE.SphereGeometry(0.06, 8, 6);
 const beamEnd = new THREE.CylinderGeometry(0.025, 0.025, 0.12, 6).rotateX(Math.PI / 2);
-const dome = new THREE.SphereGeometry(0.42, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2);
 const oven = new THREE.SphereGeometry(0.16, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2);
 const amphora = new THREE.LatheGeometry(
   [[0, 0], [0.04, 0.01], [0.08, 0.08], [0.085, 0.14], [0.05, 0.22], [0.03, 0.26], [0.045, 0.28]].map(
@@ -336,24 +335,40 @@ function granaryModel(granary: Building): THREE.Object3D {
   const group = new THREE.Group();
   const { width: W, height: D } = BUILDING_SPECS.granary;
   group.add(box(W - 0.16, 0.04, D - 0.16, paving, W / 2, 0, D / 2));
-  group.add(box(3.4, 0.08, 1.6, fieldstone, W / 2, 0.04, 1.0));
-  group.add(box(3.3, 0.8, 1.5, mudBrick, W / 2, 0.12, 1.0));
-  const roof = gableRoof(1.7, 0.45, 3.45, mudBrick);
+  group.add(box(3.5, 0.08, 1.3, fieldstone, W / 2, 0.04, 0.8));
+  group.add(box(3.4, 0.75, 1.2, mudBrick, W / 2, 0.12, 0.8));
+  const roof = gableRoof(1.4, 0.4, 3.55, mudBrick);
   roof.rotation.y = Math.PI / 2;
-  roof.position.set(W / 2, 0.92, 1.0);
+  roof.position.set(W / 2, 0.87, 0.8);
   group.add(roof);
-  group.add(box(0.4, 0.55, 0.02, doorway, W / 2, 0.12, 1.755));
-  for (const x of [0.85, 2.0, 3.15]) {
-    group.add(cylinder(0.42, 0.8, plaster, x, 0.04, 2.75));
-    group.add(placed(dome, plaster, x, 0.84, 2.75));
-    group.add(box(0.14, 0.18, 0.02, doorway, x, 0.3, 3.18));
+  group.add(box(0.4, 0.5, 0.02, doorway, W / 2, 0.12, 1.405));
+
+  GRANARY_BINS.forEach(([bx, bz]) => {
+    group.add(box(GRANARY_BIN_SIZE, 0.02, GRANARY_BIN_SIZE, earth, bx, 0.04, bz));
+    for (const [w, d, x, z] of [
+      [GRANARY_BIN_SIZE, 0.05, 0, -GRANARY_BIN_SIZE / 2],
+      [GRANARY_BIN_SIZE, 0.05, 0, GRANARY_BIN_SIZE / 2],
+      [0.05, GRANARY_BIN_SIZE, -GRANARY_BIN_SIZE / 2, 0],
+      [0.05, GRANARY_BIN_SIZE, GRANARY_BIN_SIZE / 2, 0],
+    ]) {
+      group.add(box(w, 0.08, d, fieldstone, bx + x, 0.04, bz + z));
+    }
+  });
+  const loads = Math.floor(granary.food / UNITS_PER_LOAD);
+  for (let load = 0; load < loads; load++) {
+    const [bx, bz] = GRANARY_BINS[Math.floor(load / GRANARY_SACKS_PER_BIN)];
+    const corner = load % GRANARY_SACKS_PER_BIN;
+    const offset = GRANARY_BIN_SIZE / 4;
+    const grain = box(0.3, 0.22, 0.3, sack, bx + (corner % 2 ? offset : -offset), 0.04, bz + (corner < 2 ? -offset : offset));
+    grain.rotation.y = tileHash(load, granary.id) * 0.5 - 0.25;
+    group.add(grain);
   }
-  const sacks = Math.ceil((granary.food / GRANARY_CAPACITY) * GRANARY_SACK_SPOTS.length);
-  for (const [x, z] of GRANARY_SACK_SPOTS.slice(0, sacks)) group.add(box(0.2, 0.16, 0.14, sack, x, 0.04, z));
   return group;
 }
 
-const GRANARY_SACK_SPOTS = [[0.35, 3.55], [0.6, 3.6], [1.42, 3.55], [1.67, 3.6], [2.6, 3.55], [3.6, 3.55]];
+const GRANARY_BIN_SIZE = 0.86;
+const GRANARY_SACKS_PER_BIN = 4;
+const GRANARY_BINS = [2.4, 3.4].flatMap((z) => [0.55, 1.52, 2.48, 3.45].map((x) => [x, z]));
 
 function agoraModel(): THREE.Object3D {
   const group = new THREE.Group();
