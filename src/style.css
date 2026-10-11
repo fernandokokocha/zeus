@@ -38,6 +38,26 @@ body {
   align-items: center;
 }
 
+#population,
+#treasury {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+#population {
+  width: 8.5em;
+}
+
+#treasury {
+  width: 6em;
+  text-align: right;
+}
+
+#treasury.negative {
+  color: #c0392b;
+  font-weight: bold;
+}
+
 #date {
   width: 10em;
   white-space: nowrap;
@@ -91,4 +111,10 @@ button {
 button.active {
   background: var(--terracotta);
   color: var(--parchment);
+}
+
+#speed {
+  display: flex;
+  gap: 2px;
+  white-space: nowrap;
 }

@@ -1,4 +1,4 @@
-import { checkBuildingPlacement, footprint, roadObstacle, roadPath } from '../sim/commands';
+import { checkBuildingPlacement, footprint, lotOrigins, roadObstacle, roadPath } from '../sim/commands';
 import { rectBetween, tilesIn, type Point } from '../sim/point';
 import { clampToMap, inBounds, type GameState } from '../sim/state';
 import type { Tool } from './tools';
@@ -28,12 +28,13 @@ export function previewTiles(
         ...p,
         kind: 'invalid',
       }));
-    case 'testBuilding': {
-      const check = checkBuildingPlacement(state, tool, hover.x, hover.y);
-      const kind: PreviewKind = check.obstacle ? 'invalid' : check.roadAccess ? 'valid' : 'warning';
-      return footprint(tool, hover.x, hover.y)
-        .filter((p) => inBounds(state, p.x, p.y))
-        .map((p) => ({ ...p, kind }));
-    }
+    case 'house':
+      return lotOrigins(start, hover).flatMap((lot) => {
+        const check = checkBuildingPlacement(state, tool, lot.x, lot.y);
+        const kind: PreviewKind = check.obstacle ? 'invalid' : check.roadAccess ? 'valid' : 'warning';
+        return footprint(tool, lot.x, lot.y)
+          .filter((p) => inBounds(state, p.x, p.y))
+          .map((p) => ({ ...p, kind }));
+      });
   }
 }

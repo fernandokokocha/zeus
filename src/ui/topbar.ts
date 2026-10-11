@@ -1,4 +1,5 @@
 import { gameDate, setSpeed } from '../sim/clock';
+import { population } from '../sim/settlers';
 import type { GameState, Speed } from '../sim/state';
 import { byId } from './dom';
 
@@ -11,6 +12,8 @@ const SPEEDS: [string, Speed][] = [
 const STATUS_SECONDS = 3;
 
 export function createTopbar(state: GameState): { update(): void; showStatus(text: string): void } {
+  const populationLabel = byId('population');
+  const treasury = byId('treasury');
   const date = byId('date');
   const status = byId('status');
   const speedBox = byId('speed');
@@ -27,6 +30,9 @@ export function createTopbar(state: GameState): { update(): void; showStatus(tex
   return {
     update() {
       const { month, year } = gameDate(state.tick);
+      populationLabel.textContent = `Population ${population(state).toLocaleString('en-US')}`;
+      treasury.textContent = `${state.treasury.toLocaleString('en-US')} dr`;
+      treasury.classList.toggle('negative', state.treasury < 0);
       date.textContent = `${month}, Year ${year}`;
       for (const { button, speed } of buttons) button.classList.toggle('active', speed === state.speed);
     },

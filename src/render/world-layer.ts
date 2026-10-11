@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import type { GameState } from '../sim/state';
-import { BUILDING_MODELS } from './models';
+import { buildingModel } from './models';
 import { PALETTE } from './palette';
 
 const ROAD_HEIGHT = 0.02;
@@ -23,7 +23,7 @@ export function createWorldLayer(): { group: THREE.Group; sync(state: GameState)
       group.add(roads);
 
       for (const building of state.buildings) {
-        const model = BUILDING_MODELS[building.type]();
+        const model = buildingModel(building);
         model.position.set(building.x, 0, building.y);
         group.add(model);
       }
