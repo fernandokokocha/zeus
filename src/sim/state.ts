@@ -24,6 +24,7 @@ export interface Building {
   coveredUntil: Record<Coverage, number>;
   level: HouseLevel;
   food: number;
+  fleece: number;
   growth: number;
   performingUntil: number;
 }
@@ -58,6 +59,21 @@ export interface Trainee extends Walk {
   destinationId: number;
 }
 
+export interface Sheep extends Walk {
+  id: number;
+  home: Point;
+  fleece: number;
+  grazeRest: number;
+}
+
+export interface Shepherd extends Walk {
+  id: number;
+  homeId: number;
+  sheepId: number;
+  fleece: number;
+  returning: boolean;
+}
+
 export type CarrierKind = 'cartPusher' | 'buyer';
 
 export interface Carrier extends Walk {
@@ -85,6 +101,10 @@ export interface GameState {
   nextCarrierId: number;
   trainees: Trainee[];
   nextTraineeId: number;
+  sheep: Sheep[];
+  nextSheepId: number;
+  shepherds: Shepherd[];
+  nextShepherdId: number;
   rngState: number;
   entry: Point;
   treasury: number;
@@ -117,6 +137,10 @@ export function newGameState(size: number, terrain: Terrain[], entry: Point): Ga
     nextCarrierId: 1,
     trainees: [],
     nextTraineeId: 1,
+    sheep: [],
+    nextSheepId: 1,
+    shepherds: [],
+    nextShepherdId: 1,
     rngState: DEFAULT_SEED,
     entry,
     treasury: STARTING_TREASURY,

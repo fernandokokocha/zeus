@@ -11,9 +11,11 @@ import {
   type Rotation,
 } from './buildings';
 import { rectBetween, tilesIn, type Point } from './point';
+import { GRAZE_PAUSE_TICKS, isPasture } from './sheep';
 import { NO_BUILDING, clampToMap, inBounds, tileIndex, type Building, type GameState } from './state';
 import { BUILDABLE, TERRAIN_NAMES } from './terrain';
-import { ROADBLOCK_COST, ROAD_TILE_COST } from './treasury';
+import { ROADBLOCK_COST, ROAD_TILE_COST, SHEEP_COST } from './treasury';
+import { walkerTile } from './walking';
 
 export type Result = { ok: true } | { ok: false; reason: string };
 
@@ -71,6 +73,20 @@ export function placeRoadblock(state: GameState, at: Point): Result {
   if (obstacle) return fail(obstacle);
   state.roadblocks[tileIndex(state, at.x, at.y)] = true;
   state.treasury -= ROADBLOCK_COST;
+  state.version++;
+  return OK;
+}
+
+export function sheepObstacle(state: GameState, at: Point): string | null {
+  if (!inBounds(state, at.x, at.y)) return 'Outside the map';
+  return isPasture(state, at) ? null : 'Sheep graze on open grass or meadow';
+}
+
+export function placeSheep(state: GameState, at: Point): Result {
+  const obstacle = sheepObstacle(state, at);
+  if (obstacle) return fail(obstacle);
+  state.sheep.push({ id: state.nextSheepId++, home: at, path: [at], step: 0, progress: 0, fleece: 1, grazeRest: GRAZE_PAUSE_TICKS });
+  state.treasury -= SHEEP_COST;
   state.version++;
   return OK;
 }
@@ -179,6 +195,7 @@ function build(state: GameState, placement: Placement): void {
     coveredUntil: { water: 0, tax: 0, philosophy: 0, athletics: 0, drama: 0 },
     level: 'hut' as const,
     food: 0,
+    fleece: 0,
     growth: 0,
     performingUntil: 0,
   };
@@ -218,7 +235,12 @@ export function placeHouses(state: GameState, from: Point, to: Point, rotation: 
 
 export function demolish(state: GameState, from: Point, to: Point): void {
   const doomed = new Set<number>();
-  for (const p of tilesIn(rectBetween(clampToMap(state, from), clampToMap(state, to)))) {
+  const area = rectBetween(clampToMap(state, from), clampToMap(state, to));
+  state.sheep = state.sheep.filter((sheep) => {
+    const at = walkerTile(sheep);
+    return at.x < area.minX || at.x > area.maxX || at.y < area.minY || at.y > area.maxY;
+  });
+  for (const p of tilesIn(area)) {
     const i = tileIndex(state, p.x, p.y);
     state.roads[i] = false;
     state.roadblocks[i] = false;
@@ -235,6 +257,7 @@ export function demolish(state: GameState, from: Point, to: Point): void {
   state.roamers = state.roamers.filter((r) => !doomed.has(r.homeId));
   state.carriers = state.carriers.filter((c) => !doomed.has(c.homeId));
   state.trainees = state.trainees.filter((t) => !doomed.has(t.homeId));
+  state.shepherds = state.shepherds.filter((s) => !doomed.has(s.homeId));
   state.buildingIdAt = state.buildingIdAt.map((id) => (doomed.has(id) ? (agoraOfVendor.get(id) ?? NO_BUILDING) : id));
   state.version++;
 }

@@ -31,10 +31,16 @@ export function walkerPosition(walk: Walk, lookAhead: number): Point & { facing:
   };
 }
 
-export function walkPath(state: GameState, walk: Walk, replan: () => boolean, arrive: () => void): void {
+export function walkPath(
+  state: GameState,
+  walk: Walk,
+  replan: () => boolean,
+  arrive: () => void,
+  passable: (state: GameState, p: Point) => boolean = isRoad,
+): void {
   walk.progress += WALKER_TILES_PER_TICK;
   while (walk.progress >= 1 && walk.step < walk.path.length - 1) {
-    if (!isRoad(state, walk.path[walk.step + 1]) && !replan()) return;
+    if (!passable(state, walk.path[walk.step + 1]) && !replan()) return;
     if (walk.step === walk.path.length - 1) break;
     walk.step++;
     walk.progress--;

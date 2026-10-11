@@ -83,7 +83,7 @@ need.
 `src/sim/walking.ts`, `src/sim/tick.ts`, `src/sim/buildings.ts`. Create
 `src/sim/sheep.ts`, `tests/sim/sheep.test.ts`.
 
-- [ ] **Step 1:** Write failing tests: a sheep is placed on open grass or meadow for
+- [x] **Step 1:** Write failing tests: a sheep is placed on open grass or meadow for
   4 dr, not on a road, building or rock; it grazes within 3 tiles of its spot; its
   fleece regrows in a year. A staffed Carding Shed sends its shepherd 1.5 months
   after staffing (slower at half staff, never without workers) to the nearest sheep
@@ -91,7 +91,7 @@ need.
   home. Not to a sheep another shepherd is after, nor while the shed holds 4 loads. A
   sheep demolished sends him home empty; a demolished shed takes him with it.
   Demolish removes sheep; a built-over sheep walks off.
-- [ ] **Step 2:** Implement. Tests pass.
+- [x] **Step 2:** Implement. Tests pass.
 
 ### Task 4: Storehouse and fleece carriers
 

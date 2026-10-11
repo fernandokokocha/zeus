@@ -28,6 +28,7 @@ const bread = lambert(PALETTE.bread);
 const awning = lambert(PALETTE.awning);
 const lawn = lambert(PALETTE.lawn);
 const sand = lambert(PALETTE.sand);
+const wool = lambert(PALETTE.wool);
 const scroll = lambert(PALETTE.scroll);
 const skin = lambert(PALETTE.skin);
 const philosopherRobe = lambert(PALETTE.philosopherRobe);
@@ -645,6 +646,35 @@ function theaterModel(performing: boolean): THREE.Object3D {
   return group;
 }
 
+function fleecePile(x: number, z: number, size: number): THREE.Object3D {
+  const group = new THREE.Group();
+  for (const [dx, dz, s] of [[0, 0, 1.2], [0.12, 0.05, 0.9], [-0.06, 0.12, 0.8]]) {
+    const puff = placed(shrub, wool, x + dx * size, 0.08 * size, z + dz * size);
+    puff.scale.set(s * size, 0.55 * s * size, s * size);
+    group.add(puff);
+  }
+  return group;
+}
+
+function cardingShedModel(shed: Building): THREE.Object3D {
+  const group = new THREE.Group();
+  group.add(box(1.86, 0.04, 1.86, earth, 1, 0, 1));
+  group.add(box(1.5, 0.06, 0.8, fieldstone, 1, 0.04, 0.55));
+  group.add(box(1.4, 0.5, 0.7, timber, 1, 0.1, 0.55));
+  const roof = gableRoof(0.86, 0.3, 1.56, timber, reed);
+  roof.rotation.y = Math.PI / 2;
+  roof.position.set(1, 0.6, 0.55);
+  group.add(roof);
+  group.add(box(0.3, 0.36, 0.02, doorway, 0.7, 0.1, 0.905));
+  group.add(box(0.5, 0.16, 0.22, timber, 1.35, 0.04, 1.25));
+  for (const x of [1.2, 1.5]) group.add(box(0.14, 0.02, 0.16, fieldstone, x, 0.2, 1.25));
+  group.add(fleecePile(0.45, 1.35, 1.2));
+  if (shed.fleece > 0) group.add(fleecePile(1.55, 1.65, 1));
+  for (const [x, z] of [[0.15, 1.85], [0.6, 1.85], [1.05, 1.85], [1.5, 1.85]]) group.add(columnAt(0.22, timber, x, 0.04, z));
+  group.add(box(1.5, 0.03, 0.03, timber, 0.83, 0.18, 1.85));
+  return group;
+}
+
 const MODELS: Record<Exclude<BuildingType, 'house'>, (building: Building, state: GameState) => THREE.Object3D> = {
   fountain: (b) => fountainModel(b.workers > 0),
   taxOffice: (b) => taxOfficeModel(b.workers > 0),
@@ -661,6 +691,7 @@ const MODELS: Record<Exclude<BuildingType, 'house'>, (building: Building, state:
   gymnasium: gymnasiumModel,
   dramaSchool: dramaSchoolModel,
   theater: (b, state) => theaterModel(isPerforming(state, b)),
+  cardingShed: cardingShedModel,
 };
 
 const HOUSE_MODELS: Record<HouseLevel, () => THREE.Object3D> = { hut: hutModel, shack: shackModel, hovel: hovelModel };

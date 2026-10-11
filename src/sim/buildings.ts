@@ -16,7 +16,8 @@ export type BuildingType =
   | 'podium'
   | 'gymnasium'
   | 'dramaSchool'
-  | 'theater';
+  | 'theater'
+  | 'cardingShed';
 
 export interface BuildingSpec {
   name: string;
@@ -45,6 +46,7 @@ export const BUILDING_SPECS: Record<BuildingType, BuildingSpec> = {
   gymnasium: { name: 'Gymnasium', width: 3, height: 3, cost: 30, workers: 7, appeal: [], needsRoad: true },
   dramaSchool: { name: 'Drama School', width: 3, height: 3, cost: 16, workers: 10, appeal: [], needsRoad: true },
   theater: { name: 'Theater', width: 5, height: 5, cost: 60, workers: 18, appeal: [6, 5, 4], needsRoad: true },
+  cardingShed: { name: 'Carding Shed', width: 2, height: 2, cost: 16, workers: 8, appeal: [-5, -3, -1], needsRoad: true },
 };
 
 export type Rotation = 0 | 1 | 2 | 3;
