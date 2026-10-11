@@ -19,12 +19,15 @@ const water = lambert(PALETTE.water);
 const bronze = lambert(PALETTE.bronze);
 const gold = lambert(PALETTE.coins);
 const foliage = lambert(PALETTE.foliage);
+const falling = new THREE.MeshLambertMaterial({ color: PALETTE.water, transparent: true, opacity: 0.75 });
 
 const unitBox = new THREE.BoxGeometry(1, 1, 1);
 const stone = new THREE.DodecahedronGeometry(0.05);
 const column = new THREE.CylinderGeometry(0.07, 0.08, 1, 10).translate(0, 0.5, 0);
 const disc = new THREE.CylinderGeometry(1, 1, 1, 20).translate(0, 0.5, 0);
 const shrub = new THREE.SphereGeometry(0.22, 8, 6);
+const stream = new THREE.CylinderGeometry(0.02, 0.035, 1, 6);
+const spray = new THREE.SphereGeometry(0.06, 8, 6);
 const beamEnd = new THREE.CylinderGeometry(0.025, 0.025, 0.12, 6).rotateX(Math.PI / 2);
 const oven = new THREE.SphereGeometry(0.16, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2);
 const amphora = new THREE.LatheGeometry(
@@ -37,6 +40,7 @@ const amphora = new THREE.LatheGeometry(
 const { width: LOT_WIDTH, height: LOT_DEPTH } = BUILDING_SPECS.house;
 const LOT_INSET = 0.1;
 const STONE_SPACING = 0.22;
+const FOUNTAIN_STREAMS = 6;
 
 function box(w: number, h: number, d: number, material: THREE.Material, x: number, y: number, z: number): THREE.Mesh {
   const mesh = new THREE.Mesh(unitBox, material);
@@ -150,21 +154,37 @@ function gableRoof(span: number, rise: number, length: number, gable: THREE.Mate
   return group;
 }
 
-function fountainModel(): THREE.Object3D {
+function waterStream(from: THREE.Vector3, to: THREE.Vector3): THREE.Mesh {
+  const mesh = new THREE.Mesh(stream, falling);
+  mesh.position.copy(from).add(to).multiplyScalar(0.5);
+  mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), to.clone().sub(from).normalize());
+  mesh.scale.y = from.distanceTo(to);
+  return mesh;
+}
+
+function fountainModel(working: boolean): THREE.Object3D {
   const group = new THREE.Group();
   group.add(box(1.84, 0.04, 1.84, paving, 1, 0, 1));
   group.add(cylinder(0.7, 0.24, marble, 1, 0.04, 1));
-  group.add(cylinder(0.6, 0.02, water, 1, 0.25, 1));
+  group.add(cylinder(0.6, 0.02, working ? water : earth, 1, 0.25, 1));
   group.add(cylinder(0.14, 0.12, marble, 1, 0.04, 1));
   group.add(columnAt(0.55, marble, 1, 0.16, 1));
   group.add(cylinder(0.24, 0.07, marble, 1, 0.7, 1));
-  group.add(cylinder(0.2, 0.02, water, 1, 0.76, 1));
+  group.add(cylinder(0.2, 0.02, working ? water : fieldstone, 1, 0.76, 1));
   group.add(cylinder(0.05, 0.12, bronze, 1, 0.77, 1));
+  if (working) {
+    group.add(placed(spray, falling, 1, 0.93, 1));
+    for (let i = 0; i < FOUNTAIN_STREAMS; i++) {
+      const angle = (i / FOUNTAIN_STREAMS) * Math.PI * 2;
+      const out = (r: number, y: number) => new THREE.Vector3(1 + Math.cos(angle) * r, y, 1 + Math.sin(angle) * r);
+      group.add(waterStream(out(0.24, 0.76), out(0.4, 0.27)));
+    }
+  }
   for (const [x, z] of [[0.22, 0.22], [1.78, 0.22], [0.22, 1.78], [1.78, 1.78]]) group.add(placed(shrub, foliage, x, 0.16, z));
   return group;
 }
 
-function taxOfficeModel(): THREE.Object3D {
+function taxOfficeModel(working: boolean): THREE.Object3D {
   const group = new THREE.Group();
   group.add(box(1.84, 0.04, 1.84, paving, 1, 0, 1));
   const width = 1.5;
@@ -186,7 +206,15 @@ function taxOfficeModel(): THREE.Object3D {
   group.add(box(1.0, 0.08, 0.5, fieldstone, 1, 0.04, porchZ - 0.15));
 
   group.add(box(0.3, 0.16, 0.2, timber, 1.6, 0.04, 1.7));
-  group.add(box(0.26, 0.04, 0.16, gold, 1.6, 0.2, 1.7));
+  if (working) {
+    group.add(box(0.26, 0.04, 0.16, gold, 1.6, 0.2, 1.7));
+    const lid = box(0.3, 0.02, 0.2, timber, 0, 0, 0);
+    lid.position.set(1.6, 0.29, 1.6);
+    lid.rotation.x = -1.2;
+    group.add(lid);
+  } else {
+    group.add(box(0.31, 0.03, 0.21, timber, 1.6, 0.2, 1.7));
+  }
   group.add(placed(amphora, clay, 0.3, 0.04, 1.72));
   return group;
 }
@@ -235,7 +263,7 @@ function palaceModel(): THREE.Object3D {
   return group;
 }
 
-const MODELS: Record<Exclude<BuildingType, 'house'>, () => THREE.Object3D> = {
+const MODELS: Record<Exclude<BuildingType, 'house'>, (working: boolean) => THREE.Object3D> = {
   fountain: fountainModel,
   taxOffice: taxOfficeModel,
   palace: palaceModel,
@@ -243,5 +271,5 @@ const MODELS: Record<Exclude<BuildingType, 'house'>, () => THREE.Object3D> = {
 
 export function buildingModel(building: Building): THREE.Object3D {
   if (building.type === 'house') return houseLevel(building) ? hutModel() : vacantLotModel();
-  return MODELS[building.type]();
+  return MODELS[building.type](building.workers > 0);
 }

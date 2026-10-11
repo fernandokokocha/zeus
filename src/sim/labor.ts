@@ -16,7 +16,9 @@ function jobsOffered(state: GameState, building: Building): number {
 export function assignWorkers(state: GameState): void {
   let available = workforce(state);
   for (const building of state.buildings) {
+    const wasWorking = building.workers > 0;
     building.workers = Math.min(jobsOffered(state, building), available);
+    if (building.workers > 0 !== wasWorking) state.version++;
     available -= building.workers;
   }
 }

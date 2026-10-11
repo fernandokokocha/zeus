@@ -55,3 +55,21 @@ describe('laborSummary', () => {
     expect(laborSummary(game)).toEqual({ workforce: 10, jobs: 12, employed: 10 });
   });
 });
+
+describe('assignWorkers and the picture', () => {
+  it('bumps the version when a building starts or stops working, and only then', () => {
+    const game = gameWithPopulation(0);
+    placeBuilding(game, 'fountain', 2, 11);
+    assignWorkers(game);
+    const idle = game.version;
+    game.buildings[0].residents = 4;
+    assignWorkers(game);
+    expect(game.version).toBe(idle + 1);
+    game.buildings[0].residents = 8;
+    assignWorkers(game);
+    expect(game.version).toBe(idle + 1);
+    game.buildings[0].residents = 0;
+    assignWorkers(game);
+    expect(game.version).toBe(idle + 2);
+  });
+});
