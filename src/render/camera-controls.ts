@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { placeCamera, type View } from './view';
 
 const KEY_PAN_PIXELS_PER_SECOND = 700;
-const ZOOM_STEP = 1.1;
+const ZOOM_PER_WHEEL_PIXEL = 0.0005;
 const MIN_ZOOM = 0.4;
 const MAX_ZOOM = 4;
 const MIDDLE_BUTTON = 1;
@@ -48,7 +48,7 @@ export function attachCameraControls(view: View, mapSize: number): { update(dt: 
     'wheel',
     (e) => {
       e.preventDefault();
-      const factor = e.deltaY < 0 ? ZOOM_STEP : 1 / ZOOM_STEP;
+      const factor = Math.exp(-e.deltaY * ZOOM_PER_WHEEL_PIXEL);
       camera.zoom = clamp(camera.zoom * factor, MIN_ZOOM, MAX_ZOOM);
       camera.updateProjectionMatrix();
     },
