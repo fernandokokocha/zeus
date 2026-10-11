@@ -175,3 +175,7 @@ tests.
   nearest.
 - [x] **Step 2:** The granary shows one sack per load: eight stone bins of four sacks in
   front of the storehouse, filling bin by bin, updated on every delivery and purchase.
+- [x] **Step 3:** **R** turns the next building a quarter turn clockwise, in the preview
+  and when placed. A quarter turn swaps width and depth (Palace 6×9, Agora 6×3). The
+  agora's vendor spots and walk turn with it, and a vendor takes its agora's turn.
+  Models turn about their footprint's centre.

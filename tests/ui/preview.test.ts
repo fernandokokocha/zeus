@@ -120,3 +120,14 @@ describe('previewTiles for a decoration', () => {
     expect(previewTiles(grassGame(), 'park', null, { x: 3, y: 3 })).toEqual([{ x: 3, y: 3, kind: 'valid' }]);
   });
 });
+
+describe('previewTiles for a rotated building', () => {
+  it('centres the turned Palace footprint on the cursor', () => {
+    const tiles = previewTiles(grassGame(), 'palace', null, { x: 10, y: 4 }, 1);
+    expect(tiles).toHaveLength(54);
+    expect(Math.min(...tiles.map((t) => t.x))).toBe(8);
+    expect(Math.max(...tiles.map((t) => t.x))).toBe(13);
+    expect(Math.min(...tiles.map((t) => t.y))).toBe(0);
+    expect(Math.max(...tiles.map((t) => t.y))).toBe(8);
+  });
+});
