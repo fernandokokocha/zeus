@@ -15,11 +15,14 @@ export interface Building {
   residents: number;
 }
 
-export interface Settler {
-  id: number;
+export interface Walk {
   path: Point[];
   step: number;
   progress: number;
+}
+
+export interface Settler extends Walk {
+  id: number;
   destinationId: number;
   people: number;
 }

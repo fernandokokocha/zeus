@@ -1,8 +1,9 @@
 import { adjacentRoadTiles } from './commands';
 import { HOUSE_LEVELS, NEXT_LEVEL, houseCapacity, houseLevel, houseName } from './housing';
-import { canSettlersReach, settlerTile } from './settlers';
+import { canSettlersReach } from './settlers';
 import { NO_BUILDING, buildingById, tileIndex, type Building, type GameState, type Settler } from './state';
 import { BUILDABLE, TERRAIN_NAMES } from './terrain';
+import { walkerTile } from './walking';
 
 export interface Description {
   title: string;
@@ -20,7 +21,7 @@ export function describeTile(state: GameState, x: number, y: number): Descriptio
   }
 
   const settler = state.settlers.find((s) => {
-    const tile = settlerTile(s);
+    const tile = walkerTile(s);
     return tile.x === x && tile.y === y;
   });
   if (settler) return describeSettler(state, settler);

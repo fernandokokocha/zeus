@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { WALKER_TILES_PER_TICK, settlerPosition } from '../sim/settlers';
+import { WALKER_TILES_PER_TICK, walkerPosition } from '../sim/walking';
 import type { GameState } from '../sim/state';
 import { PALETTE } from './palette';
 
@@ -41,7 +41,7 @@ export function createWalkerLayer(): { group: THREE.Group; sync(state: GameState
     sync(state, ticksAhead) {
       if (state.settlers.length > capacity) allocate(Math.max(START_CAPACITY, 2 * state.settlers.length));
       state.settlers.forEach((settler, i) => {
-        const at = settlerPosition(settler, ticksAhead * WALKER_TILES_PER_TICK);
+        const at = walkerPosition(settler, ticksAhead * WALKER_TILES_PER_TICK);
         const travelled = Math.abs(at.x) + Math.abs(at.y);
         const bob = Math.abs(Math.sin(travelled * Math.PI * BOB_STEPS_PER_TILE)) * BOB_HEIGHT;
         position.set(at.x + 0.5, bob, at.y + 0.5);
