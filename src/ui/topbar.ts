@@ -1,4 +1,5 @@
 import { gameDate, setSpeed, togglePause } from '../sim/clock';
+import { laborSummary } from '../sim/labor';
 import { population } from '../sim/settlers';
 import type { GameState, Speed } from '../sim/state';
 import { byId } from './dom';
@@ -14,6 +15,7 @@ const STATUS_SECONDS = 3;
 export function createTopbar(state: GameState): { update(): void; showStatus(text: string): void } {
   const populationLabel = byId('population');
   const treasury = byId('treasury');
+  const labor = byId('labor');
   const date = byId('date');
   const status = byId('status');
   const speedBox = byId('speed');
@@ -40,7 +42,8 @@ export function createTopbar(state: GameState): { update(): void; showStatus(tex
     update() {
       const { month, year } = gameDate(state.tick);
       populationLabel.textContent = `Population ${population(state).toLocaleString('en-US')}`;
-      treasury.textContent = `${state.treasury.toLocaleString('en-US')} dr`;
+      treasury.textContent = `${Math.floor(state.treasury).toLocaleString('en-US')} dr`;
+      labor.textContent = laborText(state);
       treasury.classList.toggle('negative', state.treasury < 0);
       date.textContent = `${month}, Year ${year}`;
       for (const { button, speed } of buttons) button.classList.toggle('active', speed === state.speed);
@@ -51,4 +54,9 @@ export function createTopbar(state: GameState): { update(): void; showStatus(tex
       statusTimer = window.setTimeout(() => (status.textContent = ''), STATUS_SECONDS * 1000);
     },
   };
+}
+
+function laborText(state: GameState): string {
+  const { workforce, jobs, employed } = laborSummary(state);
+  return jobs > employed ? `Need ${jobs - employed} workers` : `Unemployed ${workforce - employed}`;
 }

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { BUILDING_SPECS } from '../sim/buildings';
+import { BUILDING_SPECS, type BuildingType } from '../sim/buildings';
 import { houseLevel } from '../sim/housing';
 import type { Building } from '../sim/state';
 import { PALETTE, tileHash } from './palette';
@@ -12,9 +12,19 @@ const reed = lambert(PALETTE.reed);
 const timber = lambert(PALETTE.trunk);
 const doorway = lambert(PALETTE.doorway);
 const clay = lambert(PALETTE.terracotta);
+const marble = lambert(PALETTE.marble);
+const plaster = lambert(PALETTE.plaster);
+const paving = lambert(PALETTE.paving);
+const water = lambert(PALETTE.water);
+const bronze = lambert(PALETTE.bronze);
+const gold = lambert(PALETTE.coins);
+const foliage = lambert(PALETTE.foliage);
 
 const unitBox = new THREE.BoxGeometry(1, 1, 1);
 const stone = new THREE.DodecahedronGeometry(0.05);
+const column = new THREE.CylinderGeometry(0.07, 0.08, 1, 10).translate(0, 0.5, 0);
+const disc = new THREE.CylinderGeometry(1, 1, 1, 20).translate(0, 0.5, 0);
+const shrub = new THREE.SphereGeometry(0.22, 8, 6);
 const beamEnd = new THREE.CylinderGeometry(0.025, 0.025, 0.12, 6).rotateX(Math.PI / 2);
 const oven = new THREE.SphereGeometry(0.16, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2);
 const amphora = new THREE.LatheGeometry(
@@ -110,6 +120,128 @@ function hutModel(): THREE.Object3D {
   return group;
 }
 
+
+function cylinder(radius: number, height: number, material: THREE.Material, x: number, y: number, z: number): THREE.Mesh {
+  const mesh = placed(disc, material, x, y, z);
+  mesh.scale.set(radius, height, radius);
+  return mesh;
+}
+
+function columnAt(height: number, material: THREE.Material, x: number, y: number, z: number): THREE.Mesh {
+  const mesh = placed(column, material, x, y, z);
+  mesh.scale.y = height;
+  return mesh;
+}
+
+function gableRoof(span: number, rise: number, length: number, gable: THREE.Material): THREE.Object3D {
+  const group = new THREE.Group();
+  const shape = new THREE.Shape([new THREE.Vector2(-span / 2, 0), new THREE.Vector2(span / 2, 0), new THREE.Vector2(0, rise)]);
+  const prism = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, { depth: length, bevelEnabled: false }), gable);
+  prism.position.z = -length / 2;
+  group.add(prism);
+  const slope = Math.atan2(rise, span / 2);
+  const slab = Math.hypot(span / 2, rise) + 0.08;
+  for (const side of [-1, 1]) {
+    const tiles = box(slab, 0.05, length + 0.1, clay, 0, 0, 0);
+    tiles.position.set((side * span) / 4, rise / 2 + 0.02, 0);
+    tiles.rotation.z = -side * slope;
+    group.add(tiles);
+  }
+  return group;
+}
+
+function fountainModel(): THREE.Object3D {
+  const group = new THREE.Group();
+  group.add(box(1.84, 0.04, 1.84, paving, 1, 0, 1));
+  group.add(cylinder(0.7, 0.24, marble, 1, 0.04, 1));
+  group.add(cylinder(0.6, 0.02, water, 1, 0.25, 1));
+  group.add(cylinder(0.14, 0.12, marble, 1, 0.04, 1));
+  group.add(columnAt(0.55, marble, 1, 0.16, 1));
+  group.add(cylinder(0.24, 0.07, marble, 1, 0.7, 1));
+  group.add(cylinder(0.2, 0.02, water, 1, 0.76, 1));
+  group.add(cylinder(0.05, 0.12, bronze, 1, 0.77, 1));
+  for (const [x, z] of [[0.22, 0.22], [1.78, 0.22], [0.22, 1.78], [1.78, 1.78]]) group.add(placed(shrub, foliage, x, 0.16, z));
+  return group;
+}
+
+function taxOfficeModel(): THREE.Object3D {
+  const group = new THREE.Group();
+  group.add(box(1.84, 0.04, 1.84, paving, 1, 0, 1));
+  const width = 1.5;
+  const depth = 0.95;
+  const wallHeight = 0.6;
+  const cz = 0.2 + depth / 2;
+  group.add(box(width + 0.08, 0.08, depth + 0.08, fieldstone, 1, 0.04, cz));
+  group.add(box(width, wallHeight, depth, plaster, 1, 0.12, cz));
+  const roof = gableRoof(depth + 0.2, 0.3, width + 0.16, plaster);
+  roof.rotation.y = Math.PI / 2;
+  roof.position.set(1, 0.12 + wallHeight, cz);
+  group.add(roof);
+  group.add(box(0.26, 0.4, 0.02, doorway, 1, 0.12, cz + depth / 2 + 0.005));
+  for (const wx of [0.55, 1.45]) group.add(box(0.16, 0.12, 0.02, doorway, wx, 0.42, cz + depth / 2 + 0.005));
+
+  const porchZ = cz + depth / 2 + 0.3;
+  for (const px of [0.62, 1.38]) group.add(columnAt(wallHeight, marble, px, 0.12, porchZ));
+  group.add(box(0.96, 0.06, 0.4, clay, 1, 0.12 + wallHeight, porchZ - 0.12));
+  group.add(box(1.0, 0.08, 0.5, fieldstone, 1, 0.04, porchZ - 0.15));
+
+  group.add(box(0.3, 0.16, 0.2, timber, 1.6, 0.04, 1.7));
+  group.add(box(0.26, 0.04, 0.16, gold, 1.6, 0.2, 1.7));
+  group.add(placed(amphora, clay, 0.3, 0.04, 1.72));
+  return group;
+}
+
+function palaceModel(): THREE.Object3D {
+  const group = new THREE.Group();
+  const { width: W, height: D } = BUILDING_SPECS.palace;
+  group.add(box(W - 0.2, 0.04, D - 0.2, paving, W / 2, 0, D / 2));
+  group.add(box(W - 0.6, 0.18, 3.0, marble, W / 2, 0.04, 1.8));
+
+  const hallWidth = 4.6;
+  const hallDepth = 2.2;
+  const hallZ = 1.65;
+  const floor = 0.22;
+  const wallHeight = 1.1;
+  group.add(box(hallWidth - 0.6, wallHeight, hallDepth - 0.5, plaster, W / 2, floor, hallZ - 0.1));
+  const columns = 8;
+  for (let i = 0; i < columns; i++) {
+    const x = W / 2 - hallWidth / 2 + 0.15 + (i * (hallWidth - 0.3)) / (columns - 1);
+    group.add(columnAt(wallHeight, marble, x, floor, hallZ + hallDepth / 2 - 0.12));
+    group.add(columnAt(wallHeight, marble, x, floor, hallZ - hallDepth / 2 + 0.12));
+  }
+  group.add(box(hallWidth + 0.1, 0.12, hallDepth + 0.1, marble, W / 2, floor + wallHeight, hallZ));
+  const roof = gableRoof(hallWidth + 0.1, 0.65, hallDepth + 0.1, marble);
+  roof.position.set(W / 2, floor + wallHeight + 0.12, hallZ);
+  group.add(roof);
+  group.add(box(0.5, 0.7, 0.02, doorway, W / 2, floor, hallZ + hallDepth / 2 - 0.34));
+
+  for (const side of [-1, 1]) {
+    const wx = W / 2 + side * 3.25;
+    group.add(box(1.7, 0.75, 2.4, plaster, wx, 0.22, 1.8));
+    group.add(box(1.84, 0.08, 2.54, clay, wx, 0.97, 1.8));
+    for (const dz of [-0.6, 0, 0.6]) group.add(box(0.02, 0.18, 0.14, doorway, wx - side * 0.86, 0.6, 1.8 + dz));
+    for (const dx of [-0.45, 0.45]) group.add(box(0.14, 0.18, 0.02, doorway, wx + dx, 0.6, 3.01));
+  }
+
+  for (let i = 0; i < 4; i++) group.add(box(1.6 - i * 0.04, 0.045, 0.16, marble, W / 2, 0.04 + i * 0.045, 3.6 - i * 0.12));
+  group.add(box(5.2, 0.02, 1.9, marble, W / 2, 0.04, 4.7));
+  group.add(box(1.6, 0.06, 0.9, fieldstone, W / 2, 0.06, 4.75));
+  group.add(box(1.48, 0.02, 0.78, water, W / 2, 0.11, 4.75));
+  for (const side of [-1, 1]) {
+    group.add(box(0.3, 0.3, 0.3, marble, W / 2 + side * 1.6, 0.04, 4.75));
+    group.add(placed(shrub, foliage, W / 2 + side * 1.6, 0.52, 4.75));
+    for (const dz of [0.2, 1.3]) group.add(placed(shrub, foliage, W / 2 + side * 3.6, 0.2, 3.7 + dz));
+  }
+  return group;
+}
+
+const MODELS: Record<Exclude<BuildingType, 'house'>, () => THREE.Object3D> = {
+  fountain: fountainModel,
+  taxOffice: taxOfficeModel,
+  palace: palaceModel,
+};
+
 export function buildingModel(building: Building): THREE.Object3D {
-  return houseLevel(building) ? hutModel() : vacantLotModel();
+  if (building.type === 'house') return houseLevel(building) ? hutModel() : vacantLotModel();
+  return MODELS[building.type]();
 }

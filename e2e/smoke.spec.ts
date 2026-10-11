@@ -23,7 +23,8 @@ async function drag(page: Page, from: [number, number], to: [number, number]): P
   await page.mouse.up();
 }
 
-test('boots, builds a street and settlers move in', async ({ page }) => {
+test('boots, builds a street with services and settlers move in', async ({ page }) => {
+  test.setTimeout(60_000);
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   page.on('console', (message) => {
@@ -34,21 +35,31 @@ test('boots, builds a street and settlers move in', async ({ page }) => {
   await expect(page.locator('#date')).toHaveText('January, Year 1');
   await expect(page.locator('#population')).toHaveText('Population 0');
   await expect(page.locator('#treasury')).toHaveText('5,000 dr');
-  await expect(page.locator('#toolbar button')).toHaveCount(3);
+  await expect(page.locator('#toolbar button')).toHaveCount(6);
 
   await page.getByRole('button', { name: 'Demolish' }).click();
-  await drag(page, [8, 47], [22, 53]);
+  await drag(page, [8, 44], [30, 57]);
   await page.getByRole('button', { name: /^Road/ }).click();
-  await drag(page, [8, 50], [22, 50]);
+  await drag(page, [8, 50], [29, 50]);
   await page.getByRole('button', { name: /^Housing/ }).click();
   await drag(page, [9, 48], [20, 49]);
   await drag(page, [9, 51], [20, 52]);
+  await page.getByRole('button', { name: /^Fountain/ }).click();
+  await drag(page, [21, 48], [21, 48]);
+  await page.getByRole('button', { name: /^Tax Office/ }).click();
+  await drag(page, [23, 48], [23, 48]);
+  await page.getByRole('button', { name: /^Palace/ }).click();
+  await drag(page, [25, 53], [25, 53]);
   await page.keyboard.press('Escape');
   await expect(page.locator('#treasury')).not.toHaveText('5,000 dr');
 
   await page.getByRole('button', { name: '4×' }).click();
   await expect(page.locator('#population')).not.toHaveText('Population 0', { timeout: 15_000 });
-  await page.waitForTimeout(2500);
+  await expect(page.locator('#labor')).toHaveText(/^(Unemployed|Need) \d+/);
+  const centre = await tileOnScreen(page, START_VIEW_CENTER.x, START_VIEW_CENTER.y);
+  await page.mouse.move(centre.x, centre.y);
+  await page.mouse.wheel(0, -800);
+  await page.waitForTimeout(6000);
   await page.screenshot({ path: 'test-results/screenshot.png' });
 
   await page.keyboard.press('Space');

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { placeRoad } from '../../src/sim/commands';
+import { placeBuilding, placeRoad } from '../../src/sim/commands';
 import { previewTiles } from '../../src/ui/preview';
 import { grassGame, setTerrain } from '../sim/helpers';
 
@@ -58,5 +58,33 @@ describe('previewTiles for a lot drag', () => {
     expect(kindAt(1, 1)).toBe('valid');
     expect(kindAt(3, 1)).toBe('warning');
     expect(kindAt(6, 2)).toBe('invalid');
+  });
+});
+
+describe('previewTiles for a single building', () => {
+  it('centres the Palace footprint on the cursor', () => {
+    const tiles = previewTiles(grassGame(), 'palace', null, { x: 10, y: 4 });
+    expect(tiles).toHaveLength(54);
+    expect(Math.min(...tiles.map((t) => t.x))).toBe(6);
+    expect(Math.max(...tiles.map((t) => t.x))).toBe(14);
+    expect(Math.min(...tiles.map((t) => t.y))).toBe(2);
+    expect(Math.max(...tiles.map((t) => t.y))).toBe(7);
+  });
+
+  it('anchors a 2×2 building at the cursor', () => {
+    const game = grassGame();
+    placeRoad(game, { x: 2, y: 1 }, { x: 2, y: 1 });
+    expect(previewTiles(game, 'fountain', null, { x: 2, y: 2 })).toEqual([
+      { x: 2, y: 2, kind: 'valid' },
+      { x: 3, y: 2, kind: 'valid' },
+      { x: 2, y: 3, kind: 'valid' },
+      { x: 3, y: 3, kind: 'valid' },
+    ]);
+  });
+
+  it('marks a second Palace invalid', () => {
+    const game = grassGame();
+    placeBuilding(game, 'palace', 0, 0);
+    expect(previewTiles(game, 'palace', null, { x: 10, y: 14 }).every((t) => t.kind === 'invalid')).toBe(true);
   });
 });

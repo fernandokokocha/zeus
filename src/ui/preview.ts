@@ -1,3 +1,4 @@
+import { BUILDING_SPECS, type BuildingType } from '../sim/buildings';
 import { checkBuildingPlacement, footprint, lotOrigins, roadObstacle, roadPath } from '../sim/commands';
 import { rectBetween, tilesIn, type Point } from '../sim/point';
 import { clampToMap, inBounds, type GameState } from '../sim/state';
@@ -7,6 +8,19 @@ export type PreviewKind = 'valid' | 'warning' | 'invalid';
 
 export interface PreviewTile extends Point {
   kind: PreviewKind;
+}
+
+export function buildingOrigin(type: BuildingType, cursor: Point): Point {
+  const { width, height } = BUILDING_SPECS[type];
+  return { x: cursor.x - Math.floor((width - 1) / 2), y: cursor.y - Math.floor((height - 1) / 2) };
+}
+
+function buildingPreview(state: GameState, type: BuildingType, origin: Point): PreviewTile[] {
+  const check = checkBuildingPlacement(state, type, origin.x, origin.y);
+  const kind: PreviewKind = check.obstacle ? 'invalid' : check.roadAccess ? 'valid' : 'warning';
+  return footprint(type, origin.x, origin.y)
+    .filter((p) => inBounds(state, p.x, p.y))
+    .map((p) => ({ ...p, kind }));
 }
 
 export function previewTiles(
@@ -29,12 +43,10 @@ export function previewTiles(
         kind: 'invalid',
       }));
     case 'house':
-      return lotOrigins(start, hover).flatMap((lot) => {
-        const check = checkBuildingPlacement(state, tool, lot.x, lot.y);
-        const kind: PreviewKind = check.obstacle ? 'invalid' : check.roadAccess ? 'valid' : 'warning';
-        return footprint(tool, lot.x, lot.y)
-          .filter((p) => inBounds(state, p.x, p.y))
-          .map((p) => ({ ...p, kind }));
-      });
+      return lotOrigins(start, hover).flatMap((lot) => buildingPreview(state, tool, lot));
+    case 'fountain':
+    case 'taxOffice':
+    case 'palace':
+      return buildingPreview(state, tool, buildingOrigin(tool, hover));
   }
 }
