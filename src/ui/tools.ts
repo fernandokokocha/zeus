@@ -20,5 +20,10 @@ export const TOOL_LABELS: Record<Tool, string> = {
   park: priced('park'),
   column: priced('column'),
   flowerGarden: priced('flowerGarden'),
+  college: priced('college'),
+  podium: priced('podium'),
+  gymnasium: priced('gymnasium'),
+  dramaSchool: priced('dramaSchool'),
+  theater: priced('theater'),
   demolish: 'Demolish',
 };

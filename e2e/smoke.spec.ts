@@ -28,7 +28,7 @@ async function place(page: Page, tool: RegExp, at: [number, number]): Promise<vo
   await drag(page, at, at);
 }
 
-test('boots, builds a street with services, food and decorations, and settlers move in', async ({ page }) => {
+test('boots, builds a street with services, food, culture and decorations, and settlers move in', async ({ page }) => {
   test.setTimeout(60_000);
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
@@ -40,12 +40,14 @@ test('boots, builds a street with services, food and decorations, and settlers m
   await expect(page.locator('#date')).toHaveText('January, Year 1');
   await expect(page.locator('#population')).toHaveText('Population 0');
   await expect(page.locator('#treasury')).toHaveText('5,000 dr');
-  await expect(page.locator('#toolbar button')).toHaveCount(14);
+  await expect(page.locator('#toolbar button')).toHaveCount(19);
 
   await page.getByRole('button', { name: 'Demolish' }).click();
-  await drag(page, [8, 44], [30, 57]);
+  await drag(page, [8, 38], [30, 57]);
   await page.getByRole('button', { name: /^Road \(/ }).click();
   await drag(page, [8, 50], [29, 50]);
+  await drag(page, [8, 50], [8, 45]);
+  await drag(page, [8, 45], [29, 45]);
   await page.getByRole('button', { name: /^Housing/ }).click();
   await drag(page, [9, 48], [12, 49]);
   await drag(page, [9, 51], [16, 52]);
@@ -59,6 +61,11 @@ test('boots, builds a street with services, food and decorations, and settlers m
   await place(page, /^Flower Garden/, [9, 53]);
   await place(page, /^Column/, [12, 53]);
   await place(page, /^Park/, [13, 53]);
+  await place(page, /^College/, [10, 43]);
+  await place(page, /^Podium/, [13, 43]);
+  await place(page, /^Gymnasium/, [17, 43]);
+  await place(page, /^Drama School/, [21, 43]);
+  await place(page, /^Theater/, [26, 42]);
   await page.keyboard.press('r');
   await expect(page.locator('#status')).toHaveText('Rotated 90°');
   await page.keyboard.press('Escape');

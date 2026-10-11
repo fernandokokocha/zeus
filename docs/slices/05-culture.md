@@ -116,8 +116,8 @@ shared by settlers and carriers is extracted first so trainees can use it too.
 **Files:** Modify `src/ui/tools.ts`, `src/render/models.ts`, `src/render/palette.ts`,
 `src/render/walker-layer.ts`.
 
-- [ ] **Step 1:** Tools for the five buildings.
-- [ ] **Step 2:** Models: Hovel (two-roomed plaster house with a terracotta roof and a
+- [x] **Step 1:** Tools for the five buildings.
+- [x] **Step 2:** Models: Hovel (two-roomed plaster house with a terracotta roof and a
   walled yard), College (colonnaded hall with scroll racks), Podium (stepped stone
   platform with a lectern), Gymnasium (sand running track inside a colonnade), Drama
   School (hall with masks over the door), Theater (semicircle of tiered seats facing a
@@ -129,9 +129,9 @@ shared by settlers and carriers is extracted first so trainees can use it too.
 
 **Files:** Modify `e2e/smoke.spec.ts`.
 
-- [ ] **Step 1:** Extend the smoke test: place a college, podium, gymnasium, drama
+- [x] **Step 1:** Extend the smoke test: place a college, podium, gymnasium, drama
   school and theater, screenshot.
-- [ ] **Step 2:** Run `npm run typecheck`, `npm test`, `npm run build` and
+- [x] **Step 2:** Run `npm run typecheck`, `npm test`, `npm run build` and
   `npm run test:e2e`. Open the screenshot and check it.
 
 ### Task 9: PR

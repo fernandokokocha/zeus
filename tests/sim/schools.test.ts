@@ -116,6 +116,15 @@ describe('a philosopher on his way', () => {
     expect(isPerforming(game, podium)).toBe(false);
   });
 
+  it('redraws the podium when its lectures end', () => {
+    const { game, podium } = campus();
+    podium.performingUntil = 5;
+    runTicks(game, 4);
+    const version = game.version;
+    tick(game);
+    expect(game.version).toBeGreaterThan(version);
+  });
+
   it('heads to another podium when his is demolished', () => {
     const { game, podium } = campus();
     placeBuilding(game, 'podium', 20, 13);

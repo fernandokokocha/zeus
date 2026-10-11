@@ -51,6 +51,7 @@ function venueSoonestOver(state: GameState, from: Point, kind: TraineeKind): { b
 }
 
 export function tickSchools(state: GameState): void {
+  if (state.buildings.some((b) => b.performingUntil === state.tick)) state.version++;
   for (const building of state.buildings) sendTrainee(state, building);
   for (const trainee of [...state.trainees]) moveTrainee(state, trainee);
 }
