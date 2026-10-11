@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  adjacentRoadTiles,
   checkBuildingPlacement,
   demolish,
   lotOrigins,
@@ -8,6 +9,7 @@ import {
   placeRoad,
   placeRoadblock,
   roadPath,
+  vendorSpotAt,
 } from '../../src/sim/commands';
 import { NO_BUILDING, createGame, tileIndex } from '../../src/sim/state';
 import { ENTRY_ROAD_LENGTH } from '../../src/sim/map';
@@ -269,5 +271,84 @@ describe('placeRoadblock', () => {
     demolish(game, { x: 3, y: 10 }, { x: 3, y: 10 });
     expect(game.roadblocks[tileIndex(game, 3, 10)]).toBe(false);
     expect(game.roads[tileIndex(game, 3, 10)]).toBe(false);
+  });
+});
+
+describe('a wheat farm', () => {
+  function meadow(game: ReturnType<typeof grassGame>, x0: number, y0: number, size: number): void {
+    for (let y = y0; y < y0 + size; y++) for (let x = x0; x < x0 + size; x++) setTerrain(game, x, y, 'meadow');
+  }
+
+  it('goes on meadow', () => {
+    const game = grassGame();
+    meadow(game, 3, 3, 3);
+    expect(placeBuilding(game, 'wheatFarm', 3, 3)).toEqual({ ok: true });
+  });
+
+  it('is refused unless every tile is meadow', () => {
+    const game = grassGame();
+    meadow(game, 3, 3, 3);
+    setTerrain(game, 5, 5, 'grass');
+    expect(placeBuilding(game, 'wheatFarm', 3, 3)).toEqual({ ok: false, reason: 'A wheat farm needs meadow' });
+    expect(game.buildings).toEqual([]);
+  });
+});
+
+describe('a food vendor', () => {
+  function agoraGame() {
+    const game = grassGame();
+    placeRoad(game, { x: 8, y: 2 }, { x: 8, y: 12 });
+    placeBuilding(game, 'agora', 5, 4);
+    return { game, agora: game.buildings[0] };
+  }
+
+  it('takes a free spot of an agora and charges its price', () => {
+    const { game } = agoraGame();
+    const before = game.treasury;
+    expect(placeBuilding(game, 'foodVendor', 5, 6)).toEqual({ ok: true });
+    const vendor = game.buildings[1];
+    expect(game.buildingIdAt[tileIndex(game, 6, 7)]).toBe(vendor.id);
+    expect(game.buildingIdAt[tileIndex(game, 7, 7)]).toBe(game.buildings[0].id);
+    expect(game.treasury).toBe(before - 10);
+  });
+
+  it('is refused off an agora, off its spots, or on a taken spot', () => {
+    const { game } = agoraGame();
+    const reason = 'A vendor goes on a free spot of an agora';
+    expect(placeBuilding(game, 'foodVendor', 1, 1)).toEqual({ ok: false, reason });
+    expect(placeBuilding(game, 'foodVendor', 5, 5)).toEqual({ ok: false, reason });
+    expect(placeBuilding(game, 'foodVendor', 6, 4)).toEqual({ ok: false, reason });
+    placeBuilding(game, 'foodVendor', 5, 4);
+    expect(placeBuilding(game, 'foodVendor', 5, 4)).toEqual({ ok: false, reason });
+  });
+
+  it('finds the spot under any tile of the agora', () => {
+    const { game } = agoraGame();
+    expect(vendorSpotAt(game, { x: 7, y: 9 })).toEqual({ x: 5, y: 8 });
+    expect(vendorSpotAt(game, { x: 5, y: 4 })).toEqual({ x: 5, y: 4 });
+    expect(vendorSpotAt(game, { x: 4, y: 4 })).toBeNull();
+  });
+
+  it('reaches the road through its agora', () => {
+    const { game } = agoraGame();
+    placeBuilding(game, 'foodVendor', 5, 4);
+    expect(adjacentRoadTiles(game, game.buildings[1])).toEqual(adjacentRoadTiles(game, game.buildings[0]));
+  });
+
+  it('is demolished alone, leaving its spot to the agora', () => {
+    const { game, agora } = agoraGame();
+    placeBuilding(game, 'foodVendor', 5, 4);
+    demolish(game, { x: 6, y: 5 }, { x: 6, y: 5 });
+    expect(game.buildings).toEqual([agora]);
+    expect(game.buildingIdAt[tileIndex(game, 6, 5)]).toBe(agora.id);
+  });
+
+  it('goes with its agora', () => {
+    const { game } = agoraGame();
+    placeBuilding(game, 'foodVendor', 5, 4);
+    placeBuilding(game, 'foodVendor', 5, 8);
+    demolish(game, { x: 7, y: 6 }, { x: 7, y: 6 });
+    expect(game.buildings).toEqual([]);
+    expect(game.buildingIdAt.every((id) => id === NO_BUILDING)).toBe(true);
   });
 });

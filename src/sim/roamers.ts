@@ -1,6 +1,6 @@
-import { BUILDING_SPECS, type BuildingType } from './buildings';
+import { BUILDING_SPECS, footprintDistance, type BuildingType } from './buildings';
 import { TICKS_PER_MONTH } from './clock';
-import { adjacentRoadTiles } from './commands';
+import { adjacentRoadTiles, roadSite } from './commands';
 import { NEIGHBOUR_STEPS, findRoadPath } from './pathfinding';
 import type { Point } from './point';
 import { nextRandom } from './rng';
@@ -37,8 +37,9 @@ export function serviceLeft(state: GameState, house: Building, service: Service)
 }
 
 export function exitTile(state: GameState, building: Building): Point | null {
-  const { width, height } = BUILDING_SPECS[building.type];
-  const { x, y } = building;
+  const site = roadSite(state, building);
+  const { width, height } = BUILDING_SPECS[site.type];
+  const { x, y } = site;
   const along = (count: number, at: (i: number) => Point) => Array.from({ length: count }, (_, i) => at(i));
   const clockwiseFromNorth = [
     ...along(width, (i) => ({ x: x + i, y: y - 1 })),
@@ -143,13 +144,6 @@ function serveAround(state: GameState, roamer: Roamer): void {
   const until = state.tick + SERVICE_MONTHS * TICKS_PER_MONTH;
   const service = ROAMER_SPECS[roamer.kind].service;
   for (const house of state.buildings) {
-    if (house.type === 'house' && distanceToBuilding(house, tile) <= SERVICE_REACH) house.coveredUntil[service] = until;
+    if (house.type === 'house' && footprintDistance(house, tile) <= SERVICE_REACH) house.coveredUntil[service] = until;
   }
-}
-
-function distanceToBuilding(building: Building, p: Point): number {
-  const { width, height } = BUILDING_SPECS[building.type];
-  const dx = Math.max(building.x - p.x, 0, p.x - (building.x + width - 1));
-  const dy = Math.max(building.y - p.y, 0, p.y - (building.y + height - 1));
-  return Math.max(dx, dy);
 }

@@ -1,4 +1,4 @@
-import { BUILDING_SPECS, type BuildingType } from './buildings';
+import { AGORA_VENDOR_SPOTS, BUILDING_SPECS, footprintDistance, type BuildingType } from './buildings';
 import { rectBetween, tilesIn, type Point } from './point';
 import { NO_BUILDING, clampToMap, inBounds, tileIndex, type Building, type GameState } from './state';
 import { BUILDABLE, TERRAIN_NAMES } from './terrain';
@@ -88,12 +88,33 @@ function adjacentRoadTilesOf(state: GameState, type: BuildingType, x: number, y:
   return neighbours.filter((p) => inBounds(state, p.x, p.y) && state.roads[tileIndex(state, p.x, p.y)]);
 }
 
+export function agoraAt(state: GameState, p: Point): Building | null {
+  return state.buildings.find((b) => b.type === 'agora' && footprintDistance(b, p) === 0) ?? null;
+}
+
+export function vendorSpotAt(state: GameState, p: Point): Point | null {
+  const agora = agoraAt(state, p);
+  if (!agora) return null;
+  const spots = AGORA_VENDOR_SPOTS.map((offset) => ({ x: agora.x + offset.x, y: agora.y + offset.y }));
+  return spots.find((spot) => p.y >= spot.y && p.y < spot.y + BUILDING_SPECS.foodVendor.height) ?? null;
+}
+
+export function roadSite(state: GameState, building: Building): Building {
+  if (building.type !== 'foodVendor') return building;
+  const agora = agoraAt(state, building);
+  if (!agora) throw new Error(`Vendor ${building.id} stands on no agora`);
+  return agora;
+}
+
 export function adjacentRoadTiles(state: GameState, building: Building): Point[] {
-  return adjacentRoadTilesOf(state, building.type, building.x, building.y);
+  const site = roadSite(state, building);
+  return adjacentRoadTilesOf(state, site.type, site.x, site.y);
 }
 
 export function hasRoadAccess(state: GameState, type: BuildingType, x: number, y: number): boolean {
-  return adjacentRoadTilesOf(state, type, x, y).length > 0;
+  if (type !== 'foodVendor') return adjacentRoadTilesOf(state, type, x, y).length > 0;
+  const agora = agoraAt(state, { x, y });
+  return agora !== null && adjacentRoadTiles(state, agora).length > 0;
 }
 
 export function checkBuildingPlacement(
@@ -107,7 +128,18 @@ export function checkBuildingPlacement(
 
 function placementObstacle(state: GameState, type: BuildingType, x: number, y: number): string | null {
   if (type === 'palace' && state.buildings.some((b) => b.type === 'palace')) return 'Only one palace is allowed';
-  return footprintObstacle(state, type, x, y);
+  if (type === 'foodVendor') return vendorObstacle(state, x, y);
+  const obstacle = footprintObstacle(state, type, x, y);
+  if (obstacle || type !== 'wheatFarm') return obstacle;
+  const onMeadow = footprint(type, x, y).every((p) => state.terrain[tileIndex(state, p.x, p.y)] === 'meadow');
+  return onMeadow ? null : 'A wheat farm needs meadow';
+}
+
+function vendorObstacle(state: GameState, x: number, y: number): string | null {
+  const spot = vendorSpotAt(state, { x, y });
+  const taken = state.buildings.some((b) => b.type === 'foodVendor' && b.x === x && b.y === y);
+  const free = spot !== null && spot.x === x && spot.y === y && !taken;
+  return free ? null : 'A vendor goes on a free spot of an agora';
 }
 
 export function placeBuilding(state: GameState, type: BuildingType, x: number, y: number): Result {
@@ -171,8 +203,14 @@ export function demolish(state: GameState, from: Point, to: Point): void {
     if (state.terrain[i] === 'forest') state.terrain[i] = 'grass';
     if (state.buildingIdAt[i] !== NO_BUILDING) doomed.add(state.buildingIdAt[i]);
   }
-  state.buildings = state.buildings.filter((b) => !doomed.has(b.id));
-  state.roamers = state.roamers.filter((r) => !doomed.has(r.homeId));
-  state.buildingIdAt = state.buildingIdAt.map((id) => (doomed.has(id) ? NO_BUILDING : id));
+const agoraOfVendor = new Map<number, number>();
+for (const vendor of state.buildings.filter((b) => b.type === 'foodVendor')) {
+  const agoraId = roadSite(state, vendor).id;
+  if (doomed.has(agoraId)) doomed.add(vendor.id);
+  else agoraOfVendor.set(vendor.id, agoraId);
+}
+state.buildings = state.buildings.filter((b) => !doomed.has(b.id));
+state.roamers = state.roamers.filter((r) => !doomed.has(r.homeId));
+state.buildingIdAt = state.buildingIdAt.map((id) => (doomed.has(id) ? (agoraOfVendor.get(id) ?? NO_BUILDING) : id));
   state.version++;
 }
