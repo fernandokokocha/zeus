@@ -1,4 +1,4 @@
-import { gameDate, setSpeed } from '../sim/clock';
+import { gameDate, setSpeed, togglePause } from '../sim/clock';
 import { population } from '../sim/settlers';
 import type { GameState, Speed } from '../sim/state';
 import { byId } from './dom';
@@ -25,6 +25,15 @@ export function createTopbar(state: GameState): { update(): void; showStatus(tex
     button.addEventListener('click', () => setSpeed(state, speed));
     speedBox.append(button);
     return { button, speed };
+  });
+
+  window.addEventListener('keydown', (e) => {
+    if (e.code !== 'Space') return;
+    e.preventDefault();
+    if (!e.repeat) togglePause(state);
+  });
+  window.addEventListener('keyup', (e) => {
+    if (e.code === 'Space') e.preventDefault();
   });
 
   return {

@@ -50,5 +50,10 @@ test('boots, builds a street and settlers move in', async ({ page }) => {
   await expect(page.locator('#population')).not.toHaveText('Population 0', { timeout: 15_000 });
   await page.waitForTimeout(2500);
   await page.screenshot({ path: 'test-results/screenshot.png' });
+
+  await page.keyboard.press('Space');
+  await expect(page.getByRole('button', { name: '❚❚' })).toHaveClass(/active/);
+  await page.keyboard.press('Space');
+  await expect(page.getByRole('button', { name: '4×' })).toHaveClass(/active/);
   expect(errors).toEqual([]);
 });

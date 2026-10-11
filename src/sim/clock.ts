@@ -16,6 +16,7 @@ export function gameDate(tick: number): { month: string; year: number } {
 
 export function setSpeed(state: GameState, speed: Speed): void {
   state.speed = speed;
+  if (speed !== 0) state.lastPlayedSpeed = speed;
   state.speedBeforeInspection = null;
 }
 
@@ -32,4 +33,8 @@ export function resumeAfterInspection(state: GameState): void {
   if (state.speedBeforeInspection === null) return;
   state.speed = state.speedBeforeInspection;
   state.speedBeforeInspection = null;
+}
+
+export function togglePause(state: GameState): void {
+  setSpeed(state, state.speed === 0 ? state.lastPlayedSpeed : 0);
 }

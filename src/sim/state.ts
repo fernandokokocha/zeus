@@ -5,6 +5,7 @@ import type { Terrain } from './terrain';
 import { STARTING_TREASURY } from './treasury';
 
 export type Speed = 0 | 1 | 2 | 4;
+export type PlayingSpeed = Exclude<Speed, 0>;
 
 export interface Building {
   id: number;
@@ -36,6 +37,7 @@ export interface GameState {
   treasury: number;
   tick: number;
   speed: Speed;
+  lastPlayedSpeed: PlayingSpeed;
   speedBeforeInspection: Speed | null;
   version: number;
 }
@@ -58,6 +60,7 @@ export function newGameState(size: number, terrain: Terrain[], entry: Point): Ga
     treasury: STARTING_TREASURY,
     tick: 0,
     speed: 1,
+    lastPlayedSpeed: 1,
     speedBeforeInspection: null,
     version: 0,
   };
