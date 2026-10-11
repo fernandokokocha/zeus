@@ -3,7 +3,7 @@ import { TICKS_PER_MONTH } from './clock';
 import { adjacentRoadTiles, roadSite } from './commands';
 import { stockHouse } from './food';
 import { NEIGHBOUR_STEPS, findRoadPath } from './pathfinding';
-import type { Point } from './point';
+import { samePoint, type Point } from './point';
 import { nextRandom } from './rng';
 import { isPerforming, traineeKindFor } from './schools';
 import { buildingById, inBounds, tileIndex, type Building, type GameState, type Roamer, type Coverage, type Good, type RoamerKind, type Service } from './state';
@@ -62,8 +62,6 @@ export function exitTile(state: GameState, building: Building): Point | null {
   ];
   return clockwiseFromNorth.find((p) => inBounds(state, p.x, p.y) && isRoad(state, p)) ?? null;
 }
-
-const samePoint = (a: Point, b: Point) => a.x === b.x && a.y === b.y;
 
 export function nextRoamTile(state: GameState, walked: Point[]): Point | null {
   const here = walked[walked.length - 1];

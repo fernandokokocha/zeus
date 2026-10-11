@@ -10,6 +10,10 @@ export interface Rect {
   maxY: number;
 }
 
+export function samePoint(a: Point, b: Point): boolean {
+  return a.x === b.x && a.y === b.y;
+}
+
 export function rectBetween(a: Point, b: Point): Rect {
   return {
     minX: Math.min(a.x, b.x),

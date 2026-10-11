@@ -3,7 +3,7 @@ import { TICKS_PER_MONTH, TICKS_PER_YEAR } from './clock';
 import { adjacentRoadTiles } from './commands';
 import { CART_LOAD, UNITS_PER_LOAD } from './food';
 import { NEIGHBOUR_STEPS, findOpenPath, isOpenGround } from './pathfinding';
-import type { Point } from './point';
+import { samePoint, type Point } from './point';
 import { nextRandom } from './rng';
 import { exitTile } from './roamers';
 import { buildingById, inBounds, type Building, type GameState, type Sheep, type Shepherd } from './state';
@@ -18,8 +18,6 @@ export const SHEARINGS_PER_YEAR = 8;
 export const SHEARING_REST_TICKS = TICKS_PER_YEAR / SHEARINGS_PER_YEAR;
 export const FLEECE_PER_SHEARING = UNITS_PER_LOAD;
 export const SHED_CAPACITY = CART_LOAD;
-
-const samePoint = (a: Point, b: Point) => a.x === b.x && a.y === b.y;
 
 export function isPasture(state: GameState, p: Point): boolean {
   return inBounds(state, p.x, p.y) && isOpenGround(state, p) && !isRoad(state, p);
