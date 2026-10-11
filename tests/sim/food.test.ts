@@ -46,6 +46,17 @@ describe('a wheat farm', () => {
   });
 });
 
+describe('the harvest', () => {
+  it('comes in whole loads, rounded to the nearest', () => {
+    const game = farmGame(20);
+    const farm = game.buildings[1];
+    runTicks(game, 6 * TICKS_PER_MONTH - 1);
+    farm.growth = 0.55;
+    tick(game);
+    expect(farm.food).toBe(400);
+  });
+});
+
 describe('eat', () => {
   function houseWith(game: GameState, level: 'hut' | 'shack', residents: number, food: number) {
     placeHouse(game, 4 * game.buildings.length, 0);

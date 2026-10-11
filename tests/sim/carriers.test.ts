@@ -153,6 +153,23 @@ describe('a buyer', () => {
     expect(granary.food).toBe(900);
   });
 
+  it('buys whole loads only', () => {
+    const { game, vendor, granary } = marketTown();
+    granary.food = 250;
+    vendor.food = 450;
+    runTicks(game, 2 * ticksToWalk(10) + 1);
+    expect(vendor.food).toBe(650);
+    expect(granary.food).toBe(50);
+  });
+
+  it('stays home when the stall has room for less than a load', () => {
+    const { game, vendor, granary } = marketTown();
+    granary.food = 1000;
+    vendor.food = VENDOR_CAPACITY - 50;
+    tick(game);
+    expect(game.carriers).toEqual([]);
+  });
+
   it('stays home when the stall is full', () => {
     const { game, vendor, granary } = marketTown();
     granary.food = 1000;

@@ -4,7 +4,7 @@ import { HOUSE_LEVELS, houseLevel } from './housing';
 import type { Building, GameState } from './state';
 
 export const UNITS_PER_LOAD = 100;
-export const WHEAT_PER_YEAR = 8 * UNITS_PER_LOAD;
+export const WHEAT_LOADS_PER_YEAR = 8;
 export const HARVEST_MONTH = 6;
 export const CROP_STAGES = 4;
 export const GRANARY_CAPACITY = 32 * UNITS_PER_LOAD;
@@ -13,6 +13,10 @@ export const BUYER_LOAD = 4 * UNITS_PER_LOAD;
 export const VENDOR_CAPACITY = 8 * UNITS_PER_LOAD;
 export const FOOD_PER_RESIDENT_PER_MONTH = 0.25;
 export const HOUSE_FOOD_MONTHS = 3;
+
+export function wholeLoads(units: number): number {
+  return Math.floor(units / UNITS_PER_LOAD) * UNITS_PER_LOAD;
+}
 
 export function cropStage(farm: Building): number {
   return Math.floor(farm.growth * CROP_STAGES);
@@ -29,7 +33,7 @@ export function growCrops(state: GameState): void {
 export function harvestIfDue(state: GameState): void {
   if (monthOfYear(state.tick) !== HARVEST_MONTH) return;
   for (const farm of state.buildings.filter((b) => b.type === 'wheatFarm')) {
-    farm.food += farm.growth * WHEAT_PER_YEAR;
+    farm.food += Math.round(farm.growth * WHEAT_LOADS_PER_YEAR) * UNITS_PER_LOAD;
     farm.growth = 0;
   }
   state.version++;
