@@ -2270,7 +2270,7 @@ Open `test-results/screenshot.png`. Check for:
 Fix anything that looks wrong (camera angle, lighting too dark or washed out, colors
 too similar) and re-run.
 
-- [ ] **Step 5: Tick the roadmap and open the PR**
+- [x] **Step 5: Tick the roadmap and open the PR**
 
 In `docs/roadmap.md`, change `- [ ] 1 · Foundation` to `- [x] 1 · Foundation`.
 
@@ -2305,7 +2305,7 @@ EOF
 Fill in the two placeholder sections in the PR body before creating it. They are
 session-specific, which is why this plan cannot write them.
 
-- [ ] **Step 6: Merge**
+- [x] **Step 6: Merge**
 
 When CI is green, run `gh pr merge --squash --delete-branch`. Then confirm the Pages
 deploy job succeeded: `gh run list --branch main --limit 1`.
