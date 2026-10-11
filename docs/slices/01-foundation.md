@@ -1881,7 +1881,7 @@ git commit -m "Render roads, buildings and a placement ghost with validity color
   - `createInspector(state): { open(d: Description): void; close(): void; isOpen(): boolean }`.
   - `attachToolInput(deps): void`.
 
-- [ ] **Step 1: DOM helper and panels**
+- [x] **Step 1: DOM helper and panels**
 
 `src/ui/dom.ts`:
 
@@ -2009,7 +2009,7 @@ export function createInspector(state: GameState): {
 }
 ```
 
-- [ ] **Step 2: Tool input**
+- [x] **Step 2: Tool input**
 
 `src/ui/tool-input.ts`:
 
@@ -2096,7 +2096,7 @@ Clamping `hover` to the map means a road dragged past the edge stops at the edge
 "Outside the map" road rejection then only happens in tests that pass raw points.
 That's intended: drags never fail just because the pointer overshot.
 
-- [ ] **Step 3: Final `src/main.ts`**
+- [x] **Step 3: Final `src/main.ts`**
 
 Replace `src/main.ts`:
 
@@ -2175,12 +2175,12 @@ TypeScript complains about use-before-assign, build the toolbar after `input` by
 passing a `refresh` function through a small `let`, or split `attachToolInput` so that
 `refreshGhost` is created first. Choose whichever reads cleaner.
 
-- [ ] **Step 4: Verify**
+- [x] **Step 4: Verify**
 
 Run: `npm run typecheck && npm test && npm run build`
 Expected: all pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -A
