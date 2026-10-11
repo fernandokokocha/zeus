@@ -71,14 +71,14 @@ shared by settlers and carriers is extracted first so trainees can use it too.
 **Files:** Modify `src/sim/buildings.ts`, `src/sim/state.ts`, `src/sim/commands.ts`,
 `src/sim/tick.ts`. Create `src/sim/schools.ts`, `tests/sim/schools.test.ts`.
 
-- [ ] **Step 1:** Write failing tests: a staffed College sends a philosopher to a
+- [x] **Step 1:** Write failing tests: a staffed College sends a philosopher to a
   staffed Podium after a quarter month, slower at half staff, never without workers or
   without a staffed podium; one out at a time; on arrival he vanishes and the podium
   performs for 2 months; the next goes to the venue whose performance ends soonest;
   a trainee whose podium is demolished heads to another or vanishes; he vanishes with
   his school and when the road under him goes. The Drama School does the same for the
   Theater.
-- [ ] **Step 2:** Add the five buildings to `BUILDING_SPECS`. Implement. Tests pass.
+- [x] **Step 2:** Add the five buildings to `BUILDING_SPECS`. Implement. Tests pass.
 
 ### Task 4: Culture roamers and points
 

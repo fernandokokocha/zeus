@@ -24,6 +24,7 @@ export interface Building {
   level: HouseLevel;
   food: number;
   growth: number;
+  performingUntil: number;
 }
 
 export interface Walk {
@@ -45,6 +46,15 @@ export interface Roamer extends Walk {
   kind: RoamerKind;
   homeId: number;
   returning: boolean;
+}
+
+export type TraineeKind = 'philosopherTrainee' | 'actorTrainee';
+
+export interface Trainee extends Walk {
+  id: number;
+  kind: TraineeKind;
+  homeId: number;
+  destinationId: number;
 }
 
 export type CarrierKind = 'cartPusher' | 'buyer';
@@ -72,6 +82,8 @@ export interface GameState {
   nextRoamerId: number;
   carriers: Carrier[];
   nextCarrierId: number;
+  trainees: Trainee[];
+  nextTraineeId: number;
   rngState: number;
   entry: Point;
   treasury: number;
@@ -102,6 +114,8 @@ export function newGameState(size: number, terrain: Terrain[], entry: Point): Ga
     nextRoamerId: 1,
     carriers: [],
     nextCarrierId: 1,
+    trainees: [],
+    nextTraineeId: 1,
     rngState: DEFAULT_SEED,
     entry,
     treasury: STARTING_TREASURY,

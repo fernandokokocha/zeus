@@ -179,6 +179,7 @@ function build(state: GameState, placement: Placement): void {
     level: 'hut' as const,
     food: 0,
     growth: 0,
+    performingUntil: 0,
   };
   state.buildings.push(building);
   for (const p of footprint(placement)) state.buildingIdAt[tileIndex(state, p.x, p.y)] = building.id;
@@ -232,6 +233,7 @@ export function demolish(state: GameState, from: Point, to: Point): void {
   state.buildings = state.buildings.filter((b) => !doomed.has(b.id));
   state.roamers = state.roamers.filter((r) => !doomed.has(r.homeId));
   state.carriers = state.carriers.filter((c) => !doomed.has(c.homeId));
+  state.trainees = state.trainees.filter((t) => !doomed.has(t.homeId));
   state.buildingIdAt = state.buildingIdAt.map((id) => (doomed.has(id) ? (agoraOfVendor.get(id) ?? NO_BUILDING) : id));
   state.version++;
 }
