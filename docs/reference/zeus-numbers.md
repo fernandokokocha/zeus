@@ -161,3 +161,11 @@ https://zeus.heavengames.com/gameinfo/gods/
   month** at full staff, like the roamer rest.
 - Culture memory: a house keeps a culture kind's points for **2 months** after its
   walker passes, like water.
+- Sheep: a sheep regrows a full fleece in **1 year**, and one shearing gives **1 load**.
+  A newly placed sheep arrives with a full fleece. Sheep graze within **3 tiles** of
+  where they were placed.
+- Carding Shed: rests **1.5 months** between shearings at full staff (at most 8 loads a
+  year, 7–8 with the walk), holds up to **4 loads** (one cart) and keeps its shepherd
+  home while full.
+- House fleece stock: a fleece peddler fills a house to **3 months** of use (6 units),
+  like food.

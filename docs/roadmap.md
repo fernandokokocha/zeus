@@ -8,7 +8,7 @@ delivers it.
 - [x] 3 · Workers & services
 - [x] 4 · Food & appeal
 - [x] 5 · Culture
-- [ ] 6 · Storehouse & fleece
+- [x] 6 · Storehouse & fleece
 - [ ] 7 · Olive oil
 - [ ] 8 · Safety
 - [ ] 9 · Map modes
