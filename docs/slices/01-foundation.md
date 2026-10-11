@@ -1280,7 +1280,7 @@ git commit -m "Add game clock, speeds, inspection pause and tile descriptions"
 
 The renderer has no unit tests. Task 8's smoke test and screenshot verify it.
 
-- [ ] **Step 1: Palette**
+- [x] **Step 1: Palette**
 
 `src/render/palette.ts`:
 
@@ -1316,7 +1316,7 @@ export function tileHash(x: number, y: number): number {
 }
 ```
 
-- [ ] **Step 2: View and camera**
+- [x] **Step 2: View and camera**
 
 `src/render/view.ts`:
 
@@ -1474,7 +1474,7 @@ export function tileUnderPointer(view: View, clientX: number, clientY: number): 
 }
 ```
 
-- [ ] **Step 3: Terrain layer**
+- [x] **Step 3: Terrain layer**
 
 `src/render/terrain-layer.ts`:
 
@@ -1539,7 +1539,7 @@ function scatter(tiles: Point[], geometry: THREE.BufferGeometry, color: number):
 }
 ```
 
-- [ ] **Step 4: Temporary wiring to see it**
+- [x] **Step 4: Temporary wiring to see it**
 
 Replace `src/main.ts`:
 
@@ -1568,13 +1568,13 @@ function frame(now: number): void {
 requestAnimationFrame(frame);
 ```
 
-- [ ] **Step 5: Verify**
+- [x] **Step 5: Verify**
 
 Run: `npm run typecheck && npm test && npm run build`
 Expected: all pass. Run `npm run dev` too if a browser is available. If it isn't, the
 visual check happens in Task 8.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add -A
