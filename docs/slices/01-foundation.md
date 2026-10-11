@@ -1034,7 +1034,7 @@ git commit -m "Add game state with road, building and demolish commands"
   - `interface Description { title: string; lines: string[] }` and
     `describeTile(state, x, y): Description`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 `tests/sim/clock.test.ts`:
 
@@ -1149,13 +1149,13 @@ describe('describeTile', () => {
 });
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `npm test`
 Expected: FAIL with "Failed to resolve import" for `src/sim/clock` and
 `src/sim/inspect`.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 `src/sim/clock.ts`:
 
@@ -1244,12 +1244,12 @@ export function describeTile(state: GameState, x: number, y: number): Descriptio
 }
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run: `npm test`
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -A
