@@ -155,6 +155,7 @@ export function demolish(state: GameState, from: Point, to: Point): void {
     if (state.buildingIdAt[i] !== NO_BUILDING) doomed.add(state.buildingIdAt[i]);
   }
   state.buildings = state.buildings.filter((b) => !doomed.has(b.id));
+  state.roamers = state.roamers.filter((r) => !doomed.has(r.homeId));
   state.buildingIdAt = state.buildingIdAt.map((id) => (doomed.has(id) ? NO_BUILDING : id));
   state.version++;
 }

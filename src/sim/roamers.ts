@@ -90,7 +90,8 @@ function sendRoamer(state: GameState, building: Building): void {
 
 function moveRoamer(state: GameState, roamer: Roamer): void {
   const home = buildingById(state, roamer.homeId);
-  if (!home || !isRoad(state, roamer.path[roamer.step])) return dismiss(state, roamer);
+  if (!home) throw new Error(`Roamer ${roamer.id} outlived its home ${roamer.homeId}`);
+  if (!isRoad(state, roamer.path[roamer.step])) return dismiss(state, roamer);
 
   roamer.progress += WALKER_TILES_PER_TICK;
   while (roamer.progress >= 1) {
