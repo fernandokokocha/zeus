@@ -137,6 +137,17 @@ describe('demolish', () => {
     expect(game.buildingIdAt[tileIndex(game, 2, 2)]).toBe(NO_BUILDING);
   });
 
+  it('clears forest to grass but leaves rock and water', () => {
+    const game = grassGame();
+    setTerrain(game, 2, 2, 'forest');
+    setTerrain(game, 3, 2, 'marble');
+    setTerrain(game, 4, 2, 'water');
+    demolish(game, { x: 2, y: 2 }, { x: 4, y: 2 });
+    expect(game.terrain[tileIndex(game, 2, 2)]).toBe('grass');
+    expect(game.terrain[tileIndex(game, 3, 2)]).toBe('marble');
+    expect(game.terrain[tileIndex(game, 4, 2)]).toBe('water');
+  });
+
   it('accepts a drag in any direction, clamped to the map', () => {
     const game = grassGame();
     placeBuilding(game, 'testBuilding', 2, 2);

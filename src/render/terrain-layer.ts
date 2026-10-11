@@ -6,16 +6,35 @@ import { PALETTE, TERRAIN_COLORS, tileHash } from './palette';
 
 const SHADE_VARIATION = 0.08;
 
-export function createTerrainLayer(state: GameState): THREE.Group {
-  const group = new THREE.Group();
-  group.add(groundMesh(state));
+const lambert = (color: number) => new THREE.MeshLambertMaterial({ color });
+const SCATTERED: { terrain: Terrain; geometry: THREE.BufferGeometry; material: THREE.Material }[] = [
+  { terrain: 'forest', geometry: new THREE.ConeGeometry(0.32, 0.9, 6).translate(0, 0.75, 0), material: lambert(PALETTE.foliage) },
+  { terrain: 'forest', geometry: new THREE.CylinderGeometry(0.06, 0.08, 0.3).translate(0, 0.15, 0), material: lambert(PALETTE.trunk) },
+  { terrain: 'marble', geometry: new THREE.DodecahedronGeometry(0.38).translate(0, 0.2, 0), material: lambert(PALETTE.marbleRock) },
+  { terrain: 'copper', geometry: new THREE.DodecahedronGeometry(0.32).translate(0, 0.15, 0), material: lambert(PALETTE.copperRock) },
+];
+const groundMaterial = new THREE.MeshLambertMaterial({ vertexColors: true });
 
-  const forest = tilesOf(state, 'forest');
-  group.add(scatter(forest, new THREE.ConeGeometry(0.32, 0.9, 6).translate(0, 0.75, 0), PALETTE.foliage));
-  group.add(scatter(forest, new THREE.CylinderGeometry(0.06, 0.08, 0.3).translate(0, 0.15, 0), PALETTE.trunk));
-  group.add(scatter(tilesOf(state, 'marble'), new THREE.DodecahedronGeometry(0.38).translate(0, 0.2, 0), PALETTE.marbleRock));
-  group.add(scatter(tilesOf(state, 'copper'), new THREE.DodecahedronGeometry(0.32).translate(0, 0.15, 0), PALETTE.copperRock));
-  return group;
+export function createTerrainLayer(): { group: THREE.Group; sync(state: GameState): void } {
+  const group = new THREE.Group();
+  let renderedVersion = -1;
+  let ground: THREE.Mesh | null = null;
+  let scattered: THREE.InstancedMesh[] = [];
+
+  return {
+    group,
+    sync(state) {
+      if (state.version === renderedVersion) return;
+      renderedVersion = state.version;
+      if (ground) ground.geometry.dispose();
+      for (const mesh of scattered) mesh.dispose();
+      group.clear();
+
+      ground = groundMesh(state);
+      scattered = SCATTERED.map((s) => scatter(tilesOf(state, s.terrain), s.geometry, s.material));
+      group.add(ground, ...scattered);
+    },
+  };
 }
 
 function groundMesh(state: GameState): THREE.Mesh {
@@ -34,7 +53,7 @@ function groundMesh(state: GameState): THREE.Mesh {
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
   geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
   geometry.computeVertexNormals();
-  return new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({ vertexColors: true }));
+  return new THREE.Mesh(geometry, groundMaterial);
 }
 
 function tilesOf(state: GameState, kind: Terrain): Point[] {
@@ -45,8 +64,8 @@ function tilesOf(state: GameState, kind: Terrain): Point[] {
   return tiles;
 }
 
-function scatter(tiles: Point[], geometry: THREE.BufferGeometry, color: number): THREE.InstancedMesh {
-  const mesh = new THREE.InstancedMesh(geometry, new THREE.MeshLambertMaterial({ color }), tiles.length);
+function scatter(tiles: Point[], geometry: THREE.BufferGeometry, material: THREE.Material): THREE.InstancedMesh {
+  const mesh = new THREE.InstancedMesh(geometry, material, tiles.length);
   const matrix = new THREE.Matrix4();
   tiles.forEach((tile, i) => {
     const jitterX = (tileHash(tile.x, tile.y) - 0.5) * 0.3;

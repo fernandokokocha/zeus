@@ -25,8 +25,8 @@ binding. In short:
 1. **Find the slice.** Read the spec and the roadmap. The slice is the first unchecked
    one.
 2. **Collect feedback.** Read the owner's comments on the PR of the previous slice
-   (`gh pr list --state merged --limit 1`, then `gh pr view <n> --comments`) and the
-   session prompt. Fix the feedback first, in its own commits.
+   (see "GitHub from a cloud session" below) and the session prompt. Fix the feedback
+   first, in its own commits.
 3. **Get a plan.** If `docs/slices/NN-*.md` exists, execute it task by task and tick its
    boxes. Otherwise, write it first, in the same format as `docs/slices/01-foundation.md`.
 4. **Build test-first** on branch `slice-NN-name`.
@@ -39,7 +39,7 @@ binding. In short:
    - **Left out:** anything cut to protect quality.
 
    Tick the slice in `docs/roadmap.md` in the same PR.
-7. **Merge** with `gh pr merge --squash` once CI is green. If merging isn't possible
+7. **Merge** with a squash merge once CI is green. If merging isn't possible
    from the session, say so on the first line of the PR description.
 
 ## Commands
@@ -51,6 +51,26 @@ npm run typecheck
 npm run build
 npm run test:e2e    # Playwright smoke test + screenshot
 ```
+
+## GitHub from a cloud session
+
+The session proxy blocks GitHub GraphQL, so `gh pr ...` commands fail with HTTP 403 and
+`gh auth status` reports an invalid token. `gh api` (REST) works. If `git remote` is
+empty, run `git remote add origin https://github.com/fernandokokocha/zeus` first.
+
+```
+R=repos/fernandokokocha/zeus
+gh api "$R/pulls?state=closed&per_page=1"                    # last merged PR
+gh api $R/issues/<n>/comments                                 # PR conversation
+gh api $R/pulls/<n>/comments                                  # inline review comments
+gh api $R/pulls -f title=... -f head=<branch> -f base=main -F body=@body.md
+gh api "$R/actions/runs?branch=<branch>&per_page=1"           # CI status
+gh api -X PUT $R/pulls/<n>/merge -f merge_method=squash
+```
+
+If the preinstalled Chromium does not match the Playwright version, run the e2e test
+locally through an uncommitted config that sets
+`launchOptions.executablePath: '/opt/pw-browsers/chromium'`. CI installs its own.
 
 ## Code rules
 

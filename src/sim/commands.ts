@@ -91,6 +91,7 @@ export function demolish(state: GameState, from: Point, to: Point): void {
   for (const p of tilesIn(rectBetween(clampToMap(state, from), clampToMap(state, to)))) {
     const i = tileIndex(state, p.x, p.y);
     state.roads[i] = false;
+    if (state.terrain[i] === 'forest') state.terrain[i] = 'grass';
     if (state.buildingIdAt[i] !== NO_BUILDING) doomed.add(state.buildingIdAt[i]);
   }
   state.buildings = state.buildings.filter((b) => !doomed.has(b.id));
