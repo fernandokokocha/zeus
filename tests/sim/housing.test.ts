@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { houseAppeal } from '../../src/sim/appeal';
-import { placeBuilding, placeRoad } from '../../src/sim/commands';
+import { TICKS_PER_MONTH } from '../../src/sim/clock';
+import { placeBuilding, placeHouses, placeRoad } from '../../src/sim/commands';
 import { SETTLER_SPAWN_INTERVAL_TICKS } from '../../src/sim/settlers';
 import type { Building, GameState } from '../../src/sim/state';
 import { tick } from '../../src/sim/tick';
-import { grassGame, placeHouse, runTicks } from './helpers';
+import { grassGame, placeHouse, runTicks, setMeadow } from './helpers';
 
 function street(): { game: GameState; house: Building } {
   const game = grassGame();
@@ -79,5 +80,24 @@ describe('a Shack', () => {
     tick(game);
     expect(house.level).toBe('hut');
     expect(house.residents).toBe(8);
+  });
+});
+
+describe('a city with the whole food chain', () => {
+  it('turns its huts into Shacks after the July harvest', () => {
+    const game = grassGame(30);
+    placeRoad(game, { x: 0, y: 15 }, { x: 29, y: 15 });
+    placeHouses(game, { x: 0, y: 13 }, { x: 15, y: 14 });
+    placeBuilding(game, 'agora', 0, 16);
+    placeBuilding(game, 'foodVendor', 0, 16);
+    placeBuilding(game, 'granary', 18, 16);
+    setMeadow(game, 24, 16, 3, 3);
+    placeBuilding(game, 'wheatFarm', 24, 16);
+    const houses = game.buildings.filter((b) => b.type === 'house');
+
+    runTicks(game, 6 * TICKS_PER_MONTH);
+    expect(houses.every((h) => h.level === 'hut')).toBe(true);
+    runTicks(game, 2 * TICKS_PER_MONTH);
+    expect(houses.filter((h) => h.level === 'shack').length).toBeGreaterThanOrEqual(6);
   });
 });
