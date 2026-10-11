@@ -1,3 +1,5 @@
+import { placeHouses, type Result } from '../../src/sim/commands';
+import { tick } from '../../src/sim/tick';
 import { newGameState, type GameState } from '../../src/sim/state';
 import type { Terrain } from '../../src/sim/terrain';
 
@@ -7,4 +9,12 @@ export function grassGame(size = 20): GameState {
 
 export function setTerrain(state: GameState, x: number, y: number, terrain: Terrain): void {
   state.terrain[y * state.size + x] = terrain;
+}
+
+export function placeHouse(state: GameState, x: number, y: number): Result {
+  return placeHouses(state, { x, y }, { x, y });
+}
+
+export function runTicks(state: GameState, count: number): void {
+  for (let i = 0; i < count; i++) tick(state);
 }

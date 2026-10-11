@@ -4,8 +4,10 @@ import { attachCameraControls } from './render/camera-controls';
 import { createGhostLayer } from './render/ghost-layer';
 import { createTerrainLayer } from './render/terrain-layer';
 import { createView, resizeView } from './render/view';
+import { createWalkerLayer } from './render/walker-layer';
 import { createWorldLayer } from './render/world-layer';
-import { TICKS_PER_SECOND, tick } from './sim/clock';
+import { TICKS_PER_SECOND } from './sim/clock';
+import { tick } from './sim/tick';
 import { createGame } from './sim/state';
 import { byId } from './ui/dom';
 import { createInspector } from './ui/inspector';
@@ -26,6 +28,8 @@ const terrain = createTerrainLayer();
 view.scene.add(terrain.group);
 const world = createWorldLayer();
 view.scene.add(world.group);
+const walkers = createWalkerLayer();
+view.scene.add(walkers.group);
 const ghost = createGhostLayer(state.size);
 view.scene.add(ghost.mesh);
 
@@ -61,6 +65,7 @@ function frame(now: number): void {
 
   terrain.sync(state);
   world.sync(state);
+  walkers.sync(state, state.speed > 0 ? pendingTicks : 0);
   topbar.update();
   view.renderer.render(view.scene, view.camera);
   requestAnimationFrame(frame);

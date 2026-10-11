@@ -2,14 +2,26 @@ import type { BuildingType } from './buildings';
 import { DEFAULT_SEED, ENTRY_ROAD_LENGTH, MAP_SIZE, generateTerrain } from './map';
 import { clampPoint, type Point } from './point';
 import type { Terrain } from './terrain';
+import { STARTING_TREASURY } from './treasury';
 
 export type Speed = 0 | 1 | 2 | 4;
+export type PlayingSpeed = Exclude<Speed, 0>;
 
 export interface Building {
   id: number;
   type: BuildingType;
   x: number;
   y: number;
+  residents: number;
+}
+
+export interface Settler {
+  id: number;
+  path: Point[];
+  step: number;
+  progress: number;
+  destinationId: number;
+  people: number;
 }
 
 export interface GameState {
@@ -19,9 +31,13 @@ export interface GameState {
   buildings: Building[];
   buildingIdAt: number[];
   nextBuildingId: number;
+  settlers: Settler[];
+  nextSettlerId: number;
   entry: Point;
+  treasury: number;
   tick: number;
   speed: Speed;
+  lastPlayedSpeed: PlayingSpeed;
   speedBeforeInspection: Speed | null;
   version: number;
 }
@@ -38,9 +54,13 @@ export function newGameState(size: number, terrain: Terrain[], entry: Point): Ga
     buildings: [],
     buildingIdAt: new Array<number>(size * size).fill(NO_BUILDING),
     nextBuildingId: 1,
+    settlers: [],
+    nextSettlerId: 1,
     entry,
+    treasury: STARTING_TREASURY,
     tick: 0,
     speed: 1,
+    lastPlayedSpeed: 1,
     speedBeforeInspection: null,
     version: 0,
   };
@@ -61,4 +81,8 @@ export function inBounds(state: GameState, x: number, y: number): boolean {
 
 export function clampToMap(state: GameState, p: Point): Point {
   return clampPoint(p, state.size);
+}
+
+export function buildingById(state: GameState, id: number): Building | undefined {
+  return state.buildings.find((b) => b.id === id);
 }

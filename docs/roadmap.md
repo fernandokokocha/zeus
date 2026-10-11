@@ -4,7 +4,7 @@ Each slice's content is in the spec's "Roadmap" section. Tick a slice in the PR 
 delivers it.
 
 - [x] 1 · Foundation
-- [ ] 2 · Settlers & treasury
+- [x] 2 · Settlers & treasury
 - [ ] 3 · Workers & services
 - [ ] 4 · Food & appeal
 - [ ] 5 · Culture

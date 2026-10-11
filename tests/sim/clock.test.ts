@@ -5,8 +5,9 @@ import {
   pauseForInspection,
   resumeAfterInspection,
   setSpeed,
-  tick,
+  togglePause,
 } from '../../src/sim/clock';
+import { tick } from '../../src/sim/tick';
 import { grassGame } from './helpers';
 
 describe('gameDate', () => {
@@ -61,5 +62,39 @@ describe('inspection pause', () => {
     setSpeed(game, 4);
     resumeAfterInspection(game);
     expect(game.speed).toBe(4);
+  });
+});
+
+describe('togglePause', () => {
+  it('pauses a running game', () => {
+    const game = grassGame();
+    setSpeed(game, 2);
+    togglePause(game);
+    expect(game.speed).toBe(0);
+  });
+
+  it('resumes at the last speed played', () => {
+    const game = grassGame();
+    setSpeed(game, 4);
+    setSpeed(game, 0);
+    togglePause(game);
+    expect(game.speed).toBe(4);
+  });
+
+  it('resumes a game that was never sped up at 1×', () => {
+    const game = grassGame();
+    setSpeed(game, 0);
+    togglePause(game);
+    expect(game.speed).toBe(1);
+  });
+
+  it('resumes the speed played before an inspection paused the game', () => {
+    const game = grassGame();
+    setSpeed(game, 2);
+    pauseForInspection(game);
+    togglePause(game);
+    expect(game.speed).toBe(2);
+    resumeAfterInspection(game);
+    expect(game.speed).toBe(2);
   });
 });

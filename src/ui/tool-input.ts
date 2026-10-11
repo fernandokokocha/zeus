@@ -1,5 +1,5 @@
 import type { View } from '../render/view';
-import { demolish, placeBuilding, placeRoad, type Result } from '../sim/commands';
+import { demolish, placeHouses, placeRoad, type Result } from '../sim/commands';
 import { describeTile, type Description } from '../sim/inspect';
 import type { Point } from '../sim/point';
 import { clampToMap, inBounds, type GameState } from '../sim/state';
@@ -33,7 +33,7 @@ export function attachToolInput({ view, state, toolbar, ghost, inspector, topbar
     let result: Result = { ok: true };
     if (tool === 'road') result = placeRoad(state, from, to);
     if (tool === 'demolish') demolish(state, from, to);
-    if (tool === 'testBuilding') result = placeBuilding(state, tool, to.x, to.y);
+    if (tool === 'house') result = placeHouses(state, from, to);
     if (!result.ok) topbar.showStatus(result.reason);
   }
 

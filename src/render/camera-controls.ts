@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { placeCamera, type View } from './view';
 
 const KEY_PAN_PIXELS_PER_SECOND = 700;
-const ZOOM_PER_WHEEL_PIXEL = 0.0005;
+const ZOOM_PER_WHEEL_PIXEL = 0.00075;
 const MIN_ZOOM = 0.4;
 const MAX_ZOOM = 4;
 const MIDDLE_BUTTON = 1;
