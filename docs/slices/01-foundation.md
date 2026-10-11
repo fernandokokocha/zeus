@@ -62,7 +62,7 @@ together with `CLAUDE.md`.
 - Produces: the npm scripts `dev`, `build`, `typecheck`, `test`, `test:e2e` and
   `preview`. Later tasks run them.
 
-- [ ] **Step 1: Branch and initialize npm**
+- [x] **Step 1: Branch and initialize npm**
 
 ```bash
 git checkout -b slice-01-foundation
@@ -71,7 +71,7 @@ npm install three
 npm install -D typescript vite vitest @types/three @types/node @playwright/test
 ```
 
-- [ ] **Step 2: Set `package.json` fields**
+- [x] **Step 2: Set `package.json` fields**
 
 Edit `package.json` so it contains these fields (keep the generated dependency blocks):
 
@@ -93,7 +93,7 @@ Edit `package.json` so it contains these fields (keep the generated dependency b
 
 Remove the generated `main`, `keywords`, `author`, `license` and `description` fields.
 
-- [ ] **Step 3: Write config files**
+- [x] **Step 3: Write config files**
 
 `.gitignore`:
 
@@ -134,7 +134,7 @@ export default defineConfig({
 });
 ```
 
-- [ ] **Step 4: Minimal page**
+- [x] **Step 4: Minimal page**
 
 `index.html`:
 
@@ -262,7 +262,7 @@ import './style.css';
 document.getElementById('date')!.textContent = 'Zeus';
 ```
 
-- [ ] **Step 5: CI and Pages workflow**
+- [x] **Step 5: CI and Pages workflow**
 
 `.github/workflows/ci.yml`:
 
@@ -321,12 +321,12 @@ jobs:
         uses: actions/deploy-pages@v4
 ```
 
-- [ ] **Step 6: Verify the build**
+- [x] **Step 6: Verify the build**
 
 Run: `npm run build`
 Expected: succeeds and writes `dist/index.html`.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add -A
@@ -355,7 +355,7 @@ git commit -m "Scaffold Vite + TypeScript project with CI and Pages deploy"
   - `generateTerrain(seed: number): { terrain: Terrain[]; entry: Point }`. The terrain
     array is row-major, so tile (x, y) is at `y * MAP_SIZE + x`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 `tests/sim/rng.test.ts`:
 
@@ -422,12 +422,12 @@ describe('generateTerrain', () => {
 });
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `npm test`
 Expected: FAIL with "Failed to resolve import" for `src/sim/rng` and `src/sim/map`.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 `src/sim/rng.ts`:
 
@@ -588,14 +588,14 @@ function lerp(a: number, b: number, t: number): number {
 }
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run: `npm test`
 Expected: PASS. If "contains every terrain type" fails because forest or meadow is
 missing for seed 1500, try seeds 1501, 1502, … until it passes, and set
 `DEFAULT_SEED` to the first one that does. Do not loosen the test.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -A
@@ -636,7 +636,7 @@ git commit -m "Generate seeded terrain with coast, forest, meadow and ore deposi
   - Every successful mutation increments `state.version`. The renderer rebuilds when it
     changes.
 
-- [ ] **Step 1: Write the test helper and failing tests**
+- [x] **Step 1: Write the test helper and failing tests**
 
 `tests/sim/helpers.ts`:
 
@@ -805,13 +805,13 @@ describe('demolish', () => {
 });
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `npm test`
 Expected: FAIL with "Failed to resolve import" for `src/sim/commands` and
 `src/sim/state`.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 `src/sim/buildings.ts`:
 
@@ -1002,12 +1002,12 @@ export function demolish(state: GameState, from: Point, to: Point): void {
 }
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run: `npm test`
 Expected: PASS (all of Task 2 and Task 3).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -A
@@ -1034,7 +1034,7 @@ git commit -m "Add game state with road, building and demolish commands"
   - `interface Description { title: string; lines: string[] }` and
     `describeTile(state, x, y): Description`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 `tests/sim/clock.test.ts`:
 
@@ -1149,13 +1149,13 @@ describe('describeTile', () => {
 });
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `npm test`
 Expected: FAIL with "Failed to resolve import" for `src/sim/clock` and
 `src/sim/inspect`.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 `src/sim/clock.ts`:
 
@@ -1244,12 +1244,12 @@ export function describeTile(state: GameState, x: number, y: number): Descriptio
 }
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run: `npm test`
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -A
@@ -1280,7 +1280,7 @@ git commit -m "Add game clock, speeds, inspection pause and tile descriptions"
 
 The renderer has no unit tests. Task 8's smoke test and screenshot verify it.
 
-- [ ] **Step 1: Palette**
+- [x] **Step 1: Palette**
 
 `src/render/palette.ts`:
 
@@ -1316,7 +1316,7 @@ export function tileHash(x: number, y: number): number {
 }
 ```
 
-- [ ] **Step 2: View and camera**
+- [x] **Step 2: View and camera**
 
 `src/render/view.ts`:
 
@@ -1474,7 +1474,7 @@ export function tileUnderPointer(view: View, clientX: number, clientY: number): 
 }
 ```
 
-- [ ] **Step 3: Terrain layer**
+- [x] **Step 3: Terrain layer**
 
 `src/render/terrain-layer.ts`:
 
@@ -1539,7 +1539,7 @@ function scatter(tiles: Point[], geometry: THREE.BufferGeometry, color: number):
 }
 ```
 
-- [ ] **Step 4: Temporary wiring to see it**
+- [x] **Step 4: Temporary wiring to see it**
 
 Replace `src/main.ts`:
 
@@ -1568,13 +1568,13 @@ function frame(now: number): void {
 requestAnimationFrame(frame);
 ```
 
-- [ ] **Step 5: Verify**
+- [x] **Step 5: Verify**
 
 Run: `npm run typecheck && npm test && npm run build`
 Expected: all pass. Run `npm run dev` too if a browser is available. If it isn't, the
 visual check happens in Task 8.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add -A
@@ -1605,7 +1605,7 @@ git commit -m "Render the map under an isometric orthographic camera with pan an
     `state.version` changes.
   - `createGhostLayer(mapSize): { mesh: THREE.InstancedMesh; show(tiles: PreviewTile[]): void }`.
 
-- [ ] **Step 1: Write the failing preview tests**
+- [x] **Step 1: Write the failing preview tests**
 
 `tests/ui/preview.test.ts`:
 
@@ -1660,12 +1660,12 @@ describe('previewTiles', () => {
 });
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `npm test`
 Expected: FAIL with "Failed to resolve import" for `src/ui/preview`.
 
-- [ ] **Step 3: Implement tools and preview**
+- [x] **Step 3: Implement tools and preview**
 
 `src/ui/tools.ts`:
 
@@ -1723,12 +1723,12 @@ export function previewTiles(
 }
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run: `npm test`
 Expected: PASS.
 
-- [ ] **Step 5: Models, world layer and ghost layer**
+- [x] **Step 5: Models, world layer and ghost layer**
 
 `src/render/models.ts`:
 
@@ -1853,7 +1853,7 @@ export function createGhostLayer(mapSize: number): { mesh: THREE.InstancedMesh; 
 `src/render` importing a *type* from `src/ui/preview` is allowed. The rule in
 `CLAUDE.md` restricts `src/sim` only.
 
-- [ ] **Step 6: Verify and commit**
+- [x] **Step 6: Verify and commit**
 
 Run: `npm run typecheck && npm test`
 Expected: PASS.
@@ -1881,7 +1881,7 @@ git commit -m "Render roads, buildings and a placement ghost with validity color
   - `createInspector(state): { open(d: Description): void; close(): void; isOpen(): boolean }`.
   - `attachToolInput(deps): void`.
 
-- [ ] **Step 1: DOM helper and panels**
+- [x] **Step 1: DOM helper and panels**
 
 `src/ui/dom.ts`:
 
@@ -2009,7 +2009,7 @@ export function createInspector(state: GameState): {
 }
 ```
 
-- [ ] **Step 2: Tool input**
+- [x] **Step 2: Tool input**
 
 `src/ui/tool-input.ts`:
 
@@ -2096,7 +2096,7 @@ Clamping `hover` to the map means a road dragged past the edge stops at the edge
 "Outside the map" road rejection then only happens in tests that pass raw points.
 That's intended: drags never fail just because the pointer overshot.
 
-- [ ] **Step 3: Final `src/main.ts`**
+- [x] **Step 3: Final `src/main.ts`**
 
 Replace `src/main.ts`:
 
@@ -2175,12 +2175,12 @@ TypeScript complains about use-before-assign, build the toolbar after `input` by
 passing a `refresh` function through a small `let`, or split `attachToolInput` so that
 `refreshGhost` is created first. Choose whichever reads cleaner.
 
-- [ ] **Step 4: Verify**
+- [x] **Step 4: Verify**
 
 Run: `npm run typecheck && npm test && npm run build`
 Expected: all pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -A
@@ -2195,7 +2195,7 @@ git commit -m "Add top bar, toolbar, inspector and tool input; run the fixed-ste
 - Create: `playwright.config.ts`, `e2e/smoke.spec.ts`
 - Modify: `docs/roadmap.md` (tick slice 1)
 
-- [ ] **Step 1: Playwright config**
+- [x] **Step 1: Playwright config**
 
 `playwright.config.ts`:
 
@@ -2222,7 +2222,7 @@ export default defineConfig({
 });
 ```
 
-- [ ] **Step 2: Smoke test**
+- [x] **Step 2: Smoke test**
 
 `e2e/smoke.spec.ts`:
 
@@ -2249,7 +2249,7 @@ test('boots and renders the map without errors', async ({ page }) => {
 });
 ```
 
-- [ ] **Step 3: Run it**
+- [x] **Step 3: Run it**
 
 ```bash
 npx playwright install chromium
@@ -2258,7 +2258,7 @@ npm run test:e2e
 
 Expected: PASS.
 
-- [ ] **Step 4: Look at the screenshot**
+- [x] **Step 4: Look at the screenshot**
 
 Open `test-results/screenshot.png`. Check for:
 - an isometric diamond-shaped map, not a top-down square;
@@ -2270,7 +2270,7 @@ Open `test-results/screenshot.png`. Check for:
 Fix anything that looks wrong (camera angle, lighting too dark or washed out, colors
 too similar) and re-run.
 
-- [ ] **Step 5: Tick the roadmap and open the PR**
+- [x] **Step 5: Tick the roadmap and open the PR**
 
 In `docs/roadmap.md`, change `- [ ] 1 · Foundation` to `- [x] 1 · Foundation`.
 
@@ -2305,7 +2305,7 @@ EOF
 Fill in the two placeholder sections in the PR body before creating it. They are
 session-specific, which is why this plan cannot write them.
 
-- [ ] **Step 6: Merge**
+- [x] **Step 6: Merge**
 
 When CI is green, run `gh pr merge --squash --delete-branch`. Then confirm the Pages
 deploy job succeeded: `gh run list --branch main --limit 1`.
