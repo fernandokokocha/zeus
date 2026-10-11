@@ -105,11 +105,11 @@ shared by settlers and carriers is extracted first so trainees can use it too.
 
 **Files:** Modify `src/sim/inspect.ts`, `tests/sim/inspect.test.ts`.
 
-- [ ] **Step 1:** Write failing tests: a house shows its culture points and what they
+- [x] **Step 1:** Write failing tests: a house shows its culture points and what they
   come from, and what blocks the Hovel ("needs for Hovel: water, culture 15 (has 0),
   appeal 10 (has 3)"); a school shows its trainee; a venue shows whether it performs
   and for how long; trainees describe their errand.
-- [ ] **Step 2:** Implement. Tests pass.
+- [x] **Step 2:** Implement. Tests pass.
 
 ### Task 7: UI and rendering
 

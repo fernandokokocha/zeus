@@ -1,12 +1,14 @@
 import { houseAppeal } from './appeal';
 import { BUILDING_SPECS } from './buildings';
-import { MONTH_NAMES } from './clock';
+import { MONTH_NAMES, TICKS_PER_MONTH } from './clock';
+import { culturePoints, culturesPassed } from './culture';
 import { CARRIER_SPECS, carrierDestinations, carrierKindSentBy } from './carriers';
 import { adjacentRoadTiles, agoraAt } from './commands';
 import { hasWorkingPalace, houseTax } from './economy';
 import { GRANARY_CAPACITY, HARVEST_MONTH, UNITS_PER_LOAD, VENDOR_CAPACITY, monthlyFood } from './food';
-import { HOUSE_LEVELS, NEXT_LEVEL, houseCapacity, houseLevel, houseName, missingNeeds } from './housing';
-import { ROAMER_SPECS, hasService, roamerKindSentBy, serviceLeft } from './roamers';
+import { HOUSE_LEVELS, NEXT_LEVEL, houseCapacity, houseLevel, houseName, lacksCulture, missingNeeds } from './housing';
+import { ROAMER_SPECS, hasService, type RoamerSpec, roamerKindSentBy, serviceLeft } from './roamers';
+import { TRAINEE_SPECS, isPerforming, staffedVenues, traineeKindFor, traineeKindSentBy } from './schools';
 import { canSettlersReach } from './settlers';
 import {
   NO_BUILDING,
@@ -17,6 +19,7 @@ import {
   type GameState,
   type Roamer,
   type Settler,
+  type Trainee,
   type Walk,
 } from './state';
 import { BUILDABLE, TERRAIN_NAMES } from './terrain';
@@ -47,6 +50,8 @@ export function describeTile(state: GameState, x: number, y: number): Descriptio
   if (roamer) return describeRoamer(state, roamer);
   const carrier = state.carriers.find(standsHere);
   if (carrier) return describeCarrier(state, carrier);
+  const trainee = state.trainees.find(standsHere);
+  if (trainee) return describeTrainee(state, trainee);
 
   if (state.roadblocks[i]) return { title: 'Roadblock', lines: [`Tile ${x}, ${y}`, 'Stops roaming walkers; settlers pass'] };
   if (state.roads[i]) return { title: 'Road', lines: [`Tile ${x}, ${y}`] };
@@ -78,7 +83,7 @@ function describeHouse(state: GameState, house: Building): Description {
     return { title: houseName(house), lines };
   }
   const appeal = houseAppeal(state, house);
-  lines.push(`Appeal ${appeal}`, foodStatus(house), waterStatus(state, house), taxStatus(state, house));
+  lines.push(`Appeal ${appeal}`, foodStatus(house), waterStatus(state, house), cultureStatus(state, house), taxStatus(state, house));
   const next = NEXT_LEVEL[level];
   if (next) lines.push(nextLevelStatus(state, house, next, appeal));
   return { title: houseName(house), lines };
@@ -94,6 +99,7 @@ function foodStatus(house: Building): string {
 function nextLevelStatus(state: GameState, house: Building, next: keyof typeof HOUSE_LEVELS, appeal: number): string {
   const { name, appeal: thresholds } = HOUSE_LEVELS[next];
   const blockers: string[] = missingNeeds(state, house, next);
+  if (lacksCulture(state, house, next)) blockers.push(`culture ${HOUSE_LEVELS[next].culture} (has ${culturePoints(state, house)})`);
   if (appeal < thresholds.evolve) blockers.push(`appeal ${thresholds.evolve} (has ${appeal})`);
   return blockers.length > 0 ? `Needs for ${name}: ${blockers.join(', ')}` : `Ready to become a ${name}`;
 }
@@ -101,6 +107,11 @@ function nextLevelStatus(state: GameState, house: Building, next: keyof typeof H
 function waterStatus(state: GameState, house: Building): string {
   if (!hasService(state, house, 'water')) return 'No water carrier has passed';
   return `Water: ${Math.ceil(serviceLeft(state, house, 'water') * 100)}% left`;
+}
+
+function cultureStatus(state: GameState, house: Building): string {
+  const passed = culturesPassed(state, house);
+  return passed.length > 0 ? `Culture ${culturePoints(state, house)}: ${passed.join(', ')}` : 'No culture has passed';
 }
 
 function taxStatus(state: GameState, house: Building): string {
@@ -158,8 +169,17 @@ function stockLines(state: GameState, building: Building): string[] {
         : ['No vendors yet: place one on a free spot'];
     }
     default:
-      return [];
+      return venueLines(state, building);
   }
+}
+
+function venueLines(state: GameState, venue: Building): string[] {
+  const kind = traineeKindFor(venue.type);
+  if (!kind) return [];
+  const { name, school } = TRAINEE_SPECS[kind];
+  if (!isPerforming(state, venue)) return [`No ${name.toLowerCase()}s here: a ${BUILDING_SPECS[school].name} sends them`];
+  const months = (venue.performingUntil - state.tick) / TICKS_PER_MONTH;
+  return [`${name}s here for ${amount(months)} more months`];
 }
 
 function walkerLines(state: GameState, building: Building): string[] {
@@ -168,12 +188,28 @@ function walkerLines(state: GameState, building: Building): string[] {
   if (roamerKind) {
     const spec = ROAMER_SPECS[roamerKind];
     const out = state.roamers.some((r) => r.homeId === building.id);
-    const waits = spec.service === 'food' && building.food === 0;
-    lines.push(`${spec.name} ${out ? 'out in the streets' : waits ? 'waits for food' : 'getting ready'}`);
+    lines.push(`${spec.name} ${out ? 'out in the streets' : (roamerWaitsFor(state, building, spec) ?? 'getting ready')}`);
   }
   const carrierKind = carrierKindSentBy(building.type);
   if (carrierKind) lines.push(carrierStatus(state, building, carrierKind));
+  const traineeKind = traineeKindSentBy(building.type);
+  if (traineeKind) lines.push(traineeStatus(state, building, traineeKind));
   return lines;
+}
+
+function roamerWaitsFor(state: GameState, building: Building, spec: RoamerSpec): string | null {
+  if (spec.service === 'food' && building.food === 0) return 'waits for food';
+  if (traineeKindFor(building.type) && !isPerforming(state, building)) return 'waits for one to arrive';
+  return null;
+}
+
+function traineeStatus(state: GameState, school: Building, kind: Trainee['kind']): string {
+  const { name, venue } = TRAINEE_SPECS[kind];
+  const trainee = state.trainees.find((t) => t.homeId === school.id);
+  const destination = trainee && buildingById(state, trainee.destinationId);
+  if (destination) return `${name} on the way to the ${BUILDING_SPECS[venue].name} at ${destination.x}, ${destination.y}`;
+  if (staffedVenues(state, kind).length === 0) return `${name} waits for a staffed ${BUILDING_SPECS[venue].name}`;
+  return `${name} in training`;
 }
 
 function carrierStatus(state: GameState, building: Building, kind: Carrier['kind']): string {
@@ -219,4 +255,12 @@ function describeCarrier(state: GameState, carrier: Carrier): Description {
     lines.push('Looking for another granary');
   }
   return { title: CARRIER_SPECS[carrier.kind].name, lines };
+}
+
+function describeTrainee(state: GameState, trainee: Trainee): Description {
+  const { name, venue } = TRAINEE_SPECS[trainee.kind];
+  const destination = buildingById(state, trainee.destinationId);
+  const venueName = BUILDING_SPECS[venue].name;
+  const heading = destination ? `Heading to the ${venueName} at ${destination.x}, ${destination.y}` : `Looking for another ${venueName}`;
+  return { title: name, lines: [homeLine(state, trainee.homeId), heading] };
 }
