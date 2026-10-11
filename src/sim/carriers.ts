@@ -5,7 +5,7 @@ import { findRoadPath, nearestByRoad } from './pathfinding';
 import type { Point } from './point';
 import { exitTile } from './roamers';
 import { NO_BUILDING, buildingById, type Building, type Carrier, type CarrierKind, type GameState } from './state';
-import { WALKER_TILES_PER_TICK, isRoad } from './walking';
+import { isRoad, walkPath } from './walking';
 
 export interface CarrierSpec {
   name: string;
@@ -72,14 +72,7 @@ function moveCarrier(state: GameState, carrier: Carrier): void {
   if (!isRoad(state, carrier.path[carrier.step])) return dismiss(state, carrier);
   if (!carrier.returning && !buildingById(state, carrier.destinationId) && !replan(state, carrier, home)) return;
 
-  carrier.progress += WALKER_TILES_PER_TICK;
-  while (carrier.progress >= 1 && carrier.step < carrier.path.length - 1) {
-    if (!isRoad(state, carrier.path[carrier.step + 1]) && !replan(state, carrier, home)) return;
-    if (carrier.step === carrier.path.length - 1) break;
-    carrier.step++;
-    carrier.progress--;
-  }
-  if (carrier.step === carrier.path.length - 1) arrive(state, carrier, home);
+  walkPath(state, carrier, () => replan(state, carrier, home), () => arrive(state, carrier, home));
 }
 
 function replan(state: GameState, carrier: Carrier, home: Building): boolean {

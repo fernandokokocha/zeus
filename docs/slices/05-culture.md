@@ -63,7 +63,7 @@ shared by settlers and carriers is extracted first so trainees can use it too.
 
 **Files:** Modify `src/sim/walking.ts`, `src/sim/settlers.ts`, `src/sim/carriers.ts`.
 
-- [ ] **Step 1:** Refactor: settlers and carriers walk their path through a shared
+- [x] **Step 1:** Refactor: settlers and carriers walk their path through a shared
   `walkPath` that calls back to replan or arrive. No behavior change; tests untouched.
 
 ### Task 3: Schools, venues and trainees
