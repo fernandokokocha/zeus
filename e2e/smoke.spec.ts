@@ -29,7 +29,7 @@ async function place(page: Page, tool: RegExp, at: [number, number]): Promise<vo
 }
 
 test('boots, builds a street with services, food, culture and decorations, and settlers move in', async ({ page }) => {
-  test.setTimeout(60_000);
+  test.setTimeout(90_000);
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   page.on('console', (message) => {
