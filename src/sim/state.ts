@@ -8,6 +8,7 @@ import { STARTING_TREASURY } from './treasury';
 export type Speed = 0 | 1 | 2 | 4;
 export type PlayingSpeed = Exclude<Speed, 0>;
 
+export type Good = 'food';
 export type Culture = 'philosophy' | 'athletics' | 'drama';
 export type Service = 'water' | 'tax' | 'food' | Culture;
 export type Coverage = Exclude<Service, 'food'>;
