@@ -636,7 +636,7 @@ git commit -m "Generate seeded terrain with coast, forest, meadow and ore deposi
   - Every successful mutation increments `state.version`. The renderer rebuilds when it
     changes.
 
-- [ ] **Step 1: Write the test helper and failing tests**
+- [x] **Step 1: Write the test helper and failing tests**
 
 `tests/sim/helpers.ts`:
 
@@ -805,13 +805,13 @@ describe('demolish', () => {
 });
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `npm test`
 Expected: FAIL with "Failed to resolve import" for `src/sim/commands` and
 `src/sim/state`.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 `src/sim/buildings.ts`:
 
@@ -1002,12 +1002,12 @@ export function demolish(state: GameState, from: Point, to: Point): void {
 }
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run: `npm test`
 Expected: PASS (all of Task 2 and Task 3).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -A
