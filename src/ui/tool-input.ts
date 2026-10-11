@@ -22,7 +22,7 @@ export interface ToolInputDeps {
 }
 
 export function attachToolInput({ view, state, toolbar, ghost, inspector, topbar }: ToolInputDeps): {
-  refreshGhost(): void;
+  toolChanged(): void;
 } {
   let dragStart: Point | null = null;
   let hover: Point | null = null;
@@ -99,5 +99,10 @@ export function attachToolInput({ view, state, toolbar, ghost, inspector, topbar
     refreshGhost();
   });
 
-  return { refreshGhost };
+  function toolChanged(): void {
+    rotation = 0;
+    refreshGhost();
+  }
+
+  return { toolChanged };
 }
