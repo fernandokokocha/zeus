@@ -1,11 +1,12 @@
-export type BuildingType = 'testBuilding';
+export type BuildingType = 'house';
 
 export interface BuildingSpec {
   name: string;
   width: number;
   height: number;
+  cost: number;
 }
 
 export const BUILDING_SPECS: Record<BuildingType, BuildingSpec> = {
-  testBuilding: { name: 'Test Building', width: 2, height: 2 },
+  house: { name: 'House', width: 2, height: 2, cost: 10 },
 };

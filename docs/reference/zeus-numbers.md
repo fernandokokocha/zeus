@@ -145,3 +145,6 @@ https://zeus.heavengames.com/gameinfo/gods/
 
 - Granary and storehouse capacity: **32 loads each** (8 slots × 4 loads).
 - Time scale: **1 month = 20 s at 1× speed** (one constant, tunable).
+- Road cost: **2 dr per tile** (re-laying an existing road tile is free).
+- Settler arrival: **one settler every 20 ticks** (1 s at 1×) while a reachable lot has
+  room. Each settler carries the lot's remaining room.

@@ -9,10 +9,6 @@ const MONTH_NAMES = [
   'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
-export function tick(state: GameState): void {
-  state.tick++;
-}
-
 export function gameDate(tick: number): { month: string; year: number } {
   const months = Math.floor(tick / TICKS_PER_MONTH);
   return { month: MONTH_NAMES[months % 12], year: Math.floor(months / 12) + 1 };

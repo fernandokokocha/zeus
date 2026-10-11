@@ -5,8 +5,8 @@ import {
   pauseForInspection,
   resumeAfterInspection,
   setSpeed,
-  tick,
 } from '../../src/sim/clock';
+import { tick } from '../../src/sim/tick';
 import { grassGame } from './helpers';
 
 describe('gameDate', () => {

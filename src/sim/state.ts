@@ -11,6 +11,16 @@ export interface Building {
   type: BuildingType;
   x: number;
   y: number;
+  residents: number;
+}
+
+export interface Settler {
+  id: number;
+  path: Point[];
+  step: number;
+  progress: number;
+  destinationId: number;
+  people: number;
 }
 
 export interface GameState {
@@ -20,6 +30,8 @@ export interface GameState {
   buildings: Building[];
   buildingIdAt: number[];
   nextBuildingId: number;
+  settlers: Settler[];
+  nextSettlerId: number;
   entry: Point;
   treasury: number;
   tick: number;
@@ -40,6 +52,8 @@ export function newGameState(size: number, terrain: Terrain[], entry: Point): Ga
     buildings: [],
     buildingIdAt: new Array<number>(size * size).fill(NO_BUILDING),
     nextBuildingId: 1,
+    settlers: [],
+    nextSettlerId: 1,
     entry,
     treasury: STARTING_TREASURY,
     tick: 0,
@@ -64,4 +78,8 @@ export function inBounds(state: GameState, x: number, y: number): boolean {
 
 export function clampToMap(state: GameState, p: Point): Point {
   return clampPoint(p, state.size);
+}
+
+export function buildingById(state: GameState, id: number): Building | undefined {
+  return state.buildings.find((b) => b.id === id);
 }

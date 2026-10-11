@@ -1,6 +1,6 @@
 import { BUILDING_SPECS, type BuildingType } from './buildings';
 import { rectBetween, tilesIn, type Point } from './point';
-import { NO_BUILDING, clampToMap, inBounds, tileIndex, type GameState } from './state';
+import { NO_BUILDING, clampToMap, inBounds, tileIndex, type Building, type GameState } from './state';
 import { BUILDABLE, TERRAIN_NAMES } from './terrain';
 import { ROAD_TILE_COST } from './treasury';
 
@@ -64,12 +64,20 @@ function footprintObstacle(state: GameState, type: BuildingType, x: number, y: n
   return null;
 }
 
-export function hasRoadAccess(state: GameState, type: BuildingType, x: number, y: number): boolean {
+function adjacentRoadTilesOf(state: GameState, type: BuildingType, x: number, y: number): Point[] {
   const { width, height } = BUILDING_SPECS[type];
   const neighbours: Point[] = [];
   for (let dx = 0; dx < width; dx++) neighbours.push({ x: x + dx, y: y - 1 }, { x: x + dx, y: y + height });
   for (let dy = 0; dy < height; dy++) neighbours.push({ x: x - 1, y: y + dy }, { x: x + width, y: y + dy });
-  return neighbours.some((p) => inBounds(state, p.x, p.y) && state.roads[tileIndex(state, p.x, p.y)]);
+  return neighbours.filter((p) => inBounds(state, p.x, p.y) && state.roads[tileIndex(state, p.x, p.y)]);
+}
+
+export function adjacentRoadTiles(state: GameState, building: Building): Point[] {
+  return adjacentRoadTilesOf(state, building.type, building.x, building.y);
+}
+
+export function hasRoadAccess(state: GameState, type: BuildingType, x: number, y: number): boolean {
+  return adjacentRoadTilesOf(state, type, x, y).length > 0;
 }
 
 export function checkBuildingPlacement(
@@ -81,12 +89,37 @@ export function checkBuildingPlacement(
   return { obstacle: footprintObstacle(state, type, x, y), roadAccess: hasRoadAccess(state, type, x, y) };
 }
 
-export function placeBuilding(state: GameState, type: BuildingType, x: number, y: number): Result {
-  const obstacle = footprintObstacle(state, type, x, y);
-  if (obstacle) return fail(obstacle);
-  const building = { id: state.nextBuildingId++, type, x, y };
+function placeBuilding(state: GameState, type: BuildingType, x: number, y: number): void {
+  const building = { id: state.nextBuildingId++, type, x, y, residents: 0 };
   state.buildings.push(building);
   for (const p of footprint(type, x, y)) state.buildingIdAt[tileIndex(state, p.x, p.y)] = building.id;
+  state.treasury -= BUILDING_SPECS[type].cost;
+}
+
+function lotStarts(from: number, to: number, size: number): number[] {
+  const count = Math.max(1, Math.floor((Math.abs(to - from) + 1) / size));
+  return Array.from({ length: count }, (_, k) => (to >= from ? from + k * size : from - k * size - (size - 1)));
+}
+
+export function lotOrigins(from: Point, to: Point): Point[] {
+  const { width, height } = BUILDING_SPECS.house;
+  const xs = lotStarts(from.x, to.x, width);
+  return lotStarts(from.y, to.y, height).flatMap((y) => xs.map((x) => ({ x, y })));
+}
+
+export function placeHouses(state: GameState, from: Point, to: Point): Result {
+  const obstacles: string[] = [];
+  let placed = 0;
+  for (const lot of lotOrigins(from, to)) {
+    const obstacle = footprintObstacle(state, 'house', lot.x, lot.y);
+    if (obstacle) {
+      obstacles.push(obstacle);
+      continue;
+    }
+    placeBuilding(state, 'house', lot.x, lot.y);
+    placed++;
+  }
+  if (placed === 0) return fail(obstacles[0]);
   state.version++;
   return OK;
 }
