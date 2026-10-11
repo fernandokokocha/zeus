@@ -1,10 +1,11 @@
 import { BUILDING_SPECS, footprintDistance, type BuildingType } from './buildings';
 import { TICKS_PER_MONTH } from './clock';
 import { adjacentRoadTiles, roadSite } from './commands';
+import { stockHouse } from './food';
 import { NEIGHBOUR_STEPS, findRoadPath } from './pathfinding';
 import type { Point } from './point';
 import { nextRandom } from './rng';
-import { buildingById, inBounds, tileIndex, type Building, type GameState, type Roamer, type RoamerKind, type Service } from './state';
+import { buildingById, inBounds, tileIndex, type Building, type GameState, type Roamer, type Coverage, type RoamerKind, type Service } from './state';
 import { WALKER_TILES_PER_TICK, isRoad } from './walking';
 
 export interface RoamerSpec {
@@ -17,6 +18,7 @@ export interface RoamerSpec {
 export const ROAMER_SPECS: Record<RoamerKind, RoamerSpec> = {
   waterCarrier: { name: 'Water Carrier', home: 'fountain', range: 27, service: 'water' },
   taxCollector: { name: 'Tax Collector', home: 'taxOffice', range: 35, service: 'tax' },
+  peddler: { name: 'Peddler', home: 'foodVendor', range: 44, service: 'food' },
 };
 
 export const SERVICE_REACH = 2;
@@ -28,11 +30,11 @@ export function roamerKindSentBy(type: BuildingType): RoamerKind | null {
   return kinds.find((kind) => ROAMER_SPECS[kind].home === type) ?? null;
 }
 
-export function hasService(state: GameState, house: Building, service: Service): boolean {
+export function hasService(state: GameState, house: Building, service: Coverage): boolean {
   return state.tick < house.coveredUntil[service];
 }
 
-export function serviceLeft(state: GameState, house: Building, service: Service): number {
+export function serviceLeft(state: GameState, house: Building, service: Coverage): number {
   return Math.max(0, house.coveredUntil[service] - state.tick) / (SERVICE_MONTHS * TICKS_PER_MONTH);
 }
 
@@ -73,6 +75,7 @@ export function tickRoamers(state: GameState): void {
 function sendRoamer(state: GameState, building: Building): void {
   const kind = roamerKindSentBy(building.type);
   if (!kind || building.workers === 0 || state.roamers.some((r) => r.homeId === building.id)) return;
+  if (ROAMER_SPECS[kind].service === 'food' && building.food === 0) return;
   building.walkerRest += building.workers / BUILDING_SPECS[building.type].workers;
   if (building.walkerRest < ROAMER_REST_TICKS) return;
 
@@ -141,9 +144,14 @@ function dismiss(state: GameState, roamer: Roamer): void {
 
 function serveAround(state: GameState, roamer: Roamer): void {
   const tile = roamer.path[roamer.step];
-  const until = state.tick + SERVICE_MONTHS * TICKS_PER_MONTH;
   const service = ROAMER_SPECS[roamer.kind].service;
-  for (const house of state.buildings) {
-    if (house.type === 'house' && footprintDistance(house, tile) <= SERVICE_REACH) house.coveredUntil[service] = until;
+  const houses = state.buildings.filter((b) => b.type === 'house' && footprintDistance(b, tile) <= SERVICE_REACH);
+  if (service === 'food') {
+    const stall = buildingById(state, roamer.homeId);
+    if (!stall) throw new Error(`Peddler ${roamer.id} serves from missing stall ${roamer.homeId}`);
+    for (const house of houses) stockHouse(stall, house);
+    return;
   }
+  const until = state.tick + SERVICE_MONTHS * TICKS_PER_MONTH;
+  for (const house of houses) house.coveredUntil[service] = until;
 }

@@ -45,3 +45,13 @@ export function eat(state: GameState): void {
     house.food = Math.max(0, house.food - monthlyFood(house));
   }
 }
+
+export function houseFoodTarget(house: Building): number {
+  return house.residents * FOOD_PER_RESIDENT_PER_MONTH * HOUSE_FOOD_MONTHS;
+}
+
+export function stockHouse(stall: Building, house: Building): void {
+  const given = Math.min(Math.max(0, houseFoodTarget(house) - house.food), stall.food);
+  house.food += given;
+  stall.food -= given;
+}

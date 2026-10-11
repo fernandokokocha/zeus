@@ -9,7 +9,7 @@ import {
   hasService,
   nextRoamTile,
 } from '../../src/sim/roamers';
-import type { GameState } from '../../src/sim/state';
+import type { Building, GameState } from '../../src/sim/state';
 import { tick } from '../../src/sim/tick';
 import { WALKER_TILES_PER_TICK } from '../../src/sim/walking';
 import { grassGame, placeHouse, runTicks } from './helpers';
@@ -231,5 +231,46 @@ describe('a water carrier', () => {
     demolish(game, { x: 10, y: 10 }, { x: 10, y: 10 });
     runTicks(game, ticksToWalk(9));
     expect(game.roamers).toEqual([]);
+  });
+});
+
+describe('a peddler', () => {
+  function market(): { game: GameState; vendor: Building } {
+    const game = cityOf(20);
+    placeBuilding(game, 'agora', 0, 11);
+    placeBuilding(game, 'foodVendor', 0, 11);
+    return { game, vendor: game.buildings[2] };
+  }
+
+  it('only sets out when his stall has food', () => {
+    const { game, vendor } = market();
+    runTicks(game, 2 * ROAMER_REST_TICKS);
+    expect(game.roamers).toEqual([]);
+    vendor.food = 100;
+    runTicks(game, ROAMER_REST_TICKS);
+    expect(game.roamers.map((r) => r.kind)).toEqual(['peddler']);
+  });
+
+  it('fills the houses he passes with 3 months of food from his stall', () => {
+    const { game, vendor } = market();
+    const hut = fullHouse(game, 4, 8);
+    const shack = fullHouse(game, 8, 8);
+    shack.level = 'shack';
+    shack.residents = 16;
+    shack.food = 2;
+    vendor.food = 100;
+    runTicks(game, ROAMER_REST_TICKS + ticksToWalk(10));
+    expect(hut.food).toBe(8 * 0.25 * 3);
+    expect(shack.food).toBe(16 * 0.25 * 3);
+    expect(vendor.food).toBe(100 - 6 - 10);
+  });
+
+  it('hands out no more than the stall holds', () => {
+    const { game, vendor } = market();
+    const hut = fullHouse(game, 4, 8);
+    vendor.food = 1;
+    runTicks(game, ROAMER_REST_TICKS + ticksToWalk(10));
+    expect(hut.food).toBe(1);
+    expect(vendor.food).toBe(0);
   });
 });

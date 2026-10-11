@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { demolish, placeBuilding, placeRoad } from '../../src/sim/commands';
-import { CART_LOAD, GRANARY_CAPACITY } from '../../src/sim/food';
+import { BUYER_LOAD, CART_LOAD, GRANARY_CAPACITY, VENDOR_CAPACITY } from '../../src/sim/food';
 import type { Building, GameState } from '../../src/sim/state';
 import { tick } from '../../src/sim/tick';
 import { WALKER_TILES_PER_TICK } from '../../src/sim/walking';
@@ -113,6 +113,56 @@ describe('a cart pusher', () => {
     runTicks(game, ticksToWalk(3));
     const { x, y } = game.carriers[0].path[game.carriers[0].step];
     demolish(game, { x, y }, { x, y });
+    tick(game);
+    expect(game.carriers).toEqual([]);
+  });
+});
+
+function marketTown(): { game: GameState; vendor: Building; granary: Building } {
+  const game = grassGame(30);
+  placeRoad(game, { x: 0, y: 15 }, { x: 29, y: 15 });
+  placeHouse(game, 0, 28);
+  game.buildings[0].residents = 100;
+  placeBuilding(game, 'agora', 10, 16);
+  placeBuilding(game, 'foodVendor', 10, 16);
+  placeBuilding(game, 'granary', 20, 11);
+  const [, , vendor, granary] = game.buildings;
+  return { game, vendor, granary };
+}
+
+describe('a buyer', () => {
+  it('fetches up to 4 loads from a granary for his stall', () => {
+    const { game, vendor, granary } = marketTown();
+    granary.food = 1000;
+    tick(game);
+    expect(game.carriers[0]).toMatchObject({ kind: 'buyer', homeId: vendor.id, destinationId: granary.id, food: 0 });
+    expect(game.carriers[0].path[0]).toEqual({ x: 10, y: 15 });
+    runTicks(game, ticksToWalk(10));
+    expect(granary.food).toBe(1000 - BUYER_LOAD);
+    expect(game.carriers[0]).toMatchObject({ returning: true, food: BUYER_LOAD });
+    runTicks(game, ticksToWalk(10));
+    expect(vendor.food).toBe(BUYER_LOAD);
+  });
+
+  it('takes only what the stall has room for', () => {
+    const { game, vendor, granary } = marketTown();
+    granary.food = 1000;
+    vendor.food = VENDOR_CAPACITY - 100;
+    runTicks(game, 2 * ticksToWalk(10) + 1);
+    expect(vendor.food).toBe(VENDOR_CAPACITY);
+    expect(granary.food).toBe(900);
+  });
+
+  it('stays home when the stall is full', () => {
+    const { game, vendor, granary } = marketTown();
+    granary.food = 1000;
+    vendor.food = VENDOR_CAPACITY;
+    tick(game);
+    expect(game.carriers).toEqual([]);
+  });
+
+  it('stays home when no granary has wheat', () => {
+    const { game } = marketTown();
     tick(game);
     expect(game.carriers).toEqual([]);
   });
