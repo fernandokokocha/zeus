@@ -3,12 +3,11 @@ import { adjacentRoadTiles } from './commands';
 import { houseCapacity, houseLevel } from './housing';
 import { findRoadPath } from './pathfinding';
 import type { Point } from './point';
-import { buildingById, tileIndex, type Building, type GameState, type Settler } from './state';
+import { buildingById, type Building, type GameState, type Settler } from './state';
+import { WALKER_TILES_PER_TICK, isRoad } from './walking';
 
 export const SETTLERS_PER_MONTH = 10;
 export const SETTLER_SPAWN_INTERVAL_TICKS = TICKS_PER_MONTH / SETTLERS_PER_MONTH;
-export const WALKER_TILES_PER_MONTH = 54.4;
-export const WALKER_TILES_PER_TICK = WALKER_TILES_PER_MONTH / TICKS_PER_MONTH;
 
 export function population(state: GameState): number {
   return state.buildings.reduce((sum, b) => sum + b.residents, 0);
@@ -101,29 +100,6 @@ function leave(state: GameState, settler: Settler): void {
   state.settlers = state.settlers.filter((s) => s !== settler);
 }
 
-function isRoad(state: GameState, p: Point): boolean {
-  return state.roads[tileIndex(state, p.x, p.y)];
-}
-
-export function settlerTile(settler: Settler): Point {
-  const ahead = settler.progress >= 0.5 && settler.step < settler.path.length - 1;
-  return settler.path[ahead ? settler.step + 1 : settler.step];
-}
-
 export function canSettlersReach(state: GameState, house: Building): boolean {
   return isRoad(state, state.entry) && findRoadPath(state, state.entry, adjacentRoadTiles(state, house)) !== null;
-}
-
-export function settlerPosition(settler: Settler, lookAhead: number): Point & { facing: Point } {
-  const lastStep = settler.path.length - 1;
-  const travelled = Math.min(settler.step + settler.progress + lookAhead, lastStep);
-  const step = Math.min(Math.floor(travelled), lastStep - 1);
-  const from = settler.path[step];
-  const to = settler.path[step + 1];
-  const t = travelled - step;
-  return {
-    x: from.x + (to.x - from.x) * t,
-    y: from.y + (to.y - from.y) * t,
-    facing: { x: to.x - from.x, y: to.y - from.y },
-  };
 }

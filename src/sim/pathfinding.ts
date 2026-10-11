@@ -1,7 +1,7 @@
 import type { Point } from './point';
 import { inBounds, tileIndex, type GameState } from './state';
 
-const NEIGHBOUR_STEPS: Point[] = [{ x: 0, y: -1 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: -1, y: 0 }];
+export const NEIGHBOUR_STEPS: Point[] = [{ x: 0, y: -1 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: -1, y: 0 }];
 const UNVISITED = -1;
 
 export function findRoadPath(state: GameState, from: Point, targets: Point[]): Point[] | null {

@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { tick } from '../../src/sim/tick';
-import { demolish, placeRoad } from '../../src/sim/commands';
+import { demolish, placeRoad, placeRoadblock } from '../../src/sim/commands';
 import { houseName } from '../../src/sim/housing';
-import { SETTLER_SPAWN_INTERVAL_TICKS, WALKER_TILES_PER_TICK, population, settlerPosition } from '../../src/sim/settlers';
+import { SETTLER_SPAWN_INTERVAL_TICKS, population } from '../../src/sim/settlers';
+import { WALKER_TILES_PER_TICK } from '../../src/sim/walking';
 import type { GameState } from '../../src/sim/state';
 import { grassGame, placeHouse, runTicks } from './helpers';
 
@@ -55,6 +56,14 @@ describe('settlers', () => {
     runTicks(game, ticksToWalk(16));
     expect(game.settlers).toEqual([]);
     expect(population(game)).toBe(16);
+  });
+
+it('walk through roadblocks', () => {
+    const game = gameWithLongRoad();
+    placeRoadblock(game, { x: 8, y: 10 });
+    placeHouse(game, 16, 8);
+    runTicks(game, SETTLER_SPAWN_INTERVAL_TICKS + ticksToWalk(16));
+    expect(game.buildings[0].residents).toBe(8);
   });
 
   it('fill the closest lot first', () => {
@@ -124,28 +133,5 @@ describe('settlers', () => {
     runTicks(game, SETTLER_SPAWN_INTERVAL_TICKS + ticksToWalk(2));
     demolish(game, { x: 2, y: 8 }, { x: 2, y: 8 });
     expect(population(game)).toBe(0);
-  });
-});
-
-describe('settlerPosition', () => {
-  const settler = {
-    id: 1,
-    path: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 }],
-    step: 0,
-    progress: 0.5,
-    destinationId: 1,
-    people: 8,
-  };
-
-  it('lies between the current and next tile, facing the next', () => {
-    expect(settlerPosition(settler, 0)).toEqual({ x: 0.5, y: 0, facing: { x: 1, y: 0 } });
-  });
-
-  it('can look ahead onto the following tile', () => {
-    expect(settlerPosition(settler, 0.75)).toEqual({ x: 1, y: 0.25, facing: { x: 0, y: 1 } });
-  });
-
-  it('stops at the end of the path', () => {
-    expect(settlerPosition(settler, 5)).toEqual({ x: 1, y: 1, facing: { x: 0, y: 1 } });
   });
 });

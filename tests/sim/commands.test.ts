@@ -3,13 +3,15 @@ import {
   checkBuildingPlacement,
   demolish,
   lotOrigins,
+  placeBuilding,
   placeHouses,
   placeRoad,
+  placeRoadblock,
   roadPath,
 } from '../../src/sim/commands';
 import { NO_BUILDING, createGame, tileIndex } from '../../src/sim/state';
 import { ENTRY_ROAD_LENGTH } from '../../src/sim/map';
-import { STARTING_TREASURY } from '../../src/sim/treasury';
+import { ROADBLOCK_COST, STARTING_TREASURY } from '../../src/sim/treasury';
 import { grassGame, placeHouse, setTerrain } from './helpers';
 
 describe('createGame', () => {
@@ -205,5 +207,67 @@ describe('placeHouses', () => {
     expect(placeHouses(game, { x: 2, y: 2 }, { x: 5, y: 3 })).toEqual({ ok: false, reason: 'Cannot build on water' });
     expect(game.treasury).toBe(STARTING_TREASURY);
     expect(game.version).toBe(0);
+  });
+});
+
+describe('placeBuilding', () => {
+  it('places a service building and charges its price', () => {
+    const game = grassGame();
+    expect(placeBuilding(game, 'fountain', 2, 2)).toEqual({ ok: true });
+    expect(placeBuilding(game, 'taxOffice', 5, 2)).toEqual({ ok: true });
+    expect(placeBuilding(game, 'palace', 9, 2)).toEqual({ ok: true });
+    expect(game.buildings.map((b) => b.type)).toEqual(['fountain', 'taxOffice', 'palace']);
+    expect(game.treasury).toBe(STARTING_TREASURY - 16 - 25 - 125);
+    expect(game.version).toBe(3);
+  });
+
+  it('gives the Palace its 9×6 footprint', () => {
+    const game = grassGame();
+    placeBuilding(game, 'palace', 9, 2);
+    const id = game.buildings[0].id;
+    expect(game.buildingIdAt[tileIndex(game, 17, 7)]).toBe(id);
+    expect(game.buildingIdAt[tileIndex(game, 18, 7)]).toBe(NO_BUILDING);
+    expect(game.buildingIdAt[tileIndex(game, 17, 8)]).toBe(NO_BUILDING);
+  });
+
+  it('allows only one Palace', () => {
+    const game = grassGame();
+    placeBuilding(game, 'palace', 0, 0);
+    expect(placeBuilding(game, 'palace', 0, 10)).toEqual({ ok: false, reason: 'Only one palace is allowed' });
+    expect(checkBuildingPlacement(game, 'palace', 0, 10).obstacle).toBe('Only one palace is allowed');
+    expect(game.treasury).toBe(STARTING_TREASURY - 125);
+  });
+
+  it('rejects a blocked footprint and spends nothing', () => {
+    const game = grassGame();
+    setTerrain(game, 3, 3, 'water');
+    expect(placeBuilding(game, 'fountain', 2, 2)).toEqual({ ok: false, reason: 'Cannot build on water' });
+    expect(game.treasury).toBe(STARTING_TREASURY);
+  });
+});
+
+describe('placeRoadblock', () => {
+  it('goes on a road and charges its price', () => {
+    const game = grassGame();
+    expect(placeRoadblock(game, { x: 3, y: 10 })).toEqual({ ok: true });
+    expect(game.roadblocks[tileIndex(game, 3, 10)]).toBe(true);
+    expect(game.treasury).toBe(STARTING_TREASURY - ROADBLOCK_COST);
+    expect(game.version).toBe(1);
+  });
+
+  it('is refused off the road or on another roadblock', () => {
+    const game = grassGame();
+    expect(placeRoadblock(game, { x: 3, y: 3 })).toEqual({ ok: false, reason: 'A roadblock goes on a road' });
+    placeRoadblock(game, { x: 3, y: 10 });
+    expect(placeRoadblock(game, { x: 3, y: 10 })).toEqual({ ok: false, reason: 'A roadblock is already there' });
+    expect(game.treasury).toBe(STARTING_TREASURY - ROADBLOCK_COST);
+  });
+
+  it('is demolished with its road', () => {
+    const game = grassGame();
+    placeRoadblock(game, { x: 3, y: 10 });
+    demolish(game, { x: 3, y: 10 }, { x: 3, y: 10 });
+    expect(game.roadblocks[tileIndex(game, 3, 10)]).toBe(false);
+    expect(game.roads[tileIndex(game, 3, 10)]).toBe(false);
   });
 });

@@ -39,13 +39,18 @@ body {
 }
 
 #population,
-#treasury {
+#treasury,
+#labor {
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
 
 #population {
   width: 8.5em;
+}
+
+#labor {
+  width: 9.5em;
 }
 
 #treasury {
@@ -73,7 +78,7 @@ body {
 }
 
 #toolbar {
-  top: 8px;
+  top: 60px;
   left: 8px;
   display: flex;
   flex-direction: column;

@@ -7,34 +7,56 @@ import { STARTING_TREASURY } from './treasury';
 export type Speed = 0 | 1 | 2 | 4;
 export type PlayingSpeed = Exclude<Speed, 0>;
 
+export type Service = 'water' | 'tax';
+
 export interface Building {
   id: number;
   type: BuildingType;
   x: number;
   y: number;
   residents: number;
+  workers: number;
+  walkerRest: number;
+  coveredUntil: Record<Service, number>;
 }
 
-export interface Settler {
-  id: number;
+export interface Walk {
   path: Point[];
   step: number;
   progress: number;
+}
+
+export interface Settler extends Walk {
+  id: number;
   destinationId: number;
   people: number;
+}
+
+export type RoamerKind = 'waterCarrier' | 'taxCollector';
+
+export interface Roamer extends Walk {
+  id: number;
+  kind: RoamerKind;
+  homeId: number;
+  returning: boolean;
 }
 
 export interface GameState {
   size: number;
   terrain: Terrain[];
   roads: boolean[];
+  roadblocks: boolean[];
   buildings: Building[];
   buildingIdAt: number[];
   nextBuildingId: number;
   settlers: Settler[];
   nextSettlerId: number;
+  roamers: Roamer[];
+  nextRoamerId: number;
+  rngState: number;
   entry: Point;
   treasury: number;
+  lastMonth: { taxes: number; wages: number };
   tick: number;
   speed: Speed;
   lastPlayedSpeed: PlayingSpeed;
@@ -51,13 +73,18 @@ export function newGameState(size: number, terrain: Terrain[], entry: Point): Ga
     size,
     terrain,
     roads,
+    roadblocks: new Array<boolean>(size * size).fill(false),
     buildings: [],
     buildingIdAt: new Array<number>(size * size).fill(NO_BUILDING),
     nextBuildingId: 1,
     settlers: [],
     nextSettlerId: 1,
+    roamers: [],
+    nextRoamerId: 1,
+    rngState: DEFAULT_SEED,
     entry,
     treasury: STARTING_TREASURY,
+    lastMonth: { taxes: 0, wages: 0 },
     tick: 0,
     speed: 1,
     lastPlayedSpeed: 1,

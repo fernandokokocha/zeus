@@ -1,10 +1,10 @@
 import type { View } from '../render/view';
-import { demolish, placeHouses, placeRoad, type Result } from '../sim/commands';
+import { demolish, placeBuilding, placeHouses, placeRoad, placeRoadblock, type Result } from '../sim/commands';
 import { describeTile, type Description } from '../sim/inspect';
 import type { Point } from '../sim/point';
 import { clampToMap, inBounds, type GameState } from '../sim/state';
 import { tileUnderPointer } from '../render/picking';
-import { previewTiles, type PreviewTile } from './preview';
+import { buildingOrigin, previewTiles, type PreviewTile } from './preview';
 import type { Tool } from './tools';
 
 const LEFT_BUTTON = 0;
@@ -30,11 +30,28 @@ export function attachToolInput({ view, state, toolbar, ghost, inspector, topbar
   }
 
   function apply(tool: Tool, from: Point, to: Point): void {
-    let result: Result = { ok: true };
-    if (tool === 'road') result = placeRoad(state, from, to);
-    if (tool === 'demolish') demolish(state, from, to);
-    if (tool === 'house') result = placeHouses(state, from, to);
+    const result = applyTool(tool, from, to);
     if (!result.ok) topbar.showStatus(result.reason);
+  }
+  
+  function applyTool(tool: Tool, from: Point, to: Point): Result {
+    switch (tool) {
+      case 'road':
+        return placeRoad(state, from, to);
+    case 'roadblock':
+      return placeRoadblock(state, to);
+      case 'house':
+        return placeHouses(state, from, to);
+      case 'demolish':
+        demolish(state, from, to);
+        return { ok: true };
+      case 'fountain':
+      case 'taxOffice':
+      case 'palace': {
+        const origin = buildingOrigin(tool, to);
+        return placeBuilding(state, tool, origin.x, origin.y);
+      }
+    }
   }
 
   view.canvas.addEventListener('contextmenu', (e) => e.preventDefault());

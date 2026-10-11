@@ -2,7 +2,7 @@ import { BUILDING_SPECS, type BuildingType } from './buildings';
 import { rectBetween, tilesIn, type Point } from './point';
 import { NO_BUILDING, clampToMap, inBounds, tileIndex, type Building, type GameState } from './state';
 import { BUILDABLE, TERRAIN_NAMES } from './terrain';
-import { ROAD_TILE_COST } from './treasury';
+import { ROADBLOCK_COST, ROAD_TILE_COST } from './treasury';
 
 export type Result = { ok: true } | { ok: false; reason: string };
 
@@ -48,6 +48,22 @@ export function placeRoad(state: GameState, from: Point, to: Point): Result {
   return OK;
 }
 
+export function roadblockObstacle(state: GameState, at: Point): string | null {
+  const i = tileIndex(state, at.x, at.y);
+  if (!state.roads[i]) return 'A roadblock goes on a road';
+  if (state.roadblocks[i]) return 'A roadblock is already there';
+  return null;
+}
+
+export function placeRoadblock(state: GameState, at: Point): Result {
+  const obstacle = roadblockObstacle(state, at);
+  if (obstacle) return fail(obstacle);
+  state.roadblocks[tileIndex(state, at.x, at.y)] = true;
+  state.treasury -= ROADBLOCK_COST;
+  state.version++;
+  return OK;
+}
+
 export function footprint(type: BuildingType, x: number, y: number): Point[] {
   const { width, height } = BUILDING_SPECS[type];
   return tilesIn({ minX: x, minY: y, maxX: x + width - 1, maxY: y + height - 1 });
@@ -86,11 +102,33 @@ export function checkBuildingPlacement(
   x: number,
   y: number,
 ): { obstacle: string | null; roadAccess: boolean } {
-  return { obstacle: footprintObstacle(state, type, x, y), roadAccess: hasRoadAccess(state, type, x, y) };
+  return { obstacle: placementObstacle(state, type, x, y), roadAccess: hasRoadAccess(state, type, x, y) };
 }
 
-function placeBuilding(state: GameState, type: BuildingType, x: number, y: number): void {
-  const building = { id: state.nextBuildingId++, type, x, y, residents: 0 };
+function placementObstacle(state: GameState, type: BuildingType, x: number, y: number): string | null {
+  if (type === 'palace' && state.buildings.some((b) => b.type === 'palace')) return 'Only one palace is allowed';
+  return footprintObstacle(state, type, x, y);
+}
+
+export function placeBuilding(state: GameState, type: BuildingType, x: number, y: number): Result {
+  const obstacle = placementObstacle(state, type, x, y);
+  if (obstacle) return fail(obstacle);
+  build(state, type, x, y);
+  state.version++;
+  return OK;
+}
+
+function build(state: GameState, type: BuildingType, x: number, y: number): void {
+  const building = {
+    id: state.nextBuildingId++,
+    type,
+    x,
+    y,
+    residents: 0,
+    workers: 0,
+    walkerRest: 0,
+    coveredUntil: { water: 0, tax: 0 },
+  };
   state.buildings.push(building);
   for (const p of footprint(type, x, y)) state.buildingIdAt[tileIndex(state, p.x, p.y)] = building.id;
   state.treasury -= BUILDING_SPECS[type].cost;
@@ -116,7 +154,7 @@ export function placeHouses(state: GameState, from: Point, to: Point): Result {
       obstacles.push(obstacle);
       continue;
     }
-    placeBuilding(state, 'house', lot.x, lot.y);
+    build(state, 'house', lot.x, lot.y);
     placed++;
   }
   if (placed === 0) return fail(obstacles[0]);
@@ -129,10 +167,12 @@ export function demolish(state: GameState, from: Point, to: Point): void {
   for (const p of tilesIn(rectBetween(clampToMap(state, from), clampToMap(state, to)))) {
     const i = tileIndex(state, p.x, p.y);
     state.roads[i] = false;
+    state.roadblocks[i] = false;
     if (state.terrain[i] === 'forest') state.terrain[i] = 'grass';
     if (state.buildingIdAt[i] !== NO_BUILDING) doomed.add(state.buildingIdAt[i]);
   }
   state.buildings = state.buildings.filter((b) => !doomed.has(b.id));
+  state.roamers = state.roamers.filter((r) => !doomed.has(r.homeId));
   state.buildingIdAt = state.buildingIdAt.map((id) => (doomed.has(id) ? NO_BUILDING : id));
   state.version++;
 }
