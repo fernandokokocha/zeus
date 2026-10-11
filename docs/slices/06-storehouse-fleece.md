@@ -98,10 +98,10 @@ need.
 **Files:** Modify `src/sim/carriers.ts`, `src/sim/state.ts`, `src/sim/buildings.ts`.
 Create `src/sim/storehouse.ts`, `tests/sim/storehouse.test.ts`.
 
-- [ ] **Step 1:** Write failing tests: the shed's cart pusher takes its fleece to the
+- [x] **Step 1:** Write failing tests: the shed's cart pusher takes its fleece to the
   nearest staffed storehouse with room; a storehouse takes 32 loads in 8 slots of 4,
   counting carts on the way; the fleece buyer fetches 4 loads for his stall.
-- [ ] **Step 2:** Implement. Tests pass.
+- [x] **Step 2:** Implement. Tests pass.
 
 ### Task 5: Fleece peddler
 

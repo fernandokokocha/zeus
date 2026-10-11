@@ -72,6 +72,16 @@ athlete: [
 ],
 actor,
 actorTrainee: actor,
+fleeceCart: [
+    ...body(PALETTE.cartTunic),
+    { geometry: new THREE.BoxGeometry(0.2, 0.08, 0.24).translate(0, 0.1, 0.22), color: PALETTE.trunk },
+    { geometry: new THREE.CylinderGeometry(0.06, 0.06, 0.26, 10).rotateZ(Math.PI / 2).translate(0, 0.06, 0.24), color: PALETTE.doorway },
+    { geometry: new THREE.BoxGeometry(0.16, 0.1, 0.18).translate(0, 0.19, 0.22), color: PALETTE.wool },
+  ],
+  fleeceBuyer: [
+    ...body(PALETTE.fleeceBuyerTunic),
+    { geometry: new THREE.SphereGeometry(0.07, 8, 6).scale(1.3, 0.8, 1).translate(0, 0.26, -0.08), color: PALETTE.wool },
+  ],
 cartPusher: [
     ...body(PALETTE.cartTunic),
     { geometry: new THREE.BoxGeometry(0.2, 0.08, 0.24).translate(0, 0.1, 0.22), color: PALETTE.trunk },
@@ -136,7 +146,7 @@ export function createWalkerLayer(): { group: THREE.Group; sync(state: GameState
       for (const kind of ['waterCarrier', 'taxCollector', 'peddler', 'philosopher', 'athlete', 'actor'] as const) {
         sets[kind].show(state.roamers.filter((r) => r.kind === kind), ticksAhead);
       }
-      for (const kind of ['cartPusher', 'buyer'] as const) {
+      for (const kind of ['cartPusher', 'buyer', 'fleeceCart', 'fleeceBuyer'] as const) {
         sets[kind].show(state.carriers.filter((c) => c.kind === kind), ticksAhead);
       }
       for (const kind of ['philosopherTrainee', 'actorTrainee'] as const) {

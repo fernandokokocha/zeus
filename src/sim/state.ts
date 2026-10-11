@@ -8,7 +8,7 @@ import { STARTING_TREASURY } from './treasury';
 export type Speed = 0 | 1 | 2 | 4;
 export type PlayingSpeed = Exclude<Speed, 0>;
 
-export type Good = 'food';
+export type Good = 'food' | 'fleece';
 export type Culture = 'philosophy' | 'athletics' | 'drama';
 export type Service = 'water' | 'tax' | 'food' | Culture;
 export type Coverage = Exclude<Service, 'food'>;
@@ -75,7 +75,7 @@ export interface Shepherd extends Walk {
   returning: boolean;
 }
 
-export type CarrierKind = 'cartPusher' | 'buyer';
+export type CarrierKind = 'cartPusher' | 'buyer' | 'fleeceCart' | 'fleeceBuyer';
 
 export interface Carrier extends Walk {
   id: number;
@@ -83,6 +83,7 @@ export interface Carrier extends Walk {
   homeId: number;
   destinationId: number;
   food: number;
+  fleece: number;
   returning: boolean;
 }
 

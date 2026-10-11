@@ -4,10 +4,11 @@ import { BUYER_LOAD, CART_LOAD, GRANARY_CAPACITY, UNITS_PER_LOAD, VENDOR_CAPACIT
 import { findRoadPath, nearestByRoad } from './pathfinding';
 import type { Point } from './point';
 import { exitTile } from './roamers';
+import { STOREHOUSE_CAPACITY } from './storehouse';
 import { NO_BUILDING, buildingById, type Building, type Carrier, type CarrierKind, type GameState, type Good } from './state';
 import { isRoad, walkPath } from './walking';
 
-type Store = 'granary';
+type Store = 'granary' | 'storehouse';
 
 export interface CarrierSpec {
   name: string;
@@ -20,9 +21,11 @@ export interface CarrierSpec {
 export const CARRIER_SPECS: Record<CarrierKind, CarrierSpec> = {
   cartPusher: { name: 'Cart Pusher', home: 'wheatFarm', good: 'food', store: 'granary', delivers: true },
   buyer: { name: 'Buyer', home: 'foodVendor', good: 'food', store: 'granary', delivers: false },
+  fleeceCart: { name: 'Cart Pusher', home: 'cardingShed', good: 'fleece', store: 'storehouse', delivers: true },
+  fleeceBuyer: { name: 'Buyer', home: 'fleeceVendor', good: 'fleece', store: 'storehouse', delivers: false },
 };
 
-const STORE_CAPACITY: Record<Store, number> = { granary: GRANARY_CAPACITY };
+const STORE_CAPACITY: Record<Store, number> = { granary: GRANARY_CAPACITY, storehouse: STOREHOUSE_CAPACITY };
 
 export function carrierKindSentBy(type: BuildingType): CarrierKind | null {
   const kinds = Object.keys(CARRIER_SPECS) as CarrierKind[];
@@ -72,6 +75,8 @@ function sendCarrier(state: GameState, building: Building): void {
     kind,
     homeId: building.id,
     destinationId: target.building.id,
+    food: 0,
+    fleece: 0,
     [good]: load,
     returning: false,
     path: target.path,

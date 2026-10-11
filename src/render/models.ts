@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { AGORA_VENDOR_SPOTS, BUILDING_SPECS, type BuildingType } from '../sim/buildings';
 import { CROP_STAGES, UNITS_PER_LOAD, cropStage } from '../sim/food';
+import { SLOT_SIZE, STOREHOUSE_SLOTS } from '../sim/storehouse';
 import { houseLevel, type HouseLevel } from '../sim/housing';
 import { isPerforming } from '../sim/schools';
 import type { Building, GameState } from '../sim/state';
@@ -29,6 +30,8 @@ const awning = lambert(PALETTE.awning);
 const lawn = lambert(PALETTE.lawn);
 const sand = lambert(PALETTE.sand);
 const wool = lambert(PALETTE.wool);
+const twine = lambert(PALETTE.twine);
+const fleeceAwning = lambert(PALETTE.fleeceAwning);
 const scroll = lambert(PALETTE.scroll);
 const skin = lambert(PALETTE.skin);
 const philosopherRobe = lambert(PALETTE.philosopherRobe);
@@ -675,6 +678,70 @@ function cardingShedModel(shed: Building): THREE.Object3D {
   return group;
 }
 
+function bale(x: number, y: number, z: number, turn: number): THREE.Object3D {
+  const group = new THREE.Group();
+  group.add(box(0.26, 0.18, 0.2, wool, 0, 0, 0));
+  for (const dx of [-0.07, 0.07]) group.add(box(0.025, 0.185, 0.21, twine, dx, 0, 0));
+  group.position.set(x, y, z);
+  group.rotation.y = turn;
+  return group;
+}
+
+const STOREHOUSE_SLOT_WIDTH = 0.68;
+const STOREHOUSE_SLOT_DEPTH = 0.86;
+const STOREHOUSE_SLOT_SPOTS = [1.55, 2.47].flatMap((z) => [0.42, 1.14, 1.86, 2.58].map((x) => [x, z]));
+const BALES_PER_SLOT = SLOT_SIZE / UNITS_PER_LOAD;
+
+function storehouseModel(storehouse: Building): THREE.Object3D {
+  const group = new THREE.Group();
+  const { width: W } = BUILDING_SPECS.storehouse;
+  group.add(box(W - 0.1, 0.04, W - 0.1, paving, W / 2, 0, W / 2));
+  group.add(box(2.8, 0.08, 0.95, fieldstone, W / 2, 0.04, 0.58));
+  group.add(box(2.7, 0.6, 0.85, plaster, W / 2, 0.12, 0.58));
+  const roof = gableRoof(1.05, 0.32, 2.86, plaster);
+  roof.rotation.y = Math.PI / 2;
+  roof.position.set(W / 2, 0.72, 0.58);
+  group.add(roof);
+  for (const x of [0.75, W / 2, W - 0.75]) group.add(box(0.36, 0.44, 0.02, doorway, x, 0.12, 1.01));
+  STOREHOUSE_SLOT_SPOTS.slice(0, STOREHOUSE_SLOTS).forEach(([sx, sz]) => {
+    for (const [w, d, x, z] of [
+      [STOREHOUSE_SLOT_WIDTH, 0.04, 0, STOREHOUSE_SLOT_DEPTH / 2],
+      [0.04, STOREHOUSE_SLOT_DEPTH, -STOREHOUSE_SLOT_WIDTH / 2, 0],
+      [0.04, STOREHOUSE_SLOT_DEPTH, STOREHOUSE_SLOT_WIDTH / 2, 0],
+    ]) {
+      group.add(box(w, 0.1, d, timber, sx + x, 0.04, sz + z));
+    }
+  });
+  const loads = Math.floor(storehouse.fleece / UNITS_PER_LOAD);
+  for (let load = 0; load < loads; load++) {
+    const [sx, sz] = STOREHOUSE_SLOT_SPOTS[Math.floor(load / BALES_PER_SLOT)];
+    const spot = load % BALES_PER_SLOT;
+    const turn = tileHash(load, storehouse.id) * 0.4 - 0.2;
+    group.add(bale(sx + (spot % 2 ? 0.14 : -0.14), 0.04, sz + (spot < 2 ? -0.2 : 0.2), turn));
+  }
+  return group;
+}
+
+function fleeceVendorModel(vendor: Building): THREE.Object3D {
+  const group = new THREE.Group();
+  const posts: [number, number][] = [[0.35, 0.35], [1.65, 0.35], [0.35, 1.45], [1.65, 1.45]];
+  for (const [x, z] of posts) group.add(columnAt(0.62, timber, x, 0.05, z));
+  for (let i = 0; i < 6; i++) {
+    const stripe = box(0.24, 0.04, 1.36, i % 2 === 0 ? fleeceAwning : plaster, 0.38 + i * 0.25, 0.68, 0.9);
+    stripe.rotation.x = 0.12;
+    group.add(stripe);
+  }
+  group.add(box(1.2, 0.24, 0.32, timber, 1, 0.05, 1.3));
+  group.add(box(1.3, 0.03, 0.03, timber, 1, 0.58, 0.4));
+  if (vendor.workers > 0 && vendor.fleece > 0) {
+    for (const x of [0.6, 1.0, 1.4]) group.add(box(0.26, 0.24, 0.03, wool, x, 0.32, 0.42));
+    group.add(bale(0.75, 0.29, 1.3, 0.1));
+    group.add(bale(1.15, 0.29, 1.3, -0.15));
+  }
+  group.add(placed(amphora, clay, 1.5, 0.05, 0.75));
+  return group;
+}
+
 const MODELS: Record<Exclude<BuildingType, 'house'>, (building: Building, state: GameState) => THREE.Object3D> = {
   fountain: (b) => fountainModel(b.workers > 0),
   taxOffice: (b) => taxOfficeModel(b.workers > 0),
@@ -692,6 +759,8 @@ const MODELS: Record<Exclude<BuildingType, 'house'>, (building: Building, state:
   dramaSchool: dramaSchoolModel,
   theater: (b, state) => theaterModel(isPerforming(state, b)),
   cardingShed: cardingShedModel,
+  storehouse: storehouseModel,
+  fleeceVendor: fleeceVendorModel,
 };
 
 const HOUSE_MODELS: Record<HouseLevel, () => THREE.Object3D> = { hut: hutModel, shack: shackModel, hovel: hovelModel };

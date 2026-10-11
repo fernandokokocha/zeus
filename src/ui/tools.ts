@@ -17,6 +17,7 @@ export const TOOL_LABELS: Record<Tool, string> = {
   granary: priced('granary'),
   agora: priced('agora'),
   foodVendor: priced('foodVendor'),
+  fleeceVendor: priced('fleeceVendor'),
   park: priced('park'),
   column: priced('column'),
   flowerGarden: priced('flowerGarden'),
@@ -25,6 +26,7 @@ export const TOOL_LABELS: Record<Tool, string> = {
   gymnasium: priced('gymnasium'),
   dramaSchool: priced('dramaSchool'),
   theater: priced('theater'),
+  storehouse: priced('storehouse'),
   cardingShed: priced('cardingShed'),
   demolish: 'Demolish',
 };
