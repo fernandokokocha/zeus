@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { AGORA_VENDOR_SPOTS, BUILDING_SPECS, type BuildingType } from '../sim/buildings';
 import { CROP_STAGES, UNITS_PER_LOAD, cropStage } from '../sim/food';
+import { SLOT_SIZE, STOREHOUSE_SLOTS } from '../sim/storehouse';
 import { houseLevel, type HouseLevel } from '../sim/housing';
 import { isPerforming } from '../sim/schools';
 import type { Building, GameState } from '../sim/state';
@@ -28,6 +29,11 @@ const bread = lambert(PALETTE.bread);
 const awning = lambert(PALETTE.awning);
 const lawn = lambert(PALETTE.lawn);
 const sand = lambert(PALETTE.sand);
+const wool = lambert(PALETTE.wool);
+const twine = lambert(PALETTE.twine);
+const vine = lambert(PALETTE.vine);
+const shutter = lambert(PALETTE.shutter);
+const fleeceAwning = lambert(PALETTE.fleeceAwning);
 const scroll = lambert(PALETTE.scroll);
 const skin = lambert(PALETTE.skin);
 const philosopherRobe = lambert(PALETTE.philosopherRobe);
@@ -501,6 +507,69 @@ function hovelModel(): THREE.Object3D {
   return group;
 }
 
+function homesteadModel(): THREE.Object3D {
+  const group = new THREE.Group();
+  group.add(box(LOT_WIDTH - 0.1, 0.03, LOT_DEPTH - 0.1, paving, LOT_WIDTH / 2, 0, LOT_DEPTH / 2));
+  group.add(box(1.5, 0.07, 1.0, fieldstone, 0.85, 0.03, 0.62));
+  group.add(box(1.44, 0.55, 0.94, plaster, 0.85, 0.1, 0.62));
+  group.add(box(0.8, 0.4, 0.8, plaster, 0.6, 0.65, 0.6));
+  const upperRoof = gableRoof(0.92, 0.28, 0.94, plaster);
+  upperRoof.rotation.y = Math.PI / 2;
+  upperRoof.position.set(0.6, 1.05, 0.6);
+  group.add(upperRoof);
+  group.add(box(0.66, 0.05, 0.98, clay, 1.25, 0.65, 0.62));
+  group.add(box(0.24, 0.36, 0.02, doorway, 0.45, 0.1, 1.095));
+  for (const x of [0.95, 1.35]) group.add(box(0.14, 0.12, 0.02, shutter, x, 0.38, 1.095));
+  group.add(box(0.14, 0.12, 0.02, shutter, 0.6, 0.82, 1.005));
+  group.add(box(0.02, 0.12, 0.14, shutter, 1.575, 0.38, 0.62));
+
+  const yardEdge = LOT_WIDTH - 0.12;
+  group.add(box(0.08, 0.22, 0.75, plaster, yardEdge, 0.03, 1.5));
+  group.add(box(1.0, 0.22, 0.08, plaster, 1.38, 0.03, yardEdge));
+  for (const [x, z] of [[1.1, 1.3], [1.75, 1.3]]) group.add(columnAt(0.42, timber, x, 0.03, z));
+  group.add(box(0.75, 0.04, 0.5, vine, 1.42, 0.45, 1.55));
+  group.add(placed(amphora, clay, 1.7, 0.03, 1.75));
+  group.add(box(0.16, 0.12, 0.12, sack, 1.2, 0.03, 1.75));
+  group.add(placed(shrub, foliage, 0.3, 0.18, 1.6));
+  return group;
+}
+
+function tenementModel(): THREE.Object3D {
+  const group = new THREE.Group();
+  group.add(box(LOT_WIDTH - 0.06, 0.03, LOT_DEPTH - 0.06, paving, LOT_WIDTH / 2, 0, LOT_DEPTH / 2));
+  const storey = 0.48;
+  const wings: [number, number, number, number][] = [
+    [1.8, 0.62, 1.0, 0.41],
+    [0.62, 1.1, 0.41, 1.37],
+  ];
+  for (const [w, d, x, z] of wings) {
+    group.add(box(w + 0.06, 0.07, d + 0.06, fieldstone, x, 0.03, z));
+    group.add(box(w, 2 * storey, d, plaster, x, 0.1, z));
+    group.add(box(w + 0.02, 0.03, d + 0.02, mudBrick, x, 0.1 + storey, z));
+  }
+  const backRoof = gableRoof(0.74, 0.26, 1.9, plaster);
+  backRoof.rotation.y = Math.PI / 2;
+  backRoof.position.set(1.0, 0.1 + 2 * storey, 0.41);
+  group.add(backRoof);
+  const sideRoof = gableRoof(0.74, 0.26, 1.2, plaster);
+  sideRoof.position.set(0.41, 0.1 + 2 * storey, 1.37);
+  group.add(sideRoof);
+  for (const x of [0.95, 1.3, 1.65]) {
+    for (const y of [0.32, 0.32 + storey]) group.add(box(0.13, 0.14, 0.02, shutter, x, y, 0.725));
+  }
+  for (const z of [1.05, 1.45]) group.add(box(0.02, 0.14, 0.13, shutter, 0.725, 0.32 + storey, z));
+  group.add(box(0.24, 0.36, 0.02, doorway, 0.41, 0.1, 1.925));
+  group.add(box(0.02, 0.36, 0.24, doorway, 0.725, 0.1, 1.5));
+  const yardEdge = LOT_WIDTH - 0.08;
+  group.add(box(0.08, 0.26, 1.2, plaster, yardEdge, 0.03, 1.32));
+  group.add(box(1.2, 0.26, 0.08, plaster, 1.32, 0.03, yardEdge));
+  group.add(cylinder(0.14, 0.16, fieldstone, 1.3, 0.03, 1.3));
+  group.add(cylinder(0.1, 0.01, water, 1.3, 0.19, 1.3));
+  group.add(box(0.95, 0.04, 0.3, vine, 1.3, 0.5, 1.75));
+  group.add(placed(amphora, clay, 1.72, 0.03, 1.0));
+  return group;
+}
+
 function scrollRack(x: number, z: number): THREE.Object3D {
   const group = new THREE.Group();
   group.add(box(0.5, 0.36, 0.14, timber, x, 0.04, z));
@@ -645,6 +714,99 @@ function theaterModel(performing: boolean): THREE.Object3D {
   return group;
 }
 
+function fleecePile(x: number, z: number, size: number): THREE.Object3D {
+  const group = new THREE.Group();
+  for (const [dx, dz, s] of [[0, 0, 1.2], [0.12, 0.05, 0.9], [-0.06, 0.12, 0.8]]) {
+    const puff = placed(shrub, wool, x + dx * size, 0.08 * size, z + dz * size);
+    puff.scale.set(s * size, 0.55 * s * size, s * size);
+    group.add(puff);
+  }
+  return group;
+}
+
+function cardingShedModel(shed: Building): THREE.Object3D {
+  const group = new THREE.Group();
+  group.add(box(1.86, 0.04, 1.86, earth, 1, 0, 1));
+  group.add(box(1.5, 0.06, 0.8, fieldstone, 1, 0.04, 0.55));
+  group.add(box(1.4, 0.5, 0.7, timber, 1, 0.1, 0.55));
+  const roof = gableRoof(0.86, 0.3, 1.56, timber, reed);
+  roof.rotation.y = Math.PI / 2;
+  roof.position.set(1, 0.6, 0.55);
+  group.add(roof);
+  group.add(box(0.3, 0.36, 0.02, doorway, 0.7, 0.1, 0.905));
+  group.add(box(0.5, 0.16, 0.22, timber, 1.35, 0.04, 1.25));
+  for (const x of [1.2, 1.5]) group.add(box(0.14, 0.02, 0.16, fieldstone, x, 0.2, 1.25));
+  group.add(fleecePile(0.45, 1.35, 1.2));
+  if (shed.fleece > 0) group.add(fleecePile(1.55, 1.65, 1));
+  for (const [x, z] of [[0.15, 1.85], [0.6, 1.85], [1.05, 1.85], [1.5, 1.85]]) group.add(columnAt(0.22, timber, x, 0.04, z));
+  group.add(box(1.5, 0.03, 0.03, timber, 0.83, 0.18, 1.85));
+  return group;
+}
+
+function bale(x: number, y: number, z: number, turn: number): THREE.Object3D {
+  const group = new THREE.Group();
+  group.add(box(0.26, 0.18, 0.2, wool, 0, 0, 0));
+  for (const dx of [-0.07, 0.07]) group.add(box(0.025, 0.185, 0.21, twine, dx, 0, 0));
+  group.position.set(x, y, z);
+  group.rotation.y = turn;
+  return group;
+}
+
+const STOREHOUSE_SLOT_WIDTH = 0.68;
+const STOREHOUSE_SLOT_DEPTH = 0.86;
+const STOREHOUSE_SLOT_SPOTS = [1.55, 2.47].flatMap((z) => [0.42, 1.14, 1.86, 2.58].map((x) => [x, z]));
+const BALES_PER_SLOT = SLOT_SIZE / UNITS_PER_LOAD;
+
+function storehouseModel(storehouse: Building): THREE.Object3D {
+  const group = new THREE.Group();
+  const { width: W } = BUILDING_SPECS.storehouse;
+  group.add(box(W - 0.1, 0.04, W - 0.1, paving, W / 2, 0, W / 2));
+  group.add(box(2.8, 0.08, 0.95, fieldstone, W / 2, 0.04, 0.58));
+  group.add(box(2.7, 0.6, 0.85, plaster, W / 2, 0.12, 0.58));
+  const roof = gableRoof(1.05, 0.32, 2.86, plaster);
+  roof.rotation.y = Math.PI / 2;
+  roof.position.set(W / 2, 0.72, 0.58);
+  group.add(roof);
+  for (const x of [0.75, W / 2, W - 0.75]) group.add(box(0.36, 0.44, 0.02, doorway, x, 0.12, 1.01));
+  STOREHOUSE_SLOT_SPOTS.slice(0, STOREHOUSE_SLOTS).forEach(([sx, sz]) => {
+    for (const [w, d, x, z] of [
+      [STOREHOUSE_SLOT_WIDTH, 0.04, 0, STOREHOUSE_SLOT_DEPTH / 2],
+      [0.04, STOREHOUSE_SLOT_DEPTH, -STOREHOUSE_SLOT_WIDTH / 2, 0],
+      [0.04, STOREHOUSE_SLOT_DEPTH, STOREHOUSE_SLOT_WIDTH / 2, 0],
+    ]) {
+      group.add(box(w, 0.1, d, timber, sx + x, 0.04, sz + z));
+    }
+  });
+  const loads = Math.floor(storehouse.fleece / UNITS_PER_LOAD);
+  for (let load = 0; load < loads; load++) {
+    const [sx, sz] = STOREHOUSE_SLOT_SPOTS[Math.floor(load / BALES_PER_SLOT)];
+    const spot = load % BALES_PER_SLOT;
+    const turn = tileHash(load, storehouse.id) * 0.4 - 0.2;
+    group.add(bale(sx + (spot % 2 ? 0.14 : -0.14), 0.04, sz + (spot < 2 ? -0.2 : 0.2), turn));
+  }
+  return group;
+}
+
+function fleeceVendorModel(vendor: Building): THREE.Object3D {
+  const group = new THREE.Group();
+  const posts: [number, number][] = [[0.35, 0.35], [1.65, 0.35], [0.35, 1.45], [1.65, 1.45]];
+  for (const [x, z] of posts) group.add(columnAt(0.62, timber, x, 0.05, z));
+  for (let i = 0; i < 6; i++) {
+    const stripe = box(0.24, 0.04, 1.36, i % 2 === 0 ? fleeceAwning : plaster, 0.38 + i * 0.25, 0.68, 0.9);
+    stripe.rotation.x = 0.12;
+    group.add(stripe);
+  }
+  group.add(box(1.2, 0.24, 0.32, timber, 1, 0.05, 1.3));
+  group.add(box(1.3, 0.03, 0.03, timber, 1, 0.58, 0.4));
+  if (vendor.workers > 0 && vendor.fleece > 0) {
+    for (const x of [0.6, 1.0, 1.4]) group.add(box(0.26, 0.24, 0.03, wool, x, 0.32, 0.42));
+    group.add(bale(0.75, 0.29, 1.3, 0.1));
+    group.add(bale(1.15, 0.29, 1.3, -0.15));
+  }
+  group.add(placed(amphora, clay, 1.5, 0.05, 0.75));
+  return group;
+}
+
 const MODELS: Record<Exclude<BuildingType, 'house'>, (building: Building, state: GameState) => THREE.Object3D> = {
   fountain: (b) => fountainModel(b.workers > 0),
   taxOffice: (b) => taxOfficeModel(b.workers > 0),
@@ -661,9 +823,18 @@ const MODELS: Record<Exclude<BuildingType, 'house'>, (building: Building, state:
   gymnasium: gymnasiumModel,
   dramaSchool: dramaSchoolModel,
   theater: (b, state) => theaterModel(isPerforming(state, b)),
+  cardingShed: cardingShedModel,
+  storehouse: storehouseModel,
+  fleeceVendor: fleeceVendorModel,
 };
 
-const HOUSE_MODELS: Record<HouseLevel, () => THREE.Object3D> = { hut: hutModel, shack: shackModel, hovel: hovelModel };
+const HOUSE_MODELS: Record<HouseLevel, () => THREE.Object3D> = {
+  hut: hutModel,
+  shack: shackModel,
+  hovel: hovelModel,
+  homestead: homesteadModel,
+  tenement: tenementModel,
+};
 
 export function buildingModel(building: Building, state: GameState): THREE.Object3D {
   if (building.type === 'house') {

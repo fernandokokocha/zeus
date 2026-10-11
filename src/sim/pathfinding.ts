@@ -1,11 +1,28 @@
 import { adjacentRoadTiles } from './commands';
-import type { Point } from './point';
-import { inBounds, tileIndex, type Building, type GameState } from './state';
+import { samePoint, type Point } from './point';
+import { NO_BUILDING, inBounds, tileIndex, type Building, type GameState } from './state';
+import { BUILDABLE } from './terrain';
 
 export const NEIGHBOUR_STEPS: Point[] = [{ x: 0, y: -1 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: -1, y: 0 }];
 const UNVISITED = -1;
 
+function isOpenTile(state: GameState, i: number): boolean {
+  return state.roads[i] || (BUILDABLE.has(state.terrain[i]) && state.buildingIdAt[i] === NO_BUILDING);
+}
+
+export function isOpenGround(state: GameState, p: Point): boolean {
+  return isOpenTile(state, tileIndex(state, p.x, p.y));
+}
+
 export function findRoadPath(state: GameState, from: Point, targets: Point[]): Point[] | null {
+  return findPath(state, from, targets, (i) => state.roads[i]);
+}
+
+export function findOpenPath(state: GameState, from: Point, targets: Point[]): Point[] | null {
+  return findPath(state, from, targets, (i) => isOpenTile(state, i));
+}
+
+function findPath(state: GameState, from: Point, targets: Point[], passable: (tile: number) => boolean): Point[] | null {
   const targetSet = new Set(targets.map((p) => tileIndex(state, p.x, p.y)));
   const cameFrom = new Int32Array(state.size * state.size).fill(UNVISITED);
   const start = tileIndex(state, from.x, from.y);
@@ -22,7 +39,7 @@ export function findRoadPath(state: GameState, from: Point, targets: Point[]): P
       const ny = y + step.y;
       if (!inBounds(state, nx, ny)) continue;
       const next = tileIndex(state, nx, ny);
-      if (cameFrom[next] !== UNVISITED || !state.roads[next]) continue;
+      if (cameFrom[next] !== UNVISITED || !passable(next)) continue;
       cameFrom[next] = current;
       queue.push(next);
     }
@@ -34,7 +51,7 @@ export function nearestByRoad(state: GameState, from: Point, buildings: Building
   const path = findRoadPath(state, from, buildings.flatMap((b) => adjacentRoadTiles(state, b)));
   if (!path) return null;
   const end = path[path.length - 1];
-  const building = buildings.find((b) => adjacentRoadTiles(state, b).some((p) => p.x === end.x && p.y === end.y));
+  const building = buildings.find((b) => adjacentRoadTiles(state, b).some((p) => samePoint(p, end)));
   if (!building) throw new Error(`Path ends at ${end.x}, ${end.y}, which touches none of the buildings`);
   return { building, path };
 }

@@ -16,7 +16,10 @@ export type BuildingType =
   | 'podium'
   | 'gymnasium'
   | 'dramaSchool'
-  | 'theater';
+  | 'theater'
+  | 'cardingShed'
+  | 'storehouse'
+  | 'fleeceVendor';
 
 export interface BuildingSpec {
   name: string;
@@ -45,6 +48,9 @@ export const BUILDING_SPECS: Record<BuildingType, BuildingSpec> = {
   gymnasium: { name: 'Gymnasium', width: 3, height: 3, cost: 30, workers: 7, appeal: [], needsRoad: true },
   dramaSchool: { name: 'Drama School', width: 3, height: 3, cost: 16, workers: 10, appeal: [], needsRoad: true },
   theater: { name: 'Theater', width: 5, height: 5, cost: 60, workers: 18, appeal: [6, 5, 4], needsRoad: true },
+  storehouse: { name: 'Storehouse', width: 3, height: 3, cost: 25, workers: 12, appeal: [-2, -2, -2, -2], needsRoad: true },
+  fleeceVendor: { name: 'Fleece Vendor', width: 2, height: 2, cost: 10, workers: 4, appeal: [], needsRoad: true },
+  cardingShed: { name: 'Carding Shed', width: 2, height: 2, cost: 16, workers: 8, appeal: [-5, -3, -1], needsRoad: true },
 };
 
 export type Rotation = 0 | 1 | 2 | 3;
@@ -89,6 +95,12 @@ export function worldToLocal(building: Placement, p: Point): Point {
     { x: w - 1 - dx, y: h - 1 - dy },
     { x: w - 1 - dy, y: dx },
   ][building.rotation];
+}
+
+export const AGORA_VENDORS: ReadonlySet<BuildingType> = new Set<BuildingType>(['foodVendor', 'fleeceVendor']);
+
+export function isAgoraVendor(type: BuildingType): boolean {
+  return AGORA_VENDORS.has(type);
 }
 
 export const AGORA_VENDOR_SPOTS = [{ x: 0, y: 0 }, { x: 0, y: 2 }, { x: 0, y: 4 }];

@@ -4,38 +4,54 @@ import { BUYER_LOAD, CART_LOAD, GRANARY_CAPACITY, UNITS_PER_LOAD, VENDOR_CAPACIT
 import { findRoadPath, nearestByRoad } from './pathfinding';
 import type { Point } from './point';
 import { exitTile } from './roamers';
-import { NO_BUILDING, buildingById, type Building, type Carrier, type CarrierKind, type GameState } from './state';
+import { STOREHOUSE_CAPACITY } from './storehouse';
+import { NO_BUILDING, buildingById, type Building, type Carrier, type CarrierKind, type GameState, type Good } from './state';
 import { isRoad, walkPath } from './walking';
+
+type Store = 'granary' | 'storehouse';
 
 export interface CarrierSpec {
   name: string;
   home: BuildingType;
+  good: Good;
+  store: Store;
+  delivers: boolean;
 }
 
 export const CARRIER_SPECS: Record<CarrierKind, CarrierSpec> = {
-  cartPusher: { name: 'Cart Pusher', home: 'wheatFarm' },
-  buyer: { name: 'Buyer', home: 'foodVendor' },
+  cartPusher: { name: 'Cart Pusher', home: 'wheatFarm', good: 'food', store: 'granary', delivers: true },
+  buyer: { name: 'Buyer', home: 'foodVendor', good: 'food', store: 'granary', delivers: false },
+  fleeceCart: { name: 'Cart Pusher', home: 'cardingShed', good: 'fleece', store: 'storehouse', delivers: true },
+  fleeceBuyer: { name: 'Buyer', home: 'fleeceVendor', good: 'fleece', store: 'storehouse', delivers: false },
 };
+
+const STORE_CAPACITY: Record<Store, number> = { granary: GRANARY_CAPACITY, storehouse: STOREHOUSE_CAPACITY };
 
 export function carrierKindSentBy(type: BuildingType): CarrierKind | null {
   const kinds = Object.keys(CARRIER_SPECS) as CarrierKind[];
   return kinds.find((kind) => CARRIER_SPECS[kind].home === type) ?? null;
 }
 
-export function granaryRoom(state: GameState, granary: Building): number {
+function storeSpace(store: Building, good: Good): number {
+  return STORE_CAPACITY[store.type as Store] - store[good];
+}
+
+export function storeRoom(state: GameState, store: Building, good: Good): number {
   const incoming = state.carriers
-    .filter((c) => c.kind === 'cartPusher' && !c.returning && c.destinationId === granary.id)
-    .reduce((sum, c) => sum + c.food, 0);
-  return GRANARY_CAPACITY - granary.food - incoming;
+    .filter((c) => CARRIER_SPECS[c.kind].delivers && !c.returning && c.destinationId === store.id)
+    .reduce((sum, c) => sum + c[good], 0);
+  return storeSpace(store, good) - incoming;
 }
 
 export function carrierDestinations(state: GameState, kind: CarrierKind): Building[] {
-  const granaries = state.buildings.filter((b) => b.type === 'granary' && b.workers > 0);
-  return kind === 'cartPusher' ? granaries.filter((g) => granaryRoom(state, g) > 0) : granaries.filter((g) => g.food >= UNITS_PER_LOAD);
+  const { store, good, delivers } = CARRIER_SPECS[kind];
+  const stores = state.buildings.filter((b) => b.type === store && b.workers > 0);
+  return delivers ? stores.filter((s) => storeRoom(state, s, good) > 0) : stores.filter((s) => s[good] >= UNITS_PER_LOAD);
 }
 
 function wantsTrip(kind: CarrierKind, home: Building): boolean {
-  return kind === 'cartPusher' ? home.food > 0 : VENDOR_CAPACITY - home.food >= UNITS_PER_LOAD;
+  const { good, delivers } = CARRIER_SPECS[kind];
+  return delivers ? home[good] > 0 : VENDOR_CAPACITY - home[good] >= UNITS_PER_LOAD;
 }
 
 export function tickCarriers(state: GameState): void {
@@ -51,14 +67,17 @@ function sendCarrier(state: GameState, building: Building): void {
   if (!exit) throw new Error(`Building ${building.id} has workers but no road to leave by`);
   const target = nearestByRoad(state, exit, carrierDestinations(state, kind));
   if (!target) return;
-  const food = kind === 'cartPusher' ? Math.min(CART_LOAD, building.food, granaryRoom(state, target.building)) : 0;
-  building.food -= food;
+  const { good, delivers } = CARRIER_SPECS[kind];
+  const load = delivers ? Math.min(CART_LOAD, building[good], storeRoom(state, target.building, good)) : 0;
+  building[good] -= load;
   state.carriers.push({
     id: state.nextCarrierId++,
     kind,
     homeId: building.id,
     destinationId: target.building.id,
-    food,
+    food: 0,
+    fleece: 0,
+    [good]: load,
     returning: false,
     path: target.path,
     step: 0,
@@ -105,19 +124,19 @@ function restartOn(carrier: Carrier, path: Point[]): void {
 }
 
 function arrive(state: GameState, carrier: Carrier, home: Building): void {
+  const { good, delivers } = CARRIER_SPECS[carrier.kind];
   if (carrier.returning) {
-    home.food += carrier.food;
+    home[good] += carrier[good];
     state.version++;
     return dismiss(state, carrier);
   }
-  const granary = buildingById(state, carrier.destinationId);
-  if (!granary) throw new Error(`Carrier ${carrier.id} reached missing building ${carrier.destinationId}`);
-  const moved =
-    carrier.kind === 'cartPusher'
-      ? Math.min(carrier.food, GRANARY_CAPACITY - granary.food)
-      : -wholeLoads(Math.min(BUYER_LOAD, granary.food, VENDOR_CAPACITY - home.food));
-  granary.food += moved;
-  carrier.food -= moved;
+  const store = buildingById(state, carrier.destinationId);
+  if (!store) throw new Error(`Carrier ${carrier.id} reached missing building ${carrier.destinationId}`);
+  const moved = delivers
+    ? Math.min(carrier[good], storeSpace(store, good))
+    : -wholeLoads(Math.min(BUYER_LOAD, store[good], VENDOR_CAPACITY - home[good]));
+  store[good] += moved;
+  carrier[good] -= moved;
   state.version++;
   headHome(state, carrier, home);
 }

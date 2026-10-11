@@ -22,3 +22,9 @@ export function runTicks(state: GameState, count: number): void {
 export function setMeadow(state: GameState, x: number, y: number, width: number, height: number): void {
   for (let dy = 0; dy < height; dy++) for (let dx = 0; dx < width; dx++) setTerrain(state, x + dx, y + dy, 'meadow');
 }
+
+export function meadowGame(size = 20): GameState {
+  const game = grassGame(size);
+  setMeadow(game, 0, 0, size, size);
+  return game;
+}

@@ -274,3 +274,36 @@ describe('a peddler', () => {
     expect(vendor.food).toBe(0);
   });
 });
+
+describe('a fleece peddler', () => {
+  function market(): { game: GameState; vendor: Building } {
+    const game = cityOf(20);
+    placeBuilding(game, 'agora', 0, 11);
+    placeBuilding(game, 'fleeceVendor', 0, 11);
+    return { game, vendor: game.buildings[2] };
+  }
+
+  it('only sets out when his stall has fleece, and roams 44 tiles', () => {
+    const { game, vendor } = market();
+    vendor.food = 100;
+    runTicks(game, 2 * ROAMER_REST_TICKS);
+    expect(game.roamers).toEqual([]);
+    vendor.fleece = 100;
+    runTicks(game, ROAMER_REST_TICKS);
+    expect(game.roamers.map((r) => r.kind)).toEqual(['fleecePeddler']);
+    expect(ROAMER_SPECS.fleecePeddler.range).toBe(44);
+  });
+
+  it('fills the houses he passes with 3 months of fleece, 6 units, from his stall', () => {
+    const { game, vendor } = market();
+    const hut = fullHouse(game, 4, 8);
+    const hovel = fullHouse(game, 8, 8);
+    Object.assign(hovel, { level: 'hovel', residents: 24, fleece: 2 });
+    vendor.fleece = 100;
+    runTicks(game, ROAMER_REST_TICKS + ticksToWalk(10));
+    expect(hut.fleece).toBe(6);
+    expect(hovel.fleece).toBe(6);
+    expect(vendor.fleece).toBe(100 - 6 - 4);
+    expect(hut.food).toBe(0);
+  });
+});

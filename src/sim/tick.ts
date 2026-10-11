@@ -7,6 +7,7 @@ import { assignWorkers } from './labor';
 import { tickRoamers } from './roamers';
 import { tickSchools } from './schools';
 import { tickSettlers } from './settlers';
+import { tickSheep } from './sheep';
 import type { GameState } from './state';
 
 export function tick(state: GameState): void {
@@ -22,5 +23,6 @@ export function tick(state: GameState): void {
   tickRoamers(state);
   tickCarriers(state);
   tickSchools(state);
+  tickSheep(state);
   evolveHouses(state);
 }

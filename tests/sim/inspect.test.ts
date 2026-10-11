@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { demolish, placeBuilding, placeRoad, placeRoadblock } from '../../src/sim/commands';
+import { demolish, placeBuilding, placeRoad, placeRoadblock, placeSheep } from '../../src/sim/commands';
+import { SHEARING_REST_TICKS, sheepTile } from '../../src/sim/sheep';
 import { TICKS_PER_MONTH } from '../../src/sim/clock';
 import { ROAMER_REST_TICKS } from '../../src/sim/roamers';
 import type { Building, GameState } from '../../src/sim/state';
@@ -313,11 +314,11 @@ describe('describeTile for culture', () => {
     );
   });
 
-  it('shows no next level for a Hovel', () => {
+  it('shows no next level for a Tenement', () => {
     const { game, house } = street();
-    Object.assign(house, { level: 'hovel', residents: 24, food: 6 });
+    Object.assign(house, { level: 'tenement', residents: 40, food: 6 });
     const { title, lines } = describeTile(game, 2, 13);
-    expect(title).toBe('Hovel');
+    expect(title).toBe('Tenement');
     expect(lines.some((line) => line.startsWith('Needs'))).toBe(false);
   });
 
@@ -368,6 +369,112 @@ describe('describeTile for culture', () => {
     expect(describeTile(game, 17, 13)).toEqual({
       title: 'Gymnasium',
       lines: ['Tile 16, 12', 'Workers 7/7', 'Athlete out in the streets'],
+    });
+  });
+});
+
+describe('describeTile for fleece', () => {
+  const LONG = 10 * TICKS_PER_MONTH;
+
+  function street(): { game: GameState; house: Building } {
+    const game = grassGame(30);
+    placeRoad(game, { x: 0, y: 15 }, { x: 29, y: 15 });
+    placeHouse(game, 2, 13);
+    const house = game.buildings[0];
+    house.residents = 100;
+    return { game, house };
+  }
+
+  function lastBuilding(game: GameState): Building {
+    return game.buildings[game.buildings.length - 1];
+  }
+
+  it("shows a Hovel's fleece and what keeps it from becoming a Homestead", () => {
+    const { game, house } = street();
+    Object.assign(house, { level: 'hovel', residents: 24, food: 50 });
+    Object.assign(house.coveredUntil, { water: LONG, philosophy: LONG });
+    placeBuilding(game, 'flowerGarden', 2, 11);
+    placeBuilding(game, 'flowerGarden', 4, 13);
+    const lines = describeTile(game, 2, 13).lines;
+    expect(lines).toContain('No fleece');
+    expect(lines).toContain('Needs for Homestead: fleece');
+    house.fleece = 6;
+    expect(describeTile(game, 2, 13).lines).toEqual(expect.arrayContaining(['Fleece: 6 units', 'Ready to become a Homestead']));
+  });
+
+  it("shows how long a Homestead's fleece lasts and leaves fleece off a Shack", () => {
+    const { game, house } = street();
+    Object.assign(house, { level: 'homestead', residents: 32, food: 50, fleece: 6 });
+    expect(describeTile(game, 2, 13).lines).toContain('Fleece: 6 units (3 months)');
+    Object.assign(house, { level: 'shack', residents: 16 });
+    expect(describeTile(game, 2, 13).lines.some((line) => line.includes('leece'))).toBe(false);
+  });
+
+  it('describes a storehouse by its fleece and slots', () => {
+    const { game } = street();
+    placeBuilding(game, 'storehouse', 10, 12);
+    const storehouse = lastBuilding(game);
+    runTicks(game, 1);
+    expect(describeTile(game, 11, 13)).toEqual({ title: 'Storehouse', lines: ['Tile 10, 12', 'Workers 12/12', 'Empty: 8 slots of 4 loads'] });
+    storehouse.fleece = 600;
+    expect(describeTile(game, 11, 13).lines).toContain('Fleece: 6 loads in 2 of 8 slots');
+  });
+
+  it('describes a carding shed, its shepherd and its cart', () => {
+    const { game } = street();
+    placeBuilding(game, 'cardingShed', 6, 13);
+    const shed = lastBuilding(game);
+    runTicks(game, 1);
+    expect(describeTile(game, 6, 13)).toEqual({
+      title: 'Carding Shed',
+      lines: ['Tile 6, 13', 'Workers 8/8', 'Shepherd waits for a sheep with a full fleece within 40 tiles', 'Cart Pusher at the shed'],
+    });
+    setMeadow(game, 7, 5, 7, 7);
+    placeSheep(game, { x: 10, y: 8 });
+    expect(describeTile(game, 6, 13).lines).toContain('Shepherd resting');
+    runTicks(game, SHEARING_REST_TICKS);
+    const at = sheepTile(game.sheep[0]);
+    expect(describeTile(game, 6, 13).lines).toContain(`Shepherd out to shear the sheep at ${at.x}, ${at.y}`);
+    const { x, y } = walkerTile(game.shepherds[0]);
+    expect(describeTile(game, x, y)).toEqual({
+      title: 'Shepherd',
+      lines: ['From the Carding Shed at 6, 13', `Going to shear the sheep at ${at.x}, ${at.y}`],
+    });
+    game.shepherds[0].returning = true;
+    game.shepherds[0].fleece = 100;
+    expect(describeTile(game, x, y).lines).toContain('Bringing 1 load of fleece home');
+    expect(describeTile(game, 6, 13).lines).toContain('Shepherd bringing fleece home');
+    shed.fleece = 400;
+    game.shepherds = [];
+    expect(describeTile(game, 6, 13).lines).toEqual(
+      expect.arrayContaining(['Fleece waiting: 4 loads', 'Shepherd waits: the shed is full', 'Cart Pusher waits for a storehouse with room']),
+    );
+  });
+
+  it('describes a sheep', () => {
+    const { game } = street();
+    setMeadow(game, 7, 5, 7, 7);
+    placeSheep(game, { x: 10, y: 8 });
+    expect(describeTile(game, 10, 8)).toEqual({ title: 'Sheep', lines: ['Grazing near 10, 8', 'Full fleece: ready to shear'] });
+    game.sheep[0].fleece = 0.426;
+    expect(describeTile(game, 10, 8).lines).toContain('Fleece 43% grown');
+  });
+
+  it('describes a fleece vendor and its buyer', () => {
+    const { game } = street();
+    placeBuilding(game, 'agora', 10, 16);
+    placeBuilding(game, 'fleeceVendor', 10, 16);
+    placeBuilding(game, 'storehouse', 20, 12);
+    runTicks(game, 1);
+    expect(describeTile(game, 10, 17)).toEqual({
+      title: 'Fleece Vendor',
+      lines: ['Tile 10, 16', 'Workers 4/4', 'Stock: 0 of 800 units', 'Fleece Peddler waits for fleece', 'Buyer waits for a storehouse with fleece'],
+    });
+    lastBuilding(game).fleece = 1000;
+    runTicks(game, 1);
+    expect(describeTile(game, 10, 15)).toEqual({
+      title: 'Buyer',
+      lines: ['From the Fleece Vendor at 10, 16', 'Fetching fleece from the Storehouse at 20, 12'],
     });
   });
 });

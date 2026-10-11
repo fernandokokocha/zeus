@@ -47,7 +47,7 @@ const input = attachToolInput({
   ghost,
   inspector,
   topbar,
-  toolbar: createToolbar(() => input.refreshGhost()),
+  toolbar: createToolbar(() => input.toolChanged()),
 });
 window.addEventListener('resize', () => resizeView(view));
 

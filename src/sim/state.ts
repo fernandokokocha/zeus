@@ -8,9 +8,10 @@ import { STARTING_TREASURY } from './treasury';
 export type Speed = 0 | 1 | 2 | 4;
 export type PlayingSpeed = Exclude<Speed, 0>;
 
+export type Good = 'food' | 'fleece';
 export type Culture = 'philosophy' | 'athletics' | 'drama';
-export type Service = 'water' | 'tax' | 'food' | Culture;
-export type Coverage = Exclude<Service, 'food'>;
+export type Service = 'water' | 'tax' | Good | Culture;
+export type Coverage = Exclude<Service, Good>;
 
 export interface Building {
   id: number;
@@ -24,6 +25,7 @@ export interface Building {
   coveredUntil: Record<Coverage, number>;
   level: HouseLevel;
   food: number;
+  fleece: number;
   growth: number;
   performingUntil: number;
 }
@@ -40,7 +42,7 @@ export interface Settler extends Walk {
   people: number;
 }
 
-export type RoamerKind = 'waterCarrier' | 'taxCollector' | 'peddler' | 'philosopher' | 'athlete' | 'actor';
+export type RoamerKind = 'waterCarrier' | 'taxCollector' | 'peddler' | 'fleecePeddler' | 'philosopher' | 'athlete' | 'actor';
 
 export interface Roamer extends Walk {
   id: number;
@@ -58,7 +60,22 @@ export interface Trainee extends Walk {
   destinationId: number;
 }
 
-export type CarrierKind = 'cartPusher' | 'buyer';
+export interface Sheep extends Walk {
+  id: number;
+  home: Point;
+  fleece: number;
+  grazeRest: number;
+}
+
+export interface Shepherd extends Walk {
+  id: number;
+  homeId: number;
+  sheepId: number;
+  fleece: number;
+  returning: boolean;
+}
+
+export type CarrierKind = 'cartPusher' | 'buyer' | 'fleeceCart' | 'fleeceBuyer';
 
 export interface Carrier extends Walk {
   id: number;
@@ -66,6 +83,7 @@ export interface Carrier extends Walk {
   homeId: number;
   destinationId: number;
   food: number;
+  fleece: number;
   returning: boolean;
 }
 
@@ -85,6 +103,10 @@ export interface GameState {
   nextCarrierId: number;
   trainees: Trainee[];
   nextTraineeId: number;
+  sheep: Sheep[];
+  nextSheepId: number;
+  shepherds: Shepherd[];
+  nextShepherdId: number;
   rngState: number;
   entry: Point;
   treasury: number;
@@ -117,6 +139,10 @@ export function newGameState(size: number, terrain: Terrain[], entry: Point): Ga
     nextCarrierId: 1,
     trainees: [],
     nextTraineeId: 1,
+    sheep: [],
+    nextSheepId: 1,
+    shepherds: [],
+    nextShepherdId: 1,
     rngState: DEFAULT_SEED,
     entry,
     treasury: STARTING_TREASURY,

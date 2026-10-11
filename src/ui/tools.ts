@@ -1,8 +1,8 @@
 import { BUILDING_SPECS, type BuildingType } from '../sim/buildings';
-import { ROADBLOCK_COST, ROAD_TILE_COST } from '../sim/treasury';
+import { ROADBLOCK_COST, ROAD_TILE_COST, SHEEP_COST } from '../sim/treasury';
 
 export type SingleBuilding = Exclude<BuildingType, 'house'>;
-export type Tool = 'road' | 'roadblock' | 'house' | SingleBuilding | 'demolish';
+export type Tool = 'road' | 'roadblock' | 'house' | SingleBuilding | 'sheep' | 'demolish';
 
 const priced = (type: BuildingType) => `${BUILDING_SPECS[type].name} (${BUILDING_SPECS[type].cost} dr)`;
 
@@ -17,6 +17,7 @@ export const TOOL_LABELS: Record<Tool, string> = {
   granary: priced('granary'),
   agora: priced('agora'),
   foodVendor: priced('foodVendor'),
+  fleeceVendor: priced('fleeceVendor'),
   park: priced('park'),
   column: priced('column'),
   flowerGarden: priced('flowerGarden'),
@@ -25,5 +26,26 @@ export const TOOL_LABELS: Record<Tool, string> = {
   gymnasium: priced('gymnasium'),
   dramaSchool: priced('dramaSchool'),
   theater: priced('theater'),
+  storehouse: priced('storehouse'),
+  cardingShed: priced('cardingShed'),
+  sheep: `Sheep (${SHEEP_COST} dr)`,
   demolish: 'Demolish',
 };
+
+export interface ToolGroup {
+  name: string;
+  tools: Tool[];
+}
+
+export const TOOL_GROUPS: ToolGroup[] = [
+  { name: 'Roads', tools: ['road', 'roadblock'] },
+  { name: 'Housing', tools: ['house'] },
+  { name: 'Husbandry', tools: ['wheatFarm', 'sheep'] },
+  { name: 'Industry', tools: ['cardingShed'] },
+  { name: 'Distribution', tools: ['granary', 'storehouse', 'agora', 'foodVendor', 'fleeceVendor'] },
+  { name: 'Hygiene', tools: ['fountain'] },
+  { name: 'Administration', tools: ['palace', 'taxOffice'] },
+  { name: 'Culture', tools: ['college', 'podium', 'gymnasium', 'dramaSchool', 'theater'] },
+  { name: 'Aesthetics', tools: ['park', 'column', 'flowerGarden'] },
+  { name: 'Demolish', tools: ['demolish'] },
+];

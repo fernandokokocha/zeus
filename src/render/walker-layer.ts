@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import type { CarrierKind, GameState, RoamerKind, TraineeKind, Walk } from '../sim/state';
+import { FULL_FLEECE } from '../sim/sheep';
 import { WALKER_TILES_PER_TICK, walkerPosition } from '../sim/walking';
 import { PALETTE } from './palette';
 
@@ -13,7 +14,11 @@ interface Part {
   color: number;
 }
 
-type Figure = 'settler' | RoamerKind | CarrierKind | TraineeKind;
+type Figure = 'settler' | RoamerKind | CarrierKind | TraineeKind | 'shepherd' | 'shepherdWithFleece' | SheepCoat;
+
+type SheepCoat = 'shornSheep' | 'halfGrownSheep' | 'woollySheep';
+
+const HALF_GROWN = 0.5;
 
 function body(tunic: number): Part[] {
   return [
@@ -39,7 +44,36 @@ const actor: Part[] = [
   { geometry: new THREE.SphereGeometry(0.05, 10, 8).scale(1, 1.25, 0.5).translate(0, 0.32, 0.05), color: PALETTE.mask },
 ];
 
+function sheep(coat: number, size: number): Part[] {
+  const leg = (x: number, z: number) => ({
+    geometry: new THREE.CylinderGeometry(0.014, 0.014, 0.1, 6).translate(x, 0.05, z),
+    color: PALETTE.sheepFace,
+  });
+  return [
+    { geometry: new THREE.SphereGeometry(0.1, 10, 8).scale(0.8 * size, 0.7 * size, 1.1 * size).translate(0, 0.15, 0), color: coat },
+    { geometry: new THREE.SphereGeometry(0.04, 8, 6).scale(0.9, 1, 1.3).translate(0, 0.19, 0.08 + 0.06 * size), color: PALETTE.sheepFace },
+    leg(-0.04, -0.06),
+    leg(0.04, -0.06),
+    leg(-0.04, 0.06),
+    leg(0.04, 0.06),
+  ];
+}
+
+const shepherd: Part[] = [
+  ...body(PALETTE.shepherdTunic),
+  { geometry: new THREE.CylinderGeometry(0.012, 0.012, 0.44, 6).translate(0.1, 0.22, 0.03), color: PALETTE.trunk },
+  { geometry: new THREE.TorusGeometry(0.03, 0.01, 6, 10, Math.PI).translate(0.07, 0.44, 0.03), color: PALETTE.trunk },
+];
+
 const FIGURES: Record<Figure, Part[]> = {
+  shepherd,
+  shepherdWithFleece: [
+    ...shepherd,
+    { geometry: new THREE.SphereGeometry(0.08, 8, 6).scale(1.2, 0.8, 1).translate(0, 0.26, -0.09), color: PALETTE.wool },
+  ],
+  shornSheep: sheep(PALETTE.shornWool, 0.8),
+  halfGrownSheep: sheep(PALETTE.wool, 1),
+  woollySheep: sheep(PALETTE.wool, 1.25),
   settler: [
     ...body(PALETTE.tunic),
     { geometry: new THREE.BoxGeometry(0.14, 0.14, 0.1).translate(0, 0.2, -0.1), color: PALETTE.bundle },
@@ -72,6 +106,21 @@ athlete: [
 ],
 actor,
 actorTrainee: actor,
+fleecePeddler: [
+    ...body(PALETTE.fleeceAwning),
+    { geometry: new THREE.CylinderGeometry(0.09, 0.07, 0.06, 10).translate(0, 0.41, 0), color: PALETTE.reed },
+    { geometry: new THREE.SphereGeometry(0.07, 8, 6).scale(1.2, 0.6, 1.2).translate(0, 0.45, 0), color: PALETTE.wool },
+  ],
+  fleeceCart: [
+    ...body(PALETTE.cartTunic),
+    { geometry: new THREE.BoxGeometry(0.2, 0.08, 0.24).translate(0, 0.1, 0.22), color: PALETTE.trunk },
+    { geometry: new THREE.CylinderGeometry(0.06, 0.06, 0.26, 10).rotateZ(Math.PI / 2).translate(0, 0.06, 0.24), color: PALETTE.doorway },
+    { geometry: new THREE.BoxGeometry(0.16, 0.1, 0.18).translate(0, 0.19, 0.22), color: PALETTE.wool },
+  ],
+  fleeceBuyer: [
+    ...body(PALETTE.fleeceBuyerTunic),
+    { geometry: new THREE.SphereGeometry(0.07, 8, 6).scale(1.3, 0.8, 1).translate(0, 0.26, -0.08), color: PALETTE.wool },
+  ],
 cartPusher: [
     ...body(PALETTE.cartTunic),
     { geometry: new THREE.BoxGeometry(0.2, 0.08, 0.24).translate(0, 0.1, 0.22), color: PALETTE.trunk },
@@ -133,14 +182,20 @@ export function createWalkerLayer(): { group: THREE.Group; sync(state: GameState
     group,
     sync(state, ticksAhead) {
       sets.settler.show(state.settlers, ticksAhead);
-      for (const kind of ['waterCarrier', 'taxCollector', 'peddler', 'philosopher', 'athlete', 'actor'] as const) {
+      for (const kind of ['waterCarrier', 'taxCollector', 'peddler', 'fleecePeddler', 'philosopher', 'athlete', 'actor'] as const) {
         sets[kind].show(state.roamers.filter((r) => r.kind === kind), ticksAhead);
       }
-      for (const kind of ['cartPusher', 'buyer'] as const) {
+      for (const kind of ['cartPusher', 'buyer', 'fleeceCart', 'fleeceBuyer'] as const) {
         sets[kind].show(state.carriers.filter((c) => c.kind === kind), ticksAhead);
       }
       for (const kind of ['philosopherTrainee', 'actorTrainee'] as const) {
         sets[kind].show(state.trainees.filter((t) => t.kind === kind), ticksAhead);
+      }
+      sets.shepherd.show(state.shepherds.filter((s) => s.fleece === 0), ticksAhead);
+      sets.shepherdWithFleece.show(state.shepherds.filter((s) => s.fleece > 0), ticksAhead);
+      const coat = (fleece: number): SheepCoat => (fleece >= FULL_FLEECE ? 'woollySheep' : fleece >= HALF_GROWN ? 'halfGrownSheep' : 'shornSheep');
+      for (const kind of ['shornSheep', 'halfGrownSheep', 'woollySheep'] as const) {
+        sets[kind].show(state.sheep.filter((s) => coat(s.fleece) === kind), ticksAhead);
       }
     },
   };

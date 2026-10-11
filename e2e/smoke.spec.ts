@@ -23,13 +23,19 @@ async function drag(page: Page, from: [number, number], to: [number, number]): P
   await page.mouse.up();
 }
 
-async function place(page: Page, tool: RegExp, at: [number, number]): Promise<void> {
-  await page.getByRole('button', { name: tool }).click();
+async function chooseTool(page: Page, group: string, tool: RegExp): Promise<void> {
+  await page.getByRole('button', { name: `${group} ▸` }).click();
+  await page.locator('#tool-menu').getByRole('button', { name: tool }).click();
+}
+
+async function place(page: Page, group: string | null, tool: RegExp, at: [number, number]): Promise<void> {
+  if (group) await chooseTool(page, group, tool);
+  else await page.locator('#toolbar').getByRole('button', { name: tool }).click();
   await drag(page, at, at);
 }
 
-test('boots, builds a street with services, food, culture and decorations, and settlers move in', async ({ page }) => {
-  test.setTimeout(90_000);
+test('boots, builds a street with services, food, culture, fleece and decorations, and settlers move in', async ({ page }) => {
+  test.setTimeout(120_000);
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   page.on('console', (message) => {
@@ -40,32 +46,36 @@ test('boots, builds a street with services, food, culture and decorations, and s
   await expect(page.locator('#date')).toHaveText('January, Year 1');
   await expect(page.locator('#population')).toHaveText('Population 0');
   await expect(page.locator('#treasury')).toHaveText('5,000 dr');
-  await expect(page.locator('#toolbar button')).toHaveCount(19);
+  await expect(page.locator('#toolbar button')).toHaveCount(10);
 
   await page.getByRole('button', { name: 'Demolish' }).click();
   await drag(page, [8, 38], [30, 57]);
-  await page.getByRole('button', { name: /^Road \(/ }).click();
+  await chooseTool(page, 'Roads', /^Road \(/);
   await drag(page, [8, 50], [29, 50]);
   await drag(page, [8, 50], [8, 45]);
   await drag(page, [8, 45], [29, 45]);
   await page.getByRole('button', { name: /^Housing/ }).click();
   await drag(page, [9, 48], [12, 49]);
   await drag(page, [9, 51], [16, 52]);
-  await place(page, /^Wheat Farm/, [15, 48]);
-  await place(page, /^Fountain/, [18, 48]);
-  await place(page, /^Tax Office/, [20, 48]);
-  await place(page, /^Granary/, [23, 47]);
-  await place(page, /^Agora/, [18, 53]);
-  await place(page, /^Food Vendor/, [17, 51]);
-  await place(page, /^Palace/, [25, 53]);
-  await place(page, /^Flower Garden/, [9, 53]);
-  await place(page, /^Column/, [12, 53]);
-  await place(page, /^Park/, [13, 53]);
-  await place(page, /^College/, [10, 43]);
-  await place(page, /^Podium/, [13, 43]);
-  await place(page, /^Gymnasium/, [17, 43]);
-  await place(page, /^Drama School/, [21, 43]);
-  await place(page, /^Theater/, [26, 42]);
+  await place(page, 'Husbandry', /^Wheat Farm/, [15, 48]);
+  await place(page, null, /^Fountain/, [18, 48]);
+  await place(page, 'Administration', /^Tax Office/, [20, 48]);
+  await place(page, 'Distribution', /^Granary/, [23, 47]);
+  await place(page, 'Distribution', /^Agora/, [18, 53]);
+  await place(page, 'Distribution', /^Food Vendor/, [17, 51]);
+  await place(page, 'Administration', /^Palace/, [25, 53]);
+  await place(page, 'Aesthetics', /^Flower Garden/, [9, 53]);
+  await place(page, 'Aesthetics', /^Column/, [12, 53]);
+  await place(page, 'Aesthetics', /^Park/, [13, 53]);
+  await place(page, 'Culture', /^College/, [10, 43]);
+  await place(page, 'Culture', /^Podium/, [13, 43]);
+  await place(page, 'Culture', /^Gymnasium/, [17, 43]);
+  await place(page, 'Culture', /^Drama School/, [21, 43]);
+  await place(page, 'Culture', /^Theater/, [26, 42]);
+  await place(page, 'Distribution', /^Storehouse/, [27, 47]);
+  await place(page, null, /^Carding Shed/, [29, 46]);
+  await place(page, 'Distribution', /^Fleece Vendor/, [17, 53]);
+  for (const at of [[27, 58], [29, 59], [31, 58], [28, 60]] as [number, number][]) await place(page, 'Husbandry', /^Sheep/, at);
   await page.keyboard.press('r');
   await expect(page.locator('#status')).toHaveText('Rotated 90°');
   await page.keyboard.press('Escape');

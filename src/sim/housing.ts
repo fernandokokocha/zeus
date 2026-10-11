@@ -3,9 +3,9 @@ import { culturePoints } from './culture';
 import { hasService } from './roamers';
 import type { Building, GameState } from './state';
 
-export type HouseLevel = 'hut' | 'shack' | 'hovel';
+export type HouseLevel = 'hut' | 'shack' | 'hovel' | 'homestead' | 'tenement';
 
-export type HouseNeed = 'food' | 'water';
+export type HouseNeed = 'food' | 'water' | 'fleece';
 
 export interface HouseLevelSpec {
   name: string;
@@ -20,10 +20,38 @@ export const HOUSE_LEVELS: Record<HouseLevel, HouseLevelSpec> = {
   hut: { name: 'Hut', capacity: 8, needs: [], culture: 0, taxMultiplier: 1, appeal: { evolve: -10, devolve: -99 } },
   shack: { name: 'Shack', capacity: 16, needs: ['food'], culture: 0, taxMultiplier: 1, appeal: { evolve: 0, devolve: -12 } },
   hovel: { name: 'Hovel', capacity: 24, needs: ['food', 'water'], culture: 15, taxMultiplier: 1, appeal: { evolve: 10, devolve: -2 } },
+  homestead: {
+    name: 'Homestead',
+    capacity: 32,
+    needs: ['food', 'water', 'fleece'],
+    culture: 15,
+    taxMultiplier: 2,
+    appeal: { evolve: 10, devolve: -2 },
+  },
+  tenement: {
+    name: 'Tenement',
+    capacity: 40,
+    needs: ['food', 'water', 'fleece'],
+    culture: 35,
+    taxMultiplier: 2,
+    appeal: { evolve: 20, devolve: 5 },
+  },
 };
 
-export const NEXT_LEVEL: Record<HouseLevel, HouseLevel | null> = { hut: 'shack', shack: 'hovel', hovel: null };
-export const PREVIOUS_LEVEL: Record<HouseLevel, HouseLevel | null> = { hut: null, shack: 'hut', hovel: 'shack' };
+export const NEXT_LEVEL: Record<HouseLevel, HouseLevel | null> = {
+  hut: 'shack',
+  shack: 'hovel',
+  hovel: 'homestead',
+  homestead: 'tenement',
+  tenement: null,
+};
+export const PREVIOUS_LEVEL: Record<HouseLevel, HouseLevel | null> = {
+  hut: null,
+  shack: 'hut',
+  hovel: 'shack',
+  homestead: 'hovel',
+  tenement: 'homestead',
+};
 
 export const VACANT_LOT_NAME = 'Vacant Lot';
 
@@ -41,7 +69,7 @@ export function houseName(house: Building): string {
 }
 
 function hasNeed(state: GameState, house: Building, need: HouseNeed): boolean {
-  return need === 'food' ? house.food > 0 : hasService(state, house, need);
+  return need === 'water' ? hasService(state, house, need) : house[need] > 0;
 }
 
 export function missingNeeds(state: GameState, house: Building, level: HouseLevel): HouseNeed[] {
