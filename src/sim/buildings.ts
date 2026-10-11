@@ -11,7 +11,12 @@ export type BuildingType =
   | 'foodVendor'
   | 'park'
   | 'column'
-  | 'flowerGarden';
+  | 'flowerGarden'
+  | 'college'
+  | 'podium'
+  | 'gymnasium'
+  | 'dramaSchool'
+  | 'theater';
 
 export interface BuildingSpec {
   name: string;
@@ -35,6 +40,11 @@ export const BUILDING_SPECS: Record<BuildingType, BuildingSpec> = {
   park: { name: 'Park', width: 1, height: 1, cost: 6, workers: 0, appeal: [3, 2, 1], needsRoad: false },
   column: { name: 'Column', width: 1, height: 1, cost: 8, workers: 0, appeal: [4, 2, 0], needsRoad: false },
   flowerGarden: { name: 'Flower Garden', width: 2, height: 2, cost: 20, workers: 0, appeal: [8, 7, 6], needsRoad: false },
+  college: { name: 'College', width: 3, height: 3, cost: 30, workers: 12, appeal: [-5, -8], needsRoad: true },
+  podium: { name: 'Podium', width: 2, height: 2, cost: 15, workers: 4, appeal: [3, 2, 1], needsRoad: true },
+  gymnasium: { name: 'Gymnasium', width: 3, height: 3, cost: 30, workers: 7, appeal: [], needsRoad: true },
+  dramaSchool: { name: 'Drama School', width: 3, height: 3, cost: 16, workers: 10, appeal: [], needsRoad: true },
+  theater: { name: 'Theater', width: 5, height: 5, cost: 60, workers: 18, appeal: [6, 5, 4], needsRoad: true },
 };
 
 export type Rotation = 0 | 1 | 2 | 3;

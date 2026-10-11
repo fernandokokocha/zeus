@@ -8,7 +8,8 @@ import { STARTING_TREASURY } from './treasury';
 export type Speed = 0 | 1 | 2 | 4;
 export type PlayingSpeed = Exclude<Speed, 0>;
 
-export type Service = 'water' | 'tax' | 'food';
+export type Culture = 'philosophy' | 'athletics' | 'drama';
+export type Service = 'water' | 'tax' | 'food' | Culture;
 export type Coverage = Exclude<Service, 'food'>;
 
 export interface Building {
@@ -24,6 +25,7 @@ export interface Building {
   level: HouseLevel;
   food: number;
   growth: number;
+  performingUntil: number;
 }
 
 export interface Walk {
@@ -38,13 +40,22 @@ export interface Settler extends Walk {
   people: number;
 }
 
-export type RoamerKind = 'waterCarrier' | 'taxCollector' | 'peddler';
+export type RoamerKind = 'waterCarrier' | 'taxCollector' | 'peddler' | 'philosopher' | 'athlete' | 'actor';
 
 export interface Roamer extends Walk {
   id: number;
   kind: RoamerKind;
   homeId: number;
   returning: boolean;
+}
+
+export type TraineeKind = 'philosopherTrainee' | 'actorTrainee';
+
+export interface Trainee extends Walk {
+  id: number;
+  kind: TraineeKind;
+  homeId: number;
+  destinationId: number;
 }
 
 export type CarrierKind = 'cartPusher' | 'buyer';
@@ -72,6 +83,8 @@ export interface GameState {
   nextRoamerId: number;
   carriers: Carrier[];
   nextCarrierId: number;
+  trainees: Trainee[];
+  nextTraineeId: number;
   rngState: number;
   entry: Point;
   treasury: number;
@@ -102,6 +115,8 @@ export function newGameState(size: number, terrain: Terrain[], entry: Point): Ga
     nextRoamerId: 1,
     carriers: [],
     nextCarrierId: 1,
+    trainees: [],
+    nextTraineeId: 1,
     rngState: DEFAULT_SEED,
     entry,
     treasury: STARTING_TREASURY,

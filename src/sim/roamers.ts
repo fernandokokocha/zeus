@@ -5,6 +5,7 @@ import { stockHouse } from './food';
 import { NEIGHBOUR_STEPS, findRoadPath } from './pathfinding';
 import type { Point } from './point';
 import { nextRandom } from './rng';
+import { isPerforming, traineeKindFor } from './schools';
 import { buildingById, inBounds, tileIndex, type Building, type GameState, type Roamer, type Coverage, type RoamerKind, type Service } from './state';
 import { WALKER_TILES_PER_TICK, isRoad } from './walking';
 
@@ -19,6 +20,9 @@ export const ROAMER_SPECS: Record<RoamerKind, RoamerSpec> = {
   waterCarrier: { name: 'Water Carrier', home: 'fountain', range: 27, service: 'water' },
   taxCollector: { name: 'Tax Collector', home: 'taxOffice', range: 35, service: 'tax' },
   peddler: { name: 'Peddler', home: 'foodVendor', range: 44, service: 'food' },
+  philosopher: { name: 'Philosopher', home: 'podium', range: 35, service: 'philosophy' },
+  athlete: { name: 'Athlete', home: 'gymnasium', range: 35, service: 'athletics' },
+  actor: { name: 'Actor', home: 'theater', range: 35, service: 'drama' },
 };
 
 export const SERVICE_REACH = 2;
@@ -76,6 +80,7 @@ function sendRoamer(state: GameState, building: Building): void {
   const kind = roamerKindSentBy(building.type);
   if (!kind || building.workers === 0 || state.roamers.some((r) => r.homeId === building.id)) return;
   if (ROAMER_SPECS[kind].service === 'food' && building.food === 0) return;
+  if (traineeKindFor(building.type) && !isPerforming(state, building)) return;
   building.walkerRest += building.workers / BUILDING_SPECS[building.type].workers;
   if (building.walkerRest < ROAMER_REST_TICKS) return;
 

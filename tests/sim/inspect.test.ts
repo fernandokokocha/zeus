@@ -5,6 +5,7 @@ import { ROAMER_REST_TICKS } from '../../src/sim/roamers';
 import type { Building, GameState } from '../../src/sim/state';
 import { describeTile } from '../../src/sim/inspect';
 import { SETTLER_SPAWN_INTERVAL_TICKS } from '../../src/sim/settlers';
+import { walkerTile } from '../../src/sim/walking';
 import { grassGame, placeHouse, runTicks, setMeadow, setTerrain } from './helpers';
 
 describe('describeTile', () => {
@@ -60,6 +61,7 @@ describe('describeTile', () => {
         'Appeal 0',
         'No food',
         'No water carrier has passed',
+        'No culture has passed',
         'No tax collector has passed',
         'Needs for Shack: food',
       ],
@@ -89,13 +91,14 @@ describe('describeTile for services', () => {
   it('says when a Hut has water and pays tax', () => {
     const game = town();
     placeBuilding(game, 'palace', 6, 4);
-    game.buildings[0].coveredUntil = { water: TICKS_PER_MONTH, tax: TICKS_PER_MONTH };
+    Object.assign(game.buildings[0].coveredUntil, { water: TICKS_PER_MONTH, tax: TICKS_PER_MONTH });
     expect(describeTile(game, 2, 8).lines).toEqual([
       'Tile 2, 8',
       'Residents 8/8',
       'Appeal 16',
       'No food',
       'Water: 50% left',
+      'No culture has passed',
       'Pays 0.72 dr tax a month',
       'Needs for Shack: food',
     ]);
@@ -216,12 +219,11 @@ describe('describeTile for food and appeal', () => {
     expect(describeTile(game, 2, 13).lines).toContain('Needs for Shack: food, appeal 0 (has -2)');
   });
 
-  it("shows how long a Shack's food lasts, and no next level", () => {
+  it("shows how long a Shack's food lasts", () => {
     const { game, house } = street();
     Object.assign(house, { level: 'shack', residents: 16, food: 6 });
     const lines = describeTile(game, 2, 13).lines;
     expect(lines).toContain('Food: 6 units (1.5 months)');
-    expect(lines.some((line) => line.startsWith('Needs'))).toBe(false);
   });
 
   it('describes a farm, its crop and its cart', () => {
@@ -281,5 +283,91 @@ describe('describeTile for food and appeal', () => {
     const game = grassGame();
     placeBuilding(game, 'flowerGarden', 4, 4);
     expect(describeTile(game, 5, 5)).toEqual({ title: 'Flower Garden', lines: ['Tile 4, 4', 'Appeal 8, 7, 6 by distance'] });
+  });
+});
+
+describe('describeTile for culture', () => {
+  function street(): { game: GameState; house: Building } {
+    const game = grassGame(30);
+    placeRoad(game, { x: 0, y: 15 }, { x: 29, y: 15 });
+    placeHouse(game, 2, 13);
+    const house = game.buildings[0];
+    house.residents = 100;
+    return { game, house };
+  }
+
+  function lastBuilding(game: GameState): Building {
+    return game.buildings[game.buildings.length - 1];
+  }
+
+  it('shows the culture a house has and what keeps a Shack from becoming a Hovel', () => {
+    const { game, house } = street();
+    Object.assign(house, { level: 'shack', residents: 16, food: 6 });
+    placeBuilding(game, 'podium', 5, 13);
+    const lines = describeTile(game, 2, 13).lines;
+    expect(lines).toContain('No culture has passed');
+    expect(lines).toContain('Needs for Hovel: water, culture 15 (has 0), appeal 10 (has 1)');
+    Object.assign(house.coveredUntil, { water: TICKS_PER_MONTH, philosophy: TICKS_PER_MONTH, drama: TICKS_PER_MONTH });
+    expect(describeTile(game, 2, 13).lines).toEqual(
+      expect.arrayContaining(['Culture 40: philosophy, drama', 'Needs for Hovel: appeal 10 (has 1)']),
+    );
+  });
+
+  it('shows no next level for a Hovel', () => {
+    const { game, house } = street();
+    Object.assign(house, { level: 'hovel', residents: 24, food: 6 });
+    const { title, lines } = describeTile(game, 2, 13);
+    expect(title).toBe('Hovel');
+    expect(lines.some((line) => line.startsWith('Needs'))).toBe(false);
+  });
+
+  it('describes a college and its philosopher on the way', () => {
+    const { game } = street();
+    placeBuilding(game, 'college', 6, 12);
+    runTicks(game, 1);
+    expect(describeTile(game, 7, 13)).toEqual({
+      title: 'College',
+      lines: ['Tile 6, 12', 'Workers 12/12', 'Philosopher waits for a staffed Podium'],
+    });
+    placeBuilding(game, 'podium', 16, 13);
+    runTicks(game, 1);
+    expect(describeTile(game, 7, 13).lines).toContain('Philosopher in training');
+    runTicks(game, ROAMER_REST_TICKS);
+    expect(describeTile(game, 7, 13).lines).toContain('Philosopher on the way to the Podium at 16, 13');
+    const { x, y } = walkerTile(game.trainees[0]);
+    expect(describeTile(game, x, y)).toEqual({
+      title: 'Philosopher',
+      lines: ['From the College at 6, 12', 'Heading to the Podium at 16, 13'],
+    });
+    demolish(game, { x: 16, y: 13 }, { x: 16, y: 13 });
+    expect(describeTile(game, x, y).lines).toContain('Looking for another Podium');
+  });
+
+  it('describes a podium with and without a philosopher', () => {
+    const { game } = street();
+    placeBuilding(game, 'podium', 16, 13);
+    const podium = lastBuilding(game);
+    runTicks(game, 1);
+    expect(describeTile(game, 16, 13)).toEqual({
+      title: 'Podium',
+      lines: ['Tile 16, 13', 'Workers 4/4', 'No philosophers here: a College sends them', 'Philosopher waits for one to arrive'],
+    });
+    podium.performingUntil = game.tick + TICKS_PER_MONTH * 1.5;
+    expect(describeTile(game, 16, 13).lines).toEqual([
+      'Tile 16, 13',
+      'Workers 4/4',
+      'Philosophers here for 1.5 more months',
+      'Philosopher getting ready',
+    ]);
+  });
+
+  it('describes a gymnasium and its athlete', () => {
+    const { game } = street();
+    placeBuilding(game, 'gymnasium', 16, 12);
+    runTicks(game, ROAMER_REST_TICKS);
+    expect(describeTile(game, 17, 13)).toEqual({
+      title: 'Gymnasium',
+      lines: ['Tile 16, 12', 'Workers 7/7', 'Athlete out in the streets'],
+    });
   });
 });

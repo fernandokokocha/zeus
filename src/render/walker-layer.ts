@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import type { CarrierKind, GameState, RoamerKind, Walk } from '../sim/state';
+import type { CarrierKind, GameState, RoamerKind, TraineeKind, Walk } from '../sim/state';
 import { WALKER_TILES_PER_TICK, walkerPosition } from '../sim/walking';
 import { PALETTE } from './palette';
 
@@ -13,7 +13,7 @@ interface Part {
   color: number;
 }
 
-type Figure = 'settler' | RoamerKind | CarrierKind;
+type Figure = 'settler' | RoamerKind | CarrierKind | TraineeKind;
 
 function body(tunic: number): Part[] {
   return [
@@ -26,6 +26,18 @@ const jar = new THREE.LatheGeometry(
   [[0, 0], [0.04, 0.01], [0.065, 0.06], [0.06, 0.11], [0.03, 0.15], [0.04, 0.17]].map(([r, y]) => new THREE.Vector2(r, y)),
   10,
 );
+
+const philosopher: Part[] = [
+  { geometry: new THREE.CylinderGeometry(0.06, 0.1, 0.28, 8).translate(0, 0.14, 0), color: PALETTE.philosopherRobe },
+  { geometry: new THREE.SphereGeometry(0.06, 10, 8).translate(0, 0.33, 0), color: PALETTE.skin },
+  { geometry: new THREE.SphereGeometry(0.04, 8, 6).scale(1, 1.3, 0.8).translate(0, 0.28, 0.04), color: PALETTE.beard },
+  { geometry: new THREE.CylinderGeometry(0.025, 0.025, 0.14, 8).rotateZ(Math.PI / 2).translate(0.02, 0.19, 0.09), color: PALETTE.scroll },
+];
+
+const actor: Part[] = [
+  ...body(PALETTE.actorRobe),
+  { geometry: new THREE.SphereGeometry(0.05, 10, 8).scale(1, 1.25, 0.5).translate(0, 0.32, 0.05), color: PALETTE.mask },
+];
 
 const FIGURES: Record<Figure, Part[]> = {
   settler: [
@@ -50,7 +62,17 @@ const FIGURES: Record<Figure, Part[]> = {
     ...body(PALETTE.buyerTunic),
     { geometry: new THREE.CylinderGeometry(0.07, 0.05, 0.08, 10).translate(0.1, 0.12, 0.02), color: PALETTE.reed },
   ],
-  cartPusher: [
+philosopher,
+philosopherTrainee: philosopher,
+athlete: [
+  { geometry: new THREE.CylinderGeometry(0.06, 0.07, 0.24, 8).translate(0, 0.15, 0), color: PALETTE.skin },
+  { geometry: new THREE.CylinderGeometry(0.075, 0.08, 0.07, 8).translate(0, 0.07, 0), color: PALETTE.loincloth },
+  { geometry: new THREE.SphereGeometry(0.06, 10, 8).translate(0, 0.33, 0), color: PALETTE.skin },
+  { geometry: new THREE.CylinderGeometry(0.06, 0.06, 0.015, 12).rotateZ(Math.PI / 2).translate(0.1, 0.16, 0), color: PALETTE.bronze },
+],
+actor,
+actorTrainee: actor,
+cartPusher: [
     ...body(PALETTE.cartTunic),
     { geometry: new THREE.BoxGeometry(0.2, 0.08, 0.24).translate(0, 0.1, 0.22), color: PALETTE.trunk },
     { geometry: new THREE.CylinderGeometry(0.06, 0.06, 0.26, 10).rotateZ(Math.PI / 2).translate(0, 0.06, 0.24), color: PALETTE.doorway },
@@ -111,11 +133,14 @@ export function createWalkerLayer(): { group: THREE.Group; sync(state: GameState
     group,
     sync(state, ticksAhead) {
       sets.settler.show(state.settlers, ticksAhead);
-      for (const kind of ['waterCarrier', 'taxCollector', 'peddler'] as const) {
+      for (const kind of ['waterCarrier', 'taxCollector', 'peddler', 'philosopher', 'athlete', 'actor'] as const) {
         sets[kind].show(state.roamers.filter((r) => r.kind === kind), ticksAhead);
       }
       for (const kind of ['cartPusher', 'buyer'] as const) {
         sets[kind].show(state.carriers.filter((c) => c.kind === kind), ticksAhead);
+      }
+      for (const kind of ['philosopherTrainee', 'actorTrainee'] as const) {
+        sets[kind].show(state.trainees.filter((t) => t.kind === kind), ticksAhead);
       }
     },
   };

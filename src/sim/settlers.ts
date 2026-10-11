@@ -4,7 +4,7 @@ import { houseCapacity, houseLevel } from './housing';
 import { findRoadPath, nearestByRoad } from './pathfinding';
 import type { Point } from './point';
 import { buildingById, type Building, type GameState, type Settler } from './state';
-import { WALKER_TILES_PER_TICK, isRoad } from './walking';
+import { isRoad, walkPath } from './walking';
 
 export const SETTLERS_PER_MONTH = 10;
 export const SETTLER_SPAWN_INTERVAL_TICKS = TICKS_PER_MONTH / SETTLERS_PER_MONTH;
@@ -49,14 +49,7 @@ function walk(state: GameState, settler: Settler): void {
   if (!isRoad(state, settler.path[settler.step])) return leave(state, settler);
   if (!buildingById(state, settler.destinationId) && !replan(state, settler)) return;
 
-  settler.progress += WALKER_TILES_PER_TICK;
-  while (settler.progress >= 1 && settler.step < settler.path.length - 1) {
-    if (!isRoad(state, settler.path[settler.step + 1]) && !replan(state, settler)) return;
-    if (settler.step === settler.path.length - 1) break;
-    settler.step++;
-    settler.progress--;
-  }
-  if (settler.step === settler.path.length - 1) arrive(state, settler);
+  walkPath(state, settler, () => replan(state, settler), () => arrive(state, settler));
 }
 
 function replan(state: GameState, settler: Settler): boolean {

@@ -25,7 +25,7 @@ export function createWorldLayer(): { group: THREE.Group; sync(state: GameState)
 
       for (const model of roadblockModels(state)) group.add(model);
       for (const building of state.buildings) {
-        group.add(placedModel(building));
+        group.add(placedModel(building, state));
       }
     },
   };
@@ -55,10 +55,10 @@ function roadblockModels(state: GameState): THREE.Object3D[] {
   });
 }
 
-function placedModel(building: Building): THREE.Object3D {
+function placedModel(building: Building, state: GameState): THREE.Object3D {
   const { width, height } = BUILDING_SPECS[building.type];
   const turned = buildingSize(building.type, building.rotation);
-  const model = buildingModel(building);
+  const model = buildingModel(building, state);
   model.position.set(-width / 2, 0, -height / 2);
   const pivot = new THREE.Group();
   pivot.add(model);
