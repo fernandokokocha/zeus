@@ -13,5 +13,12 @@ export const TOOL_LABELS: Record<Tool, string> = {
   fountain: priced('fountain'),
   taxOffice: priced('taxOffice'),
   palace: priced('palace'),
+  wheatFarm: priced('wheatFarm'),
+  granary: priced('granary'),
+  agora: priced('agora'),
+  foodVendor: priced('foodVendor'),
+  park: priced('park'),
+  column: priced('column'),
+  flowerGarden: priced('flowerGarden'),
   demolish: 'Demolish',
 };

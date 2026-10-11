@@ -21,7 +21,8 @@ body {
 
 #topbar,
 #toolbar,
-#inspector {
+#inspector,
+#appeal-legend {
   position: fixed;
   background: var(--parchment);
   border: 2px solid var(--terracotta);
@@ -122,4 +123,22 @@ button.active {
   display: flex;
   gap: 2px;
   white-space: nowrap;
+}
+
+#appeal-legend {
+  bottom: 8px;
+  left: 8px;
+  width: 200px;
+}
+
+#appeal-legend-bar {
+  height: 12px;
+  margin: 4px 0 2px;
+  border: 1px solid var(--ink);
+}
+
+#appeal-legend-scale {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
 }

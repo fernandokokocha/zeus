@@ -23,7 +23,12 @@ async function drag(page: Page, from: [number, number], to: [number, number]): P
   await page.mouse.up();
 }
 
-test('boots, builds a street with services and settlers move in', async ({ page }) => {
+async function place(page: Page, tool: RegExp, at: [number, number]): Promise<void> {
+  await page.getByRole('button', { name: tool }).click();
+  await drag(page, at, at);
+}
+
+test('boots, builds a street with services, food and decorations, and settlers move in', async ({ page }) => {
   test.setTimeout(60_000);
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
@@ -35,21 +40,27 @@ test('boots, builds a street with services and settlers move in', async ({ page 
   await expect(page.locator('#date')).toHaveText('January, Year 1');
   await expect(page.locator('#population')).toHaveText('Population 0');
   await expect(page.locator('#treasury')).toHaveText('5,000 dr');
-  await expect(page.locator('#toolbar button')).toHaveCount(7);
+  await expect(page.locator('#toolbar button')).toHaveCount(14);
 
   await page.getByRole('button', { name: 'Demolish' }).click();
   await drag(page, [8, 44], [30, 57]);
   await page.getByRole('button', { name: /^Road \(/ }).click();
   await drag(page, [8, 50], [29, 50]);
   await page.getByRole('button', { name: /^Housing/ }).click();
-  await drag(page, [9, 48], [20, 49]);
-  await drag(page, [9, 51], [20, 52]);
-  await page.getByRole('button', { name: /^Fountain/ }).click();
-  await drag(page, [21, 48], [21, 48]);
-  await page.getByRole('button', { name: /^Tax Office/ }).click();
-  await drag(page, [23, 48], [23, 48]);
-  await page.getByRole('button', { name: /^Palace/ }).click();
-  await drag(page, [25, 53], [25, 53]);
+  await drag(page, [9, 48], [12, 49]);
+  await drag(page, [9, 51], [16, 52]);
+  await place(page, /^Wheat Farm/, [15, 48]);
+  await place(page, /^Fountain/, [18, 48]);
+  await place(page, /^Tax Office/, [20, 48]);
+  await place(page, /^Granary/, [23, 47]);
+  await place(page, /^Agora/, [18, 53]);
+  await place(page, /^Food Vendor/, [17, 51]);
+  await place(page, /^Palace/, [25, 53]);
+  await place(page, /^Flower Garden/, [9, 53]);
+  await place(page, /^Column/, [12, 53]);
+  await place(page, /^Park/, [13, 53]);
+  await page.keyboard.press('r');
+  await expect(page.locator('#status')).toHaveText('Rotated 90°');
   await page.keyboard.press('Escape');
   await expect(page.locator('#treasury')).not.toHaveText('5,000 dr');
 
@@ -61,6 +72,11 @@ test('boots, builds a street with services and settlers move in', async ({ page 
   await page.mouse.wheel(0, -800);
   await page.waitForTimeout(6000);
   await page.screenshot({ path: 'test-results/screenshot.png' });
+  await page.keyboard.press('o');
+  await expect(page.locator('#appeal-legend')).toBeVisible();
+  await page.screenshot({ path: 'test-results/appeal.png' });
+  await page.getByRole('button', { name: 'Appeal' }).click();
+  await expect(page.locator('#appeal-legend')).toBeHidden();
 
   await page.keyboard.press('Space');
   await expect(page.getByRole('button', { name: '❚❚' })).toHaveClass(/active/);

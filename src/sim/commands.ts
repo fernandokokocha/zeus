@@ -1,4 +1,14 @@
-import { BUILDING_SPECS, type BuildingType } from './buildings';
+import {
+  AGORA_VENDOR_SPOTS,
+  BUILDING_SPECS,
+  buildingSize,
+  footprintDistance,
+  localToWorld,
+  worldToLocal,
+  type BuildingType,
+  type Placement,
+  type Rotation,
+} from './buildings';
 import { rectBetween, tilesIn, type Point } from './point';
 import { NO_BUILDING, clampToMap, inBounds, tileIndex, type Building, type GameState } from './state';
 import { BUILDABLE, TERRAIN_NAMES } from './terrain';
@@ -64,13 +74,13 @@ export function placeRoadblock(state: GameState, at: Point): Result {
   return OK;
 }
 
-export function footprint(type: BuildingType, x: number, y: number): Point[] {
-  const { width, height } = BUILDING_SPECS[type];
+export function footprint({ type, x, y, rotation }: Placement): Point[] {
+  const { width, height } = buildingSize(type, rotation);
   return tilesIn({ minX: x, minY: y, maxX: x + width - 1, maxY: y + height - 1 });
 }
 
-function footprintObstacle(state: GameState, type: BuildingType, x: number, y: number): string | null {
-  for (const p of footprint(type, x, y)) {
+function footprintObstacle(state: GameState, placement: Placement): string | null {
+  for (const p of footprint(placement)) {
     if (!inBounds(state, p.x, p.y)) return 'Outside the map';
     if (state.roads[tileIndex(state, p.x, p.y)]) return 'A road is in the way';
     if (state.buildingIdAt[tileIndex(state, p.x, p.y)] !== NO_BUILDING) return 'A building is in the way';
@@ -80,20 +90,44 @@ function footprintObstacle(state: GameState, type: BuildingType, x: number, y: n
   return null;
 }
 
-function adjacentRoadTilesOf(state: GameState, type: BuildingType, x: number, y: number): Point[] {
-  const { width, height } = BUILDING_SPECS[type];
+function adjacentRoadTilesOf(state: GameState, { type, x, y, rotation }: Placement): Point[] {
+  const { width, height } = buildingSize(type, rotation);
   const neighbours: Point[] = [];
   for (let dx = 0; dx < width; dx++) neighbours.push({ x: x + dx, y: y - 1 }, { x: x + dx, y: y + height });
   for (let dy = 0; dy < height; dy++) neighbours.push({ x: x - 1, y: y + dy }, { x: x + width, y: y + dy });
   return neighbours.filter((p) => inBounds(state, p.x, p.y) && state.roads[tileIndex(state, p.x, p.y)]);
 }
 
-export function adjacentRoadTiles(state: GameState, building: Building): Point[] {
-  return adjacentRoadTilesOf(state, building.type, building.x, building.y);
+export function agoraAt(state: GameState, p: Point): Building | null {
+  return state.buildings.find((b) => b.type === 'agora' && footprintDistance(b, p) === 0) ?? null;
 }
 
-export function hasRoadAccess(state: GameState, type: BuildingType, x: number, y: number): boolean {
-  return adjacentRoadTilesOf(state, type, x, y).length > 0;
+export function vendorSpotAt(state: GameState, p: Point): Point | null {
+  const agora = agoraAt(state, p);
+  if (!agora) return null;
+  const { width, height } = BUILDING_SPECS.foodVendor;
+  const local = worldToLocal(agora, p);
+  const spot = AGORA_VENDOR_SPOTS.find((s) => local.y >= s.y && local.y < s.y + height);
+  if (!spot) return null;
+  const corners = [spot, { x: spot.x + width - 1, y: spot.y + height - 1 }].map((c) => localToWorld(agora, c));
+  return { x: Math.min(...corners.map((c) => c.x)), y: Math.min(...corners.map((c) => c.y)) };
+}
+
+export function roadSite(state: GameState, building: Building): Building {
+  if (building.type !== 'foodVendor') return building;
+  const agora = agoraAt(state, building);
+  if (!agora) throw new Error(`Vendor ${building.id} stands on no agora`);
+  return agora;
+}
+
+export function adjacentRoadTiles(state: GameState, building: Building): Point[] {
+  return adjacentRoadTilesOf(state, roadSite(state, building));
+}
+
+export function hasRoadAccess(state: GameState, placement: Placement): boolean {
+  if (placement.type !== 'foodVendor') return adjacentRoadTilesOf(state, placement).length > 0;
+  const agora = agoraAt(state, placement);
+  return agora !== null && adjacentRoadTiles(state, agora).length > 0;
 }
 
 export function checkBuildingPlacement(
@@ -101,37 +135,54 @@ export function checkBuildingPlacement(
   type: BuildingType,
   x: number,
   y: number,
+  rotation: Rotation = 0,
 ): { obstacle: string | null; roadAccess: boolean } {
-  return { obstacle: placementObstacle(state, type, x, y), roadAccess: hasRoadAccess(state, type, x, y) };
+  const placement = { type, x, y, rotation };
+  return { obstacle: placementObstacle(state, placement), roadAccess: hasRoadAccess(state, placement) };
 }
 
-function placementObstacle(state: GameState, type: BuildingType, x: number, y: number): string | null {
+function placementObstacle(state: GameState, placement: Placement): string | null {
+  const { type, x, y } = placement;
   if (type === 'palace' && state.buildings.some((b) => b.type === 'palace')) return 'Only one palace is allowed';
-  return footprintObstacle(state, type, x, y);
+  if (type === 'foodVendor') return vendorObstacle(state, x, y);
+  const obstacle = footprintObstacle(state, placement);
+  if (obstacle || type !== 'wheatFarm') return obstacle;
+  const onMeadow = footprint(placement).every((p) => state.terrain[tileIndex(state, p.x, p.y)] === 'meadow');
+  return onMeadow ? null : 'A wheat farm needs meadow';
 }
 
-export function placeBuilding(state: GameState, type: BuildingType, x: number, y: number): Result {
-  const obstacle = placementObstacle(state, type, x, y);
+function vendorObstacle(state: GameState, x: number, y: number): string | null {
+  const spot = vendorSpotAt(state, { x, y });
+  const taken = state.buildings.some((b) => b.type === 'foodVendor' && b.x === x && b.y === y);
+  const free = spot !== null && spot.x === x && spot.y === y && !taken;
+  return free ? null : 'A vendor goes on a free spot of an agora';
+}
+
+export function placeBuilding(state: GameState, type: BuildingType, x: number, y: number, rotation: Rotation = 0): Result {
+  const placement = { type, x, y, rotation };
+  const obstacle = placementObstacle(state, placement);
   if (obstacle) return fail(obstacle);
-  build(state, type, x, y);
+  const agora = type === 'foodVendor' ? agoraAt(state, placement) : null;
+  build(state, agora ? { ...placement, rotation: agora.rotation } : placement);
   state.version++;
   return OK;
 }
 
-function build(state: GameState, type: BuildingType, x: number, y: number): void {
+function build(state: GameState, placement: Placement): void {
   const building = {
     id: state.nextBuildingId++,
-    type,
-    x,
-    y,
+    ...placement,
     residents: 0,
     workers: 0,
     walkerRest: 0,
     coveredUntil: { water: 0, tax: 0 },
+    level: 'hut' as const,
+    food: 0,
+    growth: 0,
   };
   state.buildings.push(building);
-  for (const p of footprint(type, x, y)) state.buildingIdAt[tileIndex(state, p.x, p.y)] = building.id;
-  state.treasury -= BUILDING_SPECS[type].cost;
+  for (const p of footprint(placement)) state.buildingIdAt[tileIndex(state, p.x, p.y)] = building.id;
+  state.treasury -= BUILDING_SPECS[placement.type].cost;
 }
 
 function lotStarts(from: number, to: number, size: number): number[] {
@@ -145,16 +196,17 @@ export function lotOrigins(from: Point, to: Point): Point[] {
   return lotStarts(from.y, to.y, height).flatMap((y) => xs.map((x) => ({ x, y })));
 }
 
-export function placeHouses(state: GameState, from: Point, to: Point): Result {
+export function placeHouses(state: GameState, from: Point, to: Point, rotation: Rotation = 0): Result {
   const obstacles: string[] = [];
   let placed = 0;
   for (const lot of lotOrigins(from, to)) {
-    const obstacle = footprintObstacle(state, 'house', lot.x, lot.y);
+    const placement = { type: 'house' as const, ...lot, rotation };
+    const obstacle = footprintObstacle(state, placement);
     if (obstacle) {
       obstacles.push(obstacle);
       continue;
     }
-    build(state, 'house', lot.x, lot.y);
+    build(state, placement);
     placed++;
   }
   if (placed === 0) return fail(obstacles[0]);
@@ -171,8 +223,15 @@ export function demolish(state: GameState, from: Point, to: Point): void {
     if (state.terrain[i] === 'forest') state.terrain[i] = 'grass';
     if (state.buildingIdAt[i] !== NO_BUILDING) doomed.add(state.buildingIdAt[i]);
   }
+  const agoraOfVendor = new Map<number, number>();
+  for (const vendor of state.buildings.filter((b) => b.type === 'foodVendor')) {
+    const agoraId = roadSite(state, vendor).id;
+    if (doomed.has(agoraId)) doomed.add(vendor.id);
+    else agoraOfVendor.set(vendor.id, agoraId);
+  }
   state.buildings = state.buildings.filter((b) => !doomed.has(b.id));
   state.roamers = state.roamers.filter((r) => !doomed.has(r.homeId));
-  state.buildingIdAt = state.buildingIdAt.map((id) => (doomed.has(id) ? NO_BUILDING : id));
+  state.carriers = state.carriers.filter((c) => !doomed.has(c.homeId));
+  state.buildingIdAt = state.buildingIdAt.map((id) => (doomed.has(id) ? (agoraOfVendor.get(id) ?? NO_BUILDING) : id));
   state.version++;
 }

@@ -1,5 +1,6 @@
+import { adjacentRoadTiles } from './commands';
 import type { Point } from './point';
-import { inBounds, tileIndex, type GameState } from './state';
+import { inBounds, tileIndex, type Building, type GameState } from './state';
 
 export const NEIGHBOUR_STEPS: Point[] = [{ x: 0, y: -1 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: -1, y: 0 }];
 const UNVISITED = -1;
@@ -27,6 +28,15 @@ export function findRoadPath(state: GameState, from: Point, targets: Point[]): P
     }
   }
   return null;
+}
+
+export function nearestByRoad(state: GameState, from: Point, buildings: Building[]): { building: Building; path: Point[] } | null {
+  const path = findRoadPath(state, from, buildings.flatMap((b) => adjacentRoadTiles(state, b)));
+  if (!path) return null;
+  const end = path[path.length - 1];
+  const building = buildings.find((b) => adjacentRoadTiles(state, b).some((p) => p.x === end.x && p.y === end.y));
+  if (!building) throw new Error(`Path ends at ${end.x}, ${end.y}, which touches none of the buildings`);
+  return { building, path };
 }
 
 function pathTo(state: GameState, cameFrom: Int32Array, end: number): Point[] {

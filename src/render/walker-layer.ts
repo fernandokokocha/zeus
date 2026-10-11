@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import type { GameState, RoamerKind, Walk } from '../sim/state';
+import type { CarrierKind, GameState, RoamerKind, Walk } from '../sim/state';
 import { WALKER_TILES_PER_TICK, walkerPosition } from '../sim/walking';
 import { PALETTE } from './palette';
 
@@ -13,7 +13,7 @@ interface Part {
   color: number;
 }
 
-type Figure = 'settler' | RoamerKind;
+type Figure = 'settler' | RoamerKind | CarrierKind;
 
 function body(tunic: number): Part[] {
   return [
@@ -40,6 +40,21 @@ const FIGURES: Record<Figure, Part[]> = {
     ...body(PALETTE.clerkTunic),
     { geometry: new THREE.BoxGeometry(0.12, 0.09, 0.02).rotateX(-0.6).translate(0, 0.2, 0.09), color: PALETTE.tablet },
     { geometry: new THREE.SphereGeometry(0.04, 8, 6).translate(0.09, 0.1, 0), color: PALETTE.coins },
+  ],
+  peddler: [
+    ...body(PALETTE.peddlerTunic),
+    { geometry: new THREE.CylinderGeometry(0.09, 0.07, 0.06, 10).translate(0, 0.41, 0), color: PALETTE.reed },
+    { geometry: new THREE.SphereGeometry(0.045, 8, 6).scale(1.3, 0.8, 1).translate(0.02, 0.45, 0), color: PALETTE.bread },
+  ],
+  buyer: [
+    ...body(PALETTE.buyerTunic),
+    { geometry: new THREE.CylinderGeometry(0.07, 0.05, 0.08, 10).translate(0.1, 0.12, 0.02), color: PALETTE.reed },
+  ],
+  cartPusher: [
+    ...body(PALETTE.cartTunic),
+    { geometry: new THREE.BoxGeometry(0.2, 0.08, 0.24).translate(0, 0.1, 0.22), color: PALETTE.trunk },
+    { geometry: new THREE.CylinderGeometry(0.06, 0.06, 0.26, 10).rotateZ(Math.PI / 2).translate(0, 0.06, 0.24), color: PALETTE.doorway },
+    { geometry: new THREE.BoxGeometry(0.15, 0.08, 0.16).translate(0, 0.18, 0.22), color: PALETTE.sack },
   ],
 };
 
@@ -88,18 +103,20 @@ function createFigureSet(parts: Part[], group: THREE.Group): { show(walks: Walk[
 
 export function createWalkerLayer(): { group: THREE.Group; sync(state: GameState, ticksAhead: number): void } {
   const group = new THREE.Group();
-  const sets = {
-    settler: createFigureSet(FIGURES.settler, group),
-    waterCarrier: createFigureSet(FIGURES.waterCarrier, group),
-    taxCollector: createFigureSet(FIGURES.taxCollector, group),
-  };
+  const sets = Object.fromEntries(
+    (Object.keys(FIGURES) as Figure[]).map((figure) => [figure, createFigureSet(FIGURES[figure], group)]),
+  ) as Record<Figure, ReturnType<typeof createFigureSet>>;
 
   return {
     group,
     sync(state, ticksAhead) {
       sets.settler.show(state.settlers, ticksAhead);
-      sets.waterCarrier.show(state.roamers.filter((r) => r.kind === 'waterCarrier'), ticksAhead);
-      sets.taxCollector.show(state.roamers.filter((r) => r.kind === 'taxCollector'), ticksAhead);
+      for (const kind of ['waterCarrier', 'taxCollector', 'peddler'] as const) {
+        sets[kind].show(state.roamers.filter((r) => r.kind === kind), ticksAhead);
+      }
+      for (const kind of ['cartPusher', 'buyer'] as const) {
+        sets[kind].show(state.carriers.filter((c) => c.kind === kind), ticksAhead);
+      }
     },
   };
 }

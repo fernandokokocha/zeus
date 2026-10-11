@@ -153,3 +153,6 @@ https://zeus.heavengames.com/gameinfo/gods/
 - Roamer rest: a service building sends its next walker **a quarter month** after the
   last one returns, at full staff.
 - Roadblock cost: **6 dr**.
+- Cart pusher load: **4 loads** (one granary slot). Buyer load: **4 loads**. Agora vendor stock: **8 loads**.
+- House food stock: a peddler fills a house to **3 months** of eating (Huts are filled as if they ate).
+- Wheat grows all year in proportion to staffing; a full year at full staff gives the 8-load harvest.

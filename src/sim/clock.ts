@@ -3,15 +3,20 @@ import type { GameState, Speed } from './state';
 export const TICKS_PER_SECOND = 10;
 export const SECONDS_PER_MONTH = 30;
 export const TICKS_PER_MONTH = TICKS_PER_SECOND * SECONDS_PER_MONTH;
+export const MONTHS_PER_YEAR = 12;
+export const TICKS_PER_YEAR = TICKS_PER_MONTH * MONTHS_PER_YEAR;
 
-const MONTH_NAMES = [
+export const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
 export function gameDate(tick: number): { month: string; year: number } {
-  const months = Math.floor(tick / TICKS_PER_MONTH);
-  return { month: MONTH_NAMES[months % 12], year: Math.floor(months / 12) + 1 };
+  return { month: MONTH_NAMES[monthOfYear(tick)], year: Math.floor(tick / TICKS_PER_YEAR) + 1 };
+}
+
+export function monthOfYear(tick: number): number {
+  return Math.floor(tick / TICKS_PER_MONTH) % MONTHS_PER_YEAR;
 }
 
 export function setSpeed(state: GameState, speed: Speed): void {

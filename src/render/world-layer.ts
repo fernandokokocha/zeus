@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import type { GameState } from '../sim/state';
+import { BUILDING_SPECS, buildingSize } from '../sim/buildings';
+import type { Building, GameState } from '../sim/state';
 import { buildingModel, roadblockModel } from './models';
 import { PALETTE } from './palette';
 
@@ -24,9 +25,7 @@ export function createWorldLayer(): { group: THREE.Group; sync(state: GameState)
 
       for (const model of roadblockModels(state)) group.add(model);
       for (const building of state.buildings) {
-        const model = buildingModel(building);
-        model.position.set(building.x, 0, building.y);
-        group.add(model);
+        group.add(placedModel(building));
       }
     },
   };
@@ -54,4 +53,16 @@ function roadblockModels(state: GameState): THREE.Object3D[] {
     model.position.z += y;
     return [model];
   });
+}
+
+function placedModel(building: Building): THREE.Object3D {
+  const { width, height } = BUILDING_SPECS[building.type];
+  const turned = buildingSize(building.type, building.rotation);
+  const model = buildingModel(building);
+  model.position.set(-width / 2, 0, -height / 2);
+  const pivot = new THREE.Group();
+  pivot.add(model);
+  pivot.rotation.y = -building.rotation * (Math.PI / 2);
+  pivot.position.set(building.x + turned.width / 2, 0, building.y + turned.height / 2);
+  return pivot;
 }
