@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { TICKS_PER_MONTH } from '../../src/sim/clock';
 import { demolish, placeBuilding, placeRoad, placeRoadblock } from '../../src/sim/commands';
 import {
+  COVERAGE_MONTHS,
   ROAMER_REST_TICKS,
   ROAMER_SPECS,
-  SERVICE_MONTHS,
   exitTile,
   hasService,
   nextRoamTile,
@@ -177,14 +177,14 @@ describe('a water carrier', () => {
     expect(hasService(game, beside, 'tax')).toBe(false);
   });
 
-  it('leaves water for 2 months', () => {
+  it('leaves water for 4 months', () => {
     const game = cityOf(20);
     const house = fullHouse(game, 2, 11);
     placeBuilding(game, 'fountain', 0, 11);
     runTicks(game, ROAMER_REST_TICKS);
-    expect(house.coveredUntil.water).toBe(game.tick + SERVICE_MONTHS * TICKS_PER_MONTH);
+    expect(house.coveredUntil.water).toBe(game.tick + 4 * TICKS_PER_MONTH);
     demolish(game, { x: 0, y: 11 }, { x: 0, y: 11 });
-    runTicks(game, SERVICE_MONTHS * TICKS_PER_MONTH - 1);
+    runTicks(game, COVERAGE_MONTHS.water * TICKS_PER_MONTH - 1);
     expect(hasService(game, house, 'water')).toBe(true);
     tick(game);
     expect(hasService(game, house, 'water')).toBe(false);
@@ -305,5 +305,38 @@ describe('a fleece peddler', () => {
     expect(hovel.fleece).toBe(6);
     expect(vendor.fleece).toBe(100 - 6 - 4);
     expect(hut.food).toBe(0);
+  });
+});
+
+describe('an oil peddler', () => {
+  function market(): { game: GameState; vendor: Building } {
+    const game = cityOf(20);
+    placeBuilding(game, 'agora', 0, 11);
+    placeBuilding(game, 'oilVendor', 0, 11);
+    return { game, vendor: game.buildings[2] };
+  }
+
+  it('only sets out when his stall has oil, and roams 44 tiles', () => {
+    const { game, vendor } = market();
+    vendor.fleece = 100;
+    runTicks(game, 2 * ROAMER_REST_TICKS);
+    expect(game.roamers).toEqual([]);
+    vendor.oil = 100;
+    runTicks(game, ROAMER_REST_TICKS);
+    expect(game.roamers.map((r) => r.kind)).toEqual(['oilPeddler']);
+    expect(ROAMER_SPECS.oilPeddler.range).toBe(44);
+  });
+
+  it('fills the houses he passes with 3 months of oil, 6 units, from his stall', () => {
+    const { game, vendor } = market();
+    const hut = fullHouse(game, 4, 8);
+    const tenement = fullHouse(game, 8, 8);
+    Object.assign(tenement, { level: 'tenement', residents: 40, oil: 2 });
+    vendor.oil = 100;
+    runTicks(game, ROAMER_REST_TICKS + ticksToWalk(10));
+    expect(hut.oil).toBe(6);
+    expect(tenement.oil).toBe(6);
+    expect(vendor.oil).toBe(100 - 6 - 4);
+    expect(hut.fleece).toBe(0);
   });
 });

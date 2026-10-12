@@ -124,3 +124,62 @@ describe('a fleece vendor', () => {
     expect(game.carriers.filter((c) => c.kind === 'fleeceBuyer')).toEqual([]);
   });
 });
+
+describe("an olive press's cart pusher", () => {
+  function oilWorks(): { game: GameState; shed: Building; storehouse: Building; press: Building } {
+    const { game, shed, storehouse } = woolTown();
+    placeBuilding(game, 'olivePress', 20, 13);
+    return { game, shed, storehouse, press: game.buildings[3] };
+  }
+
+  it('takes the oil to the nearest storehouse', () => {
+    const { game, storehouse, press } = oilWorks();
+    press.oil = 200;
+    tick(game);
+    expect(game.carriers[0]).toMatchObject({ kind: 'oilCart', homeId: press.id, destinationId: storehouse.id, oil: 200 });
+    runTicks(game, ticksToWalk(12));
+    expect(storehouse.oil).toBe(200);
+  });
+
+  it('shares the 8 slots with fleece, a slot to a good', () => {
+    const { storehouse } = oilWorks();
+    storehouse.fleece = 500;
+    storehouse.oil = 100;
+    expect(slotsUsed(storehouse)).toBe(3);
+  });
+
+  it('waits while every slot holds another good', () => {
+    const { game, storehouse, press } = oilWorks();
+    storehouse.fleece = STOREHOUSE_CAPACITY - 300;
+    press.oil = 100;
+    runTicks(game, 10);
+    expect(game.carriers).toEqual([]);
+    storehouse.fleece -= 100;
+    tick(game);
+    expect(game.carriers[0].oil).toBe(100);
+  });
+
+  it('fills the free slot only once, counting carts already on the way', () => {
+    const { game, shed, storehouse, press } = oilWorks();
+    storehouse.fleece = STOREHOUSE_CAPACITY - SLOT_SIZE;
+    shed.fleece = 100;
+    press.oil = 100;
+    tick(game);
+    expect(game.carriers.map((c) => c.kind)).toEqual(['fleeceCart']);
+  });
+});
+
+describe('an oil vendor', () => {
+  it('sends a buyer to fetch 4 loads of oil from the storehouse', () => {
+    const { game, storehouse } = woolTown();
+    placeBuilding(game, 'agora', 0, 16);
+    placeBuilding(game, 'oilVendor', 0, 20);
+    const vendor = game.buildings[game.buildings.length - 1];
+    storehouse.oil = 1000;
+    tick(game);
+    expect(game.carriers[0]).toMatchObject({ kind: 'oilBuyer', homeId: vendor.id, destinationId: storehouse.id, oil: 0 });
+    for (let i = 0; i < 300 && vendor.oil === 0; i++) tick(game);
+    expect(vendor.oil).toBe(BUYER_LOAD);
+    expect(storehouse.oil).toBe(1000 - BUYER_LOAD);
+  });
+});

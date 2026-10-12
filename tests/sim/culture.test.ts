@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { TICKS_PER_MONTH } from '../../src/sim/clock';
 import { culturePoints } from '../../src/sim/culture';
 import { demolish, placeBuilding, placeRoad } from '../../src/sim/commands';
-import { ROAMER_REST_TICKS, ROAMER_SPECS, SERVICE_MONTHS } from '../../src/sim/roamers';
+import { COVERAGE_MONTHS, ROAMER_REST_TICKS, ROAMER_SPECS } from '../../src/sim/roamers';
 import type { Building, GameState } from '../../src/sim/state';
 import { WALKER_TILES_PER_TICK } from '../../src/sim/walking';
 import { grassGame, placeHouse, runTicks } from './helpers';
@@ -83,7 +83,7 @@ describe('culture points', () => {
     runTicks(game, ROAMER_REST_TICKS + ticksToWalk(15));
     expect(culturePoints(game, house)).toBe(20);
     demolish(game, { x: 2, y: 12 }, { x: 2, y: 12 });
-    runTicks(game, SERVICE_MONTHS * TICKS_PER_MONTH);
+    runTicks(game, COVERAGE_MONTHS.athletics * TICKS_PER_MONTH);
     expect(culturePoints(game, house)).toBe(0);
   });
 

@@ -6,7 +6,7 @@ import { NEIGHBOUR_STEPS, findRoadPath } from './pathfinding';
 import { samePoint, type Point } from './point';
 import { nextRandom } from './rng';
 import { isPerforming, traineeKindFor } from './schools';
-import { buildingById, inBounds, tileIndex, type Building, type GameState, type Roamer, type Coverage, type Good, type RoamerKind, type Service } from './state';
+import { buildingById, inBounds, tileIndex, type Building, type GameState, type Roamer, type Coverage, type HouseGood, type RoamerKind, type Service } from './state';
 import { WALKER_TILES_PER_TICK, isRoad } from './walking';
 
 export interface RoamerSpec {
@@ -21,18 +21,19 @@ export const ROAMER_SPECS: Record<RoamerKind, RoamerSpec> = {
   taxCollector: { name: 'Tax Collector', home: 'taxOffice', range: 35, service: 'tax' },
   peddler: { name: 'Peddler', home: 'foodVendor', range: 44, service: 'food' },
   fleecePeddler: { name: 'Fleece Peddler', home: 'fleeceVendor', range: 44, service: 'fleece' },
+  oilPeddler: { name: 'Oil Peddler', home: 'oilVendor', range: 44, service: 'oil' },
   philosopher: { name: 'Philosopher', home: 'podium', range: 35, service: 'philosophy' },
   athlete: { name: 'Athlete', home: 'gymnasium', range: 35, service: 'athletics' },
   actor: { name: 'Actor', home: 'theater', range: 35, service: 'drama' },
 };
 
 export const SERVICE_REACH = 2;
-export const SERVICE_MONTHS = 2;
+export const COVERAGE_MONTHS: Record<Coverage, number> = { water: 4, tax: 2, philosophy: 2, athletics: 2, drama: 2 };
 export const ROAMER_REST_TICKS = TICKS_PER_MONTH / 4;
 
-const GOODS: ReadonlySet<Service> = new Set<Service>(['food', 'fleece']);
+const GOODS: ReadonlySet<Service> = new Set<Service>(['food', 'fleece', 'oil']);
 
-export function isGood(service: Service): service is Good {
+export function isGood(service: Service): service is HouseGood {
   return GOODS.has(service);
 }
 
@@ -46,7 +47,7 @@ export function hasService(state: GameState, house: Building, service: Coverage)
 }
 
 export function serviceLeft(state: GameState, house: Building, service: Coverage): number {
-  return Math.max(0, house.coveredUntil[service] - state.tick) / (SERVICE_MONTHS * TICKS_PER_MONTH);
+  return Math.max(0, house.coveredUntil[service] - state.tick) / (COVERAGE_MONTHS[service] * TICKS_PER_MONTH);
 }
 
 export function exitTile(state: GameState, building: Building): Point | null {
@@ -163,6 +164,6 @@ function serveAround(state: GameState, roamer: Roamer): void {
     for (const house of houses) stockHouse(stall, house, service);
     return;
   }
-  const until = state.tick + SERVICE_MONTHS * TICKS_PER_MONTH;
+  const until = state.tick + COVERAGE_MONTHS[service] * TICKS_PER_MONTH;
   for (const house of houses) house.coveredUntil[service] = until;
 }

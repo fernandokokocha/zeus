@@ -9,7 +9,7 @@ delivers it.
 - [x] 4 · Food & appeal
 - [x] 5 · Culture
 - [x] 6 · Storehouse & fleece
-- [ ] 7 · Olive oil
+- [x] 7 · Olive oil
 - [ ] 8 · Safety
 - [ ] 9 · Map modes
 - [ ] 10 · Materials & sculpture

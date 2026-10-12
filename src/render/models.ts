@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import { AGORA_VENDOR_SPOTS, BUILDING_SPECS, type BuildingType } from '../sim/buildings';
 import { CROP_STAGES, UNITS_PER_LOAD, cropStage } from '../sim/food';
-import { SLOT_SIZE, STOREHOUSE_SLOTS } from '../sim/storehouse';
+import { SLOT_SIZE, STOREHOUSE_GOODS, STOREHOUSE_SLOTS, slotsOf, type StoredGood } from '../sim/storehouse';
 import { houseLevel, type HouseLevel } from '../sim/housing';
+import { isRipe } from '../sim/olives';
 import { isPerforming } from '../sim/schools';
 import type { Building, GameState } from '../sim/state';
 import { PALETTE, tileHash } from './palette';
@@ -41,6 +42,11 @@ const actorRobe = lambert(PALETTE.actorRobe);
 const tragicRobe = lambert(PALETTE.tragicRobe);
 const comicMask = lambert(PALETTE.mask);
 const tragicMask = lambert(PALETTE.tragicMask);
+const oliveLeaf = lambert(PALETTE.oliveLeaf);
+const oliveLeafDark = lambert(PALETTE.oliveLeafDark);
+const ripeOlive = lambert(PALETTE.olive);
+const oilGold = lambert(PALETTE.oil);
+const oilAwning = lambert(PALETTE.oilAwning);
 const petalMaterials = PALETTE.petals.map(lambert);
 const sprouts = Array.from({ length: CROP_STAGES }, (_, stage) =>
   lambert(new THREE.Color(PALETTE.sprout).lerp(new THREE.Color(PALETTE.wheat), stage / (CROP_STAGES - 1)).getHex()),
@@ -755,7 +761,12 @@ function bale(x: number, y: number, z: number, turn: number): THREE.Object3D {
 const STOREHOUSE_SLOT_WIDTH = 0.68;
 const STOREHOUSE_SLOT_DEPTH = 0.86;
 const STOREHOUSE_SLOT_SPOTS = [1.55, 2.47].flatMap((z) => [0.42, 1.14, 1.86, 2.58].map((x) => [x, z]));
-const BALES_PER_SLOT = SLOT_SIZE / UNITS_PER_LOAD;
+const LOADS_PER_SLOT = SLOT_SIZE / UNITS_PER_LOAD;
+
+const STORED_LOAD: Record<StoredGood, (x: number, z: number, turn: number) => THREE.Object3D> = {
+  fleece: (x, z, turn) => bale(x, 0.04, z, turn),
+  oil: (x, z) => oilJar(x, 0.04, z),
+};
 
 function storehouseModel(storehouse: Building): THREE.Object3D {
   const group = new THREE.Group();
@@ -777,12 +788,17 @@ function storehouseModel(storehouse: Building): THREE.Object3D {
       group.add(box(w, 0.1, d, timber, sx + x, 0.04, sz + z));
     }
   });
-  const loads = Math.floor(storehouse.fleece / UNITS_PER_LOAD);
-  for (let load = 0; load < loads; load++) {
-    const [sx, sz] = STOREHOUSE_SLOT_SPOTS[Math.floor(load / BALES_PER_SLOT)];
-    const spot = load % BALES_PER_SLOT;
-    const turn = tileHash(load, storehouse.id) * 0.4 - 0.2;
-    group.add(bale(sx + (spot % 2 ? 0.14 : -0.14), 0.04, sz + (spot < 2 ? -0.2 : 0.2), turn));
+  let firstSlot = 0;
+  for (const good of STOREHOUSE_GOODS) {
+    const loads = Math.floor(storehouse[good] / UNITS_PER_LOAD);
+    for (let load = 0; load < loads; load++) {
+      const [sx, sz] = STOREHOUSE_SLOT_SPOTS[firstSlot + Math.floor(load / LOADS_PER_SLOT)];
+      const spot = load % LOADS_PER_SLOT;
+      const x = sx + (spot % 2 ? 0.14 : -0.14);
+      const z = sz + (spot < 2 ? -0.2 : 0.2);
+      group.add(STORED_LOAD[good](x, z, tileHash(load, storehouse.id) * 0.4 - 0.2));
+    }
+    firstSlot += slotsOf(storehouse, good);
   }
   return group;
 }
@@ -807,6 +823,192 @@ function fleeceVendorModel(vendor: Building): THREE.Object3D {
   return group;
 }
 
+const oliveBerry = new THREE.SphereGeometry(0.025, 6, 4);
+const OLIVE_SPOTS = Array.from({ length: 14 }, (_, i) => {
+  const angle = i * 2.4;
+  const radius = 0.12 + (i % 3) * 0.06;
+  return [0.5 + Math.cos(angle) * radius, 0.42 + (i % 4) * 0.06, 0.5 + Math.sin(angle) * radius];
+});
+
+function oilJar(x: number, y: number, z: number): THREE.Object3D {
+  const group = new THREE.Group();
+  group.add(placed(amphora, clay, x, y, z));
+  group.add(cylinder(0.03, 0.01, oilGold, x, y + 0.28, z));
+  return group;
+}
+
+function oliveTreeModel(tree: Building): THREE.Object3D {
+  const group = new THREE.Group();
+  group.add(cylinder(0.3, 0.02, earth, 0.5, 0, 0.5));
+  const trunk = columnAt(0.36, timber, 0.5, 0.02, 0.5);
+  trunk.scale.set(1.1, 0.36, 1.1);
+  trunk.rotation.z = 0.18;
+  group.add(trunk);
+  const bough = columnAt(0.22, timber, 0.47, 0.25, 0.5);
+  bough.rotation.z = -0.5;
+  group.add(bough);
+  for (const [x, y, z, s, leaf] of [
+    [0.42, 0.46, 0.45, 1.1, oliveLeaf],
+    [0.62, 0.5, 0.55, 0.9, oliveLeafDark],
+    [0.5, 0.6, 0.62, 0.8, oliveLeaf],
+    [0.36, 0.52, 0.66, 0.7, oliveLeafDark],
+  ] as [number, number, number, number, THREE.Material][]) {
+    const crown = placed(shrub, leaf, x, y, z);
+    crown.scale.set(s, 0.6 * s, s);
+    group.add(crown);
+  }
+  if (isRipe(tree)) {
+    for (const [x, y, z] of OLIVE_SPOTS) {
+      const reach = 1.25;
+      group.add(placed(oliveBerry, ripeOlive, 0.5 + (x - 0.5) * reach, y, 0.5 + (z - 0.5) * reach));
+    }
+  }
+  return group;
+}
+
+function basket(x: number, z: number, full: boolean): THREE.Object3D {
+  const group = new THREE.Group();
+  group.add(cylinder(0.1, 0.12, reed, x, 0.04, z));
+  if (full) {
+    for (const [dx, dz] of [[-0.04, 0], [0.04, 0.02], [0, -0.04], [0.01, 0.04]]) group.add(placed(oliveBerry, ripeOlive, x + dx, 0.17, z + dz));
+  }
+  return group;
+}
+
+function growersLodgeModel(lodge: Building): THREE.Object3D {
+  const group = new THREE.Group();
+  group.add(box(1.86, 0.04, 1.86, earth, 1, 0, 1));
+  group.add(box(1.3, 0.06, 0.8, fieldstone, 0.75, 0.04, 0.55));
+  group.add(box(1.2, 0.5, 0.7, plaster, 0.75, 0.1, 0.55));
+  const roof = gableRoof(0.86, 0.3, 1.36, plaster, reed);
+  roof.rotation.y = Math.PI / 2;
+  roof.position.set(0.75, 0.6, 0.55);
+  group.add(roof);
+  group.add(box(0.26, 0.34, 0.02, doorway, 0.55, 0.1, 0.905));
+  group.add(box(0.14, 0.1, 0.02, shutter, 1.05, 0.38, 0.905));
+  for (const x of [1.52, 1.72]) {
+    const rail = box(0.03, 0.8, 0.03, timber, x, 0.04, 0.55);
+    rail.rotation.x = 0.3;
+    group.add(rail);
+  }
+  for (let i = 0; i < 4; i++) group.add(box(0.22, 0.02, 0.02, timber, 1.62, 0.18 + i * 0.17, 0.62 + i * 0.05));
+  const full = lodge.olives > 0;
+  for (const [x, z] of [[0.4, 1.35], [0.7, 1.5], [1.05, 1.4]]) group.add(basket(x, z, full));
+  for (const [x, z] of [[1.5, 1.6], [1.75, 1.3]]) group.add(placed(amphora, clay, x, 0.04, z));
+  return group;
+}
+
+function olivePressModel(press: Building): THREE.Object3D {
+  const group = new THREE.Group();
+  group.add(box(1.9, 0.04, 1.9, paving, 1, 0, 1));
+  group.add(box(1.7, 0.08, 0.8, fieldstone, 1, 0.04, 0.5));
+  group.add(box(1.6, 0.55, 0.7, fieldstone, 1, 0.12, 0.5));
+  const roof = gableRoof(0.86, 0.28, 1.76, fieldstone);
+  roof.rotation.y = Math.PI / 2;
+  roof.position.set(1, 0.67, 0.5);
+  group.add(roof);
+  group.add(box(0.4, 0.4, 0.02, doorway, 0.6, 0.12, 0.855));
+  group.add(cylinder(0.32, 0.14, fieldstone, 0.55, 0.04, 1.35));
+  group.add(cylinder(0.27, 0.02, press.olives > 0 ? ripeOlive : fieldstone, 0.55, 0.17, 1.35));
+  const millstone = placed(disc, fieldstone, 0.55, 0.36, 1.35);
+  millstone.scale.set(0.17, 0.08, 0.17);
+  millstone.rotation.z = Math.PI / 2;
+  group.add(millstone);
+  group.add(box(0.04, 0.32, 0.04, timber, 0.55, 0.17, 1.35));
+  group.add(columnAt(0.5, timber, 1.75, 0.04, 1.2));
+  const beam = box(1.0, 0.07, 0.07, timber, 1.3, 0.34, 1.2);
+  beam.rotation.z = -0.18;
+  group.add(beam);
+  group.add(box(0.18, 0.16, 0.18, fieldstone, 0.85, 0.14, 1.2));
+  group.add(cylinder(0.14, 0.1, fieldstone, 1.3, 0.04, 1.2));
+  const loads = Math.floor(press.oil / UNITS_PER_LOAD);
+  for (let i = 0; i < loads; i++) {
+    group.add(oilJar(1.05 + i * 0.2, 0.04, 1.75));
+  }
+  return group;
+}
+
+function oilVendorModel(vendor: Building): THREE.Object3D {
+  const group = new THREE.Group();
+  const posts: [number, number][] = [[0.35, 0.35], [1.65, 0.35], [0.35, 1.45], [1.65, 1.45]];
+  for (const [x, z] of posts) group.add(columnAt(0.62, timber, x, 0.05, z));
+  for (let i = 0; i < 6; i++) {
+    const stripe = box(0.24, 0.04, 1.36, i % 2 === 0 ? oilAwning : plaster, 0.38 + i * 0.25, 0.68, 0.9);
+    stripe.rotation.x = 0.12;
+    group.add(stripe);
+  }
+  group.add(box(1.2, 0.24, 0.32, timber, 1, 0.05, 1.3));
+  if (vendor.workers > 0 && vendor.oil > 0) {
+    for (const x of [0.55, 0.85, 1.15, 1.45]) group.add(placed(amphora, clay, x, 0.29, 1.3));
+    for (const [x, z] of [[0.5, 0.65], [0.8, 0.6]]) group.add(oilJar(x, 0.05, z));
+  }
+  return group;
+}
+
+function apartmentModel(): THREE.Object3D {
+  const group = new THREE.Group();
+  group.add(box(LOT_WIDTH - 0.06, 0.03, LOT_DEPTH - 0.06, paving, LOT_WIDTH / 2, 0, LOT_DEPTH / 2));
+  const storey = 0.42;
+  const storeys = 3;
+  group.add(box(1.86, 0.07, 1.16, fieldstone, 1, 0.03, 0.64));
+  group.add(box(1.8, storeys * storey, 1.1, plaster, 1, 0.1, 0.64));
+  for (let i = 1; i < storeys; i++) group.add(box(1.82, 0.03, 1.12, mudBrick, 1, 0.1 + i * storey, 0.64));
+  const roof = gableRoof(1.2, 0.3, 1.9, plaster);
+  roof.rotation.y = Math.PI / 2;
+  roof.position.set(1, 0.1 + storeys * storey, 0.64);
+  group.add(roof);
+  for (let i = 0; i < storeys; i++) {
+    for (const x of [0.4, 0.8, 1.2, 1.6]) group.add(box(0.13, 0.15, 0.02, shutter, x, 0.28 + i * storey, 1.2));
+    group.add(box(0.02, 0.15, 0.13, shutter, 1.905, 0.28 + i * storey, 0.64));
+  }
+  group.add(box(0.26, 0.34, 0.02, doorway, 1, 0.1, 1.2));
+  group.add(box(1.2, 0.04, 0.26, timber, 1, 0.1 + storey, 1.32));
+  group.add(box(1.2, 0.14, 0.02, timber, 1, 0.14 + storey, 1.44));
+  for (const x of [0.45, 1.55]) group.add(columnAt(storey, timber, x, 0.1, 1.42));
+  group.add(box(1.2, 0.03, 0.3, vine, 1, 0.1 + 2 * storey - 0.05, 1.33));
+  group.add(placed(amphora, clay, 0.3, 0.03, 1.75));
+  group.add(placed(shrub, foliage, 1.7, 0.18, 1.7));
+  return group;
+}
+
+function townhouseModel(): THREE.Object3D {
+  const group = new THREE.Group();
+  group.add(box(LOT_WIDTH - 0.04, 0.06, LOT_DEPTH - 0.04, marble, LOT_WIDTH / 2, 0, LOT_DEPTH / 2));
+  const height = 0.85;
+  const wings: [number, number, number, number][] = [
+    [1.9, 0.55, 1.0, 0.33],
+    [0.5, 1.3, 0.3, 1.3],
+    [0.5, 1.3, 1.7, 1.3],
+  ];
+  for (const [w, d, x, z] of wings) {
+    group.add(box(w, height, d, plaster, x, 0.06, z));
+    group.add(box(w + 0.04, 0.05, d + 0.04, marble, x, 0.06 + height, z));
+  }
+  const backRoof = gableRoof(0.6, 0.24, 1.98, plaster);
+  backRoof.rotation.y = Math.PI / 2;
+  backRoof.position.set(1, 0.11 + height, 0.33);
+  group.add(backRoof);
+  for (const x of [0.3, 1.7]) {
+    const sideRoof = gableRoof(0.54, 0.2, 1.34, plaster);
+    sideRoof.position.set(x, 0.11 + height, 1.3);
+    group.add(sideRoof);
+  }
+  group.add(box(0.9, 0.02, 1.1, lawn, 1, 0.06, 1.25));
+  for (const [x, z] of [[0.62, 0.75], [1.0, 0.75], [1.38, 0.75], [0.62, 1.25], [1.38, 1.25], [0.62, 1.75], [1.38, 1.75]]) {
+    group.add(columnAt(0.6, marble, x, 0.06, z));
+  }
+  group.add(cylinder(0.16, 0.08, marble, 1, 0.08, 1.3));
+  group.add(cylinder(0.12, 0.01, water, 1, 0.16, 1.3));
+  group.add(placed(shrub, foliage, 0.8, 0.2, 1.7));
+  group.add(placed(shrub, foliage, 1.2, 0.2, 1.7));
+  group.add(box(0.3, 0.45, 0.02, doorway, 1, 0.06, 0.61));
+  for (const z of [1.0, 1.6]) {
+    group.add(box(0.02, 0.15, 0.13, shutter, 0.045, 0.45, z));
+    group.add(box(0.02, 0.15, 0.13, shutter, 1.955, 0.45, z));
+  }
+  return group;
+}
+
 const MODELS: Record<Exclude<BuildingType, 'house'>, (building: Building, state: GameState) => THREE.Object3D> = {
   fountain: (b) => fountainModel(b.workers > 0),
   taxOffice: (b) => taxOfficeModel(b.workers > 0),
@@ -826,6 +1028,10 @@ const MODELS: Record<Exclude<BuildingType, 'house'>, (building: Building, state:
   cardingShed: cardingShedModel,
   storehouse: storehouseModel,
   fleeceVendor: fleeceVendorModel,
+  oliveTree: oliveTreeModel,
+  growersLodge: growersLodgeModel,
+  olivePress: olivePressModel,
+  oilVendor: oilVendorModel,
 };
 
 const HOUSE_MODELS: Record<HouseLevel, () => THREE.Object3D> = {
@@ -834,6 +1040,8 @@ const HOUSE_MODELS: Record<HouseLevel, () => THREE.Object3D> = {
   hovel: hovelModel,
   homestead: homesteadModel,
   tenement: tenementModel,
+  apartment: apartmentModel,
+  townhouse: townhouseModel,
 };
 
 export function buildingModel(building: Building, state: GameState): THREE.Object3D {

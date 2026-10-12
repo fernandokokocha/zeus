@@ -53,7 +53,8 @@ export function previewTiles(
         kind: 'invalid',
       }));
     case 'house':
-      return lotOrigins(start, hover).flatMap((lot) => buildingPreview(state, tool, lot, rotation));
+    case 'oliveTree':
+      return lotOrigins(start, hover, tool).flatMap((lot) => buildingPreview(state, tool, lot, rotation));
     default:
       return buildingPreview(state, tool, placementOrigin(state, tool, hover, rotation), rotation);
   }

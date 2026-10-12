@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { houseAppeal } from '../../src/sim/appeal';
 import { TICKS_PER_MONTH } from '../../src/sim/clock';
-import { placeBuilding, placeHouses, placeRoad, placeSheep } from '../../src/sim/commands';
-import { houseCapacity } from '../../src/sim/housing';
+import { demolish, placeBuilding, placeHouses, placeOliveTrees, placeRoad, placeSheep } from '../../src/sim/commands';
+import { LEVEL_CHANGE_TICKS, houseCapacity } from '../../src/sim/housing';
 import { SETTLER_SPAWN_INTERVAL_TICKS } from '../../src/sim/settlers';
 import type { Building, GameState } from '../../src/sim/state';
 import { tick } from '../../src/sim/tick';
@@ -26,13 +26,13 @@ describe('a Hut', () => {
     const { game, house } = street();
     house.food = 1;
     expect(houseAppeal(game, house)).toBe(0);
-    tick(game);
+    runTicks(game, LEVEL_CHANGE_TICKS);
     expect(house.level).toBe('shack');
   });
 
   it('stays a Hut without food', () => {
     const { game, house } = street();
-    tick(game);
+    runTicks(game, LEVEL_CHANGE_TICKS);
     expect(house.level).toBe('hut');
   });
 
@@ -41,14 +41,14 @@ describe('a Hut', () => {
     placeBuilding(game, 'taxOffice', 5, 6);
     house.food = 1;
     expect(houseAppeal(game, house)).toBe(-2);
-    tick(game);
+    runTicks(game, LEVEL_CHANGE_TICKS);
     expect(house.level).toBe('hut');
   });
 
   it('draws settlers to fill its 16 places once a Shack', () => {
     const { game, house } = street();
     house.food = 100;
-    runTicks(game, 6 * SETTLER_SPAWN_INTERVAL_TICKS);
+    runTicks(game, LEVEL_CHANGE_TICKS + 6 * SETTLER_SPAWN_INTERVAL_TICKS);
     expect(house.residents).toBe(16);
   });
 });
@@ -59,7 +59,7 @@ describe('a Shack', () => {
     shackOn(game, house);
     placeBuilding(game, 'granary', 4, 6);
     expect(houseAppeal(game, house)).toBe(-11);
-    tick(game);
+    runTicks(game, LEVEL_CHANGE_TICKS);
     expect(house.level).toBe('shack');
   });
 
@@ -69,7 +69,7 @@ describe('a Shack', () => {
     placeBuilding(game, 'granary', 4, 6);
     placeBuilding(game, 'taxOffice', 0, 6);
     expect(houseAppeal(game, house)).toBeLessThanOrEqual(-12);
-    tick(game);
+    runTicks(game, LEVEL_CHANGE_TICKS);
     expect(house.level).toBe('hut');
     expect(house.residents).toBe(8);
   });
@@ -78,7 +78,7 @@ describe('a Shack', () => {
     const { game, house } = street();
     shackOn(game, house);
     house.food = 0;
-    tick(game);
+    runTicks(game, LEVEL_CHANGE_TICKS);
     expect(house.level).toBe('hut');
     expect(house.residents).toBe(8);
   });
@@ -98,7 +98,7 @@ describe('a city with the whole food chain', () => {
 
     runTicks(game, 6 * TICKS_PER_MONTH);
     expect(houses.every((h) => h.level === 'hut')).toBe(true);
-    runTicks(game, 2 * TICKS_PER_MONTH);
+    runTicks(game, 2 * TICKS_PER_MONTH + LEVEL_CHANGE_TICKS);
     expect(houses.filter((h) => h.level === 'shack').length).toBeGreaterThanOrEqual(6);
   });
 });
@@ -118,7 +118,7 @@ describe('a Shack on its way to a Hovel', () => {
     const { game, house } = servedShack();
     placeBuilding(game, 'park', 4, 8);
     expect(houseAppeal(game, house)).toBe(10);
-    tick(game);
+    runTicks(game, LEVEL_CHANGE_TICKS);
     expect(house.level).toBe('hovel');
     expect(houseCapacity(house)).toBe(24);
   });
@@ -127,7 +127,7 @@ describe('a Shack on its way to a Hovel', () => {
     const { game, house } = servedShack();
     placeBuilding(game, 'park', 5, 8);
     expect(houseAppeal(game, house)).toBe(9);
-    tick(game);
+    runTicks(game, LEVEL_CHANGE_TICKS);
     expect(house.level).toBe('shack');
   });
 
@@ -135,7 +135,7 @@ describe('a Shack on its way to a Hovel', () => {
     const { game, house } = servedShack();
     placeBuilding(game, 'park', 4, 8);
     house.coveredUntil.water = 0;
-    tick(game);
+    runTicks(game, LEVEL_CHANGE_TICKS);
     expect(house.level).toBe('shack');
   });
 
@@ -143,7 +143,7 @@ describe('a Shack on its way to a Hovel', () => {
     const { game, house } = servedShack();
     placeBuilding(game, 'park', 4, 8);
     house.coveredUntil.philosophy = 0;
-    tick(game);
+    runTicks(game, LEVEL_CHANGE_TICKS);
     expect(house.level).toBe('shack');
   });
 });
@@ -162,7 +162,7 @@ describe('a Hovel', () => {
     placeBuilding(game, 'taxOffice', 5, 6);
     placeBuilding(game, 'column', 1, 11);
     expect(houseAppeal(game, house)).toBe(-1);
-    tick(game);
+    runTicks(game, LEVEL_CHANGE_TICKS);
     expect(house.level).toBe('hovel');
   });
 
@@ -171,7 +171,7 @@ describe('a Hovel', () => {
     hovelOn(house);
     placeBuilding(game, 'taxOffice', 5, 6);
     expect(houseAppeal(game, house)).toBe(-2);
-    tick(game);
+    runTicks(game, LEVEL_CHANGE_TICKS);
     expect(house.level).toBe('shack');
     expect(house.residents).toBe(16);
   });
@@ -180,7 +180,7 @@ describe('a Hovel', () => {
     const { game, house } = street();
     hovelOn(house);
     house.coveredUntil.water = 0;
-    tick(game);
+    runTicks(game, LEVEL_CHANGE_TICKS);
     expect(house.level).toBe('shack');
   });
 
@@ -190,7 +190,7 @@ describe('a Hovel', () => {
     house.coveredUntil.athletics = 2 * TICKS_PER_MONTH;
     runTicks(game, 2 * TICKS_PER_MONTH - 1);
     expect(house.level).toBe('hovel');
-    tick(game);
+    runTicks(game, LEVEL_CHANGE_TICKS);
     expect(house.level).toBe('shack');
   });
 });
@@ -213,7 +213,7 @@ describe('a city with food, water and athletes', () => {
 
     runTicks(game, 6 * TICKS_PER_MONTH);
     expect(houses.some((h) => h.level === 'hovel')).toBe(false);
-    runTicks(game, 4 * TICKS_PER_MONTH);
+    runTicks(game, 4 * TICKS_PER_MONTH + LEVEL_CHANGE_TICKS);
     expect(houses.filter((h) => h.level === 'hovel').length).toBeGreaterThanOrEqual(4);
   });
 });
@@ -233,7 +233,7 @@ describe('a Hovel on its way to a Homestead', () => {
   it('becomes a Homestead of 32 with fleece and appeal 10', () => {
     const { game, house } = servedHovel();
     expect(houseAppeal(game, house)).toBe(10);
-    tick(game);
+    runTicks(game, LEVEL_CHANGE_TICKS);
     expect(house.level).toBe('homestead');
     expect(houseCapacity(house)).toBe(32);
   });
@@ -241,7 +241,7 @@ describe('a Hovel on its way to a Homestead', () => {
   it('stays a Hovel without fleece', () => {
     const { game, house } = servedHovel();
     house.fleece = 0;
-    tick(game);
+    runTicks(game, LEVEL_CHANGE_TICKS);
     expect(house.level).toBe('hovel');
   });
 });
@@ -269,7 +269,7 @@ describe('a Homestead', () => {
     house.fleece = 2;
     runTicks(game, TICKS_PER_MONTH - 1);
     expect(house.level).toBe('homestead');
-    tick(game);
+    runTicks(game, LEVEL_CHANGE_TICKS);
     expect(house.level).toBe('hovel');
     expect(house.residents).toBe(24);
   });
@@ -278,14 +278,14 @@ describe('a Homestead', () => {
     const { game, house } = homestead(['philosophy', 'athletics']);
     placeBuilding(game, 'taxOffice', 5, 8);
     expect(houseAppeal(game, house)).toBe(20);
-    tick(game);
+    runTicks(game, LEVEL_CHANGE_TICKS);
     expect(house.level).toBe('tenement');
     expect(houseCapacity(house)).toBe(40);
   });
 
   it('stays a Homestead with 15 culture', () => {
     const { game, house } = homestead(['philosophy']);
-    tick(game);
+    runTicks(game, LEVEL_CHANGE_TICKS);
     expect(house.level).toBe('homestead');
   });
 
@@ -294,7 +294,7 @@ describe('a Homestead', () => {
     placeBuilding(game, 'taxOffice', 5, 8);
     placeBuilding(game, 'storehouse', 2, 2);
     expect(houseAppeal(game, house)).toBe(19);
-    tick(game);
+    runTicks(game, LEVEL_CHANGE_TICKS);
     expect(house.level).toBe('homestead');
   });
 });
@@ -314,7 +314,7 @@ describe('a Tenement', () => {
   it('keeps its level at appeal 6', () => {
     const { game, house } = tenement();
     expect(houseAppeal(game, house)).toBe(6);
-    tick(game);
+    runTicks(game, LEVEL_CHANGE_TICKS);
     expect(house.level).toBe('tenement');
   });
 
@@ -322,7 +322,7 @@ describe('a Tenement', () => {
     const { game, house } = tenement();
     placeBuilding(game, 'cardingShed', 6, 7);
     expect(houseAppeal(game, house)).toBe(5);
-    tick(game);
+    runTicks(game, LEVEL_CHANGE_TICKS);
     expect(house.level).toBe('homestead');
     expect(house.residents).toBe(32);
   });
@@ -330,7 +330,7 @@ describe('a Tenement', () => {
   it('falls back to a Homestead when its culture drops below 35', () => {
     const { game, house } = tenement();
     house.coveredUntil.athletics = 0;
-    tick(game);
+    runTicks(game, LEVEL_CHANGE_TICKS);
     expect(house.level).toBe('homestead');
   });
 });
@@ -356,7 +356,186 @@ describe('a city of Hovels with sheep', () => {
 
     runTicks(game, TICKS_PER_MONTH);
     expect(houses.some((h) => h.level === 'homestead')).toBe(false);
-    runTicks(game, 3 * TICKS_PER_MONTH);
+    runTicks(game, 3 * TICKS_PER_MONTH + LEVEL_CHANGE_TICKS);
     expect(houses.filter((h) => h.level === 'homestead').length).toBeGreaterThanOrEqual(4);
+  });
+});
+
+describe('a Tenement on its way to an Apartment', () => {
+  const LONG = 10 * TICKS_PER_MONTH;
+
+  function servedTenement(): { game: GameState; house: Building } {
+    const { game, house } = street();
+    Object.assign(house, { level: 'tenement', residents: 40, food: 50, fleece: 6, oil: 6 });
+    Object.assign(house.coveredUntil, { water: LONG, philosophy: LONG, athletics: LONG });
+    for (const x of [0, 2, 4]) placeBuilding(game, 'flowerGarden', x, 6);
+    placeBuilding(game, 'flowerGarden', 4, 8);
+    placeBuilding(game, 'park', 1, 11);
+    return { game, house };
+  }
+
+  it('becomes an Apartment of 48 with oil and appeal 30', () => {
+    const { game, house } = servedTenement();
+    expect(houseAppeal(game, house)).toBe(31);
+    runTicks(game, LEVEL_CHANGE_TICKS);
+    expect(house.level).toBe('apartment');
+    expect(houseCapacity(house)).toBe(48);
+  });
+
+  it('stays a Tenement without oil', () => {
+    const { game, house } = servedTenement();
+    house.oil = 0;
+    runTicks(game, LEVEL_CHANGE_TICKS);
+    expect(house.level).toBe('tenement');
+  });
+
+  it('stays a Tenement at appeal 29', () => {
+    const { game, house } = servedTenement();
+    demolish(game, { x: 1, y: 11 }, { x: 1, y: 11 });
+    expect(houseAppeal(game, house)).toBe(29);
+    runTicks(game, LEVEL_CHANGE_TICKS);
+    expect(house.level).toBe('tenement');
+  });
+});
+
+describe('an Apartment', () => {
+  const LONG = 10 * TICKS_PER_MONTH;
+
+  function apartment(): { game: GameState; house: Building } {
+    const { game, house } = street();
+    Object.assign(house, { level: 'apartment', residents: 48, food: 50, fleece: 6, oil: 6 });
+    Object.assign(house.coveredUntil, { water: LONG, philosophy: LONG, athletics: LONG });
+    for (const x of [0, 2, 4]) placeBuilding(game, 'flowerGarden', x, 6);
+    placeBuilding(game, 'taxOffice', 5, 8);
+    placeBuilding(game, 'olivePress', 6, 11);
+    placeBuilding(game, 'cardingShed', 0, 11);
+    return { game, house };
+  }
+
+  it('uses 2 units of oil a month', () => {
+    const { game, house } = apartment();
+    runTicks(game, TICKS_PER_MONTH);
+    expect(house.oil).toBe(4);
+  });
+
+  it('falls back to a Tenement when its oil runs out, sending away residents above 40', () => {
+    const { game, house } = apartment();
+    house.oil = 2;
+    runTicks(game, TICKS_PER_MONTH - 1);
+    expect(house.level).toBe('apartment');
+    runTicks(game, LEVEL_CHANGE_TICKS);
+    expect(house.level).toBe('tenement');
+    expect(house.residents).toBe(40);
+  });
+
+  it('keeps its level at appeal 16', () => {
+    const { game, house } = apartment();
+    expect(houseAppeal(game, house)).toBe(16);
+    runTicks(game, LEVEL_CHANGE_TICKS);
+    expect(house.level).toBe('apartment');
+  });
+
+  it('falls back to a Tenement at appeal 15', () => {
+    const { game, house } = apartment();
+    placeBuilding(game, 'storehouse', 2, 2);
+    expect(houseAppeal(game, house)).toBe(15);
+    runTicks(game, LEVEL_CHANGE_TICKS);
+    expect(house.level).toBe('tenement');
+  });
+
+  it('needs appeal 100 and 45 culture to become a Townhouse', () => {
+    const { game, house } = apartment();
+    house.coveredUntil.drama = LONG;
+    runTicks(game, LEVEL_CHANGE_TICKS);
+    expect(house.level).toBe('apartment');
+  });
+});
+
+describe('a Townhouse', () => {
+  const LONG = 10 * TICKS_PER_MONTH;
+
+  function townhouse(): { game: GameState; house: Building } {
+    const { game, house } = street();
+    Object.assign(house, { level: 'townhouse', residents: 60, food: 50, fleece: 6, oil: 6 });
+    Object.assign(house.coveredUntil, { water: LONG, athletics: LONG, drama: LONG });
+    for (const x of [0, 2, 4]) placeBuilding(game, 'flowerGarden', x, 6);
+    placeBuilding(game, 'flowerGarden', 4, 8);
+    return { game, house };
+  }
+
+  it('houses 60 and keeps its level with 45 culture above appeal 25', () => {
+    const { game, house } = townhouse();
+    expect(houseAppeal(game, house)).toBe(29);
+    runTicks(game, LEVEL_CHANGE_TICKS);
+    expect(house.level).toBe('townhouse');
+    expect(houseCapacity(house)).toBe(60);
+  });
+
+  it('falls back to an Apartment below appeal 26, sending away residents above 48', () => {
+    const { game, house } = townhouse();
+    demolish(game, { x: 4, y: 8 }, { x: 4, y: 8 });
+    expect(houseAppeal(game, house)).toBe(22);
+    runTicks(game, LEVEL_CHANGE_TICKS);
+    expect(house.level).toBe('apartment');
+    expect(house.residents).toBe(48);
+  });
+
+  it('falls back to an Apartment when its culture drops below 45', () => {
+    const { game, house } = townhouse();
+    house.coveredUntil.drama = 0;
+    house.coveredUntil.philosophy = LONG;
+    runTicks(game, LEVEL_CHANGE_TICKS);
+    expect(house.level).toBe('apartment');
+  });
+});
+
+describe('a city of Tenements with an olive grove', () => {
+  it('turns them into Apartments', () => {
+    const LONG = 20 * TICKS_PER_MONTH;
+    const game = grassGame(40);
+    placeRoad(game, { x: 0, y: 20 }, { x: 39, y: 20 });
+    placeHouses(game, { x: 0, y: 18 }, { x: 11, y: 19 });
+    for (const y of [14, 16]) for (let x = 0; x < 12; x += 2) placeBuilding(game, 'flowerGarden', x, y);
+    const houses = game.buildings.filter((b) => b.type === 'house');
+    for (const house of houses) {
+      Object.assign(house, { level: 'tenement', residents: 40, food: 200, fleece: 50 });
+      Object.assign(house.coveredUntil, { water: LONG, philosophy: LONG, athletics: LONG });
+    }
+    placeBuilding(game, 'agora', 0, 21);
+    placeBuilding(game, 'oilVendor', 0, 21);
+    placeBuilding(game, 'storehouse', 20, 21);
+    placeBuilding(game, 'growersLodge', 24, 18);
+    placeBuilding(game, 'olivePress', 28, 18);
+    setMeadow(game, 16, 25, 16, 8);
+    placeOliveTrees(game, { x: 18, y: 26 }, { x: 25, y: 29 });
+
+    expect(houses.filter((h) => houseAppeal(game, h) >= 30).length).toBeGreaterThanOrEqual(4);
+
+    runTicks(game, 2 * TICKS_PER_MONTH);
+    expect(houses.some((h) => h.level === 'apartment')).toBe(false);
+    runTicks(game, 3 * TICKS_PER_MONTH + LEVEL_CHANGE_TICKS);
+    expect(houses.filter((h) => h.level === 'apartment').length).toBeGreaterThanOrEqual(4);
+  });
+});
+
+describe('a house changing level', () => {
+  it('waits a month of meeting the next level before it changes', () => {
+    const { game, house } = street();
+    house.food = 100;
+    runTicks(game, LEVEL_CHANGE_TICKS - 1);
+    expect(house.level).toBe('hut');
+    tick(game);
+    expect(house.level).toBe('shack');
+  });
+
+  it('keeps its level through a short lapse in what it needs', () => {
+    const LONG = 10 * TICKS_PER_MONTH;
+    const { game, house } = street();
+    Object.assign(house, { level: 'hovel', residents: 24, food: 50 });
+    Object.assign(house.coveredUntil, { water: 0, athletics: LONG });
+    runTicks(game, LEVEL_CHANGE_TICKS - 1);
+    house.coveredUntil.water = LONG;
+    runTicks(game, LEVEL_CHANGE_TICKS);
+    expect(house.level).toBe('hovel');
   });
 });

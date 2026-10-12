@@ -34,7 +34,7 @@ async function place(page: Page, group: string | null, tool: RegExp, at: [number
   await drag(page, at, at);
 }
 
-test('boots, builds a street with services, food, culture, fleece and decorations, and settlers move in', async ({ page }) => {
+test('boots, builds a street with services, food, culture, fleece, oil and decorations, and settlers move in', async ({ page }) => {
   test.setTimeout(120_000);
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
@@ -46,11 +46,11 @@ test('boots, builds a street with services, food, culture, fleece and decoration
   await expect(page.locator('#date')).toHaveText('January, Year 1');
   await expect(page.locator('#population')).toHaveText('Population 0');
   await expect(page.locator('#treasury')).toHaveText('5,000 dr');
-  await expect(page.locator('#toolbar button')).toHaveCount(10);
+  await expect(page.locator('#toolbar button')).toHaveCount(11);
 
   await page.getByRole('button', { name: 'Demolish' }).click();
   await drag(page, [8, 38], [30, 57]);
-  await chooseTool(page, 'Roads', /^Road \(/);
+  await page.getByRole('button', { name: /^Road \(/ }).click();
   await drag(page, [8, 50], [29, 50]);
   await drag(page, [8, 50], [8, 45]);
   await drag(page, [8, 45], [29, 45]);
@@ -73,11 +73,16 @@ test('boots, builds a street with services, food, culture, fleece and decoration
   await place(page, 'Culture', /^Drama School/, [21, 43]);
   await place(page, 'Culture', /^Theater/, [26, 42]);
   await place(page, 'Distribution', /^Storehouse/, [27, 47]);
-  await place(page, null, /^Carding Shed/, [29, 46]);
+  await place(page, 'Industry', /^Carding Shed/, [29, 46]);
   await place(page, 'Distribution', /^Fleece Vendor/, [17, 53]);
   for (const at of [[27, 58], [29, 59], [31, 58], [28, 60]] as [number, number][]) await place(page, 'Husbandry', /^Sheep/, at);
+await chooseTool(page, 'Husbandry', /^Olive Tree/);
+await drag(page, [28, 61], [31, 62]);
+await place(page, 'Husbandry', /^Growers' Lodge/, [29, 48]);
+await place(page, 'Industry', /^Olive Press/, [29, 43]);
+await place(page, 'Distribution', /^Oil Vendor/, [17, 55]);
   await page.keyboard.press('r');
-  await expect(page.locator('#status')).toHaveText('Rotated 90°');
+  await expect(page.locator('#status')).toHaveText('Rotated 90° counterclockwise');
   await page.keyboard.press('Escape');
   await expect(page.locator('#treasury')).not.toHaveText('5,000 dr');
 

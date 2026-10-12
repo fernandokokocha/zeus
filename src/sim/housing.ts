@@ -1,11 +1,12 @@
 import { appealMap, houseAppeal } from './appeal';
 import { culturePoints } from './culture';
 import { hasService } from './roamers';
+import { TICKS_PER_MONTH } from './clock';
 import type { Building, GameState } from './state';
 
-export type HouseLevel = 'hut' | 'shack' | 'hovel' | 'homestead' | 'tenement';
+export type HouseLevel = 'hut' | 'shack' | 'hovel' | 'homestead' | 'tenement' | 'apartment' | 'townhouse';
 
-export type HouseNeed = 'food' | 'water' | 'fleece';
+export type HouseNeed = 'food' | 'water' | 'fleece' | 'oil';
 
 export interface HouseLevelSpec {
   name: string;
@@ -36,6 +37,22 @@ export const HOUSE_LEVELS: Record<HouseLevel, HouseLevelSpec> = {
     taxMultiplier: 2,
     appeal: { evolve: 20, devolve: 5 },
   },
+  apartment: {
+    name: 'Apartment',
+    capacity: 48,
+    needs: ['food', 'water', 'fleece', 'oil'],
+    culture: 35,
+    taxMultiplier: 2,
+    appeal: { evolve: 30, devolve: 15 },
+  },
+  townhouse: {
+    name: 'Townhouse',
+    capacity: 60,
+    needs: ['food', 'water', 'fleece', 'oil'],
+    culture: 45,
+    taxMultiplier: 2,
+    appeal: { evolve: 100, devolve: 25 },
+  },
 };
 
 export const NEXT_LEVEL: Record<HouseLevel, HouseLevel | null> = {
@@ -43,7 +60,9 @@ export const NEXT_LEVEL: Record<HouseLevel, HouseLevel | null> = {
   shack: 'hovel',
   hovel: 'homestead',
   homestead: 'tenement',
-  tenement: null,
+  tenement: 'apartment',
+  apartment: 'townhouse',
+  townhouse: null,
 };
 export const PREVIOUS_LEVEL: Record<HouseLevel, HouseLevel | null> = {
   hut: null,
@@ -51,7 +70,11 @@ export const PREVIOUS_LEVEL: Record<HouseLevel, HouseLevel | null> = {
   hovel: 'shack',
   homestead: 'hovel',
   tenement: 'homestead',
+  apartment: 'tenement',
+  townhouse: 'apartment',
 };
+
+export const LEVEL_CHANGE_TICKS = TICKS_PER_MONTH;
 
 export const VACANT_LOT_NAME = 'Vacant Lot';
 
@@ -89,19 +112,29 @@ export function evolveHouses(state: GameState): void {
   for (const house of state.buildings) {
     const level = houseLevel(house);
     if (!level) continue;
-    const appeal = houseAppeal(state, house, map);
-    const previous = PREVIOUS_LEVEL[level];
-    const next = NEXT_LEVEL[level];
-    if (previous && (!meetsNeeds(state, house, level) || appeal <= HOUSE_LEVELS[level].appeal.devolve)) {
-      setLevel(state, house, previous);
-    } else if (next && meetsNeeds(state, house, next) && appeal >= HOUSE_LEVELS[next].appeal.evolve) {
-      setLevel(state, house, next);
+    const target = levelWanted(state, house, level, houseAppeal(state, house, map));
+    if (target !== house.pendingLevel) {
+      house.pendingLevel = target;
+      house.pendingTicks = 0;
     }
+    if (!target) continue;
+    house.pendingTicks++;
+    if (house.pendingTicks >= LEVEL_CHANGE_TICKS) setLevel(state, house, target);
   }
+}
+
+function levelWanted(state: GameState, house: Building, level: HouseLevel, appeal: number): HouseLevel | null {
+  const previous = PREVIOUS_LEVEL[level];
+  const next = NEXT_LEVEL[level];
+  if (previous && (!meetsNeeds(state, house, level) || appeal <= HOUSE_LEVELS[level].appeal.devolve)) return previous;
+  if (next && meetsNeeds(state, house, next) && appeal >= HOUSE_LEVELS[next].appeal.evolve) return next;
+  return null;
 }
 
 function setLevel(state: GameState, house: Building, level: HouseLevel): void {
   house.level = level;
   house.residents = Math.min(house.residents, HOUSE_LEVELS[level].capacity);
+  house.pendingLevel = null;
+  house.pendingTicks = 0;
   state.version++;
 }

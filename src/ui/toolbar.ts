@@ -1,11 +1,25 @@
 import { byId } from './dom';
-import { TOOL_GROUPS, TOOL_LABELS, type Tool, type ToolGroup } from './tools';
+import { TOOL_ICONS } from './icons';
+import { QUICK_TOOLS, TOOL_GROUPS, TOOL_LABELS, type Tool, type ToolGroup } from './tools';
 
 export function createToolbar(onChange: () => void): { current(): Tool | null; clear(): void } {
   const box = byId('toolbar');
   const menu = byId('tool-menu');
   let current: Tool | null = null;
-  let openGroup: ToolGroup | null = null;
+let openGroup: ToolGroup | null = null;
+
+const quickRow = document.createElement('div');
+quickRow.className = 'quick-tools';
+box.append(quickRow);
+const quickButtons = QUICK_TOOLS.map((tool) => {
+  const button = document.createElement('button');
+  button.innerHTML = TOOL_ICONS[tool];
+  button.title = TOOL_LABELS[tool];
+  button.setAttribute('aria-label', TOOL_LABELS[tool]);
+  button.addEventListener('click', () => select(current === tool ? null : tool));
+  quickRow.append(button);
+  return { button, tool };
+});
 
   const groupButtons = TOOL_GROUPS.map((group) => {
     const button = document.createElement('button');
@@ -34,6 +48,7 @@ export function createToolbar(onChange: () => void): { current(): Tool | null; c
   }
 
   function render(): void {
+    for (const { button, tool } of quickButtons) button.classList.toggle('active', tool === current);
     for (const { button, group } of groupButtons) {
       const single = group.tools.length === 1;
       const chosen = current !== null && group.tools.includes(current) ? current : null;

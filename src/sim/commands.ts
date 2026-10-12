@@ -11,6 +11,7 @@ import {
   type Rotation,
 } from './buildings';
 import { rectBetween, tilesIn, type Point } from './point';
+import { RIPE_CROP } from './olives';
 import { GRAZE_PAUSE_TICKS, isPasture } from './sheep';
 import { NO_BUILDING, clampToMap, inBounds, tileIndex, type Building, type GameState } from './state';
 import { BUILDABLE, TERRAIN_NAMES } from './terrain';
@@ -158,14 +159,20 @@ export function checkBuildingPlacement(
   return { obstacle: placementObstacle(state, placement), roadAccess: hasRoadAccess(state, placement) };
 }
 
+const MEADOW_REASONS: Partial<Record<BuildingType, string>> = {
+  wheatFarm: 'A wheat farm needs meadow',
+  oliveTree: 'An olive tree needs meadow',
+};
+
 function placementObstacle(state: GameState, placement: Placement): string | null {
   const { type, x, y } = placement;
   if (type === 'palace' && state.buildings.some((b) => b.type === 'palace')) return 'Only one palace is allowed';
   if (isAgoraVendor(type)) return vendorObstacle(state, x, y);
-  const obstacle = footprintObstacle(state, placement);
-  if (obstacle || type !== 'wheatFarm') return obstacle;
-  const onMeadow = footprint(placement).every((p) => state.terrain[tileIndex(state, p.x, p.y)] === 'meadow');
-  return onMeadow ? null : 'A wheat farm needs meadow';
+const obstacle = footprintObstacle(state, placement);
+const meadowReason = MEADOW_REASONS[type];
+if (obstacle || !meadowReason) return obstacle;
+const onMeadow = footprint(placement).every((p) => state.terrain[tileIndex(state, p.x, p.y)] === 'meadow');
+return onMeadow ? null : meadowReason;
 }
 
 function vendorObstacle(state: GameState, x: number, y: number): string | null {
@@ -194,9 +201,14 @@ function build(state: GameState, placement: Placement): void {
     walkerRest: 0,
     coveredUntil: { water: 0, tax: 0, philosophy: 0, athletics: 0, drama: 0 },
     level: 'hut' as const,
+    pendingLevel: null,
+    pendingTicks: 0,
     food: 0,
     fleece: 0,
-    growth: 0,
+    olives: 0,
+    oil: 0,
+    growth: placement.type === 'oliveTree' ? RIPE_CROP : 0,
+    production: 0,
     performingUntil: 0,
   };
   state.buildings.push(building);
@@ -209,18 +221,26 @@ function lotStarts(from: number, to: number, size: number): number[] {
   return Array.from({ length: count }, (_, k) => (to >= from ? from + k * size : from - k * size - (size - 1)));
 }
 
-export function lotOrigins(from: Point, to: Point): Point[] {
-  const { width, height } = BUILDING_SPECS.house;
+export function lotOrigins(from: Point, to: Point, type: BuildingType = 'house'): Point[] {
+  const { width, height } = BUILDING_SPECS[type];
   const xs = lotStarts(from.x, to.x, width);
   return lotStarts(from.y, to.y, height).flatMap((y) => xs.map((x) => ({ x, y })));
 }
 
 export function placeHouses(state: GameState, from: Point, to: Point, rotation: Rotation = 0): Result {
+  return placeLots(state, 'house', from, to, rotation);
+}
+
+export function placeOliveTrees(state: GameState, from: Point, to: Point): Result {
+  return placeLots(state, 'oliveTree', from, to, 0);
+}
+
+function placeLots(state: GameState, type: BuildingType, from: Point, to: Point, rotation: Rotation): Result {
   const obstacles: string[] = [];
   let placed = 0;
-  for (const lot of lotOrigins(from, to)) {
-    const placement = { type: 'house' as const, ...lot, rotation };
-    const obstacle = footprintObstacle(state, placement);
+  for (const lot of lotOrigins(from, to, type)) {
+    const placement = { type, ...lot, rotation };
+    const obstacle = placementObstacle(state, placement);
     if (obstacle) {
       obstacles.push(obstacle);
       continue;
@@ -258,6 +278,7 @@ export function demolish(state: GameState, from: Point, to: Point): void {
   state.carriers = state.carriers.filter((c) => !doomed.has(c.homeId));
   state.trainees = state.trainees.filter((t) => !doomed.has(t.homeId));
   state.shepherds = state.shepherds.filter((s) => !doomed.has(s.homeId));
+  state.growers = state.growers.filter((g) => !doomed.has(g.homeId));
   state.buildingIdAt = state.buildingIdAt.map((id) => (doomed.has(id) ? (agoraOfVendor.get(id) ?? NO_BUILDING) : id));
   state.version++;
 }
