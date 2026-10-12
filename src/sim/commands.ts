@@ -209,18 +209,22 @@ function lotStarts(from: number, to: number, size: number): number[] {
   return Array.from({ length: count }, (_, k) => (to >= from ? from + k * size : from - k * size - (size - 1)));
 }
 
-export function lotOrigins(from: Point, to: Point): Point[] {
-  const { width, height } = BUILDING_SPECS.house;
+export function lotOrigins(from: Point, to: Point, type: BuildingType = 'house'): Point[] {
+  const { width, height } = BUILDING_SPECS[type];
   const xs = lotStarts(from.x, to.x, width);
   return lotStarts(from.y, to.y, height).flatMap((y) => xs.map((x) => ({ x, y })));
 }
 
 export function placeHouses(state: GameState, from: Point, to: Point, rotation: Rotation = 0): Result {
+  return placeLots(state, 'house', from, to, rotation);
+}
+
+function placeLots(state: GameState, type: BuildingType, from: Point, to: Point, rotation: Rotation): Result {
   const obstacles: string[] = [];
   let placed = 0;
-  for (const lot of lotOrigins(from, to)) {
-    const placement = { type: 'house' as const, ...lot, rotation };
-    const obstacle = footprintObstacle(state, placement);
+  for (const lot of lotOrigins(from, to, type)) {
+    const placement = { type, ...lot, rotation };
+    const obstacle = placementObstacle(state, placement);
     if (obstacle) {
       obstacles.push(obstacle);
       continue;
