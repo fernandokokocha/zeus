@@ -106,7 +106,20 @@ export interface Gatherer extends Walk {
   returning: boolean;
 }
 
-export type CarrierKind = 'cartPusher' | 'buyer' | 'fleeceCart' | 'fleeceBuyer' | 'oliveCart' | 'oilCart' | 'oliveBuyer' | 'oilBuyer';
+export type CarrierKind =
+  | 'cartPusher'
+  | 'buyer'
+  | 'fleeceCart'
+  | 'fleeceBuyer'
+  | 'oliveCart'
+  | 'oilCart'
+  | 'oliveBuyer'
+  | 'oilBuyer'
+  | 'woodCart'
+  | 'marbleCart'
+  | 'bronzeCart'
+  | 'sculptureCart'
+  | 'bronzeBuyer';
 
 export interface Carrier extends Walk {
   id: number;

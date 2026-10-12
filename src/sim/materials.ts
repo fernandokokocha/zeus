@@ -28,6 +28,11 @@ export const WORKSHOP_SPECS: Record<Workshop, WorkshopSpec> = {
 export const RESOURCE_RANGE = 20;
 export const WORKSHOP_CAPACITY = CART_LOAD;
 export const FOREST_REGROWTH_TICKS = 4 * TICKS_PER_YEAR;
+export const SCULPTURES_PER_YEAR = 6;
+export const CASTING_TICKS = TICKS_PER_YEAR / SCULPTURES_PER_YEAR;
+export const BRONZE_PER_SCULPTURE = 4 * UNITS_PER_LOAD;
+export const STUDIO_BRONZE_CAPACITY = 2 * BRONZE_PER_SCULPTURE;
+export const STUDIO_SCULPTURE_CAPACITY = CART_LOAD;
 
 export function isWorkshop(type: BuildingType): type is Workshop {
   return type in WORKSHOP_SPECS;
@@ -77,6 +82,21 @@ export function tickMaterials(state: GameState): void {
   if (state.felledUntil.includes(state.tick)) state.version++;
   for (const shop of state.buildings) sendGatherer(state, shop);
   for (const gatherer of [...state.gatherers]) moveGatherer(state, gatherer);
+  for (const studio of state.buildings) cast(state, studio);
+}
+
+export function canCast(studio: Building): boolean {
+  return studio.bronze >= BRONZE_PER_SCULPTURE && studio.sculptures + UNITS_PER_LOAD <= STUDIO_SCULPTURE_CAPACITY;
+}
+
+function cast(state: GameState, studio: Building): void {
+  if (studio.type !== 'sculptureStudio' || studio.workers === 0 || !canCast(studio)) return;
+  studio.production += studio.workers / BUILDING_SPECS.sculptureStudio.workers;
+  if (studio.production < CASTING_TICKS) return;
+  studio.production = 0;
+  studio.bronze -= BRONZE_PER_SCULPTURE;
+  studio.sculptures += UNITS_PER_LOAD;
+  state.version++;
 }
 
 function sendGatherer(state: GameState, shop: Building): void {

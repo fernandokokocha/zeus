@@ -4,7 +4,17 @@ import type { BuildingType } from '../../src/sim/buildings';
 import { TICKS_PER_MONTH, TICKS_PER_YEAR } from '../../src/sim/clock';
 import { demolish, placeBuilding, placeRoad } from '../../src/sim/commands';
 import { UNITS_PER_LOAD } from '../../src/sim/food';
-import { FOREST_REGROWTH_TICKS, WORKSHOP_CAPACITY, gatheringRestTicks, isResource, type Workshop } from '../../src/sim/materials';
+import {
+  BRONZE_PER_SCULPTURE,
+  CASTING_TICKS,
+  FOREST_REGROWTH_TICKS,
+  STUDIO_BRONZE_CAPACITY,
+  STUDIO_SCULPTURE_CAPACITY,
+  WORKSHOP_CAPACITY,
+  gatheringRestTicks,
+  isResource,
+  type Workshop,
+} from '../../src/sim/materials';
 import { isOpenGround } from '../../src/sim/pathfinding';
 import { riskShare } from '../../src/sim/safety';
 import { tileIndex, type Building, type GameState } from '../../src/sim/state';
@@ -225,5 +235,58 @@ describe('a foundry', () => {
       untilHome(game);
     }
     expect(shop.bronze).toBe(2 * UNITS_PER_LOAD);
+  });
+});
+
+describe('a sculpture studio', () => {
+  function studio(people = 100): { game: GameState; studio: Building } {
+    const game = grassGame(30);
+    placeRoad(game, { x: 0, y: 15 }, { x: 29, y: 15 });
+    placeHouse(game, 0, 28);
+    game.buildings[0].residents = people;
+    placeBuilding(game, 'sculptureStudio', 2, 13);
+    return { game, studio: game.buildings[1] };
+  }
+
+  it('holds 8 loads of bronze and 4 sculptures, and casts 4 bronze into a sculpture', () => {
+    expect(STUDIO_BRONZE_CAPACITY).toBe(8 * UNITS_PER_LOAD);
+    expect(STUDIO_SCULPTURE_CAPACITY).toBe(4 * UNITS_PER_LOAD);
+    expect(BRONZE_PER_SCULPTURE).toBe(4 * UNITS_PER_LOAD);
+    expect(CASTING_TICKS).toBe(2 * TICKS_PER_MONTH);
+  });
+
+  it('casts a sculpture in 2 months at full staff', () => {
+    const { game, studio: s } = studio();
+    s.bronze = 500;
+    runTicks(game, CASTING_TICKS - 1);
+    expect(s.sculptures).toBe(0);
+    tick(game);
+    expect(s.sculptures).toBe(UNITS_PER_LOAD);
+    expect(s.bronze).toBe(100);
+  });
+
+  it('takes twice as long at half staff', () => {
+    const { game, studio: s } = studio(12);
+    s.bronze = 400;
+    runTicks(game, 2 * CASTING_TICKS - 1);
+    expect(s.sculptures).toBe(0);
+    tick(game);
+    expect(s.sculptures).toBe(UNITS_PER_LOAD);
+  });
+
+  it('waits for 4 loads of bronze', () => {
+    const { game, studio: s } = studio();
+    s.bronze = 300;
+    runTicks(game, 2 * CASTING_TICKS);
+    expect(s.sculptures).toBe(0);
+  });
+
+  it('stops while 4 sculptures wait', () => {
+    const { game, studio: s } = studio();
+    s.bronze = 400;
+    s.sculptures = STUDIO_SCULPTURE_CAPACITY;
+    runTicks(game, 2 * CASTING_TICKS);
+    expect(s.sculptures).toBe(STUDIO_SCULPTURE_CAPACITY);
+    expect(s.bronze).toBe(400);
   });
 });

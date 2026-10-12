@@ -99,12 +99,12 @@ bronze, as a press is for olives.
 **Files:** Modify `src/sim/carriers.ts`, `src/sim/materials.ts`, `src/sim/storehouse.ts`.
 Extend `tests/sim/materials.test.ts`, `tests/sim/storehouse.test.ts`.
 
-- [ ] **Step 1:** Write failing tests: wood, marble and bronze carts take loads to the
+- [x] **Step 1:** Write failing tests: wood, marble and bronze carts take loads to the
   storehouse; bronze goes to a studio with room first; a studio's buyer fetches bronze
   from a storehouse; a staffed studio with 4 loads of bronze casts a sculpture in 2
   months at full staff, slower at half, and stops while 4 sculptures wait; its cart
   takes them to the storehouse; all goods share the 8 slots.
-- [ ] **Step 2:** Implement. Tests pass.
+- [x] **Step 2:** Implement. Tests pass.
 
 ### Task 5: Inspector
 

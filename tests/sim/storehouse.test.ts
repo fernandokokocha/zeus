@@ -254,3 +254,69 @@ describe('olives in the storehouse', () => {
     expect(game.carriers.map((c) => c.kind).sort()).toEqual(['oilCart', 'oliveBuyer']);
   });
 });
+
+describe('materials in the storehouse', () => {
+  function works(): { game: GameState; storehouse: Building; mill: Building; quarry: Building; foundry: Building } {
+    const { game, storehouse } = woolTown(200);
+    placeBuilding(game, 'timberMill', 16, 13);
+    placeBuilding(game, 'masonryShop', 20, 13);
+    placeBuilding(game, 'foundry', 24, 13);
+    const [, , , mill, quarry, foundry] = game.buildings;
+    return { game, storehouse, mill, quarry, foundry };
+  }
+
+  function addStudio(game: GameState): Building {
+    placeBuilding(game, 'sculptureStudio', 27, 13);
+    return game.buildings[game.buildings.length - 1];
+  }
+
+  it('arrive by cart from the mill, the masonry shop and the foundry', () => {
+    const { game, storehouse, mill, quarry, foundry } = works();
+    Object.assign(mill, { wood: 400 });
+    Object.assign(quarry, { marble: 300 });
+    Object.assign(foundry, { bronze: 200 });
+    tick(game);
+    expect(game.carriers.map((c) => [c.kind, c.destinationId])).toEqual([
+      ['woodCart', storehouse.id],
+      ['marbleCart', storehouse.id],
+      ['bronzeCart', storehouse.id],
+    ]);
+    runTicks(game, ticksToWalk(20));
+    expect([storehouse.wood, storehouse.marble, storehouse.bronze]).toEqual([400, 300, 200]);
+  });
+
+  it('share the 8 slots with every other good', () => {
+    const { storehouse } = works();
+    Object.assign(storehouse, { fleece: 100, oil: 100, wood: 500, marble: 100, bronze: 100, sculptures: 100 });
+    expect(slotsUsed(storehouse)).toBe(7);
+  });
+
+  it('send bronze to a studio with room before a nearer storehouse', () => {
+    const { game, foundry } = works();
+    const studio = addStudio(game);
+    foundry.bronze = 400;
+    tick(game);
+    expect(game.carriers[0]).toMatchObject({ kind: 'bronzeCart', destinationId: studio.id });
+  });
+
+  it("send a studio's buyer for bronze from the storehouse", () => {
+    const { game, storehouse } = works();
+    const studio = addStudio(game);
+    storehouse.bronze = 1000;
+    tick(game);
+    expect(game.carriers.find((c) => c.kind === 'bronzeBuyer')).toMatchObject({ homeId: studio.id, destinationId: storehouse.id });
+    for (let i = 0; i < 900 && studio.bronze < 400; i++) tick(game);
+    expect(studio.bronze).toBe(400);
+    expect(storehouse.bronze).toBe(600);
+  });
+
+  it("take a studio's sculptures to the storehouse", () => {
+    const { game, storehouse } = works();
+    const studio = addStudio(game);
+    studio.sculptures = 100;
+    tick(game);
+    expect(game.carriers[0]).toMatchObject({ kind: 'sculptureCart', destinationId: storehouse.id, sculptures: 100 });
+    for (let i = 0; i < 900 && storehouse.sculptures === 0; i++) tick(game);
+    expect(storehouse.sculptures).toBe(100);
+  });
+});
