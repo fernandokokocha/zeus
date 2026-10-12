@@ -80,4 +80,4 @@ appeal toggle becomes the map-mode bar.
 ### Task 5: PR
 
 - [x] **Step 1:** Tick slice 9 in `docs/roadmap.md`.
-- [ ] **Step 2:** Open the PR `Slice 09: Map modes`. Wait for CI and Pages.
+- [x] **Step 2:** Open the PR `Slice 09: Map modes`. Wait for CI and Pages.
