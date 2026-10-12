@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { demolish, placeBuilding, placeOliveTrees, placeRoad, placeRoadblock, placeSheep } from '../../src/sim/commands';
+import { gatheringRestTicks } from '../../src/sim/materials';
 import { PICKING_REST_TICKS } from '../../src/sim/olives';
 import { SHEARING_REST_TICKS, sheepTile } from '../../src/sim/sheep';
 import { TICKS_PER_MONTH } from '../../src/sim/clock';
 import { ROAMER_REST_TICKS } from '../../src/sim/roamers';
-import type { Building, GameState } from '../../src/sim/state';
+import { tileIndex, type Building, type GameState } from '../../src/sim/state';
 import { describeTile } from '../../src/sim/inspect';
 import { FIRE_BURN_TICKS, RISK_LIMIT, catchFire } from '../../src/sim/safety';
 import { SETTLER_SPAWN_INTERVAL_TICKS } from '../../src/sim/settlers';
@@ -596,6 +597,78 @@ it('describes olives in a storehouse and a press buyer fetching them', () => {
   expect(describeTile(game, 11, 13).lines).toContain('Olives: 8 loads in 2 of 8 slots');
   expect(describeTile(game, 20, 13).lines).toContain('Buyer out fetching olives');
 });
+
+  it('describes a timber mill, its lumberjack and the tree he fells', () => {
+    const { game } = street();
+    placeBuilding(game, 'timberMill', 6, 13);
+    const mill = lastBuilding(game);
+    runTicks(game, 1);
+    expect(describeTile(game, 6, 13)).toEqual({
+      title: 'Timber Mill',
+      lines: ['Tile 6, 13', 'Workers 12/12', 'Lumberjack waits for forest within 20 tiles', 'Cart Pusher at the mill', 'Fire risk 0%'],
+    });
+    setTerrain(game, 10, 8, 'forest');
+    expect(describeTile(game, 6, 13).lines).toContain('Lumberjack resting');
+    runTicks(game, gatheringRestTicks('timberMill'));
+    expect(describeTile(game, 6, 13).lines).toContain('Lumberjack out to fell the tree at 10, 8');
+    const { x, y } = walkerTile(game.gatherers[0]);
+    expect(describeTile(game, x, y)).toEqual({ title: 'Lumberjack', lines: ['From the Timber Mill at 6, 13', 'Going to fell the tree at 10, 8'] });
+    Object.assign(game.gatherers[0], { returning: true, load: 100 });
+    expect(describeTile(game, x, y).lines).toContain('Bringing 1 load of wood home');
+    expect(describeTile(game, 6, 13).lines).toContain('Lumberjack bringing wood home');
+    game.gatherers = [];
+    mill.wood = 400;
+    expect(describeTile(game, 6, 13).lines).toEqual(
+      expect.arrayContaining(['Wood waiting: 4 loads', 'Lumberjack waits: the mill is full', 'Cart Pusher waits for a storehouse with room']),
+    );
+    game.felledUntil[tileIndex(game, 10, 8)] = game.tick + 3 * TICKS_PER_MONTH;
+    expect(describeTile(game, 10, 8)).toEqual({ title: 'Forest', lines: ['Tile 10, 8', 'Not buildable', 'Felled: grows back in 3 months'] });
+  });
+
+  it('describes a masonry shop and a foundry by what they gather', () => {
+    const { game } = street();
+    placeBuilding(game, 'masonryShop', 6, 13);
+    placeBuilding(game, 'foundry', 9, 13);
+    runTicks(game, 1);
+    expect(describeTile(game, 6, 13).lines).toContain('Quarryman waits for marble within 20 tiles');
+    expect(describeTile(game, 9, 13).lines).toContain('Miner waits for copper ore within 20 tiles');
+    setTerrain(game, 12, 8, 'copper');
+    runTicks(game, gatheringRestTicks('foundry'));
+    expect(describeTile(game, 9, 13).lines).toContain('Miner out to dig the copper ore at 12, 8');
+  });
+
+  it('describes a sculpture studio by its bronze, sculptures and casting', () => {
+    const { game } = street();
+    placeBuilding(game, 'sculptureStudio', 6, 13);
+    const studio = lastBuilding(game);
+    runTicks(game, 1);
+    expect(describeTile(game, 6, 13)).toEqual({
+      title: 'Sculpture Studio',
+      lines: [
+        'Tile 6, 13',
+        'Workers 12/12',
+        'Bronze: 0 of 8 loads',
+        'Waits for 4 loads of bronze',
+        'Cart Pusher at the studio',
+        'Buyer waits for a storehouse with bronze',
+        'Collapse risk 0%',
+      ],
+    });
+    Object.assign(studio, { bronze: 500, production: 300 });
+    expect(describeTile(game, 6, 13).lines).toEqual(expect.arrayContaining(['Bronze: 5 of 8 loads', 'Casting: 50% of a sculpture']));
+    studio.sculptures = 400;
+    expect(describeTile(game, 6, 13).lines).toEqual(expect.arrayContaining(['Sculptures waiting: 4', 'Full of sculptures: waits for its cart']));
+  });
+
+  it("describes an artisans' guild", () => {
+    const { game } = street();
+    placeBuilding(game, 'artisansGuild', 6, 13);
+    runTicks(game, 1);
+    expect(describeTile(game, 6, 13)).toEqual({
+      title: "Artisans' Guild",
+      lines: ['Tile 6, 13', 'Workers 25/25', 'Artisans wait for a sanctuary to build', 'Fire risk 0%'],
+    });
+  });
 
   it('describes an oil vendor', () => {
     const { game } = street();

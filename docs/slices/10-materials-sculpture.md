@@ -110,18 +110,18 @@ Extend `tests/sim/materials.test.ts`, `tests/sim/storehouse.test.ts`.
 
 **Files:** Modify `src/sim/inspect.ts`, `tests/sim/inspect.test.ts`.
 
-- [ ] **Step 1:** Write failing tests: a workshop shows its stock, gatherer and cart, and
+- [x] **Step 1:** Write failing tests: a workshop shows its stock, gatherer and cart, and
   says when nothing is in range; a studio shows bronze, sculptures and casting; a guild
   says its artisans wait for a sanctuary; a gatherer describes his errand; a felled
   forest tile says when it grows back.
-- [ ] **Step 2:** Implement. Tests pass.
+- [x] **Step 2:** Implement. Tests pass.
 
 ### Task 6: UI and rendering
 
 **Files:** Modify `src/ui/tools.ts`, `src/render/models.ts`, `src/render/palette.ts`,
 `src/render/walker-layer.ts`, `src/render/terrain-layer.ts`.
 
-- [ ] **Step 1:** Tools for the five buildings.
+- [x] **Step 1:** Tools for the five buildings.
 - [ ] **Step 2:** Models: Timber Mill (a shed with a saw bench and a log pile), Masonry
   Shop (a yard of cut marble blocks and a hoist), Foundry (a furnace house with a tall
   chimney and glowing mouth), Sculpture Studio (a workshop with a bronze statue on a

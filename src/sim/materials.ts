@@ -17,12 +17,14 @@ export interface WorkshopSpec {
   loadsPerYear: number;
   gatherer: string;
   work: string;
+  site: string;
+  home: string;
 }
 
 export const WORKSHOP_SPECS: Record<Workshop, WorkshopSpec> = {
-  timberMill: { good: 'wood', resource: 'forest', loadsPerYear: 13, gatherer: 'Lumberjack', work: 'fell' },
-  masonryShop: { good: 'marble', resource: 'marble', loadsPerYear: 12, gatherer: 'Quarryman', work: 'cut' },
-  foundry: { good: 'bronze', resource: 'copper', loadsPerYear: 13, gatherer: 'Miner', work: 'dig' },
+  timberMill: { good: 'wood', resource: 'forest', loadsPerYear: 13, gatherer: 'Lumberjack', work: 'fell', site: 'tree', home: 'mill' },
+  masonryShop: { good: 'marble', resource: 'marble', loadsPerYear: 12, gatherer: 'Quarryman', work: 'cut', site: 'marble', home: 'shop' },
+  foundry: { good: 'bronze', resource: 'copper', loadsPerYear: 13, gatherer: 'Miner', work: 'dig', site: 'copper ore', home: 'foundry' },
 };
 
 export const RESOURCE_RANGE = 20;
