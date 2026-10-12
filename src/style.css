@@ -23,7 +23,8 @@ body {
 #toolbar,
 #tool-menu,
 #inspector,
-#appeal-legend {
+#map-modes,
+#overlay-legend {
   position: fixed;
   background: var(--parchment);
   border: 2px solid var(--terracotta);
@@ -159,20 +160,31 @@ button.active {
   white-space: nowrap;
 }
 
-#appeal-legend {
+#map-modes {
   bottom: 8px;
-  left: 8px;
-  width: 200px;
-}
-
-#appeal-legend-bar {
-  height: 12px;
-  margin: 4px 0 2px;
-  border: 1px solid var(--ink);
-}
-
-#appeal-legend-scale {
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
-  justify-content: space-between;
+  gap: 4px;
+  padding: 4px 6px;
+}
+
+#overlay-legend {
+  bottom: 56px;
+  left: 8px;
+  min-width: 160px;
+}
+
+.legend-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
   font-size: 13px;
+}
+
+.legend-swatch {
+  width: 18px;
+  height: 12px;
+  border: 1px solid var(--ink);
 }

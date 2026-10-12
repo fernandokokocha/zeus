@@ -6,7 +6,7 @@
 **Goal:** A bar of map modes along the bottom of the screen. Choosing one tints the map
 with a reading, and a legend explains its colours: water, food, supply (fleece + oil),
 culture, appeal, fire risk, collapse risk, tax coverage, house level and staffing.
-Choosing the active mode again, or pressing Escape over it, turns the overlay off. `O`
+Choosing the active mode again turns the overlay off. `O`
 toggles the last chosen mode, so the slice-4 shortcut still shows appeal.
 
 **Architecture:** A new sim module `overlays.ts` turns state into a reading per tile for
@@ -53,13 +53,13 @@ appeal toggle becomes the map-mode bar.
 
 **Files:** Create `src/sim/overlays.ts`, `tests/sim/overlays.test.ts`.
 
-- [ ] **Step 1:** Write failing tests: appeal reads the appeal map; water reads the share
+- [x] **Step 1:** Write failing tests: appeal reads the appeal map; water reads the share
   of coverage left on occupied houses only, across the whole footprint; tax likewise;
   food reads months of food; supply counts fleece and oil; culture reads culture points;
   fire risk reads the risk share of buildings that can burn and nothing on a Park;
   collapse risk likewise; house level reads the level index; staffing reads the share
   of staff and nothing on a Park.
-- [ ] **Step 2:** Implement. Tests pass.
+- [x] **Step 2:** Implement. Tests pass.
 
 ### Task 3: Overlay layer and map-mode bar
 
@@ -67,17 +67,17 @@ appeal toggle becomes the map-mode bar.
 `src/ui/appeal-toggle.ts` to `src/ui/map-modes.ts`. Modify `index.html`,
 `src/style.css`, `src/main.ts`, `src/render/palette.ts`.
 
-- [ ] **Step 1:** Colour stops per overlay; the layer paints the chosen overlay's
+- [x] **Step 1:** Colour stops per overlay; the layer paints the chosen overlay's
   readings; the bar picks the overlay and shows its legend as swatches.
 
 ### Task 4: Smoke test and look
 
-- [ ] **Step 1:** Extend the smoke test: open each map mode, check its legend, and
-  screenshot a few.
-- [ ] **Step 2:** Run `npm run typecheck`, `npm test`, `npm run build` and
+- [x] **Step 1:** Extend the smoke test: open each map mode, check its legend, and
+  screenshot appeal and staffing.
+- [x] **Step 2:** Run `npm run typecheck`, `npm test`, `npm run build` and
   `npm run test:e2e`. Open the screenshots and check them.
 
 ### Task 5: PR
 
-- [ ] **Step 1:** Tick slice 9 in `docs/roadmap.md`.
+- [x] **Step 1:** Tick slice 9 in `docs/roadmap.md`.
 - [ ] **Step 2:** Open the PR `Slice 09: Map modes`. Wait for CI and Pages.
