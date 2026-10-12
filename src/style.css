@@ -93,6 +93,18 @@ body {
   padding: 3px 8px;
 }
 
+#toolbar .quick-tools {
+  display: flex;
+  gap: 4px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--terracotta);
+}
+
+#toolbar .quick-tools button {
+  padding: 2px;
+  line-height: 0;
+}
+
 #toolbar button small {
   display: block;
   font-size: 12px;

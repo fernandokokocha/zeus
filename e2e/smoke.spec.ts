@@ -46,11 +46,11 @@ test('boots, builds a street with services, food, culture, fleece, oil and decor
   await expect(page.locator('#date')).toHaveText('January, Year 1');
   await expect(page.locator('#population')).toHaveText('Population 0');
   await expect(page.locator('#treasury')).toHaveText('5,000 dr');
-  await expect(page.locator('#toolbar button')).toHaveCount(10);
+  await expect(page.locator('#toolbar button')).toHaveCount(11);
 
   await page.getByRole('button', { name: 'Demolish' }).click();
   await drag(page, [8, 38], [30, 57]);
-  await chooseTool(page, 'Roads', /^Road \(/);
+  await page.getByRole('button', { name: /^Road \(/ }).click();
   await drag(page, [8, 50], [29, 50]);
   await drag(page, [8, 50], [8, 45]);
   await drag(page, [8, 45], [29, 45]);

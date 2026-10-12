@@ -41,8 +41,10 @@ export interface ToolGroup {
   tools: Tool[];
 }
 
+export const QUICK_TOOLS = ['road', 'roadblock'] as const satisfies Tool[];
+export type QuickTool = (typeof QUICK_TOOLS)[number];
+
 export const TOOL_GROUPS: ToolGroup[] = [
-  { name: 'Roads', tools: ['road', 'roadblock'] },
   { name: 'Housing', tools: ['house'] },
   { name: 'Husbandry', tools: ['wheatFarm', 'sheep', 'oliveTree', 'growersLodge'] },
   { name: 'Industry', tools: ['cardingShed', 'olivePress'] },
