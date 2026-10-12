@@ -64,51 +64,51 @@ are destination walkers like trainees.
 `src/sim/buildings.ts`, `src/sim/commands.ts`, `src/sim/appeal.ts`, `src/sim/labor.ts`,
 `src/sim/overlays.ts`.
 
-- [ ] **Step 1:** Write failing tests: placing a sanctuary costs its drachmas and takes
+- [x] **Step 1:** Write failing tests: placing a sanctuary costs its drachmas and takes
   its initial marble from storehouses (across several); it fails without enough marble
   and says how much is missing; one per god; a site hires nobody and radiates nothing; a
   finished one hires 60 and radiates 20,18,16,14,12,10.
-- [ ] **Step 2:** Implement. Tests pass.
+- [x] **Step 2:** Implement. Tests pass.
 
 ### Task 3: Supply carts
 
 **Files:** Modify `src/sim/carriers.ts`, `src/sim/state.ts`. Extend
 `tests/sim/sanctuaries.test.ts`.
 
-- [ ] **Step 1:** Write failing tests: a staffed storehouse sends marble, wood and
+- [x] **Step 1:** Write failing tests: a staffed storehouse sends marble, wood and
   sculptures to a site, up to 4 loads a cart; carts stop when the site has all it needs,
   counting carts on the way; an unstaffed storehouse sends nothing.
-- [ ] **Step 2:** Implement. Tests pass.
+- [x] **Step 2:** Implement. Tests pass.
 
 ### Task 4: Artisans and stages
 
 **Files:** Modify `src/sim/sanctuaries.ts`, `src/sim/state.ts`, `src/sim/tick.ts`,
 `src/sim/commands.ts`. Extend `tests/sim/sanctuaries.test.ts`.
 
-- [ ] **Step 1:** Write failing tests: a staffed guild sends an artisan to a site with
+- [x] **Step 1:** Write failing tests: a staffed guild sends an artisan to a site with
   materials; each visit is work; a stage completes after 4 visits with its materials on
   site; no artisan goes where materials are missing; after five stages the sanctuary is
   finished. A demolished site sends its artisans elsewhere or away; a demolished guild
   takes them with it.
-- [ ] **Step 2:** Implement. Tests pass.
+- [x] **Step 2:** Implement. Tests pass.
 
 ### Task 5: Inspector
 
 **Files:** Modify `src/sim/inspect.ts`, `tests/sim/inspect.test.ts`.
 
-- [ ] **Step 1:** Write failing tests: a site shows its stage, each material delivered of
+- [x] **Step 1:** Write failing tests: a site shows its stage, each material delivered of
   needed, and what it waits for; a finished sanctuary shows its workers; a guild says
   where its artisan is going or what it waits for; an artisan and a supply cart describe
   their errand.
-- [ ] **Step 2:** Implement. Tests pass.
+- [x] **Step 2:** Implement. Tests pass.
 
 ### Task 6: UI and rendering
 
 **Files:** Modify `src/ui/tools.ts`, `src/render/models.ts`, `src/render/palette.ts`,
 `src/render/walker-layer.ts`.
 
-- [ ] **Step 1:** Tools for the three sanctuaries under Mythology.
-- [ ] **Step 2:** Models in stages: staked ground with material piles, a stepped marble
+- [x] **Step 1:** Tools for the three sanctuaries under Mythology.
+- [x] **Step 2:** Models in stages: staked ground with material piles, a stepped marble
   platform, a ring of columns, the entablature and pediment roof, and finally the god's
   statue and precinct: Demeter's wheat beds, Athena's olive trees, Hephaestus' anvil and
   forge fire. Walkers: artisan (hammer), supply carts as the workshop carts.
@@ -117,13 +117,13 @@ are destination walkers like trainees.
 
 **Files:** Modify `e2e/smoke.spec.ts`.
 
-- [ ] **Step 1:** Extend the smoke test: try to place a sanctuary without marble and see
+- [x] **Step 1:** Extend the smoke test: try to place a sanctuary without marble and see
   the reason.
-- [ ] **Step 2:** Run `npm run typecheck`, `npm test`, `npm run build` and
+- [x] **Step 2:** Run `npm run typecheck`, `npm test`, `npm run build` and
   `npm run test:e2e`. Look at the stages in a throwaway render and the screenshot.
 
 ### Task 8: PR
 
-- [ ] **Step 1:** Tick slice 11 in `docs/roadmap.md`. Record the new **ours** numbers in
+- [x] **Step 1:** Tick slice 11 in `docs/roadmap.md`. Record the new **ours** numbers in
   zeus-numbers.
-- [ ] **Step 2:** Open the PR `Slice 11: Sanctuaries`. Wait for CI and Pages.
+- [x] **Step 2:** Open the PR `Slice 11: Sanctuaries`. Wait for CI and Pages.
