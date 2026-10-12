@@ -17,6 +17,7 @@ interface Part {
 
 type Figure =
   | 'settler'
+  | 'artisan'
   | RoamerKind
   | CarrierKind
   | TraineeKind
@@ -139,6 +140,13 @@ const statuette: Part[] = [
   { geometry: new THREE.SphereGeometry(0.035, 8, 6).translate(0, 0.33, 0.22), color: PALETTE.bronze },
 ];
 
+const woodCart = cart([
+  { geometry: new THREE.CylinderGeometry(0.035, 0.035, 0.24, 8).rotateX(Math.PI / 2).translate(-0.05, 0.17, 0.22), color: PALETTE.log },
+  { geometry: new THREE.CylinderGeometry(0.035, 0.035, 0.24, 8).rotateX(Math.PI / 2).translate(0.05, 0.17, 0.22), color: PALETTE.log },
+]);
+const marbleCart = cart([marbleChunk(0, 0.19, 0.22, 1.3)]);
+const sculptureCart = cart(statuette);
+
 const smallAmphora = (x: number, y: number, z: number): Part => ({ geometry: jar.clone().translate(x, y, z), color: PALETTE.terracotta });
 
 const FIGURES: Record<Figure, Part[]> = {
@@ -169,14 +177,15 @@ const FIGURES: Record<Figure, Part[]> = {
   quarrymanWithBlock: [...body(PALETTE.quarrymanTunic), marbleChunk(0, 0.38, 0, 1)],
   miner,
   minerWithOre: [...body(PALETTE.minerTunic), oreLump(0, 0.38, 0, 1.2)],
-  woodCart: cart([
-    { geometry: new THREE.CylinderGeometry(0.035, 0.035, 0.24, 8).rotateX(Math.PI / 2).translate(-0.05, 0.17, 0.22), color: PALETTE.log },
-    { geometry: new THREE.CylinderGeometry(0.035, 0.035, 0.24, 8).rotateX(Math.PI / 2).translate(0.05, 0.17, 0.22), color: PALETTE.log },
-  ]),
-  marbleCart: cart([marbleChunk(0, 0.19, 0.22, 1.3)]),
+  woodCart,
+  marbleCart,
   bronzeCart: cart([ingot(-0.04, 0.155, 0.2), ingot(0.04, 0.155, 0.26), oreLump(0, 0.2, 0.23, 0.6)]),
-  sculptureCart: cart(statuette),
+  sculptureCart,
+  woodSupply: woodCart,
+  marbleSupply: marbleCart,
+  sculptureSupply: sculptureCart,
   bronzeBuyer: [...body(PALETTE.bronzeBuyerTunic), ingot(0.1, 0.12, 0.02)],
+  artisan: [...body(PALETTE.artisanTunic), ...tool(new THREE.BoxGeometry(0.08, 0.05, 0.05))],
   shepherd,
   shepherdWithFleece: [
     ...shepherd,
@@ -283,6 +292,7 @@ export function createWalkerLayer(): { group: THREE.Group; sync(state: GameState
     group,
     sync(state, ticksAhead) {
       sets.settler.show(state.settlers, ticksAhead);
+      sets.artisan.show(state.artisans, ticksAhead);
       for (const kind of ['waterCarrier', 'taxCollector', 'peddler', 'fleecePeddler', 'oilPeddler', 'philosopher', 'athlete', 'actor', 'superintendent'] as const) {
         sets[kind].show(state.roamers.filter((r) => r.kind === kind), ticksAhead);
       }

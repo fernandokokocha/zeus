@@ -87,6 +87,7 @@ export const PALETTE = {
   ore: 0x8a4f2c,
   axeHead: 0x8f969c,
   glow: 0xff7a26,
+  artisanTunic: 0x3f6f8f,
   log: 0x8a5f36,
   sawdust: 0xd9be8c,
   overlayGood: 0x3fae4a,
