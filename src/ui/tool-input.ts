@@ -88,8 +88,8 @@ export function attachToolInput({ view, state, toolbar, ghost, inspector, topbar
 
   window.addEventListener('keydown', (e) => {
     if (e.key.toLowerCase() !== 'r' || e.repeat) return;
-    rotation = ((rotation + 1) % QUARTER_TURNS) as Rotation;
-    topbar.showStatus(`Rotated ${rotation * 90}°`);
+    rotation = ((rotation + QUARTER_TURNS - 1) % QUARTER_TURNS) as Rotation;
+    topbar.showStatus(`Rotated ${((QUARTER_TURNS - rotation) % QUARTER_TURNS) * 90}° counterclockwise`);
     refreshGhost();
   });
 

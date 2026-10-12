@@ -82,7 +82,7 @@ await place(page, 'Husbandry', /^Growers' Lodge/, [29, 48]);
 await place(page, 'Industry', /^Olive Press/, [29, 43]);
 await place(page, 'Distribution', /^Oil Vendor/, [17, 55]);
   await page.keyboard.press('r');
-  await expect(page.locator('#status')).toHaveText('Rotated 90°');
+  await expect(page.locator('#status')).toHaveText('Rotated 90° counterclockwise');
   await page.keyboard.press('Escape');
   await expect(page.locator('#treasury')).not.toHaveText('5,000 dr');
 
