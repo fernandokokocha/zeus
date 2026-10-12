@@ -3,6 +3,7 @@ import { AGORA_VENDOR_SPOTS, BUILDING_SPECS, type BuildingType } from '../sim/bu
 import { CROP_STAGES, UNITS_PER_LOAD, cropStage } from '../sim/food';
 import { SLOT_SIZE, STOREHOUSE_GOODS, STOREHOUSE_SLOTS, slotsOf, type StoredGood } from '../sim/storehouse';
 import { houseLevel, type HouseLevel } from '../sim/housing';
+import { BRONZE_PER_SCULPTURE } from '../sim/materials';
 import { isRipe } from '../sim/olives';
 import { isPerforming } from '../sim/schools';
 import { isBurning } from '../sim/safety';
@@ -56,6 +57,11 @@ const charred = lambert(PALETTE.char);
 const ash = lambert(PALETTE.ash);
 const ember = new THREE.MeshBasicMaterial({ color: PALETTE.ember });
 const flame = new THREE.MeshBasicMaterial({ color: PALETTE.flame });
+const ore = lambert(PALETTE.ore);
+const logWood = lambert(PALETTE.log);
+const sawdust = lambert(PALETTE.sawdust);
+const steel = lambert(PALETTE.axeHead);
+const glow = new THREE.MeshBasicMaterial({ color: PALETTE.glow });
 const smoke = new THREE.MeshLambertMaterial({ color: PALETTE.smoke, transparent: true, opacity: 0.55 });
 const falling = new THREE.MeshBasicMaterial({ color: PALETTE.spray, transparent: true, opacity: 0.85 });
 
@@ -68,6 +74,7 @@ const stream = new THREE.CylinderGeometry(0.035, 0.06, 1, 8);
 const spray = new THREE.SphereGeometry(0.06, 8, 6);
 const tongue = new THREE.ConeGeometry(0.09, 0.32, 7).translate(0, 0.16, 0);
 const puff = new THREE.SphereGeometry(0.12, 8, 6);
+const log = new THREE.CylinderGeometry(0.04, 0.04, 0.3, 8).rotateZ(Math.PI / 2);
 const beamEnd = new THREE.CylinderGeometry(0.025, 0.025, 0.12, 6).rotateX(Math.PI / 2);
 const oven = new THREE.SphereGeometry(0.16, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2);
 const amphora = new THREE.LatheGeometry(
@@ -775,6 +782,10 @@ const STORED_LOAD: Record<StoredGood, (x: number, z: number, turn: number) => TH
   fleece: (x, z, turn) => bale(x, 0.04, z, turn),
   olives: (x, z) => basket(x, z, true),
   oil: (x, z) => oilJar(x, 0.04, z),
+  wood: (x, z, turn) => logPile(x, 0.04, z, turn),
+  marble: (x, z, turn) => marbleBlock(x, 0.04, z, turn),
+  bronze: (x, z) => ingots(x, 0.04, z),
+  sculptures: (x, z) => statue(x, 0.04, z, 0.5),
 };
 
 function storehouseModel(storehouse: Building): THREE.Object3D {
@@ -1084,6 +1095,158 @@ function ruinsModel(ruins: Building, burning: boolean): THREE.Object3D {
   return group;
 }
 
+function logPile(x: number, y: number, z: number, turn: number): THREE.Object3D {
+  const group = new THREE.Group();
+  for (const [dx, dy] of [[-0.045, 0], [0.045, 0], [0, 0.07]]) group.add(placed(log, logWood, dx, 0.04 + dy, 0));
+  group.position.set(x, y, z);
+  group.rotation.y = turn;
+  return group;
+}
+
+function marbleBlock(x: number, y: number, z: number, turn: number): THREE.Object3D {
+  const block = box(0.18, 0.13, 0.15, marble, x, y, z);
+  block.rotation.y = turn;
+  return block;
+}
+
+function ingots(x: number, y: number, z: number): THREE.Object3D {
+  const group = new THREE.Group();
+  for (const [dx, dy, dz] of [[-0.05, 0, -0.04], [0.05, 0, 0.04], [0, 0.04, 0]]) group.add(box(0.12, 0.04, 0.06, bronze, x + dx, y + dy, z + dz));
+  return group;
+}
+
+function statue(x: number, y: number, z: number, size: number): THREE.Object3D {
+  const group = new THREE.Group();
+  group.add(box(0.2, 0.1, 0.2, marble, 0, 0, 0));
+  group.add(columnAt(0.3, bronze, 0, 0.1, 0));
+  group.add(placed(spray, bronze, 0, 0.46, 0));
+  const arm = box(0.04, 0.2, 0.04, bronze, 0.08, 0.26, 0);
+  arm.rotation.z = -0.5;
+  group.add(arm);
+  group.position.set(x, y, z);
+  group.scale.setScalar(size);
+  return group;
+}
+
+function workshopBase(material: THREE.Material): THREE.Mesh {
+  return box(1.9, 0.04, 1.9, material, 1, 0, 1);
+}
+
+function smokePlume(x: number, y: number, z: number): THREE.Object3D {
+  const group = new THREE.Group();
+  for (let n = 0; n < 3; n++) {
+    const cloud = placed(puff, smoke, x + 0.06 * n, y + 0.22 * n, z - 0.04 * n);
+    cloud.scale.setScalar(0.6 + 0.3 * n);
+    group.add(cloud);
+  }
+  return group;
+}
+
+function addStock(
+  group: THREE.Group,
+  units: number,
+  spots: [number, number][],
+  piece: (x: number, z: number, turn: number) => THREE.Object3D,
+): void {
+  spots.slice(0, Math.floor(units / UNITS_PER_LOAD)).forEach(([x, z], i) => group.add(piece(x, z, tileHash(i, x * 9) * 0.6 - 0.3)));
+}
+
+function timberMillModel(mill: Building): THREE.Object3D {
+  const group = new THREE.Group();
+  group.add(workshopBase(earth));
+  for (const [x, z] of [[0.25, 0.2], [1.75, 0.2], [0.25, 1.0], [1.75, 1.0]]) group.add(columnAt(0.6, timber, x, 0.04, z));
+  const roof = gableRoof(1.0, 0.3, 1.7, timber, reed);
+  roof.rotation.y = Math.PI / 2;
+  roof.position.set(1, 0.64, 0.6);
+  group.add(roof);
+  group.add(box(1.1, 0.24, 0.3, timber, 1, 0.04, 0.6));
+  const trunkOnBench = placed(log, logWood, 1, 0.33, 0.6);
+  trunkOnBench.scale.set(3.4, 1.4, 1.4);
+  group.add(trunkOnBench);
+  group.add(box(0.02, 0.18, 0.2, steel, 1, 0.28, 0.6));
+  group.add(cylinder(0.32, 0.015, sawdust, 1.3, 0.04, 1.0));
+  addStock(group, mill.wood + 2 * UNITS_PER_LOAD, [[0.4, 1.55], [0.75, 1.6], [1.1, 1.55], [1.45, 1.6], [1.75, 1.45], [0.35, 1.25]], (x, z, turn) =>
+    logPile(x, 0.04, z, turn),
+  );
+  return group;
+}
+
+function masonryShopModel(shop: Building): THREE.Object3D {
+  const group = new THREE.Group();
+  group.add(workshopBase(paving));
+  group.add(box(0.9, 0.45, 0.7, fieldstone, 0.55, 0.04, 0.45));
+  const roof = gableRoof(0.8, 0.22, 1.0, fieldstone);
+  roof.position.set(0.55, 0.49, 0.45);
+  group.add(roof);
+  group.add(box(0.24, 0.3, 0.02, doorway, 0.55, 0.04, 0.805));
+  for (const side of [-1, 1]) {
+    const leg = box(0.04, 1.0, 0.04, timber, 1.45 + side * 0.2, 0.04, 0.55);
+    leg.rotation.z = side * 0.2;
+    group.add(leg);
+  }
+  group.add(box(0.5, 0.04, 0.04, timber, 1.45, 0.98, 0.55));
+  group.add(box(0.01, 0.5, 0.01, twine, 1.45, 0.48, 0.55));
+  group.add(marbleBlock(1.45, 0.34, 0.55, 0.2));
+  addStock(group, shop.marble + UNITS_PER_LOAD, [[1.45, 1.5], [0.4, 1.4], [0.75, 1.55], [1.1, 1.45], [1.75, 1.2]], (x, z, turn) =>
+    marbleBlock(x, 0.04, z, turn),
+  );
+  return group;
+}
+
+function foundryModel(foundry: Building): THREE.Object3D {
+  const group = new THREE.Group();
+  group.add(workshopBase(earth));
+  group.add(box(1.3, 0.55, 0.8, mudBrick, 0.8, 0.04, 0.55));
+  const roof = gableRoof(0.9, 0.24, 1.4, mudBrick);
+  roof.rotation.y = Math.PI / 2;
+  roof.position.set(0.8, 0.59, 0.55);
+  group.add(roof);
+  group.add(box(0.28, 1.2, 0.28, fieldstone, 1.6, 0.04, 0.45));
+  const working = foundry.workers > 0;
+  group.add(box(0.36, 0.26, 0.02, working ? glow : doorway, 0.8, 0.04, 0.955));
+  if (working) group.add(smokePlume(1.6, 1.42, 0.45));
+  for (const [x, z] of [[1.55, 1.35], [1.7, 1.55], [1.4, 1.55]]) {
+    const lump = placed(stone, ore, x, 0.08, z);
+    lump.scale.setScalar(2.4);
+    group.add(lump);
+  }
+  addStock(group, foundry.bronze, [[0.35, 1.3], [0.65, 1.4], [0.95, 1.3], [0.5, 1.65]], (x, z) => ingots(x, 0.04, z));
+  return group;
+}
+
+function sculptureStudioModel(studio: Building): THREE.Object3D {
+  const group = new THREE.Group();
+  group.add(workshopBase(paving));
+  group.add(box(1.5, 0.55, 0.75, plaster, 1, 0.04, 0.5));
+  group.add(box(1.56, 0.06, 0.8, marble, 1, 0.59, 0.5));
+  const roof = gableRoof(0.85, 0.26, 1.6, marble);
+  roof.rotation.y = Math.PI / 2;
+  roof.position.set(1, 0.65, 0.5);
+  group.add(roof);
+  group.add(box(0.34, 0.38, 0.02, doorway, 1, 0.04, 0.88));
+  group.add(statue(0.45, 0.04, 1.35, 1.7));
+  if (studio.bronze >= BRONZE_PER_SCULPTURE) group.add(ingots(1.0, 0.04, 1.2));
+  addStock(group, studio.sculptures, [[1.3, 1.45], [1.6, 1.45], [1.3, 1.75], [1.6, 1.75]], (x, z) => statue(x, 0.04, z, 0.55));
+  return group;
+}
+
+function artisansGuildModel(): THREE.Object3D {
+  const group = new THREE.Group();
+  group.add(workshopBase(paving));
+  group.add(box(1.7, 0.08, 1.2, marble, 1, 0.04, 0.75));
+  group.add(box(1.5, 0.6, 0.7, plaster, 1, 0.12, 0.6));
+  for (const x of [0.35, 0.78, 1.22, 1.65]) group.add(columnAt(0.6, marble, x, 0.12, 1.22));
+  const roof = gableRoof(1.2, 0.3, 1.74, marble);
+  roof.rotation.y = Math.PI / 2;
+  roof.position.set(1, 0.72, 0.75);
+  group.add(roof);
+  group.add(box(0.3, 0.4, 0.02, doorway, 1, 0.12, 0.955));
+  for (let i = 0; i < 3; i++) group.add(box(0.5, 0.04, 0.12, timber, 0.4, 0.04 + i * 0.045, 1.7));
+  group.add(marbleBlock(1.6, 0.04, 1.65, 0.3));
+  group.add(marbleBlock(1.35, 0.04, 1.72, -0.2));
+  return group;
+}
+
 const MODELS: Record<Exclude<BuildingType, 'house'>, (building: Building, state: GameState) => THREE.Object3D> = {
   fountain: (b) => fountainModel(b.workers > 0),
   taxOffice: (b) => taxOfficeModel(b.workers > 0),
@@ -1107,6 +1270,11 @@ const MODELS: Record<Exclude<BuildingType, 'house'>, (building: Building, state:
   growersLodge: growersLodgeModel,
   olivePress: olivePressModel,
   oilVendor: oilVendorModel,
+  timberMill: timberMillModel,
+  masonryShop: masonryShopModel,
+  foundry: foundryModel,
+  sculptureStudio: sculptureStudioModel,
+  artisansGuild: artisansGuildModel,
   maintenanceOffice: maintenanceOfficeModel,
   ruins: (b, state) => ruinsModel(b, isBurning(state, b)),
 };

@@ -122,7 +122,7 @@ Extend `tests/sim/materials.test.ts`, `tests/sim/storehouse.test.ts`.
 `src/render/walker-layer.ts`, `src/render/terrain-layer.ts`.
 
 - [x] **Step 1:** Tools for the five buildings.
-- [ ] **Step 2:** Models: Timber Mill (a shed with a saw bench and a log pile), Masonry
+- [x] **Step 2:** Models: Timber Mill (a shed with a saw bench and a log pile), Masonry
   Shop (a yard of cut marble blocks and a hoist), Foundry (a furnace house with a tall
   chimney and glowing mouth), Sculpture Studio (a workshop with a bronze statue on a
   plinth), Artisans' Guild (a hall with a portico and stacked tools). Felled forest
@@ -134,8 +134,8 @@ Extend `tests/sim/materials.test.ts`, `tests/sim/storehouse.test.ts`.
 
 **Files:** Modify `e2e/smoke.spec.ts`.
 
-- [ ] **Step 1:** Extend the smoke test: place the five buildings, screenshot.
-- [ ] **Step 2:** Run `npm run typecheck`, `npm test`, `npm run build` and
+- [x] **Step 1:** Extend the smoke test: place the five buildings, screenshot.
+- [x] **Step 2:** Run `npm run typecheck`, `npm test`, `npm run build` and
   `npm run test:e2e`. Open the screenshot and check it.
 
 ### Task 8: PR
