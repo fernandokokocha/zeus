@@ -88,7 +88,15 @@ function loads(units: number): string {
 
 const GOOD_NAMES: Record<Good, string> = { food: 'wheat', fleece: 'fleece', olives: 'olives', oil: 'oil' };
 
-const CARRIER_HOMES: Record<Carrier['kind'], string> = { cartPusher: 'farm', buyer: 'stall', fleeceCart: 'shed', fleeceBuyer: 'stall' };
+const CARRIER_HOMES: Record<Carrier['kind'], string> = {
+  cartPusher: 'farm',
+  buyer: 'stall',
+  fleeceCart: 'shed',
+  fleeceBuyer: 'stall',
+  oliveCart: 'lodge',
+  oilCart: 'press',
+  oilBuyer: 'stall',
+};
 
 function describeHouse(state: GameState, house: Building): Description {
   const lines = [`Tile ${house.x}, ${house.y}`, `Residents ${house.residents}/${houseCapacity(house)}`];
