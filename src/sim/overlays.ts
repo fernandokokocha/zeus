@@ -4,6 +4,7 @@ import { footprint } from './commands';
 import { culturePoints } from './culture';
 import { monthlyUse } from './food';
 import { HOUSE_LEVELS, houseLevel, type HouseLevel } from './housing';
+import { isUnderConstruction } from './sanctuaries';
 import { serviceLeft } from './roamers';
 import { canBurn, canCollapse, riskShare } from './safety';
 import { tileIndex, type Building, type GameState } from './state';
@@ -39,7 +40,7 @@ const BUILDING_READERS: Record<Exclude<Overlay, 'appeal'>, BuildingReader> = {
   collapseRisk: (_, building) => (canCollapse(building) ? riskShare(building.collapseRisk) : null),
   staffing: (_, building) => {
     const { workers } = BUILDING_SPECS[building.type];
-    return workers > 0 ? building.workers / workers : null;
+    return workers > 0 && !isUnderConstruction(building) ? building.workers / workers : null;
   },
 };
 

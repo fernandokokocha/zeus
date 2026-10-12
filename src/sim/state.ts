@@ -106,6 +106,12 @@ export interface Gatherer extends Walk {
   returning: boolean;
 }
 
+export interface Artisan extends Walk {
+  id: number;
+  homeId: number;
+  destinationId: number;
+}
+
 export type CarrierKind =
   | 'cartPusher'
   | 'buyer'
@@ -119,7 +125,10 @@ export type CarrierKind =
   | 'marbleCart'
   | 'bronzeCart'
   | 'sculptureCart'
-  | 'bronzeBuyer';
+  | 'bronzeBuyer'
+  | 'marbleSupply'
+  | 'woodSupply'
+  | 'sculptureSupply';
 
 export interface Carrier extends Walk {
   id: number;
@@ -162,6 +171,8 @@ export interface GameState {
   gatherers: Gatherer[];
   nextGathererId: number;
   felledUntil: number[];
+  artisans: Artisan[];
+  nextArtisanId: number;
   rngState: number;
   entry: Point;
   treasury: number;
@@ -203,6 +214,8 @@ export function newGameState(size: number, terrain: Terrain[], entry: Point): Ga
     gatherers: [],
     nextGathererId: 1,
     felledUntil: new Array<number>(size * size).fill(0),
+    artisans: [],
+    nextArtisanId: 1,
     rngState: DEFAULT_SEED,
     entry,
     treasury: STARTING_TREASURY,

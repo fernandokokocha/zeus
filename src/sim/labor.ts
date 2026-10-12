@@ -1,5 +1,6 @@
 import { BUILDING_SPECS } from './buildings';
 import { adjacentRoadTiles } from './commands';
+import { isUnderConstruction } from './sanctuaries';
 import { population } from './settlers';
 import type { Building, GameState } from './state';
 
@@ -10,7 +11,8 @@ export function workforce(state: GameState): number {
 }
 
 function jobsOffered(state: GameState, building: Building): number {
-  return adjacentRoadTiles(state, building).length > 0 ? BUILDING_SPECS[building.type].workers : 0;
+  if (isUnderConstruction(building) || adjacentRoadTiles(state, building).length === 0) return 0;
+  return BUILDING_SPECS[building.type].workers;
 }
 
 export function assignWorkers(state: GameState): void {

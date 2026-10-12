@@ -12,6 +12,7 @@ import {
 } from './buildings';
 import { rectBetween, tilesIn, type Point } from './point';
 import { RIPE_CROP } from './olives';
+import { isSanctuary, sanctuaryObstacle, takeInitialMarble } from './sanctuaries';
 import { GRAZE_PAUSE_TICKS, isPasture } from './sheep';
 import { NO_BUILDING, clampToMap, inBounds, tileIndex, type Building, type GameState } from './state';
 import { BUILDABLE, TERRAIN_NAMES } from './terrain';
@@ -168,11 +169,12 @@ function placementObstacle(state: GameState, placement: Placement): string | nul
   const { type, x, y } = placement;
   if (type === 'palace' && state.buildings.some((b) => b.type === 'palace')) return 'Only one palace is allowed';
   if (isAgoraVendor(type)) return vendorObstacle(state, x, y);
-const obstacle = footprintObstacle(state, placement);
-const meadowReason = MEADOW_REASONS[type];
-if (obstacle || !meadowReason) return obstacle;
-const onMeadow = footprint(placement).every((p) => state.terrain[tileIndex(state, p.x, p.y)] === 'meadow');
-return onMeadow ? null : meadowReason;
+  if (isSanctuary(type)) return footprintObstacle(state, placement) ?? sanctuaryObstacle(state, type);
+  const obstacle = footprintObstacle(state, placement);
+  const meadowReason = MEADOW_REASONS[type];
+  if (obstacle || !meadowReason) return obstacle;
+  const onMeadow = footprint(placement).every((p) => state.terrain[tileIndex(state, p.x, p.y)] === 'meadow');
+  return onMeadow ? null : meadowReason;
 }
 
 function vendorObstacle(state: GameState, x: number, y: number): string | null {
@@ -187,7 +189,8 @@ export function placeBuilding(state: GameState, type: BuildingType, x: number, y
   const obstacle = placementObstacle(state, placement);
   if (obstacle) return fail(obstacle);
   const agora = isAgoraVendor(type) ? agoraAt(state, placement) : null;
-  build(state, agora ? { ...placement, rotation: agora.rotation } : placement);
+  const building = build(state, agora ? { ...placement, rotation: agora.rotation } : placement);
+  if (isSanctuary(type)) takeInitialMarble(state, building);
   state.version++;
   return OK;
 }
@@ -293,5 +296,6 @@ export function removeBuildings(state: GameState, doomed: Set<number>): void {
   state.shepherds = state.shepherds.filter((s) => !doomed.has(s.homeId));
   state.growers = state.growers.filter((g) => !doomed.has(g.homeId));
   state.gatherers = state.gatherers.filter((g) => !doomed.has(g.homeId));
+  state.artisans = state.artisans.filter((a) => !doomed.has(a.homeId));
   state.buildingIdAt = state.buildingIdAt.map((id) => (doomed.has(id) ? (agoraOfVendor.get(id) ?? NO_BUILDING) : id));
 }

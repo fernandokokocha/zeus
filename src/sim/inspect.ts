@@ -134,6 +134,9 @@ const CARRIER_HOMES: Record<Carrier['kind'], string> = {
   bronzeCart: 'foundry',
   sculptureCart: 'studio',
   bronzeBuyer: 'studio',
+  marbleSupply: 'storehouse',
+  woodSupply: 'storehouse',
+  sculptureSupply: 'storehouse',
 };
 
 function describeHouse(state: GameState, house: Building): Description {
