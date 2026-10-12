@@ -35,7 +35,7 @@ async function place(page: Page, group: string | null, tool: RegExp, at: [number
 }
 
 test('boots, builds a street with services, food, culture, fleece, oil and decorations and maintenance, and settlers move in', async ({ page }) => {
-  test.setTimeout(120_000);
+  test.setTimeout(180_000);
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   page.on('console', (message) => {
@@ -95,11 +95,33 @@ test('boots, builds a street with services, food, culture, fleece, oil and decor
   await page.mouse.wheel(0, -800);
   await page.waitForTimeout(6000);
   await page.screenshot({ path: 'test-results/screenshot.png' });
+  const legend = page.locator('#overlay-legend');
   await page.keyboard.press('o');
-  await expect(page.locator('#appeal-legend')).toBeVisible();
+  await expect(legend).toContainText('Appeal');
   await page.screenshot({ path: 'test-results/appeal.png' });
-  await page.getByRole('button', { name: 'Appeal' }).click();
-  await expect(page.locator('#appeal-legend')).toBeHidden();
+  const mapModes = page.locator('#map-modes');
+  await expect(mapModes.getByRole('button')).toHaveCount(10);
+  for (const [mode, title] of [
+    ['Water', 'Water access'],
+    ['Food', 'Food in houses'],
+    ['Supply', 'Fleece and oil in houses'],
+    ['Culture', 'Culture points'],
+    ['Fire', 'Fire risk'],
+    ['Collapse', 'Collapse risk'],
+    ['Tax', 'Tax collection'],
+    ['Houses', 'House level'],
+    ['Staff', 'Staffing'],
+  ]) {
+    await mapModes.getByRole('button', { name: mode, exact: true }).click();
+    await expect(legend).toContainText(title);
+  }
+  await page.screenshot({ path: 'test-results/staffing.png' });
+  await mapModes.getByRole('button', { name: 'Staff', exact: true }).click();
+  await expect(legend).toBeHidden();
+  await page.keyboard.press('o');
+  await expect(legend).toContainText('Staffing');
+  await page.keyboard.press('o');
+  await expect(legend).toBeHidden();
 
   await page.keyboard.press('Space');
   await expect(page.getByRole('button', { name: '❚❚' })).toHaveClass(/active/);
