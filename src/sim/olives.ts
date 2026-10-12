@@ -15,6 +15,10 @@ export const PICKINGS_PER_YEAR = 20;
 export const PICKING_REST_TICKS = TICKS_PER_YEAR / PICKINGS_PER_YEAR;
 export const OLIVES_PER_PICKING = UNITS_PER_LOAD;
 export const LODGE_CAPACITY = CART_LOAD;
+export const OIL_LOADS_PER_YEAR = 6;
+export const PRESSING_TICKS = TICKS_PER_YEAR / OIL_LOADS_PER_YEAR;
+export const PRESS_OLIVE_CAPACITY = CART_LOAD;
+export const PRESS_OIL_CAPACITY = CART_LOAD;
 
 export function isRipe(tree: Building): boolean {
   return tree.growth >= RIPE_CROP;
@@ -44,6 +48,21 @@ export function tickOlives(state: GameState): void {
   for (const tree of state.buildings.filter((b) => b.type === 'oliveTree')) ripen(state, tree);
   for (const lodge of state.buildings) sendGrower(state, lodge);
   for (const grower of [...state.growers]) moveGrower(state, grower);
+  for (const press of state.buildings) pressOil(state, press);
+}
+
+export function canPress(press: Building): boolean {
+  return press.olives >= UNITS_PER_LOAD && press.oil + UNITS_PER_LOAD <= PRESS_OIL_CAPACITY;
+}
+
+function pressOil(state: GameState, press: Building): void {
+  if (press.type !== 'olivePress' || press.workers === 0 || !canPress(press)) return;
+  press.production += press.workers / BUILDING_SPECS.olivePress.workers;
+  if (press.production < PRESSING_TICKS) return;
+  press.production = 0;
+  press.olives -= UNITS_PER_LOAD;
+  press.oil += UNITS_PER_LOAD;
+  state.version++;
 }
 
 function ripen(state: GameState, tree: Building): void {

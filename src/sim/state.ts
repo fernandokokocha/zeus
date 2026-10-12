@@ -87,7 +87,7 @@ export interface Grower extends Walk {
   returning: boolean;
 }
 
-export type CarrierKind = 'cartPusher' | 'buyer' | 'fleeceCart' | 'fleeceBuyer';
+export type CarrierKind = 'cartPusher' | 'buyer' | 'fleeceCart' | 'fleeceBuyer' | 'oliveCart' | 'oilCart' | 'oilBuyer';
 
 export interface Carrier extends Walk {
   id: number;

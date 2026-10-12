@@ -3,10 +3,11 @@ import { appealMap } from '../../src/sim/appeal';
 import { TICKS_PER_MONTH, TICKS_PER_YEAR } from '../../src/sim/clock';
 import { demolish, placeBuilding, placeOliveTrees, placeRoad } from '../../src/sim/commands';
 import { CART_LOAD, UNITS_PER_LOAD } from '../../src/sim/food';
-import { PICKING_REST_TICKS, isRipe } from '../../src/sim/olives';
+import { PICKING_REST_TICKS, PRESSING_TICKS, PRESS_OIL_CAPACITY, PRESS_OLIVE_CAPACITY, isRipe } from '../../src/sim/olives';
 import { tileIndex, type Building, type GameState } from '../../src/sim/state';
 import { tick } from '../../src/sim/tick';
 import { STARTING_TREASURY } from '../../src/sim/treasury';
+import { WALKER_TILES_PER_TICK } from '../../src/sim/walking';
 import { meadowGame, placeHouse, runTicks, setTerrain } from './helpers';
 
 const trees = (game: ReturnType<typeof meadowGame>) => game.buildings.filter((b) => b.type === 'oliveTree');
@@ -193,5 +194,80 @@ describe("a growers' lodge", () => {
     expect(placeBuilding(game, 'park', ahead.x, ahead.y).ok).toBe(true);
     untilGrowersGone(game);
     expect(lodge.olives).toBe(UNITS_PER_LOAD);
+  });
+});
+
+function oilTown(people = 100): { game: GameState; lodge: Building; press: Building } {
+  const { game, lodge } = grove(people);
+  placeBuilding(game, 'olivePress', 10, 13);
+  return { game, lodge, press: game.buildings[2] };
+}
+
+describe("a growers' lodge's cart pusher", () => {
+  it('takes the olives to the nearest olive press', () => {
+    const { game, lodge, press } = oilTown();
+    lodge.olives = 200;
+    tick(game);
+    expect(game.carriers).toHaveLength(1);
+    expect(game.carriers[0]).toMatchObject({ kind: 'oliveCart', homeId: lodge.id, destinationId: press.id, olives: 200 });
+    runTicks(game, Math.ceil(8 / WALKER_TILES_PER_TICK));
+    expect(press.olives).toBe(200);
+  });
+
+it('stays home without a staffed press', () => {
+  const { game, lodge, press } = oilTown(24);
+  lodge.olives = 100;
+  runTicks(game, 10);
+  expect(press.workers).toBe(0);
+  expect(game.carriers).toEqual([]);
+});
+
+  it('brings only what fits, counting carts already on the way', () => {
+    const { game, lodge, press } = oilTown();
+    press.olives = PRESS_OLIVE_CAPACITY - 100;
+    lodge.olives = 400;
+    tick(game);
+    expect(game.carriers[0].olives).toBe(100);
+    placeBuilding(game, 'growersLodge', 20, 13);
+    game.buildings[game.buildings.length - 1].olives = 400;
+    tick(game);
+    expect(game.carriers).toHaveLength(1);
+  });
+});
+
+describe('an olive press', () => {
+  it('turns a load of olives into a load of oil in 2 months at full staff', () => {
+    const { game, press } = oilTown();
+    press.olives = 200;
+    expect(PRESSING_TICKS).toBe(2 * TICKS_PER_MONTH);
+    runTicks(game, PRESSING_TICKS - 1);
+    expect(press.oil).toBe(0);
+    tick(game);
+    expect(press).toMatchObject({ olives: 100, oil: 100 });
+  });
+
+  it('takes twice as long at half staff', () => {
+    const { game, press } = oilTown(35);
+    press.olives = 100;
+    tick(game);
+    expect(press.workers).toBe(6);
+    runTicks(game, 2 * PRESSING_TICKS - 2);
+    expect(press.oil).toBe(0);
+    tick(game);
+    expect(press.oil).toBe(100);
+  });
+
+  it('waits for olives', () => {
+    const { game, press } = oilTown();
+    runTicks(game, PRESSING_TICKS);
+    expect(press).toMatchObject({ oil: 0, production: 0 });
+  });
+
+  it('stops while 4 loads of oil wait for a cart', () => {
+    const { game, press } = oilTown();
+    press.olives = 100;
+    press.oil = PRESS_OIL_CAPACITY;
+    runTicks(game, PRESSING_TICKS);
+    expect(press).toMatchObject({ olives: 100, oil: PRESS_OIL_CAPACITY });
   });
 });
