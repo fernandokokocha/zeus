@@ -3,7 +3,7 @@ import { culturePoints } from './culture';
 import { hasService } from './roamers';
 import type { Building, GameState } from './state';
 
-export type HouseLevel = 'hut' | 'shack' | 'hovel' | 'homestead' | 'tenement';
+export type HouseLevel = 'hut' | 'shack' | 'hovel' | 'homestead' | 'tenement' | 'apartment' | 'townhouse';
 
 export type HouseNeed = 'food' | 'water' | 'fleece' | 'oil';
 
@@ -36,6 +36,22 @@ export const HOUSE_LEVELS: Record<HouseLevel, HouseLevelSpec> = {
     taxMultiplier: 2,
     appeal: { evolve: 20, devolve: 5 },
   },
+  apartment: {
+    name: 'Apartment',
+    capacity: 48,
+    needs: ['food', 'water', 'fleece', 'oil'],
+    culture: 35,
+    taxMultiplier: 2,
+    appeal: { evolve: 30, devolve: 15 },
+  },
+  townhouse: {
+    name: 'Townhouse',
+    capacity: 60,
+    needs: ['food', 'water', 'fleece', 'oil'],
+    culture: 45,
+    taxMultiplier: 2,
+    appeal: { evolve: 100, devolve: 25 },
+  },
 };
 
 export const NEXT_LEVEL: Record<HouseLevel, HouseLevel | null> = {
@@ -43,7 +59,9 @@ export const NEXT_LEVEL: Record<HouseLevel, HouseLevel | null> = {
   shack: 'hovel',
   hovel: 'homestead',
   homestead: 'tenement',
-  tenement: null,
+  tenement: 'apartment',
+  apartment: 'townhouse',
+  townhouse: null,
 };
 export const PREVIOUS_LEVEL: Record<HouseLevel, HouseLevel | null> = {
   hut: null,
@@ -51,6 +69,8 @@ export const PREVIOUS_LEVEL: Record<HouseLevel, HouseLevel | null> = {
   hovel: 'shack',
   homestead: 'hovel',
   tenement: 'homestead',
+  apartment: 'tenement',
+  townhouse: 'apartment',
 };
 
 export const VACANT_LOT_NAME = 'Vacant Lot';
