@@ -2,6 +2,7 @@ import type { BuildingType } from './buildings';
 import { TICKS_PER_MONTH } from './clock';
 import { build, footprint, removeBuildings } from './commands';
 import { NEIGHBOUR_STEPS } from './pathfinding';
+import { nextRandom } from './rng';
 import { NO_BUILDING, inBounds, tileIndex, type Building, type GameState } from './state';
 
 export const FIRE_RISK_INCREMENTS: Partial<Record<BuildingType, number>> = {
@@ -25,6 +26,7 @@ export const COLLAPSE_RISK_INCREMENTS: Partial<Record<BuildingType, number>> = {
 export const RISK_LIMIT = 60;
 export const FIRE_SPREAD_PER_MONTH = 60;
 export const FIRE_BURN_TICKS = 2 * TICKS_PER_MONTH;
+export const IGNITION_CHANCE_PER_TICK = 1 / TICKS_PER_MONTH;
 
 const RISK_LIMIT_TICKS = RISK_LIMIT * TICKS_PER_MONTH;
 
@@ -53,24 +55,40 @@ export function canCollapse(building: Building): boolean {
 }
 
 export function tickSafety(state: GameState): void {
+  burnOut(state);
   for (const building of state.buildings) {
-    if (canBurn(building)) building.fireRisk += fireIncrement(building);
+    if (canBurn(building)) building.fireRisk = atMost(building.fireRisk + fireIncrement(building));
     if (canCollapse(building)) building.collapseRisk += collapseIncrement(building);
   }
-  spreadFire(state);
+  const exposed = spreadFire(state);
   for (const building of [...state.buildings]) {
-    if (building.fireRisk >= RISK_LIMIT_TICKS) ruin(state, building, true);
-    else if (building.collapseRisk >= RISK_LIMIT_TICKS) ruin(state, building, false);
+    if (building.fireRisk >= RISK_LIMIT_TICKS && (exposed.has(building) || nextRandom(state) < IGNITION_CHANCE_PER_TICK)) {
+      catchFire(state, building);
+    } else if (building.collapseRisk >= RISK_LIMIT_TICKS) {
+      ruin(state, building, false);
+    }
   }
 }
 
-function spreadFire(state: GameState): void {
+function atMost(risk: number): number {
+  return Math.min(risk, RISK_LIMIT_TICKS);
+}
+
+function burnOut(state: GameState): void {
+  if (state.buildings.some((b) => b.type === 'ruins' && b.burningUntil === state.tick)) state.version++;
+}
+
+function spreadFire(state: GameState): Set<Building> {
+  const exposed = new Set<Building>();
   const fires = state.buildings.filter((b) => b.type === 'ruins' && isBurning(state, b));
   for (const fire of fires) {
     for (const neighbour of buildingsAround(state, fire)) {
-      if (canBurn(neighbour)) neighbour.fireRisk += FIRE_SPREAD_PER_MONTH;
+      if (!canBurn(neighbour)) continue;
+      neighbour.fireRisk = atMost(neighbour.fireRisk + FIRE_SPREAD_PER_MONTH);
+      exposed.add(neighbour);
     }
   }
+  return exposed;
 }
 
 const SURROUNDING_STEPS = [...NEIGHBOUR_STEPS, { x: 1, y: 1 }, { x: 1, y: -1 }, { x: -1, y: 1 }, { x: -1, y: -1 }];
@@ -84,6 +102,10 @@ function buildingsAround(state: GameState, tile: Building): Building[] {
   }
   ids.delete(NO_BUILDING);
   return state.buildings.filter((b) => ids.has(b.id));
+}
+
+export function catchFire(state: GameState, building: Building): void {
+  ruin(state, building, true);
 }
 
 function ruin(state: GameState, building: Building, burning: boolean): void {

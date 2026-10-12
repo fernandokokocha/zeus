@@ -6,7 +6,7 @@ import { TICKS_PER_MONTH } from '../../src/sim/clock';
 import { ROAMER_REST_TICKS } from '../../src/sim/roamers';
 import type { Building, GameState } from '../../src/sim/state';
 import { describeTile } from '../../src/sim/inspect';
-import { FIRE_BURN_TICKS, RISK_LIMIT } from '../../src/sim/safety';
+import { FIRE_BURN_TICKS, RISK_LIMIT, catchFire } from '../../src/sim/safety';
 import { SETTLER_SPAWN_INTERVAL_TICKS } from '../../src/sim/settlers';
 import { walkerTile } from '../../src/sim/walking';
 import { grassGame, placeHouse, runTicks, setMeadow, setTerrain } from './helpers';
@@ -626,7 +626,7 @@ describe('the inspector on safety', () => {
   it('describes burning ruins and rubble', () => {
     const game = street();
     placeBuilding(game, 'taxOffice', 6, 13);
-    game.buildings[1].fireRisk = RISK_LIMIT * TICKS_PER_MONTH;
+    catchFire(game, game.buildings[1]);
     runTicks(game, 1);
     expect(describeTile(game, 7, 14)).toEqual({ title: 'Ruins', lines: ['Tile 7, 14', 'On fire: a superintendent puts it out'] });
     runTicks(game, FIRE_BURN_TICKS);

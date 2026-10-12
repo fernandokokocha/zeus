@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { TICKS_PER_MONTH } from '../../src/sim/clock';
 import { checkBuildingPlacement, demolish, placeBuilding, placeRoad } from '../../src/sim/commands';
 import { population } from '../../src/sim/settlers';
-import { FIRE_BURN_TICKS, RISK_LIMIT, isBurning, riskShare } from '../../src/sim/safety';
+import { FIRE_BURN_TICKS, catchFire, isBurning, riskShare } from '../../src/sim/safety';
 import type { Building, GameState } from '../../src/sim/state';
 import { ROAMER_REST_TICKS, ROAMER_SPECS } from '../../src/sim/roamers';
 import { WALKER_TILES_PER_TICK } from '../../src/sim/walking';
@@ -31,8 +31,16 @@ function monthsOf(risk: number): number {
 }
 
 function setOnFire(game: GameState, building: Building): void {
-  building.fireRisk = RISK_LIMIT * TICKS_PER_MONTH;
   tick(game);
+  catchFire(game, building);
+}
+
+function ticksUntil(game: GameState, happened: () => boolean, limit: number): number {
+  for (let ticks = 0; ticks < limit; ticks++) {
+    if (happened()) return ticks;
+    tick(game);
+  }
+  throw new Error(`Still waiting after ${limit} ticks`);
 }
 
 describe('fire risk', () => {
@@ -44,17 +52,28 @@ describe('fire risk', () => {
     expect(riskShare(game.buildings[0].fireRisk)).toBeCloseTo(10 / 60);
   });
 
-  it('burns a Tax Office after 12 months, leaving burning ruins on each of its tiles', () => {
-    const game = grassGame();
-    placeBuilding(game, 'taxOffice', 4, 4);
-    runTicks(game, 12 * TICKS_PER_MONTH - 1);
-    expect(game.buildings.map((b) => b.type)).toEqual(['taxOffice']);
-    tick(game);
-    const ruins = ruinsIn(game);
-    expect(ruins.map((r) => [r.x, r.y])).toEqual([[4, 4], [5, 4], [4, 5], [5, 5]]);
-    expect(game.buildings).toHaveLength(4);
-    expect(ruins.every((r) => isBurning(game, r))).toBe(true);
-  });
+it('puts a Tax Office at full risk after 12 months, and then it catches fire within months', () => {
+  const game = grassGame();
+  placeBuilding(game, 'taxOffice', 4, 4);
+  runTicks(game, 12 * TICKS_PER_MONTH - 1);
+  expect(riskShare(game.buildings[0].fireRisk)).toBeLessThan(1);
+  tick(game);
+  expect(riskShare(game.buildings[0].fireRisk)).toBe(1);
+  ticksUntil(game, () => ruinsIn(game).length > 0, 6 * TICKS_PER_MONTH);
+  const ruins = ruinsIn(game);
+  expect(ruins.map((r) => [r.x, r.y])).toEqual([[4, 4], [5, 4], [4, 5], [5, 5]]);
+  expect(game.buildings).toHaveLength(4);
+  expect(ruins.every((r) => isBurning(game, r))).toBe(true);
+});
+
+it('starts fires at random, not all at once', () => {
+  const game = grassGame(30);
+  for (let x = 0; x < 30; x += 3) placeBuilding(game, 'taxOffice', x, 4);
+  runTicks(game, 12 * TICKS_PER_MONTH);
+  const firstFire = ticksUntil(game, () => ruinsIn(game).length > 0, 6 * TICKS_PER_MONTH);
+  expect(firstFire).toBeLessThan(TICKS_PER_MONTH);
+  expect(game.buildings.filter((b) => b.type === 'taxOffice')).toHaveLength(9);
+});
 
   it('builds up nothing in a vacant lot', () => {
     const game = grassGame();
@@ -63,15 +82,25 @@ describe('fire risk', () => {
     expect(game.buildings[0]).toMatchObject({ type: 'house', fireRisk: 0 });
   });
 
-  it('burns an occupied house after 7.5 months, and its residents are gone', () => {
-    const game = grassGame();
-    occupiedHouse(game, 4, 4);
-    runTicks(game, 7.5 * TICKS_PER_MONTH - 1);
-    expect(population(game)).toBe(8);
-    tick(game);
-    expect(ruinsIn(game)).toHaveLength(4);
-    expect(population(game)).toBe(0);
-  });
+it('puts an occupied house at full risk after 7.5 months, and it burns with its residents', () => {
+  const game = grassGame();
+  occupiedHouse(game, 4, 4);
+  runTicks(game, 7.5 * TICKS_PER_MONTH);
+  expect(riskShare(game.buildings[0].fireRisk)).toBe(1);
+  ticksUntil(game, () => ruinsIn(game).length > 0, 6 * TICKS_PER_MONTH);
+  expect(ruinsIn(game)).toHaveLength(4);
+  expect(population(game)).toBe(0);
+});
+
+it('redraws the city when a fire burns out', () => {
+  const game = grassGame();
+  placeBuilding(game, 'taxOffice', 4, 4);
+  setOnFire(game, game.buildings[0]);
+  runTicks(game, FIRE_BURN_TICKS - 1);
+  const version = game.version;
+  tick(game);
+  expect(game.version).toBeGreaterThan(version);
+});
 
   it('never touches a Park', () => {
     const game = grassGame();

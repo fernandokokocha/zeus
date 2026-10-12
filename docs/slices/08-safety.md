@@ -33,15 +33,18 @@ agora) with demolishing it. The superintendent is a roamer whose service is main
 
 ## Decisions (closest to Zeus, recorded in the PR)
 
-1. **Fire uses the collapse rule** (**ours**): fire risk grows by its increment each
-   month and the building catches fire at 60. A House burns after 7.5 months untended, a
-   Tax Office after 12. Deterministic, so the inspector can show how close it is.
+1. **Fire risk fills like collapse risk** (**ours**): it grows by its increment each month
+   and is full at 60, so a House is at full risk after 7.5 months untended, a Tax Office
+   after 12. A building at full risk catches fire **at random, once a month on average**
+   (**ours**), so fires break out here and there as in Zeus rather than all at once.
+   Collapse stays exact: 60 ÷ increment months.
 2. **Only occupied houses build up fire risk.** A vacant lot has nobody to start a fire.
 3. **A fire destroys the building at once**, as in Zeus: residents, workers and goods are
    lost and its walkers vanish. Every tile of it becomes ruins.
 4. **Ruins burn for 2 months** (**ours**). While burning, each ruin tile adds **60 fire
    risk a month** (**ours**) to every building that can burn within 1 tile, so an
-   untended neighbour catches fire within a month.
+   untended neighbour reaches full risk within a month. A building at full risk next to
+   a fire catches at once.
 5. **The superintendent serves every building within 2 tiles** of the road he walks, the
    same reach as other roamers: both risks drop to 0 and burning ruins go out.
 6. **Ruins stay until demolished.** Nothing can be built on them; demolishing them is
