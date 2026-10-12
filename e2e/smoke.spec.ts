@@ -34,7 +34,7 @@ async function place(page: Page, group: string | null, tool: RegExp, at: [number
   await drag(page, at, at);
 }
 
-test('boots, builds a street with services, food, culture, fleece, oil, materials and decorations and maintenance, and settlers move in', async ({ page }) => {
+test('boots, builds a street with services, food, culture, fleece, oil, materials, sanctuaries and decorations and maintenance, and settlers move in', async ({ page }) => {
   test.setTimeout(180_000);
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
@@ -88,7 +88,9 @@ test('boots, builds a street with services, food, culture, fleece, oil, material
   await place(page, 'Industry', /^Masonry Shop/, [31, 51]);
   await place(page, 'Industry', /^Foundry/, [31, 48]);
   await place(page, 'Industry', /^Sculpture Studio/, [33, 48]);
-  await place(page, null, /^Artisans' Guild/, [35, 48]);
+  await place(page, 'Mythology', /^Artisans' Guild/, [35, 48]);
+  await place(page, 'Mythology', /^Forge of Hephaestus/, [50, 53]);
+  await expect(page.locator('#status')).toHaveText('Needs 13 loads of marble in storehouses (has 0)');
   await page.keyboard.press('r');
   await expect(page.locator('#status')).toHaveText('Rotated 90° counterclockwise');
   await page.keyboard.press('Escape');

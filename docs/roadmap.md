@@ -13,7 +13,7 @@ delivers it.
 - [x] 8 · Safety
 - [x] 9 · Map modes
 - [x] 10 · Materials & sculpture
-- [ ] 11 · Sanctuaries
+- [x] 11 · Sanctuaries
 - [ ] 12 · God favors
 
 After slice 3 the owner checks the spend so far and may cut or merge the remaining

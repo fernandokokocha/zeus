@@ -732,3 +732,70 @@ describe('the inspector on safety', () => {
     });
   });
 });
+
+describe('describeTile for sanctuaries', () => {
+  function site(): { game: GameState; storehouse: Building; forge: Building } {
+    const game = grassGame(40);
+    placeRoad(game, { x: 0, y: 15 }, { x: 39, y: 15 });
+    placeHouse(game, 0, 38);
+    game.buildings[0].residents = 400;
+    placeBuilding(game, 'storehouse', 2, 12);
+    const storehouse = game.buildings[1];
+    storehouse.marble = 1300;
+    expect(placeBuilding(game, 'hephaestusSanctuary', 20, 16)).toEqual({ ok: true });
+    return { game, storehouse, forge: game.buildings[2] };
+  }
+
+  it('describes a site by its stage, materials and what it waits for', () => {
+    const { game, forge } = site();
+    runTicks(game, 1);
+    expect(describeTile(game, 21, 17)).toEqual({
+      title: 'Forge of Hephaestus',
+      lines: [
+        'Tile 20, 16',
+        'Under construction: 0 of 5 stages built',
+        'Marble: 13 of 48 loads',
+        'Wood: 0 of 14 loads',
+        'Sculptures: 0 of 6',
+        'Waits for wood, sculptures to start the next stage',
+      ],
+    });
+    Object.assign(forge, { wood: 600, sculptures: 400, production: 4 });
+    expect(describeTile(game, 21, 17).lines).toEqual(
+      expect.arrayContaining(['Under construction: 1 of 5 stages built', 'Waits for marble to start the next stage']),
+    );
+    Object.assign(forge, { marble: 2000, production: 5 });
+    expect(describeTile(game, 21, 17).lines).toContain('Artisans at work: 1 of 4 visits for the next stage');
+  });
+
+  it('describes a finished sanctuary by the god it honors and its workers', () => {
+    const { game, forge } = site();
+    forge.production = 20;
+    runTicks(game, 1);
+    expect(describeTile(game, 21, 17)).toEqual({ title: 'Forge of Hephaestus', lines: ['Tile 20, 16', 'Workers 60/60', 'Finished: honors Hephaestus'] });
+  });
+
+  it("describes a guild's artisan and the site he goes to build", () => {
+    const { game, forge } = site();
+    placeBuilding(game, 'artisansGuild', 8, 13);
+    runTicks(game, 1);
+    expect(describeTile(game, 8, 13).lines).toContain('Artisans wait for materials at a sanctuary');
+    Object.assign(forge, { wood: 300, sculptures: 200 });
+    expect(describeTile(game, 8, 13).lines).toContain('Artisan getting ready');
+    runTicks(game, ROAMER_REST_TICKS);
+    expect(describeTile(game, 8, 13).lines).toContain('Artisan on the way to the Forge of Hephaestus at 20, 16');
+    const { x, y } = walkerTile(game.artisans[0]);
+    expect(describeTile(game, x, y)).toEqual({ title: 'Artisan', lines: ["From the Artisans' Guild at 8, 13", 'Going to build the Forge of Hephaestus at 20, 16'] });
+  });
+
+  it("shows a storehouse's supply cart only while it is out", () => {
+    const { game, storehouse } = site();
+    runTicks(game, 1);
+    expect(describeTile(game, 3, 13).lines).not.toContain('Cart Pusher out with a load');
+    storehouse.wood = 400;
+    runTicks(game, 1);
+    expect(describeTile(game, 3, 13).lines).toContain('Cart Pusher out with a load');
+    const { x, y } = walkerTile(game.carriers[0]);
+    expect(describeTile(game, x, y).lines).toContain('Carrying 4 loads to the Forge of Hephaestus at 20, 16');
+  });
+});

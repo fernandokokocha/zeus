@@ -6,6 +6,7 @@ import { evolveHouses } from './housing';
 import { assignWorkers } from './labor';
 import { tickMaterials } from './materials';
 import { tickOlives } from './olives';
+import { tickSanctuaries } from './sanctuaries';
 import { tickSafety } from './safety';
 import { tickRoamers } from './roamers';
 import { tickSchools } from './schools';
@@ -29,6 +30,7 @@ export function tick(state: GameState): void {
   tickSheep(state);
   tickOlives(state);
   tickMaterials(state);
+  tickSanctuaries(state);
   evolveHouses(state);
   tickSafety(state);
 }

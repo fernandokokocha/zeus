@@ -6,11 +6,12 @@ import type { Point } from './point';
 import { exitTile } from './roamers';
 import { STUDIO_BRONZE_CAPACITY } from './materials';
 import { PRESS_OLIVE_CAPACITY } from './olives';
+import { SANCTUARIES, isSanctuary, stillNeeded, type Sanctuary } from './sanctuaries';
 import { storehouseSpace } from './storehouse';
 import { NO_BUILDING, buildingById, type Building, type Carrier, type CarrierKind, type GameState, type Good } from './state';
 import { isRoad, walkPath } from './walking';
 
-type Store = 'granary' | 'storehouse' | 'olivePress' | 'sculptureStudio';
+type Store = 'granary' | 'storehouse' | 'olivePress' | 'sculptureStudio' | Sanctuary;
 
 export interface CarrierSpec {
   name: string;
@@ -35,6 +36,9 @@ export const CARRIER_SPECS: Record<CarrierKind, CarrierSpec> = {
   bronzeCart: { name: 'Cart Pusher', home: 'foundry', good: 'bronze', stores: ['sculptureStudio', 'storehouse'], delivers: true, capacity: 0 },
   sculptureCart: { name: 'Cart Pusher', home: 'sculptureStudio', good: 'sculptures', stores: ['storehouse'], delivers: true, capacity: 0 },
   bronzeBuyer: { name: 'Buyer', home: 'sculptureStudio', good: 'bronze', stores: ['storehouse'], delivers: false, capacity: STUDIO_BRONZE_CAPACITY },
+  marbleSupply: { name: 'Cart Pusher', home: 'storehouse', good: 'marble', stores: SANCTUARIES, delivers: true, capacity: 0 },
+  woodSupply: { name: 'Cart Pusher', home: 'storehouse', good: 'wood', stores: SANCTUARIES, delivers: true, capacity: 0 },
+  sculptureSupply: { name: 'Cart Pusher', home: 'storehouse', good: 'sculptures', stores: SANCTUARIES, delivers: true, capacity: 0 },
 };
 
 const STORE_SPACE: Record<Store, (stock: Record<Good, number>, good: Good) => number> = {
@@ -42,6 +46,9 @@ const STORE_SPACE: Record<Store, (stock: Record<Good, number>, good: Good) => nu
   storehouse: storehouseSpace,
   olivePress: (stock) => PRESS_OLIVE_CAPACITY - stock.olives,
   sculptureStudio: (stock) => STUDIO_BRONZE_CAPACITY - stock.bronze,
+  demeterSanctuary: (stock, good) => stillNeeded('demeterSanctuary', stock, good),
+  athenaSanctuary: (stock, good) => stillNeeded('athenaSanctuary', stock, good),
+  hephaestusSanctuary: (stock, good) => stillNeeded('hephaestusSanctuary', stock, good),
 };
 
 const GOODS: Good[] = ['food', 'fleece', 'olives', 'oil', 'wood', 'marble', 'bronze', 'sculptures'];
@@ -68,8 +75,8 @@ function isBringing(carrier: Carrier, store: Building): boolean {
 export function carrierDestinations(state: GameState, kind: CarrierKind): Building[] {
   const { stores, good, delivers } = CARRIER_SPECS[kind];
   for (const store of stores) {
-    const staffed = state.buildings.filter((b) => b.type === store && b.workers > 0);
-    const usable = delivers ? staffed.filter((s) => storeRoom(state, s, good) > 0) : staffed.filter((s) => s[good] >= UNITS_PER_LOAD);
+    const open = state.buildings.filter((b) => b.type === store && (b.workers > 0 || isSanctuary(b.type)));
+    const usable = delivers ? open.filter((s) => storeRoom(state, s, good) > 0) : open.filter((s) => s[good] >= UNITS_PER_LOAD);
     if (usable.length > 0) return usable;
   }
   return [];

@@ -1,10 +1,12 @@
 import { BUILDING_SPECS, buildingSize, footprintDistance } from './buildings';
 import { footprint } from './commands';
+import { isUnderConstruction } from './sanctuaries';
 import { tileIndex, type Building, type GameState } from './state';
 
 export function appealMap(state: GameState): number[] {
   const map = new Array<number>(state.size * state.size).fill(0);
   for (const building of state.buildings) {
+    if (isUnderConstruction(building)) continue;
     const { appeal } = BUILDING_SPECS[building.type];
     const { width, height } = buildingSize(building.type, building.rotation);
     const reach = appeal.length;

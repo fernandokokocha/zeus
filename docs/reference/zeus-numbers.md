@@ -199,3 +199,9 @@ https://zeus.heavengames.com/gameinfo/gods/
 - Sculpture Studio: holds **8 loads** of bronze and **4 sculptures** (1 sculpture = 1 load),
   casts one in **2 months** at full staff. Foundries send bronze to a studio with room before
   a storehouse.
+- Sanctuaries: the marble column is the **total**, the initial marble included. Placing one
+  takes its initial marble from storehouses, fullest first. Storehouse cart pushers bring the
+  rest, up to **4 loads** a cart.
+- Sanctuary construction: **5 stages**, each needing a fifth of every material on site and
+  **4 artisan visits**. A guild sends one artisan at a time, **a quarter month** apart at full
+  staff. A site hires nobody and radiates no appeal until finished.

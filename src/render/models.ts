@@ -4,6 +4,7 @@ import { CROP_STAGES, UNITS_PER_LOAD, cropStage } from '../sim/food';
 import { SLOT_SIZE, STOREHOUSE_GOODS, STOREHOUSE_SLOTS, slotsOf, type StoredGood } from '../sim/storehouse';
 import { houseLevel, type HouseLevel } from '../sim/housing';
 import { BRONZE_PER_SCULPTURE } from '../sim/materials';
+import { SANCTUARY_STAGES, builtStages, isFinished, materialNeeded, type Sanctuary, type SanctuaryMaterial } from '../sim/sanctuaries';
 import { isRipe } from '../sim/olives';
 import { isPerforming } from '../sim/schools';
 import { isBurning } from '../sim/safety';
@@ -1247,6 +1248,208 @@ function artisansGuildModel(): THREE.Object3D {
   return group;
 }
 
+const SANCTUARY_COLUMN_SPACING = 1.0;
+const SANCTUARY_COLUMN_HEIGHT = 1.5;
+const SANCTUARY_STEP = 0.1;
+const SANCTUARY_STEPS = 3;
+const PILE_LOADS = 4;
+const MAX_PILES = 6;
+const PILE_SCALE = 2.2;
+const PILE_SPACING = 1.3;
+
+interface TempleLayout {
+  x: number;
+  z: number;
+  width: number;
+  depth: number;
+}
+
+function templeLayout(type: Sanctuary): TempleLayout {
+  const { width: W, height: D } = BUILDING_SPECS[type];
+  const width = Math.round(W * 0.55);
+  const depth = Math.round(D * 0.45);
+  return { x: W / 2, z: 0.8 + depth / 2, width, depth };
+}
+
+function templePlatform({ x, z, width, depth }: TempleLayout): THREE.Object3D {
+  const group = new THREE.Group();
+  for (let i = 0; i < SANCTUARY_STEPS; i++) {
+    const inset = (SANCTUARY_STEPS - 1 - i) * 0.2;
+    group.add(box(width + 0.6 + inset * 2 - 0.4, SANCTUARY_STEP, depth + 0.6 + inset * 2 - 0.4, marble, x, i * SANCTUARY_STEP, z));
+  }
+  return group;
+}
+
+function columnSpots({ x, z, width, depth }: TempleLayout): [number, number][] {
+  const across = Math.round(width / SANCTUARY_COLUMN_SPACING);
+  const along = Math.round(depth / SANCTUARY_COLUMN_SPACING);
+  const spots: [number, number][] = [];
+  for (let i = 0; i <= across; i++) {
+    const cx = x - width / 2 + (i * width) / across;
+    spots.push([cx, z - depth / 2], [cx, z + depth / 2]);
+  }
+  for (let j = 1; j < along; j++) {
+    const cz = z - depth / 2 + (j * depth) / along;
+    spots.push([x - width / 2, cz], [x + width / 2, cz]);
+  }
+  return spots;
+}
+
+function templeColumns(layout: TempleLayout): THREE.Object3D {
+  const group = new THREE.Group();
+  const floor = SANCTUARY_STEPS * SANCTUARY_STEP;
+  for (const [cx, cz] of columnSpots(layout)) {
+    const shaft = columnAt(SANCTUARY_COLUMN_HEIGHT, marble, cx, floor, cz);
+    shaft.scale.set(1.8, SANCTUARY_COLUMN_HEIGHT, 1.8);
+    group.add(shaft);
+  }
+  return group;
+}
+
+function templeCellaAndBeams({ x, z, width, depth }: TempleLayout): THREE.Object3D {
+  const group = new THREE.Group();
+  const floor = SANCTUARY_STEPS * SANCTUARY_STEP;
+  group.add(box(width - 1.4, SANCTUARY_COLUMN_HEIGHT, depth - 1.4, plaster, x, floor, z));
+  group.add(box(0.7, 0.95, 0.02, doorway, x, floor, z + depth / 2 - 0.69));
+  group.add(box(width + 0.35, 0.22, depth + 0.35, marble, x, floor + SANCTUARY_COLUMN_HEIGHT, z));
+  return group;
+}
+
+function templeRoof({ x, z, width, depth }: TempleLayout): THREE.Object3D {
+  const roof = gableRoof(depth + 0.35, 0.75, width + 0.35, marble);
+  roof.rotation.y = Math.PI / 2;
+  roof.position.set(x, SANCTUARY_STEPS * SANCTUARY_STEP + SANCTUARY_COLUMN_HEIGHT + 0.22, z);
+  return roof;
+}
+
+function scaffolding({ x, z, width, depth }: TempleLayout, height: number): THREE.Object3D {
+  const group = new THREE.Group();
+  const corners = [-1, 1].flatMap((sx) => [-1, 1].map((sz) => [x + sx * (width / 2 + 0.55), z + sz * (depth / 2 + 0.55)]));
+  for (const [px, pz] of corners) group.add(box(0.07, height, 0.07, timber, px, 0, pz));
+  for (const level of [0.45, 0.9, 1.35].filter((y) => y < height)) {
+    for (const sz of [-1, 1]) group.add(box(width + 1.1, 0.05, 0.12, timber, x, level, z + sz * (depth / 2 + 0.55)));
+  }
+  return group;
+}
+
+function unusedLoads(site: Building, material: SanctuaryMaterial): number {
+  const used = (materialNeeded(site.type as Sanctuary, material) * builtStages(site)) / SANCTUARY_STAGES;
+  return Math.max(0, site[material] - used) / UNITS_PER_LOAD;
+}
+
+function materialPiles(site: Building): THREE.Object3D {
+  const group = new THREE.Group();
+  const { width: W, height: D } = BUILDING_SPECS[site.type];
+  const piles = (material: SanctuaryMaterial) => Math.min(MAX_PILES, Math.ceil(unusedLoads(site, material) / PILE_LOADS));
+  const pieces: ((x: number, z: number, turn: number) => THREE.Object3D)[] = [
+    ...Array.from({ length: piles('marble') }, () => (x: number, z: number, turn: number) => {
+      const pile = new THREE.Group();
+      pile.add(marbleBlock(x, 0.02, z, turn), marbleBlock(x + 0.2, 0.02, z + 0.05, -turn), marbleBlock(x + 0.1, 0.15, z, turn));
+      return pile;
+    }),
+    ...Array.from({ length: piles('wood') }, () => (x: number, z: number, turn: number) => logPile(x, 0.02, z, turn)),
+    ...Array.from({ length: piles('sculptures') }, () => (x: number, z: number) => statue(x, 0.02, z, 1.2)),
+  ];
+  const perRow = Math.floor((W - 1) / PILE_SPACING);
+  pieces.forEach((piece, i) => {
+    const pile = piece(0, 0, tileHash(i, 3) * 0.8 - 0.4);
+    pile.scale.setScalar(PILE_SCALE);
+    pile.position.set(1 + (i % perRow) * PILE_SPACING, 0, D - 1.2 - Math.floor(i / perRow) * PILE_SPACING);
+    group.add(pile);
+  });
+  return group;
+}
+
+function stakedOutline({ x, z, width, depth }: TempleLayout): THREE.Object3D {
+  const group = new THREE.Group();
+  for (const sx of [-1, 1]) {
+    for (const sz of [-1, 1]) group.add(box(0.05, 0.3, 0.05, timber, x + (sx * (width + 0.6)) / 2, 0, z + (sz * (depth + 0.6)) / 2));
+  }
+  for (const sz of [-1, 1]) group.add(box(width + 0.6, 0.01, 0.015, twine, x, 0.25, z + (sz * (depth + 0.6)) / 2));
+  for (const sx of [-1, 1]) group.add(box(0.015, 0.01, depth + 0.6, twine, x + (sx * (width + 0.6)) / 2, 0.25, z));
+  return group;
+}
+
+function altar(x: number, z: number): THREE.Object3D {
+  const group = new THREE.Group();
+  group.add(box(0.9, 0.4, 0.6, marble, x, 0.04, z));
+  group.add(box(1.0, 0.06, 0.7, marble, x, 0.44, z));
+  group.add(placed(tongue, flame, x, 0.5, z));
+  return group;
+}
+
+function grove(x: number, z: number, size: number): THREE.Object3D {
+  const group = new THREE.Group();
+  const trunk = columnAt(0.5 * size, timber, x, 0.04, z);
+  trunk.scale.set(1.4, 0.5 * size, 1.4);
+  group.add(trunk);
+  for (const [dx, dy, dz, s, leaf] of [
+    [0, 0.6, 0, 1.3, oliveLeaf],
+    [0.15, 0.7, 0.1, 1.0, oliveLeafDark],
+    [-0.12, 0.75, -0.08, 0.9, oliveLeaf],
+  ] as [number, number, number, number, THREE.Material][]) {
+    const crown = placed(shrub, leaf, x + dx * size, dy * size, z + dz * size);
+    crown.scale.set(s * size, 0.65 * s * size, s * size);
+    group.add(crown);
+  }
+  return group;
+}
+
+const PRECINCT_GARDENS: Record<Sanctuary, (W: number, D: number) => THREE.Object3D> = {
+  demeterSanctuary: (W, D) => {
+    const group = new THREE.Group();
+    for (const side of [-1, 1]) {
+      const bedX = W / 2 + side * (W / 4 + 0.8);
+      group.add(box(W / 3, 0.05, D * 0.35, furrow, bedX, 0.04, D * 0.72));
+      for (let row = 0; row < 5; row++) group.add(box(W / 3 - 0.3, 0.14, 0.18, ripeWheat, bedX, 0.09, D * 0.72 - D * 0.14 + row * D * 0.07));
+    }
+    return group;
+  },
+  athenaSanctuary: (W, D) => {
+    const group = new THREE.Group();
+    for (const side of [-1, 1]) {
+      for (const [dx, dz] of [[1.2, 0.62], [2.6, 0.7], [1.8, 0.85], [3.3, 0.88]]) group.add(grove(W / 2 + side * dx * (W / 10), D * dz, 1.6));
+    }
+    return group;
+  },
+  hephaestusSanctuary: (W, D) => {
+    const group = new THREE.Group();
+    for (const side of [-1, 1]) {
+      const fx = W / 2 + side * (W / 4 + 0.6);
+      group.add(box(1.1, 0.6, 0.9, fieldstone, fx, 0.04, D * 0.72));
+      group.add(box(0.5, 0.3, 0.02, glow, fx, 0.1, D * 0.72 + 0.46));
+      group.add(smokePlume(fx, 0.8, D * 0.72));
+      group.add(box(0.5, 0.3, 0.22, steel, fx, 0.04, D * 0.72 + 0.9));
+      group.add(box(0.7, 0.08, 0.3, steel, fx, 0.34, D * 0.72 + 0.9));
+    }
+    return group;
+  },
+};
+
+function sanctuaryModel(site: Building): THREE.Object3D {
+  const type = site.type as Sanctuary;
+  const { width: W, height: D } = BUILDING_SPECS[type];
+  const layout = templeLayout(type);
+  const built = builtStages(site);
+  const group = new THREE.Group();
+  group.add(box(W - 0.1, 0.04, D - 0.1, isFinished(site) ? paving : earth, W / 2, 0, D / 2));
+  if (built === 0) group.add(stakedOutline(layout));
+  if (built >= 1) group.add(templePlatform(layout));
+  if (built >= 2) group.add(templeColumns(layout));
+  if (built >= 3) group.add(templeCellaAndBeams(layout));
+  if (built >= 4) group.add(templeRoof(layout));
+  if (!isFinished(site)) {
+    if (built >= 1) group.add(scaffolding(layout, built >= 3 ? 1.9 : 1.0));
+    group.add(materialPiles(site));
+    return group;
+  }
+  group.add(box(2.2, 0.03, D - layout.z - layout.depth / 2 - 0.3, marble, W / 2, 0.04, (D + layout.z + layout.depth / 2) / 2));
+  group.add(statue(W / 2, 0.04, D - 1.6, 5));
+  group.add(altar(W / 2, D - 3));
+  group.add(PRECINCT_GARDENS[type](W, D));
+  return group;
+}
+
 const MODELS: Record<Exclude<BuildingType, 'house'>, (building: Building, state: GameState) => THREE.Object3D> = {
   fountain: (b) => fountainModel(b.workers > 0),
   taxOffice: (b) => taxOfficeModel(b.workers > 0),
@@ -1276,6 +1479,9 @@ const MODELS: Record<Exclude<BuildingType, 'house'>, (building: Building, state:
   sculptureStudio: sculptureStudioModel,
   artisansGuild: artisansGuildModel,
   maintenanceOffice: maintenanceOfficeModel,
+  demeterSanctuary: sanctuaryModel,
+  athenaSanctuary: sanctuaryModel,
+  hephaestusSanctuary: sanctuaryModel,
   ruins: (b, state) => ruinsModel(b, isBurning(state, b)),
 };
 

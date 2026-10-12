@@ -1,10 +1,14 @@
 import { BUILDING_SPECS, type BuildingType } from '../sim/buildings';
+import { SANCTUARY_SPECS, type Sanctuary } from '../sim/sanctuaries';
 import { ROADBLOCK_COST, ROAD_TILE_COST, SHEEP_COST } from '../sim/treasury';
 
 export type SingleBuilding = Exclude<BuildingType, 'house' | 'ruins'>;
 export type Tool = 'road' | 'roadblock' | 'house' | SingleBuilding | 'sheep' | 'demolish';
 
 const priced = (type: BuildingType) => `${BUILDING_SPECS[type].name} (${BUILDING_SPECS[type].cost} dr)`;
+
+const sanctuaryLabel = (type: Sanctuary) =>
+  `${BUILDING_SPECS[type].name} (${BUILDING_SPECS[type].cost} dr + ${SANCTUARY_SPECS[type].initialMarbleLoads} marble)`;
 
 export const TOOL_LABELS: Record<Tool, string> = {
   road: `Road (${ROAD_TILE_COST} dr)`,
@@ -38,6 +42,9 @@ export const TOOL_LABELS: Record<Tool, string> = {
   sculptureStudio: priced('sculptureStudio'),
   artisansGuild: priced('artisansGuild'),
   maintenanceOffice: priced('maintenanceOffice'),
+  demeterSanctuary: sanctuaryLabel('demeterSanctuary'),
+  athenaSanctuary: sanctuaryLabel('athenaSanctuary'),
+  hephaestusSanctuary: sanctuaryLabel('hephaestusSanctuary'),
   sheep: `Sheep (${SHEEP_COST} dr)`,
   demolish: 'Demolish',
 };
@@ -58,7 +65,7 @@ export const TOOL_GROUPS: ToolGroup[] = [
   { name: 'Hygiene', tools: ['fountain'] },
   { name: 'Safety', tools: ['maintenanceOffice'] },
   { name: 'Administration', tools: ['palace', 'taxOffice'] },
-  { name: 'Mythology', tools: ['artisansGuild'] },
+  { name: 'Mythology', tools: ['artisansGuild', 'demeterSanctuary', 'athenaSanctuary', 'hephaestusSanctuary'] },
   { name: 'Culture', tools: ['college', 'podium', 'gymnasium', 'dramaSchool', 'theater'] },
   { name: 'Aesthetics', tools: ['park', 'column', 'flowerGarden'] },
   { name: 'Demolish', tools: ['demolish'] },
