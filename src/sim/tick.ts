@@ -4,6 +4,7 @@ import { settleMonth } from './economy';
 import { eat, growCrops, harvestIfDue } from './food';
 import { evolveHouses } from './housing';
 import { assignWorkers } from './labor';
+import { tickMaterials } from './materials';
 import { tickOlives } from './olives';
 import { tickSafety } from './safety';
 import { tickRoamers } from './roamers';
@@ -27,6 +28,7 @@ export function tick(state: GameState): void {
   tickSchools(state);
   tickSheep(state);
   tickOlives(state);
+  tickMaterials(state);
   evolveHouses(state);
   tickSafety(state);
 }

@@ -9,7 +9,8 @@ export type Speed = 0 | 1 | 2 | 4;
 export type PlayingSpeed = Exclude<Speed, 0>;
 
 export type HouseGood = 'food' | 'fleece' | 'oil';
-export type Good = HouseGood | 'olives';
+export type Material = 'wood' | 'marble' | 'bronze';
+export type Good = HouseGood | 'olives' | Material | 'sculptures';
 export type Culture = 'philosophy' | 'athletics' | 'drama';
 export type Service = 'water' | 'tax' | HouseGood | Culture | 'maintenance';
 export type Coverage = Exclude<Service, HouseGood | 'maintenance'>;
@@ -31,6 +32,10 @@ export interface Building {
   fleece: number;
   olives: number;
   oil: number;
+  wood: number;
+  marble: number;
+  bronze: number;
+  sculptures: number;
   growth: number;
   production: number;
   performingUntil: number;
@@ -92,7 +97,29 @@ export interface Grower extends Walk {
   returning: boolean;
 }
 
-export type CarrierKind = 'cartPusher' | 'buyer' | 'fleeceCart' | 'fleeceBuyer' | 'oliveCart' | 'oilCart' | 'oliveBuyer' | 'oilBuyer';
+export interface Gatherer extends Walk {
+  id: number;
+  homeId: number;
+  good: Material;
+  site: Point;
+  load: number;
+  returning: boolean;
+}
+
+export type CarrierKind =
+  | 'cartPusher'
+  | 'buyer'
+  | 'fleeceCart'
+  | 'fleeceBuyer'
+  | 'oliveCart'
+  | 'oilCart'
+  | 'oliveBuyer'
+  | 'oilBuyer'
+  | 'woodCart'
+  | 'marbleCart'
+  | 'bronzeCart'
+  | 'sculptureCart'
+  | 'bronzeBuyer';
 
 export interface Carrier extends Walk {
   id: number;
@@ -103,6 +130,10 @@ export interface Carrier extends Walk {
   fleece: number;
   olives: number;
   oil: number;
+  wood: number;
+  marble: number;
+  bronze: number;
+  sculptures: number;
   returning: boolean;
 }
 
@@ -128,6 +159,9 @@ export interface GameState {
   nextShepherdId: number;
   growers: Grower[];
   nextGrowerId: number;
+  gatherers: Gatherer[];
+  nextGathererId: number;
+  felledUntil: number[];
   rngState: number;
   entry: Point;
   treasury: number;
@@ -166,6 +200,9 @@ export function newGameState(size: number, terrain: Terrain[], entry: Point): Ga
     nextShepherdId: 1,
     growers: [],
     nextGrowerId: 1,
+    gatherers: [],
+    nextGathererId: 1,
+    felledUntil: new Array<number>(size * size).fill(0),
     rngState: DEFAULT_SEED,
     entry,
     treasury: STARTING_TREASURY,

@@ -12,7 +12,7 @@ delivers it.
 - [x] 7 · Olive oil
 - [x] 8 · Safety
 - [x] 9 · Map modes
-- [ ] 10 · Materials & sculpture
+- [x] 10 · Materials & sculpture
 - [ ] 11 · Sanctuaries
 - [ ] 12 · God favors
 

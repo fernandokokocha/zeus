@@ -24,6 +24,11 @@ export type BuildingType =
   | 'growersLodge'
   | 'olivePress'
   | 'oilVendor'
+  | 'timberMill'
+  | 'masonryShop'
+  | 'foundry'
+  | 'sculptureStudio'
+  | 'artisansGuild'
   | 'maintenanceOffice'
   | 'ruins';
 
@@ -61,6 +66,11 @@ export const BUILDING_SPECS: Record<BuildingType, BuildingSpec> = {
   growersLodge: { name: "Growers' Lodge", width: 2, height: 2, cost: 25, workers: 12, appeal: [-3, -2], needsRoad: true },
   olivePress: { name: 'Olive Press', width: 2, height: 2, cost: 45, workers: 12, appeal: [-4, -4, -2, -2], needsRoad: true },
   oilVendor: { name: 'Oil Vendor', width: 2, height: 2, cost: 10, workers: 4, appeal: [], needsRoad: true },
+  timberMill: { name: 'Timber Mill', width: 2, height: 2, cost: 35, workers: 12, appeal: [-5, -4, -3, -2], needsRoad: true },
+  masonryShop: { name: 'Masonry Shop', width: 2, height: 2, cost: 75, workers: 15, appeal: [-6, -5, -4, -3], needsRoad: true },
+  foundry: { name: 'Foundry', width: 2, height: 2, cost: 60, workers: 15, appeal: [-10, -9, -8, -7, -6, -5], needsRoad: true },
+  sculptureStudio: { name: 'Sculpture Studio', width: 2, height: 2, cost: 100, workers: 12, appeal: [-2, -1], needsRoad: true },
+  artisansGuild: { name: "Artisans' Guild", width: 2, height: 2, cost: 35, workers: 25, appeal: [-6, -6, -5], needsRoad: true },
   maintenanceOffice: { name: 'Maintenance Office', width: 2, height: 2, cost: 10, workers: 5, appeal: [], needsRoad: true },
   ruins: { name: 'Ruins', width: 1, height: 1, cost: 0, workers: 0, appeal: [], needsRoad: false },
 };

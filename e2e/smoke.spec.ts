@@ -34,7 +34,7 @@ async function place(page: Page, group: string | null, tool: RegExp, at: [number
   await drag(page, at, at);
 }
 
-test('boots, builds a street with services, food, culture, fleece, oil and decorations and maintenance, and settlers move in', async ({ page }) => {
+test('boots, builds a street with services, food, culture, fleece, oil, materials and decorations and maintenance, and settlers move in', async ({ page }) => {
   test.setTimeout(180_000);
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
@@ -46,7 +46,7 @@ test('boots, builds a street with services, food, culture, fleece, oil and decor
   await expect(page.locator('#date')).toHaveText('January, Year 1');
   await expect(page.locator('#population')).toHaveText('Population 0');
   await expect(page.locator('#treasury')).toHaveText('5,000 dr');
-  await expect(page.locator('#toolbar button')).toHaveCount(12);
+  await expect(page.locator('#toolbar button')).toHaveCount(13);
 
   await page.getByRole('button', { name: 'Demolish' }).click();
   await drag(page, [8, 38], [30, 57]);
@@ -82,6 +82,13 @@ test('boots, builds a street with services, food, culture, fleece, oil and decor
   await place(page, 'Industry', /^Olive Press/, [29, 43]);
   await place(page, 'Distribution', /^Oil Vendor/, [17, 55]);
   await place(page, null, /^Maintenance Office/, [9, 46]);
+  await page.getByRole('button', { name: /^Road \(/ }).click();
+  await drag(page, [29, 50], [35, 50]);
+  await place(page, 'Industry', /^Timber Mill/, [33, 51]);
+  await place(page, 'Industry', /^Masonry Shop/, [31, 51]);
+  await place(page, 'Industry', /^Foundry/, [31, 48]);
+  await place(page, 'Industry', /^Sculpture Studio/, [33, 48]);
+  await place(page, null, /^Artisans' Guild/, [35, 48]);
   await page.keyboard.press('r');
   await expect(page.locator('#status')).toHaveText('Rotated 90° counterclockwise');
   await page.keyboard.press('Escape');

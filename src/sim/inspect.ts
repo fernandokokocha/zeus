@@ -9,6 +9,19 @@ import { GRANARY_CAPACITY, HARVEST_MONTH, UNITS_PER_LOAD, VENDOR_CAPACITY, month
 import { type HouseLevel, HOUSE_LEVELS, LEVEL_CHANGE_TICKS, NEXT_LEVEL, PREVIOUS_LEVEL, houseCapacity, houseLevel, houseName, lacksCulture, missingNeeds } from './housing';
 import { ROAMER_SPECS, hasService, isGood, type RoamerSpec, roamerKindSentBy, serviceLeft } from './roamers';
 import { TRAINEE_SPECS, isPerforming, staffedVenues, traineeKindFor, traineeKindSentBy } from './schools';
+import {
+  BRONZE_PER_SCULPTURE,
+  CASTING_TICKS,
+  RESOURCE_RANGE,
+  STUDIO_BRONZE_CAPACITY,
+  WORKSHOP_CAPACITY,
+  WORKSHOP_SPECS,
+  canCast,
+  isFelled,
+  isWorkshop,
+  sitesToWork,
+  type Workshop,
+} from './materials';
 import { GROVE_RANGE, LODGE_CAPACITY, PRESSING_TICKS, PRESS_OLIVE_CAPACITY, canPress, growerAfter, isRipe, treesToPick } from './olives';
 import { canBurn, canCollapse, isBurning, riskShare } from './safety';
 import { canSettlersReach } from './settlers';
@@ -20,6 +33,7 @@ import {
   tileIndex,
   type Building,
   type Carrier,
+  type Gatherer,
   type GameState,
   type Good,
   type Grower,
@@ -68,6 +82,8 @@ return description;
   if (shepherd) return describeShepherd(state, shepherd);
   const grower = state.growers.find(standsHere);
   if (grower) return describeGrower(state, grower);
+  const gatherer = state.gatherers.find(standsHere);
+  if (gatherer) return describeGatherer(state, gatherer);
   const sheep = state.sheep.find(standsHere);
   if (sheep) return describeSheep(state, sheep);
 
@@ -75,10 +91,9 @@ return description;
   if (state.roads[i]) return { title: 'Road', lines: [`Tile ${x}, ${y}`] };
 
   const terrain = state.terrain[i];
-  return {
-    title: TERRAIN_NAMES[terrain],
-    lines: [`Tile ${x}, ${y}`, BUILDABLE.has(terrain) ? 'Buildable' : 'Not buildable'],
-  };
+  const lines = [`Tile ${x}, ${y}`, BUILDABLE.has(terrain) ? 'Buildable' : 'Not buildable'];
+  if (isFelled(state, { x, y })) lines.push(`Felled: grows back in ${Math.ceil((state.felledUntil[i] - state.tick) / TICKS_PER_MONTH)} months`);
+  return { title: TERRAIN_NAMES[terrain], lines };
 }
 
 function amount(value: number): string {
@@ -94,7 +109,16 @@ function loads(units: number): string {
   return `${amount(count)} ${count === 1 ? 'load' : 'loads'}`;
 }
 
-const GOOD_NAMES: Record<Good, string> = { food: 'wheat', fleece: 'fleece', olives: 'olives', oil: 'oil' };
+const GOOD_NAMES: Record<Good, string> = {
+  food: 'wheat',
+  fleece: 'fleece',
+  olives: 'olives',
+  oil: 'oil',
+  wood: 'wood',
+  marble: 'marble',
+  bronze: 'bronze',
+  sculptures: 'sculptures',
+};
 
 const CARRIER_HOMES: Record<Carrier['kind'], string> = {
   cartPusher: 'farm',
@@ -105,6 +129,11 @@ const CARRIER_HOMES: Record<Carrier['kind'], string> = {
   oilCart: 'press',
   oliveBuyer: 'press',
   oilBuyer: 'stall',
+  woodCart: 'mill',
+  marbleCart: 'shop',
+  bronzeCart: 'foundry',
+  sculptureCart: 'studio',
+  bronzeBuyer: 'studio',
 };
 
 function describeHouse(state: GameState, house: Building): Description {
@@ -221,6 +250,18 @@ case 'olivePress':
   ];
     case 'cardingShed':
       return building.fleece > 0 ? [`Fleece waiting: ${loads(building.fleece)}`] : [];
+    case 'timberMill':
+    case 'masonryShop':
+    case 'foundry': {
+      const { good } = WORKSHOP_SPECS[building.type];
+      return building[good] > 0 ? [`${capitalized(GOOD_NAMES[good])} waiting: ${loads(building[good])}`] : [];
+    }
+    case 'sculptureStudio':
+      return [
+        `Bronze: ${amount(building.bronze / UNITS_PER_LOAD)} of ${STUDIO_BRONZE_CAPACITY / UNITS_PER_LOAD} loads`,
+        ...(building.sculptures > 0 ? [`Sculptures waiting: ${amount(building.sculptures / UNITS_PER_LOAD)}`] : []),
+        castingStatus(building),
+      ];
     case 'foodVendor':
     case 'fleeceVendor':
     case 'oilVendor': {
@@ -240,6 +281,12 @@ case 'olivePress':
 
 function capitalized(text: string): string {
   return `${text[0].toUpperCase()}${text.slice(1)}`;
+}
+
+function castingStatus(studio: Building): string {
+  if (canCast(studio)) return `Casting: ${Math.round((studio.production / CASTING_TICKS) * 100)}% of a sculpture`;
+  if (studio.bronze < BRONZE_PER_SCULPTURE) return `Waits for ${loads(BRONZE_PER_SCULPTURE)} of bronze`;
+  return 'Full of sculptures: waits for its cart';
 }
 
 function pressStatus(press: Building): string {
@@ -266,6 +313,8 @@ function walkerLines(state: GameState, building: Building): string[] {
   }
   if (building.type === 'cardingShed') lines.push(shepherdStatus(state, building));
   if (building.type === 'growersLodge') lines.push(growerStatus(state, building));
+  if (isWorkshop(building.type)) lines.push(gathererStatus(state, building, building.type));
+  if (building.type === 'artisansGuild') lines.push('Artisans wait for a sanctuary to build');
   for (const kind of carrierKindsSentBy(building.type)) lines.push(carrierStatus(state, building, kind));
   const traineeKind = traineeKindSentBy(building.type);
   if (traineeKind) lines.push(traineeStatus(state, building, traineeKind));
@@ -308,6 +357,16 @@ function growerStatus(state: GameState, lodge: Building): string {
   if (lodge.olives >= LODGE_CAPACITY) return 'Grower waits: the lodge is full';
   if (treesToPick(state, lodge).length === 0) return `Grower waits for a ripe olive tree within ${GROVE_RANGE} tiles`;
   return 'Grower resting';
+}
+
+function gathererStatus(state: GameState, shop: Building, type: Workshop): string {
+  const { gatherer: name, work, site, home, good, resource } = WORKSHOP_SPECS[type];
+  const gatherer = state.gatherers.find((g) => g.homeId === shop.id);
+  if (gatherer && !gatherer.returning) return `${name} out to ${work} the ${site} at ${gatherer.site.x}, ${gatherer.site.y}`;
+  if (gatherer) return `${name} ${gatherer.load > 0 ? `bringing ${GOOD_NAMES[good]} home` : 'returning home'}`;
+  if (shop[good] >= WORKSHOP_CAPACITY) return `${name} waits: the ${home} is full`;
+  if (sitesToWork(state, shop, type).length === 0) return `${name} waits for ${TERRAIN_NAMES[resource].toLowerCase()} within ${RESOURCE_RANGE} tiles`;
+  return `${name} resting`;
 }
 
 function withArticle(noun: string): string {
@@ -407,6 +466,18 @@ function growerErrand(state: GameState, grower: Grower): string {
   const tree = buildingById(state, grower.treeId);
   if (!grower.returning && tree) return `Going to pick the olive tree at ${tree.x}, ${tree.y}`;
   return grower.olives > 0 ? `Bringing ${loads(grower.olives)} of olives home` : 'Returning home';
+}
+
+function describeGatherer(state: GameState, gatherer: Gatherer): Description {
+  const shop = buildingById(state, gatherer.homeId);
+  if (!shop || !isWorkshop(shop.type)) throw new Error(`Gatherer ${gatherer.id} comes from no workshop`);
+  const { gatherer: name, work, site } = WORKSHOP_SPECS[shop.type];
+  const errand = gatherer.returning
+    ? gatherer.load > 0
+      ? `Bringing ${loads(gatherer.load)} of ${GOOD_NAMES[gatherer.good]} home`
+      : 'Returning home'
+    : `Going to ${work} the ${site} at ${gatherer.site.x}, ${gatherer.site.y}`;
+  return { title: name, lines: [homeLine(state, gatherer.homeId), errand] };
 }
 
 function describeSheep(state: GameState, sheep: Sheep): Description {

@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import type { CarrierKind, GameState, RoamerKind, TraineeKind, Walk } from '../sim/state';
+import type { CarrierKind, GameState, Material, RoamerKind, TraineeKind, Walk } from '../sim/state';
+import { CARRIER_SPECS } from '../sim/carriers';
 import { FULL_FLEECE } from '../sim/sheep';
 import { WALKER_TILES_PER_TICK, walkerPosition } from '../sim/walking';
 import { PALETTE } from './palette';
@@ -14,7 +15,25 @@ interface Part {
   color: number;
 }
 
-type Figure = 'settler' | RoamerKind | CarrierKind | TraineeKind | 'shepherd' | 'shepherdWithFleece' | 'grower' | 'growerWithOlives' | SheepCoat;
+type Figure =
+  | 'settler'
+  | RoamerKind
+  | CarrierKind
+  | TraineeKind
+  | 'shepherd'
+  | 'shepherdWithFleece'
+  | 'grower'
+  | 'growerWithOlives'
+  | GathererFigure
+  | SheepCoat;
+
+type GathererFigure = 'lumberjack' | 'lumberjackWithLog' | 'quarryman' | 'quarrymanWithBlock' | 'miner' | 'minerWithOre';
+
+const GATHERER_FIGURES: Record<Material, { empty: GathererFigure; laden: GathererFigure }> = {
+  wood: { empty: 'lumberjack', laden: 'lumberjackWithLog' },
+  marble: { empty: 'quarryman', laden: 'quarrymanWithBlock' },
+  bronze: { empty: 'miner', laden: 'minerWithOre' },
+};
 
 type SheepCoat = 'shornSheep' | 'halfGrownSheep' | 'woollySheep';
 
@@ -84,6 +103,42 @@ function cart(load: Part[]): Part[] {
   ];
 }
 
+const logOnShoulder: Part = {
+  geometry: new THREE.CylinderGeometry(0.035, 0.035, 0.34, 8).rotateX(Math.PI / 2).translate(0.07, 0.3, 0),
+  color: PALETTE.log,
+};
+
+const marbleChunk = (x: number, y: number, z: number, size: number): Part => ({
+  geometry: new THREE.BoxGeometry(0.12 * size, 0.09 * size, 0.1 * size).translate(x, y, z),
+  color: PALETTE.marble,
+});
+
+const oreLump = (x: number, y: number, z: number, size: number): Part => ({
+  geometry: new THREE.DodecahedronGeometry(0.05 * size).translate(x, y, z),
+  color: PALETTE.ore,
+});
+
+const ingot = (x: number, y: number, z: number): Part => ({
+  geometry: new THREE.BoxGeometry(0.11, 0.035, 0.05).translate(x, y, z),
+  color: PALETTE.bronze,
+});
+
+function tool(head: THREE.BufferGeometry): Part[] {
+  return [
+    { geometry: new THREE.CylinderGeometry(0.01, 0.01, 0.3, 6).rotateZ(0.4).translate(0.1, 0.2, 0.04), color: PALETTE.trunk },
+    { geometry: head.translate(0.16, 0.33, 0.04), color: PALETTE.axeHead },
+  ];
+}
+
+const lumberjack: Part[] = [...body(PALETTE.lumberjackTunic), ...tool(new THREE.BoxGeometry(0.03, 0.08, 0.06))];
+const quarryman: Part[] = [...body(PALETTE.quarrymanTunic), ...tool(new THREE.BoxGeometry(0.12, 0.025, 0.025).rotateZ(-0.4))];
+const miner: Part[] = [...body(PALETTE.minerTunic), ...tool(new THREE.BoxGeometry(0.12, 0.025, 0.025).rotateZ(-0.4))];
+
+const statuette: Part[] = [
+  { geometry: new THREE.CylinderGeometry(0.035, 0.045, 0.16, 8).translate(0, 0.22, 0.22), color: PALETTE.bronze },
+  { geometry: new THREE.SphereGeometry(0.035, 8, 6).translate(0, 0.33, 0.22), color: PALETTE.bronze },
+];
+
 const smallAmphora = (x: number, y: number, z: number): Part => ({ geometry: jar.clone().translate(x, y, z), color: PALETTE.terracotta });
 
 const FIGURES: Record<Figure, Part[]> = {
@@ -108,6 +163,20 @@ const FIGURES: Record<Figure, Part[]> = {
     smallAmphora(0, 0.37, 0),
     { geometry: new THREE.CylinderGeometry(0.03, 0.03, 0.01, 8).translate(0, 0.545, 0), color: PALETTE.oil },
   ],
+  lumberjack,
+  lumberjackWithLog: [...body(PALETTE.lumberjackTunic), logOnShoulder],
+  quarryman,
+  quarrymanWithBlock: [...body(PALETTE.quarrymanTunic), marbleChunk(0, 0.38, 0, 1)],
+  miner,
+  minerWithOre: [...body(PALETTE.minerTunic), oreLump(0, 0.38, 0, 1.2)],
+  woodCart: cart([
+    { geometry: new THREE.CylinderGeometry(0.035, 0.035, 0.24, 8).rotateX(Math.PI / 2).translate(-0.05, 0.17, 0.22), color: PALETTE.log },
+    { geometry: new THREE.CylinderGeometry(0.035, 0.035, 0.24, 8).rotateX(Math.PI / 2).translate(0.05, 0.17, 0.22), color: PALETTE.log },
+  ]),
+  marbleCart: cart([marbleChunk(0, 0.19, 0.22, 1.3)]),
+  bronzeCart: cart([ingot(-0.04, 0.155, 0.2), ingot(0.04, 0.155, 0.26), oreLump(0, 0.2, 0.23, 0.6)]),
+  sculptureCart: cart(statuette),
+  bronzeBuyer: [...body(PALETTE.bronzeBuyerTunic), ingot(0.1, 0.12, 0.02)],
   shepherd,
   shepherdWithFleece: [
     ...shepherd,
@@ -217,8 +286,14 @@ export function createWalkerLayer(): { group: THREE.Group; sync(state: GameState
       for (const kind of ['waterCarrier', 'taxCollector', 'peddler', 'fleecePeddler', 'oilPeddler', 'philosopher', 'athlete', 'actor', 'superintendent'] as const) {
         sets[kind].show(state.roamers.filter((r) => r.kind === kind), ticksAhead);
       }
-      for (const kind of ['cartPusher', 'buyer', 'fleeceCart', 'fleeceBuyer', 'oliveCart', 'oilCart', 'oliveBuyer', 'oilBuyer'] as const) {
+      for (const kind of Object.keys(CARRIER_SPECS) as CarrierKind[]) {
         sets[kind].show(state.carriers.filter((c) => c.kind === kind), ticksAhead);
+      }
+      for (const good of Object.keys(GATHERER_FIGURES) as Material[]) {
+        const { empty, laden } = GATHERER_FIGURES[good];
+        const gatherers = state.gatherers.filter((g) => g.good === good);
+        sets[empty].show(gatherers.filter((g) => g.load === 0), ticksAhead);
+        sets[laden].show(gatherers.filter((g) => g.load > 0), ticksAhead);
       }
       for (const kind of ['philosopherTrainee', 'actorTrainee'] as const) {
         sets[kind].show(state.trainees.filter((t) => t.kind === kind), ticksAhead);

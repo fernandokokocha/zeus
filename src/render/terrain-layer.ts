@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { isFelled } from '../sim/materials';
 import type { Point } from '../sim/point';
 import { tileIndex, type GameState } from '../sim/state';
 import type { Terrain } from '../sim/terrain';
@@ -7,11 +8,14 @@ import { PALETTE, TERRAIN_COLORS, tileHash } from './palette';
 const SHADE_VARIATION = 0.08;
 
 const lambert = (color: number) => new THREE.MeshLambertMaterial({ color });
-const SCATTERED: { terrain: Terrain; geometry: THREE.BufferGeometry; material: THREE.Material }[] = [
-  { terrain: 'forest', geometry: new THREE.ConeGeometry(0.32, 0.9, 6).translate(0, 0.75, 0), material: lambert(PALETTE.foliage) },
-  { terrain: 'forest', geometry: new THREE.CylinderGeometry(0.06, 0.08, 0.3).translate(0, 0.15, 0), material: lambert(PALETTE.trunk) },
-  { terrain: 'marble', geometry: new THREE.DodecahedronGeometry(0.38).translate(0, 0.2, 0), material: lambert(PALETTE.marbleRock) },
-  { terrain: 'copper', geometry: new THREE.DodecahedronGeometry(0.32).translate(0, 0.15, 0), material: lambert(PALETTE.copperRock) },
+type Cover = Terrain | 'stump';
+
+const SCATTERED: { cover: Cover; geometry: THREE.BufferGeometry; material: THREE.Material }[] = [
+  { cover: 'forest', geometry: new THREE.ConeGeometry(0.32, 0.9, 6).translate(0, 0.75, 0), material: lambert(PALETTE.foliage) },
+  { cover: 'forest', geometry: new THREE.CylinderGeometry(0.06, 0.08, 0.3).translate(0, 0.15, 0), material: lambert(PALETTE.trunk) },
+  { cover: 'stump', geometry: new THREE.CylinderGeometry(0.08, 0.1, 0.08).translate(0, 0.04, 0), material: lambert(PALETTE.log) },
+  { cover: 'marble', geometry: new THREE.DodecahedronGeometry(0.38).translate(0, 0.2, 0), material: lambert(PALETTE.marbleRock) },
+  { cover: 'copper', geometry: new THREE.DodecahedronGeometry(0.32).translate(0, 0.15, 0), material: lambert(PALETTE.copperRock) },
 ];
 const groundMaterial = new THREE.MeshLambertMaterial({ vertexColors: true });
 
@@ -31,7 +35,7 @@ export function createTerrainLayer(): { group: THREE.Group; sync(state: GameStat
       group.clear();
 
       ground = groundMesh(state);
-      scattered = SCATTERED.map((s) => scatter(tilesOf(state, s.terrain), s.geometry, s.material));
+      scattered = SCATTERED.map((s) => scatter(tilesOf(state, s.cover), s.geometry, s.material));
       group.add(ground, ...scattered);
     },
   };
@@ -56,11 +60,16 @@ function groundMesh(state: GameState): THREE.Mesh {
   return new THREE.Mesh(geometry, groundMaterial);
 }
 
-function tilesOf(state: GameState, kind: Terrain): Point[] {
+function coverOf(state: GameState, x: number, y: number): Cover {
+  const terrain = state.terrain[tileIndex(state, x, y)];
+  return terrain === 'forest' && isFelled(state, { x, y }) ? 'stump' : terrain;
+}
+
+function tilesOf(state: GameState, cover: Cover): Point[] {
   const tiles: Point[] = [];
-  state.terrain.forEach((terrain, i) => {
-    if (terrain === kind) tiles.push({ x: i % state.size, y: Math.floor(i / state.size) });
-  });
+  for (let y = 0; y < state.size; y++) {
+    for (let x = 0; x < state.size; x++) if (coverOf(state, x, y) === cover) tiles.push({ x, y });
+  }
   return tiles;
 }
 

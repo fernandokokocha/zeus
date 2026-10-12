@@ -4,12 +4,13 @@ import { BUYER_LOAD, CART_LOAD, GRANARY_CAPACITY, UNITS_PER_LOAD, VENDOR_CAPACIT
 import { findRoadPath, nearestByRoad } from './pathfinding';
 import type { Point } from './point';
 import { exitTile } from './roamers';
+import { STUDIO_BRONZE_CAPACITY } from './materials';
 import { PRESS_OLIVE_CAPACITY } from './olives';
 import { storehouseSpace } from './storehouse';
 import { NO_BUILDING, buildingById, type Building, type Carrier, type CarrierKind, type GameState, type Good } from './state';
 import { isRoad, walkPath } from './walking';
 
-type Store = 'granary' | 'storehouse' | 'olivePress';
+type Store = 'granary' | 'storehouse' | 'olivePress' | 'sculptureStudio';
 
 export interface CarrierSpec {
   name: string;
@@ -29,15 +30,21 @@ export const CARRIER_SPECS: Record<CarrierKind, CarrierSpec> = {
   oilCart: { name: 'Cart Pusher', home: 'olivePress', good: 'oil', stores: ['storehouse'], delivers: true, capacity: 0 },
   oliveBuyer: { name: 'Buyer', home: 'olivePress', good: 'olives', stores: ['storehouse'], delivers: false, capacity: PRESS_OLIVE_CAPACITY },
   oilBuyer: { name: 'Buyer', home: 'oilVendor', good: 'oil', stores: ['storehouse'], delivers: false, capacity: VENDOR_CAPACITY },
+  woodCart: { name: 'Cart Pusher', home: 'timberMill', good: 'wood', stores: ['storehouse'], delivers: true, capacity: 0 },
+  marbleCart: { name: 'Cart Pusher', home: 'masonryShop', good: 'marble', stores: ['storehouse'], delivers: true, capacity: 0 },
+  bronzeCart: { name: 'Cart Pusher', home: 'foundry', good: 'bronze', stores: ['sculptureStudio', 'storehouse'], delivers: true, capacity: 0 },
+  sculptureCart: { name: 'Cart Pusher', home: 'sculptureStudio', good: 'sculptures', stores: ['storehouse'], delivers: true, capacity: 0 },
+  bronzeBuyer: { name: 'Buyer', home: 'sculptureStudio', good: 'bronze', stores: ['storehouse'], delivers: false, capacity: STUDIO_BRONZE_CAPACITY },
 };
 
 const STORE_SPACE: Record<Store, (stock: Record<Good, number>, good: Good) => number> = {
   granary: (stock) => GRANARY_CAPACITY - stock.food,
   storehouse: storehouseSpace,
   olivePress: (stock) => PRESS_OLIVE_CAPACITY - stock.olives,
+  sculptureStudio: (stock) => STUDIO_BRONZE_CAPACITY - stock.bronze,
 };
 
-const GOODS: Good[] = ['food', 'fleece', 'olives', 'oil'];
+const GOODS: Good[] = ['food', 'fleece', 'olives', 'oil', 'wood', 'marble', 'bronze', 'sculptures'];
 
 export function carrierKindsSentBy(type: BuildingType): CarrierKind[] {
   return (Object.keys(CARRIER_SPECS) as CarrierKind[]).filter((kind) => CARRIER_SPECS[kind].home === type);
@@ -105,6 +112,10 @@ function sendCarrier(state: GameState, building: Building, kind: CarrierKind): v
     fleece: 0,
     olives: 0,
     oil: 0,
+    wood: 0,
+    marble: 0,
+    bronze: 0,
+    sculptures: 0,
     [good]: load,
     returning: false,
     path: target.path,

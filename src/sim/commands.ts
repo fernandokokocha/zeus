@@ -207,6 +207,10 @@ export function build(state: GameState, placement: Placement): Building {
     fleece: 0,
     olives: 0,
     oil: 0,
+    wood: 0,
+    marble: 0,
+    bronze: 0,
+    sculptures: 0,
     growth: placement.type === 'oliveTree' ? RIPE_CROP : 0,
     production: 0,
     performingUntil: 0,
@@ -288,5 +292,6 @@ export function removeBuildings(state: GameState, doomed: Set<number>): void {
   state.trainees = state.trainees.filter((t) => !doomed.has(t.homeId));
   state.shepherds = state.shepherds.filter((s) => !doomed.has(s.homeId));
   state.growers = state.growers.filter((g) => !doomed.has(g.homeId));
+  state.gatherers = state.gatherers.filter((g) => !doomed.has(g.homeId));
   state.buildingIdAt = state.buildingIdAt.map((id) => (doomed.has(id) ? (agoraOfVendor.get(id) ?? NO_BUILDING) : id));
 }
