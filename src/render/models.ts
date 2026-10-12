@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { AGORA_VENDOR_SPOTS, BUILDING_SPECS, type BuildingType } from '../sim/buildings';
 import { CROP_STAGES, UNITS_PER_LOAD, cropStage } from '../sim/food';
-import { SLOT_SIZE, STOREHOUSE_SLOTS } from '../sim/storehouse';
+import { SLOT_SIZE, STOREHOUSE_GOODS, STOREHOUSE_SLOTS, slotsOf, type StoredGood } from '../sim/storehouse';
 import { houseLevel, type HouseLevel } from '../sim/housing';
 import { isRipe } from '../sim/olives';
 import { isPerforming } from '../sim/schools';
@@ -761,7 +761,12 @@ function bale(x: number, y: number, z: number, turn: number): THREE.Object3D {
 const STOREHOUSE_SLOT_WIDTH = 0.68;
 const STOREHOUSE_SLOT_DEPTH = 0.86;
 const STOREHOUSE_SLOT_SPOTS = [1.55, 2.47].flatMap((z) => [0.42, 1.14, 1.86, 2.58].map((x) => [x, z]));
-const BALES_PER_SLOT = SLOT_SIZE / UNITS_PER_LOAD;
+const LOADS_PER_SLOT = SLOT_SIZE / UNITS_PER_LOAD;
+
+const STORED_LOAD: Record<StoredGood, (x: number, z: number, turn: number) => THREE.Object3D> = {
+  fleece: (x, z, turn) => bale(x, 0.04, z, turn),
+  oil: (x, z) => oilJar(x, 0.04, z),
+};
 
 function storehouseModel(storehouse: Building): THREE.Object3D {
   const group = new THREE.Group();
@@ -783,12 +788,17 @@ function storehouseModel(storehouse: Building): THREE.Object3D {
       group.add(box(w, 0.1, d, timber, sx + x, 0.04, sz + z));
     }
   });
-  const loads = Math.floor(storehouse.fleece / UNITS_PER_LOAD);
-  for (let load = 0; load < loads; load++) {
-    const [sx, sz] = STOREHOUSE_SLOT_SPOTS[Math.floor(load / BALES_PER_SLOT)];
-    const spot = load % BALES_PER_SLOT;
-    const turn = tileHash(load, storehouse.id) * 0.4 - 0.2;
-    group.add(bale(sx + (spot % 2 ? 0.14 : -0.14), 0.04, sz + (spot < 2 ? -0.2 : 0.2), turn));
+  let firstSlot = 0;
+  for (const good of STOREHOUSE_GOODS) {
+    const loads = Math.floor(storehouse[good] / UNITS_PER_LOAD);
+    for (let load = 0; load < loads; load++) {
+      const [sx, sz] = STOREHOUSE_SLOT_SPOTS[firstSlot + Math.floor(load / LOADS_PER_SLOT)];
+      const spot = load % LOADS_PER_SLOT;
+      const x = sx + (spot % 2 ? 0.14 : -0.14);
+      const z = sz + (spot < 2 ? -0.2 : 0.2);
+      group.add(STORED_LOAD[good](x, z, tileHash(load, storehouse.id) * 0.4 - 0.2));
+    }
+    firstSlot += slotsOf(storehouse, good);
   }
   return group;
 }
@@ -819,6 +829,13 @@ const OLIVE_SPOTS = Array.from({ length: 14 }, (_, i) => {
   const radius = 0.12 + (i % 3) * 0.06;
   return [0.5 + Math.cos(angle) * radius, 0.42 + (i % 4) * 0.06, 0.5 + Math.sin(angle) * radius];
 });
+
+function oilJar(x: number, y: number, z: number): THREE.Object3D {
+  const group = new THREE.Group();
+  group.add(placed(amphora, clay, x, y, z));
+  group.add(cylinder(0.03, 0.01, oilGold, x, y + 0.28, z));
+  return group;
+}
 
 function oliveTreeModel(tree: Building): THREE.Object3D {
   const group = new THREE.Group();
@@ -906,8 +923,7 @@ function olivePressModel(press: Building): THREE.Object3D {
   group.add(cylinder(0.14, 0.1, fieldstone, 1.3, 0.04, 1.2));
   const loads = Math.floor(press.oil / UNITS_PER_LOAD);
   for (let i = 0; i < loads; i++) {
-    group.add(placed(amphora, clay, 1.05 + i * 0.2, 0.04, 1.75));
-    group.add(cylinder(0.03, 0.01, oilGold, 1.05 + i * 0.2, 0.32, 1.75));
+    group.add(oilJar(1.05 + i * 0.2, 0.04, 1.75));
   }
   return group;
 }
@@ -924,10 +940,7 @@ function oilVendorModel(vendor: Building): THREE.Object3D {
   group.add(box(1.2, 0.24, 0.32, timber, 1, 0.05, 1.3));
   if (vendor.workers > 0 && vendor.oil > 0) {
     for (const x of [0.55, 0.85, 1.15, 1.45]) group.add(placed(amphora, clay, x, 0.29, 1.3));
-    for (const [x, z] of [[0.5, 0.65], [0.8, 0.6]]) {
-      group.add(placed(amphora, clay, x, 0.05, z));
-      group.add(cylinder(0.03, 0.01, oilGold, x, 0.33, z));
-    }
+    for (const [x, z] of [[0.5, 0.65], [0.8, 0.6]]) group.add(oilJar(x, 0.05, z));
   }
   return group;
 }
