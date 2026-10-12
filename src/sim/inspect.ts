@@ -6,7 +6,7 @@ import { CARRIER_SPECS, carrierDestinations, carrierKindSentBy } from './carrier
 import { adjacentRoadTiles, agoraAt } from './commands';
 import { hasWorkingPalace, houseTax } from './economy';
 import { GRANARY_CAPACITY, HARVEST_MONTH, UNITS_PER_LOAD, VENDOR_CAPACITY, monthlyUse } from './food';
-import { HOUSE_LEVELS, NEXT_LEVEL, houseCapacity, houseLevel, houseName, lacksCulture, missingNeeds } from './housing';
+import { type HouseLevel, HOUSE_LEVELS, LEVEL_CHANGE_TICKS, NEXT_LEVEL, PREVIOUS_LEVEL, houseCapacity, houseLevel, houseName, lacksCulture, missingNeeds } from './housing';
 import { ROAMER_SPECS, hasService, isGood, type RoamerSpec, roamerKindSentBy, serviceLeft } from './roamers';
 import { TRAINEE_SPECS, isPerforming, staffedVenues, traineeKindFor, traineeKindSentBy } from './schools';
 import { GROVE_RANGE, LODGE_CAPACITY, PRESSING_TICKS, PRESS_OLIVE_CAPACITY, canPress, growerAfter, isRipe, treesToPick } from './olives';
@@ -117,6 +117,7 @@ function describeHouse(state: GameState, house: Building): Description {
   }
   lines.push(waterStatus(state, house), cultureStatus(state, house), taxStatus(state, house));
   if (next) lines.push(nextLevelStatus(state, house, next, appeal));
+  if (house.pendingLevel) lines.push(levelChangeStatus(house, level, house.pendingLevel));
   return { title: houseName(house), lines };
 }
 
@@ -133,6 +134,12 @@ function nextLevelStatus(state: GameState, house: Building, next: keyof typeof H
   if (lacksCulture(state, house, next)) blockers.push(`culture ${HOUSE_LEVELS[next].culture} (has ${culturePoints(state, house)})`);
   if (appeal < thresholds.evolve) blockers.push(`appeal ${thresholds.evolve} (has ${appeal})`);
   return blockers.length > 0 ? `Needs for ${name}: ${blockers.join(', ')}` : `Ready to become a ${name}`;
+}
+
+function levelChangeStatus(house: Building, level: HouseLevel, pending: HouseLevel): string {
+  const months = amount((LEVEL_CHANGE_TICKS - house.pendingTicks) / TICKS_PER_MONTH);
+  const change = pending === PREVIOUS_LEVEL[level] ? 'Falling back to' : 'Becoming';
+  return `${change} a ${HOUSE_LEVELS[pending].name} in ${months} months`;
 }
 
 function waterStatus(state: GameState, house: Building): string {

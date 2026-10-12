@@ -99,18 +99,29 @@ describe('describeTile for services', () => {
       'Residents 8/8',
       'Appeal 16',
       'No food',
-      'Water: 50% left',
+      'Water: 25% left',
       'No culture has passed',
       'Pays 0.72 dr tax a month',
       'Needs for Shack: food',
     ]);
   });
 
-  it('shows the water running down until the next carrier', () => {
+it('says when a house is about to change level', () => {
+  const game = town();
+  game.buildings[0].food = 100;
+  runTicks(game, TICKS_PER_MONTH / 2);
+  expect(describeTile(game, 2, 8).lines).toContain('Becoming a Shack in 0.5 months');
+  game.buildings[0].food = 0;
+  game.buildings[0].level = 'shack';
+  runTicks(game, TICKS_PER_MONTH / 4);
+  expect(describeTile(game, 2, 8).lines).toContain('Falling back to a Hut in 0.8 months');
+});
+
+it('shows the water running down until the next carrier', () => {
     const game = town();
     game.buildings[0].coveredUntil.water = TICKS_PER_MONTH;
     game.tick = TICKS_PER_MONTH / 2;
-    expect(describeTile(game, 2, 8).lines).toContain('Water: 25% left');
+    expect(describeTile(game, 2, 8).lines).toContain('Water: 13% left');
     game.tick = TICKS_PER_MONTH - 1;
     expect(describeTile(game, 2, 8).lines).toContain('Water: 1% left');
     game.tick = TICKS_PER_MONTH;

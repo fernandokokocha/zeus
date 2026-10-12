@@ -25,6 +25,8 @@ export interface Building {
   walkerRest: number;
   coveredUntil: Record<Coverage, number>;
   level: HouseLevel;
+  pendingLevel: HouseLevel | null;
+  pendingTicks: number;
   food: number;
   fleece: number;
   olives: number;

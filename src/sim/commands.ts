@@ -201,6 +201,8 @@ function build(state: GameState, placement: Placement): void {
     walkerRest: 0,
     coveredUntil: { water: 0, tax: 0, philosophy: 0, athletics: 0, drama: 0 },
     level: 'hut' as const,
+    pendingLevel: null,
+    pendingTicks: 0,
     food: 0,
     fleece: 0,
     olives: 0,
