@@ -307,3 +307,36 @@ describe('a fleece peddler', () => {
     expect(hut.food).toBe(0);
   });
 });
+
+describe('an oil peddler', () => {
+  function market(): { game: GameState; vendor: Building } {
+    const game = cityOf(20);
+    placeBuilding(game, 'agora', 0, 11);
+    placeBuilding(game, 'oilVendor', 0, 11);
+    return { game, vendor: game.buildings[2] };
+  }
+
+  it('only sets out when his stall has oil, and roams 44 tiles', () => {
+    const { game, vendor } = market();
+    vendor.fleece = 100;
+    runTicks(game, 2 * ROAMER_REST_TICKS);
+    expect(game.roamers).toEqual([]);
+    vendor.oil = 100;
+    runTicks(game, ROAMER_REST_TICKS);
+    expect(game.roamers.map((r) => r.kind)).toEqual(['oilPeddler']);
+    expect(ROAMER_SPECS.oilPeddler.range).toBe(44);
+  });
+
+  it('fills the houses he passes with 3 months of oil, 6 units, from his stall', () => {
+    const { game, vendor } = market();
+    const hut = fullHouse(game, 4, 8);
+    const tenement = fullHouse(game, 8, 8);
+    Object.assign(tenement, { level: 'tenement', residents: 40, oil: 2 });
+    vendor.oil = 100;
+    runTicks(game, ROAMER_REST_TICKS + ticksToWalk(10));
+    expect(hut.oil).toBe(6);
+    expect(tenement.oil).toBe(6);
+    expect(vendor.oil).toBe(100 - 6 - 4);
+    expect(hut.fleece).toBe(0);
+  });
+});

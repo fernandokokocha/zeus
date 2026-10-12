@@ -46,7 +46,7 @@ export interface Settler extends Walk {
   people: number;
 }
 
-export type RoamerKind = 'waterCarrier' | 'taxCollector' | 'peddler' | 'fleecePeddler' | 'philosopher' | 'athlete' | 'actor';
+export type RoamerKind = 'waterCarrier' | 'taxCollector' | 'peddler' | 'fleecePeddler' | 'oilPeddler' | 'philosopher' | 'athlete' | 'actor';
 
 export interface Roamer extends Walk {
   id: number;

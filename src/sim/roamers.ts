@@ -21,6 +21,7 @@ export const ROAMER_SPECS: Record<RoamerKind, RoamerSpec> = {
   taxCollector: { name: 'Tax Collector', home: 'taxOffice', range: 35, service: 'tax' },
   peddler: { name: 'Peddler', home: 'foodVendor', range: 44, service: 'food' },
   fleecePeddler: { name: 'Fleece Peddler', home: 'fleeceVendor', range: 44, service: 'fleece' },
+  oilPeddler: { name: 'Oil Peddler', home: 'oilVendor', range: 44, service: 'oil' },
   philosopher: { name: 'Philosopher', home: 'podium', range: 35, service: 'philosophy' },
   athlete: { name: 'Athlete', home: 'gymnasium', range: 35, service: 'athletics' },
   actor: { name: 'Actor', home: 'theater', range: 35, service: 'drama' },
