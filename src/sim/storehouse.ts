@@ -4,7 +4,7 @@ import type { Good } from './state';
 export const STOREHOUSE_SLOTS = 8;
 export const SLOT_SIZE = 4 * UNITS_PER_LOAD;
 export const STOREHOUSE_CAPACITY = STOREHOUSE_SLOTS * SLOT_SIZE;
-export const STOREHOUSE_GOODS = ['fleece', 'oil'] as const;
+export const STOREHOUSE_GOODS = ['fleece', 'olives', 'oil'] as const;
 export type StoredGood = (typeof STOREHOUSE_GOODS)[number];
 
 export function slotsUsed(stock: Record<Good, number>): number {

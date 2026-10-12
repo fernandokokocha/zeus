@@ -2,7 +2,7 @@ import { houseAppeal } from './appeal';
 import { BUILDING_SPECS, isAgoraVendor } from './buildings';
 import { MONTH_NAMES, TICKS_PER_MONTH } from './clock';
 import { culturePoints, culturesPassed } from './culture';
-import { CARRIER_SPECS, carrierDestinations, carrierKindSentBy } from './carriers';
+import { CARRIER_SPECS, carrierDestinations, carrierKindsSentBy } from './carriers';
 import { adjacentRoadTiles, agoraAt } from './commands';
 import { hasWorkingPalace, houseTax } from './economy';
 import { GRANARY_CAPACITY, HARVEST_MONTH, UNITS_PER_LOAD, VENDOR_CAPACITY, monthlyUse } from './food';
@@ -103,6 +103,7 @@ const CARRIER_HOMES: Record<Carrier['kind'], string> = {
   fleeceBuyer: 'stall',
   oliveCart: 'lodge',
   oilCart: 'press',
+  oliveBuyer: 'press',
   oilBuyer: 'stall',
 };
 
@@ -223,8 +224,7 @@ case 'olivePress':
     case 'foodVendor':
     case 'fleeceVendor':
     case 'oilVendor': {
-      const kind = carrierKindSentBy(building.type);
-      if (!kind) throw new Error(`Vendor ${building.id} sends no buyer`);
+      const [kind] = carrierKindsSentBy(building.type);
       return [`Stock: ${amount(building[CARRIER_SPECS[kind].good])} of ${VENDOR_CAPACITY} units`];
     }
     case 'agora': {
@@ -266,8 +266,7 @@ function walkerLines(state: GameState, building: Building): string[] {
   }
   if (building.type === 'cardingShed') lines.push(shepherdStatus(state, building));
   if (building.type === 'growersLodge') lines.push(growerStatus(state, building));
-  const carrierKind = carrierKindSentBy(building.type);
-  if (carrierKind) lines.push(carrierStatus(state, building, carrierKind));
+  for (const kind of carrierKindsSentBy(building.type)) lines.push(carrierStatus(state, building, kind));
   const traineeKind = traineeKindSentBy(building.type);
   if (traineeKind) lines.push(traineeStatus(state, building, traineeKind));
   return lines;
@@ -316,18 +315,18 @@ function withArticle(noun: string): string {
 }
 
 function carrierStatus(state: GameState, building: Building, kind: Carrier['kind']): string {
-  const { name, good, store, delivers } = CARRIER_SPECS[kind];
+  const { name, good, stores, delivers } = CARRIER_SPECS[kind];
   const goodName = GOOD_NAMES[good];
-  const storeName = BUILDING_SPECS[store].name.toLowerCase();
-  const carrier = state.carriers.find((c) => c.homeId === building.id);
+  const storeName = withArticle(stores.map((store) => BUILDING_SPECS[store].name.toLowerCase()).join(' or '));
+  const carrier = state.carriers.find((c) => c.homeId === building.id && c.kind === kind);
   const atHome = `${name} at the ${CARRIER_HOMES[kind]}`;
   if (delivers) {
     if (carrier) return `${name} out with a load`;
-    if (building[good] > 0 && carrierDestinations(state, kind).length === 0) return `${name} waits for ${withArticle(storeName)} with room`;
+    if (building[good] > 0 && carrierDestinations(state, kind).length === 0) return `${name} waits for ${storeName} with room`;
     return atHome;
   }
   if (carrier) return `${name} ${carrier.returning ? `bringing ${goodName} home` : `out fetching ${goodName}`}`;
-  if (carrierDestinations(state, kind).length === 0) return `${name} waits for ${withArticle(storeName)} with ${goodName}`;
+  if (carrierDestinations(state, kind).length === 0) return `${name} waits for ${storeName} with ${goodName}`;
   return atHome;
 }
 
@@ -367,16 +366,17 @@ function describeRoamer(state: GameState, roamer: Roamer): Description {
 }
 
 function describeCarrier(state: GameState, carrier: Carrier): Description {
-  const { name, good, store, delivers } = CARRIER_SPECS[carrier.kind];
+  const { name, good, stores, delivers } = CARRIER_SPECS[carrier.kind];
   const lines = [homeLine(state, carrier.homeId)];
   const destination = buildingById(state, carrier.destinationId);
+  const storeNames = stores.map((store) => BUILDING_SPECS[store].name.toLowerCase()).join(' or ');
   if (carrier.returning) {
     lines.push(delivers ? 'Returning home' : `Bringing home ${amount(carrier[good])} units`);
   } else if (destination) {
-    const at = `the ${BUILDING_SPECS[store].name} at ${destination.x}, ${destination.y}`;
+    const at = `the ${BUILDING_SPECS[destination.type].name} at ${destination.x}, ${destination.y}`;
     lines.push(delivers ? `Carrying ${loads(carrier[good])} to ${at}` : `Fetching ${GOOD_NAMES[good]} from ${at}`);
   } else {
-    lines.push(`Looking for another ${BUILDING_SPECS[store].name.toLowerCase()}`);
+    lines.push(`Looking for another ${storeNames}`);
   }
   return { title: name, lines };
 }

@@ -15,18 +15,20 @@ export interface CarrierSpec {
   name: string;
   home: BuildingType;
   good: Good;
-  store: Store;
+  stores: Store[];
   delivers: boolean;
+  capacity: number;
 }
 
 export const CARRIER_SPECS: Record<CarrierKind, CarrierSpec> = {
-  cartPusher: { name: 'Cart Pusher', home: 'wheatFarm', good: 'food', store: 'granary', delivers: true },
-  buyer: { name: 'Buyer', home: 'foodVendor', good: 'food', store: 'granary', delivers: false },
-  fleeceCart: { name: 'Cart Pusher', home: 'cardingShed', good: 'fleece', store: 'storehouse', delivers: true },
-  fleeceBuyer: { name: 'Buyer', home: 'fleeceVendor', good: 'fleece', store: 'storehouse', delivers: false },
-  oliveCart: { name: 'Cart Pusher', home: 'growersLodge', good: 'olives', store: 'olivePress', delivers: true },
-  oilCart: { name: 'Cart Pusher', home: 'olivePress', good: 'oil', store: 'storehouse', delivers: true },
-  oilBuyer: { name: 'Buyer', home: 'oilVendor', good: 'oil', store: 'storehouse', delivers: false },
+  cartPusher: { name: 'Cart Pusher', home: 'wheatFarm', good: 'food', stores: ['granary'], delivers: true, capacity: 0 },
+  buyer: { name: 'Buyer', home: 'foodVendor', good: 'food', stores: ['granary'], delivers: false, capacity: VENDOR_CAPACITY },
+  fleeceCart: { name: 'Cart Pusher', home: 'cardingShed', good: 'fleece', stores: ['storehouse'], delivers: true, capacity: 0 },
+  fleeceBuyer: { name: 'Buyer', home: 'fleeceVendor', good: 'fleece', stores: ['storehouse'], delivers: false, capacity: VENDOR_CAPACITY },
+  oliveCart: { name: 'Cart Pusher', home: 'growersLodge', good: 'olives', stores: ['olivePress', 'storehouse'], delivers: true, capacity: 0 },
+  oilCart: { name: 'Cart Pusher', home: 'olivePress', good: 'oil', stores: ['storehouse'], delivers: true, capacity: 0 },
+  oliveBuyer: { name: 'Buyer', home: 'olivePress', good: 'olives', stores: ['storehouse'], delivers: false, capacity: PRESS_OLIVE_CAPACITY },
+  oilBuyer: { name: 'Buyer', home: 'oilVendor', good: 'oil', stores: ['storehouse'], delivers: false, capacity: VENDOR_CAPACITY },
 };
 
 const STORE_SPACE: Record<Store, (stock: Record<Good, number>, good: Good) => number> = {
@@ -37,9 +39,8 @@ const STORE_SPACE: Record<Store, (stock: Record<Good, number>, good: Good) => nu
 
 const GOODS: Good[] = ['food', 'fleece', 'olives', 'oil'];
 
-export function carrierKindSentBy(type: BuildingType): CarrierKind | null {
-  const kinds = Object.keys(CARRIER_SPECS) as CarrierKind[];
-  return kinds.find((kind) => CARRIER_SPECS[kind].home === type) ?? null;
+export function carrierKindsSentBy(type: BuildingType): CarrierKind[] {
+  return (Object.keys(CARRIER_SPECS) as CarrierKind[]).filter((kind) => CARRIER_SPECS[kind].home === type);
 }
 
 function storeSpace(store: Building, stock: Record<Good, number>, good: Good): number {
@@ -47,31 +48,47 @@ function storeSpace(store: Building, stock: Record<Good, number>, good: Good): n
 }
 
 export function storeRoom(state: GameState, store: Building, good: Good): number {
-  const incoming = state.carriers.filter((c) => CARRIER_SPECS[c.kind].delivers && !c.returning && c.destinationId === store.id);
+  const incoming = state.carriers.filter((c) => isBringing(c, store));
   const stock = Object.fromEntries(GOODS.map((g) => [g, incoming.reduce((sum, c) => sum + c[g], store[g])])) as Record<Good, number>;
   return storeSpace(store, stock, good);
 }
 
-export function carrierDestinations(state: GameState, kind: CarrierKind): Building[] {
-  const { store, good, delivers } = CARRIER_SPECS[kind];
-  const stores = state.buildings.filter((b) => b.type === store && b.workers > 0);
-  return delivers ? stores.filter((s) => storeRoom(state, s, good) > 0) : stores.filter((s) => s[good] >= UNITS_PER_LOAD);
+function isBringing(carrier: Carrier, store: Building): boolean {
+  const { delivers } = CARRIER_SPECS[carrier.kind];
+  return delivers ? !carrier.returning && carrier.destinationId === store.id : carrier.returning && carrier.homeId === store.id;
 }
 
-function wantsTrip(kind: CarrierKind, home: Building): boolean {
+export function carrierDestinations(state: GameState, kind: CarrierKind): Building[] {
+  const { stores, good, delivers } = CARRIER_SPECS[kind];
+  for (const store of stores) {
+    const staffed = state.buildings.filter((b) => b.type === store && b.workers > 0);
+    const usable = delivers ? staffed.filter((s) => storeRoom(state, s, good) > 0) : staffed.filter((s) => s[good] >= UNITS_PER_LOAD);
+    if (usable.length > 0) return usable;
+  }
+  return [];
+}
+
+function fetchRoom(state: GameState, kind: CarrierKind, home: Building): number {
+  const { good, capacity } = CARRIER_SPECS[kind];
+  const incoming = state.carriers.filter((c) => c.homeId !== home.id && isBringing(c, home));
+  return capacity - incoming.reduce((sum, c) => sum + c[good], home[good]);
+}
+
+function wantsTrip(state: GameState, kind: CarrierKind, home: Building): boolean {
   const { good, delivers } = CARRIER_SPECS[kind];
-  return delivers ? home[good] > 0 : VENDOR_CAPACITY - home[good] >= UNITS_PER_LOAD;
+  return delivers ? home[good] > 0 : fetchRoom(state, kind, home) >= UNITS_PER_LOAD;
 }
 
 export function tickCarriers(state: GameState): void {
-  for (const building of state.buildings) sendCarrier(state, building);
+  for (const building of state.buildings) {
+    for (const kind of carrierKindsSentBy(building.type)) sendCarrier(state, building, kind);
+  }
   for (const carrier of [...state.carriers]) moveCarrier(state, carrier);
 }
 
-function sendCarrier(state: GameState, building: Building): void {
-  const kind = carrierKindSentBy(building.type);
-  if (!kind || building.workers === 0 || !wantsTrip(kind, building)) return;
-  if (state.carriers.some((c) => c.homeId === building.id)) return;
+function sendCarrier(state: GameState, building: Building, kind: CarrierKind): void {
+  if (building.workers === 0 || !wantsTrip(state, kind, building)) return;
+  if (state.carriers.some((c) => c.homeId === building.id && c.kind === kind)) return;
   const exit = exitTile(state, building);
   if (!exit) throw new Error(`Building ${building.id} has workers but no road to leave by`);
   const target = nearestByRoad(state, exit, carrierDestinations(state, kind));
@@ -145,7 +162,7 @@ function arrive(state: GameState, carrier: Carrier, home: Building): void {
   if (!store) throw new Error(`Carrier ${carrier.id} reached missing building ${carrier.destinationId}`);
   const moved = delivers
     ? Math.min(carrier[good], storeSpace(store, store, good))
-    : -wholeLoads(Math.min(BUYER_LOAD, store[good], VENDOR_CAPACITY - home[good]));
+    : -wholeLoads(Math.min(BUYER_LOAD, store[good], fetchRoom(state, carrier.kind, home)));
   store[good] += moved;
   carrier[good] -= moved;
   state.version++;

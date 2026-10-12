@@ -773,6 +773,7 @@ const LOADS_PER_SLOT = SLOT_SIZE / UNITS_PER_LOAD;
 
 const STORED_LOAD: Record<StoredGood, (x: number, z: number, turn: number) => THREE.Object3D> = {
   fleece: (x, z, turn) => bale(x, 0.04, z, turn),
+  olives: (x, z) => basket(x, z, true),
   oil: (x, z) => oilJar(x, 0.04, z),
 };
 

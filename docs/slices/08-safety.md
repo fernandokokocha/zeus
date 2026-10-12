@@ -137,3 +137,13 @@ Extend `tests/sim/safety.test.ts`.
 - [x] **Step 1:** Tick slice 8 in `docs/roadmap.md`. Record the new **ours** numbers in
   zeus-numbers.
 - [ ] **Step 2:** Open the PR `Slice 08: Safety`. Wait for CI and Pages.
+
+### Owner feedback: olives in the storehouse
+
+- [x] **Step 1:** Write failing tests: a lodge's cart takes olives to a storehouse when no
+  press has room, and to a press with room before a nearer storehouse; olives share the
+  8 slots; a press with room sends a buyer to fetch olives from a storehouse, not while
+  full or while a cart brings its olives, and alongside its oil cart.
+- [x] **Step 2:** Implement: carriers list the stores they use in order of preference, a
+  building can send several kinds of carrier, and the storehouse model shows olives as
+  baskets. Tests pass.

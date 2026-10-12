@@ -71,6 +71,7 @@ export const PALETTE = {
   oil: 0xd4b03c,
   growerTunic: 0xa3743e,
   oilAwning: 0xc99a2e,
+  oliveBuyerTunic: 0x5a7a4a,
   oilBuyerTunic: 0x6a5a9a,
   oilPeddlerTunic: 0xb06a3a,
   char: 0x3b342e,
