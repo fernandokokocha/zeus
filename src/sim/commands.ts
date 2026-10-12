@@ -192,7 +192,7 @@ export function placeBuilding(state: GameState, type: BuildingType, x: number, y
   return OK;
 }
 
-function build(state: GameState, placement: Placement): void {
+export function build(state: GameState, placement: Placement): Building {
   const building = {
     id: state.nextBuildingId++,
     ...placement,
@@ -210,10 +210,14 @@ function build(state: GameState, placement: Placement): void {
     growth: placement.type === 'oliveTree' ? RIPE_CROP : 0,
     production: 0,
     performingUntil: 0,
+    fireRisk: 0,
+    collapseRisk: 0,
+    burningUntil: 0,
   };
   state.buildings.push(building);
   for (const p of footprint(placement)) state.buildingIdAt[tileIndex(state, p.x, p.y)] = building.id;
   state.treasury -= BUILDING_SPECS[placement.type].cost;
+  return building;
 }
 
 function lotStarts(from: number, to: number, size: number): number[] {
@@ -267,6 +271,11 @@ export function demolish(state: GameState, from: Point, to: Point): void {
     if (state.terrain[i] === 'forest') state.terrain[i] = 'grass';
     if (state.buildingIdAt[i] !== NO_BUILDING) doomed.add(state.buildingIdAt[i]);
   }
+  removeBuildings(state, doomed);
+  state.version++;
+}
+
+export function removeBuildings(state: GameState, doomed: Set<number>): void {
   const agoraOfVendor = new Map<number, number>();
   for (const vendor of state.buildings.filter((b) => isAgoraVendor(b.type))) {
     const agoraId = roadSite(state, vendor).id;
@@ -280,5 +289,4 @@ export function demolish(state: GameState, from: Point, to: Point): void {
   state.shepherds = state.shepherds.filter((s) => !doomed.has(s.homeId));
   state.growers = state.growers.filter((g) => !doomed.has(g.homeId));
   state.buildingIdAt = state.buildingIdAt.map((id) => (doomed.has(id) ? (agoraOfVendor.get(id) ?? NO_BUILDING) : id));
-  state.version++;
 }

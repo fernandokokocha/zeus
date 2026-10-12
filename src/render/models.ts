@@ -5,6 +5,7 @@ import { SLOT_SIZE, STOREHOUSE_GOODS, STOREHOUSE_SLOTS, slotsOf, type StoredGood
 import { houseLevel, type HouseLevel } from '../sim/housing';
 import { isRipe } from '../sim/olives';
 import { isPerforming } from '../sim/schools';
+import { isBurning } from '../sim/safety';
 import type { Building, GameState } from '../sim/state';
 import { PALETTE, tileHash } from './palette';
 
@@ -51,6 +52,11 @@ const petalMaterials = PALETTE.petals.map(lambert);
 const sprouts = Array.from({ length: CROP_STAGES }, (_, stage) =>
   lambert(new THREE.Color(PALETTE.sprout).lerp(new THREE.Color(PALETTE.wheat), stage / (CROP_STAGES - 1)).getHex()),
 );
+const charred = lambert(PALETTE.char);
+const ash = lambert(PALETTE.ash);
+const ember = new THREE.MeshBasicMaterial({ color: PALETTE.ember });
+const flame = new THREE.MeshBasicMaterial({ color: PALETTE.flame });
+const smoke = new THREE.MeshLambertMaterial({ color: PALETTE.smoke, transparent: true, opacity: 0.55 });
 const falling = new THREE.MeshBasicMaterial({ color: PALETTE.spray, transparent: true, opacity: 0.85 });
 
 const unitBox = new THREE.BoxGeometry(1, 1, 1);
@@ -60,6 +66,8 @@ const disc = new THREE.CylinderGeometry(1, 1, 1, 20).translate(0, 0.5, 0);
 const shrub = new THREE.SphereGeometry(0.22, 8, 6);
 const stream = new THREE.CylinderGeometry(0.035, 0.06, 1, 8);
 const spray = new THREE.SphereGeometry(0.06, 8, 6);
+const tongue = new THREE.ConeGeometry(0.09, 0.32, 7).translate(0, 0.16, 0);
+const puff = new THREE.SphereGeometry(0.12, 8, 6);
 const beamEnd = new THREE.CylinderGeometry(0.025, 0.025, 0.12, 6).rotateX(Math.PI / 2);
 const oven = new THREE.SphereGeometry(0.16, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2);
 const amphora = new THREE.LatheGeometry(
@@ -765,6 +773,7 @@ const LOADS_PER_SLOT = SLOT_SIZE / UNITS_PER_LOAD;
 
 const STORED_LOAD: Record<StoredGood, (x: number, z: number, turn: number) => THREE.Object3D> = {
   fleece: (x, z, turn) => bale(x, 0.04, z, turn),
+  olives: (x, z) => basket(x, z, true),
   oil: (x, z) => oilJar(x, 0.04, z),
 };
 
@@ -1009,6 +1018,72 @@ function townhouseModel(): THREE.Object3D {
   return group;
 }
 
+function ladder(height: number, x: number, z: number): THREE.Object3D {
+  const group = new THREE.Group();
+  for (const side of [-0.07, 0.07]) group.add(box(0.025, height, 0.025, timber, side, 0, 0));
+  for (let y = 0.1; y < height; y += 0.12) group.add(box(0.14, 0.02, 0.02, timber, 0, y, 0));
+  group.position.set(x, 0.04, z);
+  group.rotation.x = -0.3;
+  return group;
+}
+
+function bucket(x: number, z: number): THREE.Object3D {
+  const group = new THREE.Group();
+  group.add(cylinder(0.06, 0.09, bronze, x, 0.04, z));
+  group.add(cylinder(0.05, 0.005, water, x, 0.125, z));
+  return group;
+}
+
+function maintenanceOfficeModel(): THREE.Object3D {
+  const group = new THREE.Group();
+  group.add(box(1.84, 0.04, 1.84, paving, 1, 0, 1));
+  const width = 1.1;
+  const depth = 1.0;
+  const wallHeight = 0.55;
+  group.add(box(width, wallHeight, depth, mudBrick, 0.65, 0.04, 0.6));
+  const roof = gableRoof(depth + 0.16, 0.28, width + 0.14, mudBrick);
+  roof.rotation.y = Math.PI / 2;
+  roof.position.set(0.65, 0.04 + wallHeight, 0.6);
+  group.add(roof);
+  group.add(box(0.28, 0.38, 0.02, doorway, 0.65, 0.04, 0.6 + depth / 2 + 0.005));
+  group.add(ladder(0.75, 1.3, 0.25));
+  for (const [x, z] of [[1.45, 1.25], [1.62, 1.25], [1.45, 1.42], [1.62, 1.42], [1.53, 1.6]]) group.add(bucket(x, z));
+  for (const x of [0.3, 0.9]) group.add(box(0.05, 0.42, 0.05, timber, x, 0.04, 1.6));
+  group.add(box(0.7, 0.04, 0.05, timber, 0.6, 0.4, 1.6));
+  for (const [x, tool] of [[0.42, bronze], [0.6, timber], [0.78, bronze]] as const) group.add(box(0.03, 0.3, 0.03, tool, x, 0.1, 1.62));
+  for (let n = 0; n < 3; n++) group.add(box(0.7, 0.06, 0.08, timber, 1.35, 0.04 + n * 0.06, 0.95 + (n % 2) * 0.03));
+  return group;
+}
+
+function ruinsModel(ruins: Building, burning: boolean): THREE.Object3D {
+  const group = new THREE.Group();
+  const jitter = (n: number) => tileHash(ruins.x * 3 + n, ruins.y * 5 + n);
+  group.add(box(0.9, 0.03, 0.9, burning ? charred : ash, 0.5, 0, 0.5));
+  for (let n = 0; n < 7; n++) {
+    const piece = placed(stone, n % 3 === 0 ? charred : fieldstone, 0.15 + jitter(n) * 0.7, 0.05, 0.15 + jitter(n + 7) * 0.7);
+    piece.scale.setScalar(1.2 + jitter(n + 14) * 1.3);
+    piece.rotation.set(jitter(n + 21) * Math.PI, jitter(n + 28) * Math.PI, 0);
+    group.add(piece);
+  }
+  group.add(box(0.14, 0.12 + jitter(40) * 0.18, 0.5, mudBrick, 0.2 + jitter(41) * 0.6, 0.03, 0.5));
+  const beam = box(0.65, 0.05, 0.06, charred, 0.5, 0.06, 0.5);
+  beam.rotation.set(0, jitter(42) * Math.PI, 0.25);
+  group.add(beam);
+  if (!burning) return group;
+  for (let n = 0; n < 3; n++) {
+    const x = 0.25 + jitter(n + 50) * 0.5;
+    const z = 0.25 + jitter(n + 60) * 0.5;
+    const tall = 0.8 + jitter(n + 70) * 0.9;
+    const fire = placed(tongue, n === 0 ? ember : flame, x, 0.03, z);
+    fire.scale.set(1, tall, 1);
+    group.add(fire);
+    const cloud = placed(puff, smoke, x + 0.08 * n, 0.6 + 0.3 * n, z - 0.05 * n);
+    cloud.scale.setScalar(0.8 + 0.4 * n);
+    group.add(cloud);
+  }
+  return group;
+}
+
 const MODELS: Record<Exclude<BuildingType, 'house'>, (building: Building, state: GameState) => THREE.Object3D> = {
   fountain: (b) => fountainModel(b.workers > 0),
   taxOffice: (b) => taxOfficeModel(b.workers > 0),
@@ -1032,6 +1107,8 @@ const MODELS: Record<Exclude<BuildingType, 'house'>, (building: Building, state:
   growersLodge: growersLodgeModel,
   olivePress: olivePressModel,
   oilVendor: oilVendorModel,
+  maintenanceOffice: maintenanceOfficeModel,
+  ruins: (b, state) => ruinsModel(b, isBurning(state, b)),
 };
 
 const HOUSE_MODELS: Record<HouseLevel, () => THREE.Object3D> = {

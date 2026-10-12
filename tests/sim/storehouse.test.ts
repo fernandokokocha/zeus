@@ -183,3 +183,74 @@ describe('an oil vendor', () => {
     expect(storehouse.oil).toBe(1000 - BUYER_LOAD);
   });
 });
+
+describe('olives in the storehouse', () => {
+  function oliveWorks(): { game: GameState; storehouse: Building; lodge: Building } {
+    const { game, storehouse } = woolTown();
+    placeBuilding(game, 'growersLodge', 20, 13);
+    return { game, storehouse, lodge: game.buildings[3] };
+  }
+
+  function addPress(game: GameState): Building {
+    placeBuilding(game, 'olivePress', 25, 13);
+    return game.buildings[game.buildings.length - 1];
+  }
+
+  it('go to the storehouse when no press has room', () => {
+    const { game, storehouse, lodge } = oliveWorks();
+    lodge.olives = 400;
+    tick(game);
+    expect(game.carriers[0]).toMatchObject({ kind: 'oliveCart', destinationId: storehouse.id, olives: 400 });
+    runTicks(game, ticksToWalk(12));
+    expect(storehouse.olives).toBe(400);
+  });
+
+  it('go to a press with room before a nearer storehouse', () => {
+    const { game, lodge } = oliveWorks();
+    const press = addPress(game);
+    lodge.olives = 400;
+    tick(game);
+    expect(game.carriers[0]).toMatchObject({ kind: 'oliveCart', destinationId: press.id });
+  });
+
+  it('share the 8 slots with fleece and oil', () => {
+    const { storehouse } = oliveWorks();
+    Object.assign(storehouse, { fleece: 100, olives: 500, oil: 100 });
+    expect(slotsUsed(storehouse)).toBe(4);
+  });
+
+  it('are fetched by a press with room', () => {
+    const { game, storehouse } = oliveWorks();
+    const press = addPress(game);
+    storehouse.olives = 1000;
+    press.olives = 100;
+    tick(game);
+    const buyer = game.carriers.find((c) => c.kind === 'oliveBuyer');
+    expect(buyer).toMatchObject({ homeId: press.id, destinationId: storehouse.id, olives: 0 });
+    for (let i = 0; i < 600 && press.olives < 400; i++) tick(game);
+    expect(press.olives).toBe(400);
+    expect(storehouse.olives).toBe(700);
+  });
+
+  it('are not fetched while the press is full or a cart brings its olives', () => {
+    const { game, storehouse, lodge } = oliveWorks();
+    const press = addPress(game);
+    storehouse.olives = 1000;
+    press.olives = 400;
+    runTicks(game, 10);
+    expect(game.carriers.filter((c) => c.kind === 'oliveBuyer')).toEqual([]);
+    press.olives = 0;
+    lodge.olives = 400;
+    tick(game);
+    expect(game.carriers.map((c) => c.kind)).toEqual(['oliveCart']);
+  });
+
+  it('let the press send its oil cart and its buyer at once', () => {
+    const { game, storehouse } = oliveWorks();
+    const press = addPress(game);
+    storehouse.olives = 1000;
+    press.oil = 400;
+    tick(game);
+    expect(game.carriers.map((c) => c.kind).sort()).toEqual(['oilCart', 'oliveBuyer']);
+  });
+});

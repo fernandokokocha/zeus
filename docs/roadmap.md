@@ -10,7 +10,7 @@ delivers it.
 - [x] 5 · Culture
 - [x] 6 · Storehouse & fleece
 - [x] 7 · Olive oil
-- [ ] 8 · Safety
+- [x] 8 · Safety
 - [ ] 9 · Map modes
 - [ ] 10 · Materials & sculpture
 - [ ] 11 · Sanctuaries

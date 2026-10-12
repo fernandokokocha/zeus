@@ -5,6 +5,7 @@ import { eat, growCrops, harvestIfDue } from './food';
 import { evolveHouses } from './housing';
 import { assignWorkers } from './labor';
 import { tickOlives } from './olives';
+import { tickSafety } from './safety';
 import { tickRoamers } from './roamers';
 import { tickSchools } from './schools';
 import { tickSettlers } from './settlers';
@@ -27,4 +28,5 @@ export function tick(state: GameState): void {
   tickSheep(state);
   tickOlives(state);
   evolveHouses(state);
+  tickSafety(state);
 }

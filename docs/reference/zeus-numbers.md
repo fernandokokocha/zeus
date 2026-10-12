@@ -181,3 +181,11 @@ https://zeus.heavengames.com/gameinfo/gods/
 - Storehouse slots each hold one good, so all goods share the 8 slots.
 - House oil stock: an oil peddler fills a house to **3 months** of use (6 units), like
   fleece.
+- Fire risk fills like collapse risk: it grows by the building's increment each month and
+  is full at **60**. A building at full fire risk catches fire at random, **once a month on
+  average**; one at full risk next to a fire catches at once. Only occupied houses build
+  up fire risk.
+- Fires burn for **2 months**. Each burning ruin tile adds **60 fire risk a month** to every
+  building that can burn within 1 tile.
+- A superintendent maintains every building within **2 tiles** of the road he walks,
+  resetting both risks and putting out fires, like other roamers' reach.

@@ -11,8 +11,8 @@ export type PlayingSpeed = Exclude<Speed, 0>;
 export type HouseGood = 'food' | 'fleece' | 'oil';
 export type Good = HouseGood | 'olives';
 export type Culture = 'philosophy' | 'athletics' | 'drama';
-export type Service = 'water' | 'tax' | HouseGood | Culture;
-export type Coverage = Exclude<Service, HouseGood>;
+export type Service = 'water' | 'tax' | HouseGood | Culture | 'maintenance';
+export type Coverage = Exclude<Service, HouseGood | 'maintenance'>;
 
 export interface Building {
   id: number;
@@ -34,6 +34,9 @@ export interface Building {
   growth: number;
   production: number;
   performingUntil: number;
+  fireRisk: number;
+  collapseRisk: number;
+  burningUntil: number;
 }
 
 export interface Walk {
@@ -48,7 +51,7 @@ export interface Settler extends Walk {
   people: number;
 }
 
-export type RoamerKind = 'waterCarrier' | 'taxCollector' | 'peddler' | 'fleecePeddler' | 'oilPeddler' | 'philosopher' | 'athlete' | 'actor';
+export type RoamerKind = 'waterCarrier' | 'taxCollector' | 'peddler' | 'fleecePeddler' | 'oilPeddler' | 'philosopher' | 'athlete' | 'actor' | 'superintendent';
 
 export interface Roamer extends Walk {
   id: number;
@@ -89,7 +92,7 @@ export interface Grower extends Walk {
   returning: boolean;
 }
 
-export type CarrierKind = 'cartPusher' | 'buyer' | 'fleeceCart' | 'fleeceBuyer' | 'oliveCart' | 'oilCart' | 'oilBuyer';
+export type CarrierKind = 'cartPusher' | 'buyer' | 'fleeceCart' | 'fleeceBuyer' | 'oliveCart' | 'oilCart' | 'oliveBuyer' | 'oilBuyer';
 
 export interface Carrier extends Walk {
   id: number;

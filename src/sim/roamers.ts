@@ -6,6 +6,7 @@ import { NEIGHBOUR_STEPS, findRoadPath } from './pathfinding';
 import { samePoint, type Point } from './point';
 import { nextRandom } from './rng';
 import { isPerforming, traineeKindFor } from './schools';
+import { maintain } from './safety';
 import { buildingById, inBounds, tileIndex, type Building, type GameState, type Roamer, type Coverage, type HouseGood, type RoamerKind, type Service } from './state';
 import { WALKER_TILES_PER_TICK, isRoad } from './walking';
 
@@ -25,6 +26,7 @@ export const ROAMER_SPECS: Record<RoamerKind, RoamerSpec> = {
   philosopher: { name: 'Philosopher', home: 'podium', range: 35, service: 'philosophy' },
   athlete: { name: 'Athlete', home: 'gymnasium', range: 35, service: 'athletics' },
   actor: { name: 'Actor', home: 'theater', range: 35, service: 'drama' },
+  superintendent: { name: 'Superintendent', home: 'maintenanceOffice', range: 44, service: 'maintenance' },
 };
 
 export const SERVICE_REACH = 2;
@@ -157,6 +159,10 @@ function dismiss(state: GameState, roamer: Roamer): void {
 function serveAround(state: GameState, roamer: Roamer): void {
   const tile = roamer.path[roamer.step];
   const service = ROAMER_SPECS[roamer.kind].service;
+  if (service === 'maintenance') {
+    for (const building of state.buildings.filter((b) => footprintDistance(b, tile) <= SERVICE_REACH)) maintain(state, building);
+    return;
+  }
   const houses = state.buildings.filter((b) => b.type === 'house' && footprintDistance(b, tile) <= SERVICE_REACH);
   if (isGood(service)) {
     const stall = buildingById(state, roamer.homeId);

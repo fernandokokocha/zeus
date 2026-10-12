@@ -87,10 +87,21 @@ function cart(load: Part[]): Part[] {
 const smallAmphora = (x: number, y: number, z: number): Part => ({ geometry: jar.clone().translate(x, y, z), color: PALETTE.terracotta });
 
 const FIGURES: Record<Figure, Part[]> = {
+  superintendent: [
+    ...body(PALETTE.superintendentTunic),
+    { geometry: new THREE.CylinderGeometry(0.075, 0.075, 0.03, 10).translate(0, 0.38, 0), color: PALETTE.reed },
+    { geometry: new THREE.CylinderGeometry(0.05, 0.04, 0.08, 10).translate(0.1, 0.1, 0), color: PALETTE.bronze },
+    { geometry: new THREE.CylinderGeometry(0.045, 0.045, 0.005, 10).translate(0.1, 0.14, 0), color: PALETTE.water },
+  ],
   grower,
   growerWithOlives: [...grower, oliveHeap(0.1, 0.16, 0, 0.9)],
   oliveCart: cart([oliveHeap(0, 0.16, 0.22, 1.4)]),
   oilCart: cart([smallAmphora(-0.05, 0.14, 0.18), smallAmphora(0.05, 0.14, 0.27)]),
+  oliveBuyer: [
+    ...body(PALETTE.oliveBuyerTunic),
+    { geometry: new THREE.CylinderGeometry(0.07, 0.05, 0.08, 10).translate(0.1, 0.12, 0.02), color: PALETTE.reed },
+    oliveHeap(0.1, 0.17, 0.02, 0.9),
+  ],
   oilBuyer: [...body(PALETTE.oilBuyerTunic), smallAmphora(0.1, 0.06, 0.02)],
   oilPeddler: [
     ...body(PALETTE.oilPeddlerTunic),
@@ -203,10 +214,10 @@ export function createWalkerLayer(): { group: THREE.Group; sync(state: GameState
     group,
     sync(state, ticksAhead) {
       sets.settler.show(state.settlers, ticksAhead);
-      for (const kind of ['waterCarrier', 'taxCollector', 'peddler', 'fleecePeddler', 'oilPeddler', 'philosopher', 'athlete', 'actor'] as const) {
+      for (const kind of ['waterCarrier', 'taxCollector', 'peddler', 'fleecePeddler', 'oilPeddler', 'philosopher', 'athlete', 'actor', 'superintendent'] as const) {
         sets[kind].show(state.roamers.filter((r) => r.kind === kind), ticksAhead);
       }
-      for (const kind of ['cartPusher', 'buyer', 'fleeceCart', 'fleeceBuyer', 'oliveCart', 'oilCart', 'oilBuyer'] as const) {
+      for (const kind of ['cartPusher', 'buyer', 'fleeceCart', 'fleeceBuyer', 'oliveCart', 'oilCart', 'oliveBuyer', 'oilBuyer'] as const) {
         sets[kind].show(state.carriers.filter((c) => c.kind === kind), ticksAhead);
       }
       for (const kind of ['philosopherTrainee', 'actorTrainee'] as const) {
