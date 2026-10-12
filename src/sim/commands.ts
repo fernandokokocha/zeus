@@ -203,7 +203,10 @@ function build(state: GameState, placement: Placement): void {
     level: 'hut' as const,
     food: 0,
     fleece: 0,
+    olives: 0,
+    oil: 0,
     growth: placement.type === 'oliveTree' ? RIPE_CROP : 0,
+    production: 0,
     performingUntil: 0,
   };
   state.buildings.push(building);
@@ -273,6 +276,7 @@ export function demolish(state: GameState, from: Point, to: Point): void {
   state.carriers = state.carriers.filter((c) => !doomed.has(c.homeId));
   state.trainees = state.trainees.filter((t) => !doomed.has(t.homeId));
   state.shepherds = state.shepherds.filter((s) => !doomed.has(s.homeId));
+  state.growers = state.growers.filter((g) => !doomed.has(g.homeId));
   state.buildingIdAt = state.buildingIdAt.map((id) => (doomed.has(id) ? (agoraOfVendor.get(id) ?? NO_BUILDING) : id));
   state.version++;
 }

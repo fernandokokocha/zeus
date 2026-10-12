@@ -20,6 +20,7 @@ import {
   type Carrier,
   type GameState,
   type Good,
+  type HouseGood,
   type Roamer,
   type Settler,
   type Sheep,
@@ -85,7 +86,7 @@ function loads(units: number): string {
   return `${amount(count)} ${count === 1 ? 'load' : 'loads'}`;
 }
 
-const GOOD_NAMES: Record<Good, string> = { food: 'wheat', fleece: 'fleece' };
+const GOOD_NAMES: Record<Good, string> = { food: 'wheat', fleece: 'fleece', olives: 'olives', oil: 'oil' };
 
 const CARRIER_HOMES: Record<Carrier['kind'], string> = { cartPusher: 'farm', buyer: 'stall', fleeceCart: 'shed', fleeceBuyer: 'stall' };
 
@@ -105,7 +106,7 @@ function describeHouse(state: GameState, house: Building): Description {
   return { title: houseName(house), lines };
 }
 
-function stockStatus(house: Building, good: Good): string {
+function stockStatus(house: Building, good: HouseGood): string {
   if (house[good] <= 0) return `No ${good}`;
   const used = monthlyUse(house, good);
   const lasts = used > 0 ? ` (${amount(house[good] / used)} months)` : '';

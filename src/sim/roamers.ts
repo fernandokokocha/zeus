@@ -6,7 +6,7 @@ import { NEIGHBOUR_STEPS, findRoadPath } from './pathfinding';
 import { samePoint, type Point } from './point';
 import { nextRandom } from './rng';
 import { isPerforming, traineeKindFor } from './schools';
-import { buildingById, inBounds, tileIndex, type Building, type GameState, type Roamer, type Coverage, type Good, type RoamerKind, type Service } from './state';
+import { buildingById, inBounds, tileIndex, type Building, type GameState, type Roamer, type Coverage, type HouseGood, type RoamerKind, type Service } from './state';
 import { WALKER_TILES_PER_TICK, isRoad } from './walking';
 
 export interface RoamerSpec {
@@ -30,9 +30,9 @@ export const SERVICE_REACH = 2;
 export const SERVICE_MONTHS = 2;
 export const ROAMER_REST_TICKS = TICKS_PER_MONTH / 4;
 
-const GOODS: ReadonlySet<Service> = new Set<Service>(['food', 'fleece']);
+const GOODS: ReadonlySet<Service> = new Set<Service>(['food', 'fleece', 'oil']);
 
-export function isGood(service: Service): service is Good {
+export function isGood(service: Service): service is HouseGood {
   return GOODS.has(service);
 }
 

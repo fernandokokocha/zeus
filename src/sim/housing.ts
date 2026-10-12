@@ -5,7 +5,7 @@ import type { Building, GameState } from './state';
 
 export type HouseLevel = 'hut' | 'shack' | 'hovel' | 'homestead' | 'tenement';
 
-export type HouseNeed = 'food' | 'water' | 'fleece';
+export type HouseNeed = 'food' | 'water' | 'fleece' | 'oil';
 
 export interface HouseLevelSpec {
   name: string;

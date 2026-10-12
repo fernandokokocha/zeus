@@ -77,6 +77,8 @@ function sendCarrier(state: GameState, building: Building): void {
     destinationId: target.building.id,
     food: 0,
     fleece: 0,
+    olives: 0,
+    oil: 0,
     [good]: load,
     returning: false,
     path: target.path,

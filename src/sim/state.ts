@@ -8,10 +8,11 @@ import { STARTING_TREASURY } from './treasury';
 export type Speed = 0 | 1 | 2 | 4;
 export type PlayingSpeed = Exclude<Speed, 0>;
 
-export type Good = 'food' | 'fleece';
+export type HouseGood = 'food' | 'fleece' | 'oil';
+export type Good = HouseGood | 'olives';
 export type Culture = 'philosophy' | 'athletics' | 'drama';
-export type Service = 'water' | 'tax' | Good | Culture;
-export type Coverage = Exclude<Service, Good>;
+export type Service = 'water' | 'tax' | HouseGood | Culture;
+export type Coverage = Exclude<Service, HouseGood>;
 
 export interface Building {
   id: number;
@@ -26,7 +27,10 @@ export interface Building {
   level: HouseLevel;
   food: number;
   fleece: number;
+  olives: number;
+  oil: number;
   growth: number;
+  production: number;
   performingUntil: number;
 }
 
@@ -75,6 +79,14 @@ export interface Shepherd extends Walk {
   returning: boolean;
 }
 
+export interface Grower extends Walk {
+  id: number;
+  homeId: number;
+  treeId: number;
+  olives: number;
+  returning: boolean;
+}
+
 export type CarrierKind = 'cartPusher' | 'buyer' | 'fleeceCart' | 'fleeceBuyer';
 
 export interface Carrier extends Walk {
@@ -84,6 +96,8 @@ export interface Carrier extends Walk {
   destinationId: number;
   food: number;
   fleece: number;
+  olives: number;
+  oil: number;
   returning: boolean;
 }
 
@@ -107,6 +121,8 @@ export interface GameState {
   nextSheepId: number;
   shepherds: Shepherd[];
   nextShepherdId: number;
+  growers: Grower[];
+  nextGrowerId: number;
   rngState: number;
   entry: Point;
   treasury: number;
@@ -143,6 +159,8 @@ export function newGameState(size: number, terrain: Terrain[], entry: Point): Ga
     nextSheepId: 1,
     shepherds: [],
     nextShepherdId: 1,
+    growers: [],
+    nextGrowerId: 1,
     rngState: DEFAULT_SEED,
     entry,
     treasury: STARTING_TREASURY,

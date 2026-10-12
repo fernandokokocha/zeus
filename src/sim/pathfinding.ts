@@ -22,6 +22,11 @@ export function findOpenPath(state: GameState, from: Point, targets: Point[]): P
   return findPath(state, from, targets, (i) => isOpenTile(state, i));
 }
 
+export function findGrovePath(state: GameState, from: Point, targets: Point[]): Point[] | null {
+  const groves = new Set(state.buildings.filter((b) => b.type === 'oliveTree').map((b) => tileIndex(state, b.x, b.y)));
+  return findPath(state, from, targets, (i) => isOpenTile(state, i) || groves.has(i));
+}
+
 function findPath(state: GameState, from: Point, targets: Point[], passable: (tile: number) => boolean): Point[] | null {
   const targetSet = new Set(targets.map((p) => tileIndex(state, p.x, p.y)));
   const cameFrom = new Int32Array(state.size * state.size).fill(UNVISITED);
