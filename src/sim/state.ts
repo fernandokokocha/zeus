@@ -97,6 +97,15 @@ export interface Grower extends Walk {
   returning: boolean;
 }
 
+export interface Gatherer extends Walk {
+  id: number;
+  homeId: number;
+  good: Material;
+  site: Point;
+  load: number;
+  returning: boolean;
+}
+
 export type CarrierKind = 'cartPusher' | 'buyer' | 'fleeceCart' | 'fleeceBuyer' | 'oliveCart' | 'oilCart' | 'oliveBuyer' | 'oilBuyer';
 
 export interface Carrier extends Walk {
@@ -137,6 +146,9 @@ export interface GameState {
   nextShepherdId: number;
   growers: Grower[];
   nextGrowerId: number;
+  gatherers: Gatherer[];
+  nextGathererId: number;
+  felledUntil: number[];
   rngState: number;
   entry: Point;
   treasury: number;
@@ -175,6 +187,9 @@ export function newGameState(size: number, terrain: Terrain[], entry: Point): Ga
     nextShepherdId: 1,
     growers: [],
     nextGrowerId: 1,
+    gatherers: [],
+    nextGathererId: 1,
+    felledUntil: new Array<number>(size * size).fill(0),
     rngState: DEFAULT_SEED,
     entry,
     treasury: STARTING_TREASURY,

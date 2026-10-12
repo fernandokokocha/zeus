@@ -292,5 +292,6 @@ export function removeBuildings(state: GameState, doomed: Set<number>): void {
   state.trainees = state.trainees.filter((t) => !doomed.has(t.homeId));
   state.shepherds = state.shepherds.filter((s) => !doomed.has(s.homeId));
   state.growers = state.growers.filter((g) => !doomed.has(g.homeId));
+  state.gatherers = state.gatherers.filter((g) => !doomed.has(g.homeId));
   state.buildingIdAt = state.buildingIdAt.map((id) => (doomed.has(id) ? (agoraOfVendor.get(id) ?? NO_BUILDING) : id));
 }

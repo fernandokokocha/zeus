@@ -7,7 +7,11 @@ export const NEIGHBOUR_STEPS: Point[] = [{ x: 0, y: -1 }, { x: 1, y: 0 }, { x: 0
 const UNVISITED = -1;
 
 function isOpenTile(state: GameState, i: number): boolean {
-  return state.roads[i] || (BUILDABLE.has(state.terrain[i]) && state.buildingIdAt[i] === NO_BUILDING);
+  return state.roads[i] || (BUILDABLE.has(state.terrain[i]) && state.buildingIdAt[i] === NO_BUILDING) || isClearing(state, i);
+}
+
+function isClearing(state: GameState, i: number): boolean {
+  return state.terrain[i] === 'forest' && state.tick < state.felledUntil[i];
 }
 
 export function isOpenGround(state: GameState, p: Point): boolean {

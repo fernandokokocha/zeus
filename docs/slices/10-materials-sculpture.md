@@ -76,23 +76,23 @@ bronze, as a press is for olives.
 **Files:** Modify `src/sim/buildings.ts`, `src/sim/state.ts`, `src/sim/commands.ts`,
 `src/sim/safety.ts`, `src/sim/storehouse.ts`, `src/sim/carriers.ts`.
 
-- [ ] **Step 1:** Write failing tests: the five buildings cost and radiate as listed;
+- [x] **Step 1:** Write failing tests: the five buildings cost and radiate as listed;
   their fire and collapse risks build up.
-- [ ] **Step 2:** Implement. Tests pass.
+- [x] **Step 2:** Implement. Tests pass.
 
 ### Task 3: Gatherers
 
 **Files:** Create `src/sim/materials.ts`, `tests/sim/materials.test.ts`. Modify
 `src/sim/state.ts`, `src/sim/tick.ts`, `src/sim/commands.ts`.
 
-- [ ] **Step 1:** Write failing tests: a staffed mill sends its lumberjack after its rest
+- [x] **Step 1:** Write failing tests: a staffed mill sends its lumberjack after its rest
   (slower at half staff, never without workers) to the nearest forest within 20 tiles;
   he fells it and brings a load of wood home. The felled tile is no resource, then grows
   back in 4 years. Two mills fell different trees. A full mill keeps him home. A
   demolished site sends him home empty; a demolished mill takes him with it. The
   masonry shop and foundry do the same with marble and copper, which never run out.
   A mill next to forest makes about 13 loads a year, one 20 tiles away about 7–8.
-- [ ] **Step 2:** Implement. Tests pass.
+- [x] **Step 2:** Implement. Tests pass.
 
 ### Task 4: Carts, studio and storehouse
 
