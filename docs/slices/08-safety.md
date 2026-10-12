@@ -134,6 +134,6 @@ Extend `tests/sim/safety.test.ts`.
 
 ### Task 9: PR
 
-- [ ] **Step 1:** Tick slice 8 in `docs/roadmap.md`. Record the new **ours** numbers in
+- [x] **Step 1:** Tick slice 8 in `docs/roadmap.md`. Record the new **ours** numbers in
   zeus-numbers.
 - [ ] **Step 2:** Open the PR `Slice 08: Safety`. Wait for CI and Pages.
