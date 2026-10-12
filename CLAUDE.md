@@ -8,6 +8,7 @@ build it one slice at a time, and the owner playtests the deployed build between
 - **Gameplay numbers:** `docs/reference/zeus-numbers.md`.
 - **Progress:** `docs/roadmap.md`.
 - **Slice plans:** `docs/slices/NN-name.md`.
+- **Redesigning models** with the owner (buildings, houses, walkers): `docs/model-redesign.md`.
 
 ## Working agreement
 

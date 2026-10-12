@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Model Gallery</title>
+    <style>
+      body { margin: 0; padding: 24px; background: #efe9dc; color: #2a2418; font-family: Georgia, serif; }
+      h1 { margin: 0 0 4px; font-size: 26px; }
+      .needs { margin: 0 0 20px; color: #6a5d45; }
+      nav a { margin-right: 14px; color: #1d4e8c; }
+      .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+      .card { background: #fbf8f1; border: 1px solid #d8cdb5; border-radius: 6px; padding: 10px; }
+      .card canvas { width: 100%; height: 400px; display: block; border-radius: 4px; cursor: grab; }
+      .card h2 { font-size: 18px; margin: 10px 0 6px; }
+      .card ul { margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.45; }
+      .card.chosen { border: 3px solid #2f6fb3; }
+      .card.chosen h2::after { content: " — chosen"; color: #2f6fb3; }
+      h3 { margin: 26px 0 8px; font-size: 16px; }
+      .strip { width: 100%; height: 260px; display: block; border-radius: 6px; }
+    </style>
+  </head>
+  <body>
+    <nav id="nav"></nav>
+    <h1 id="title"></h1>
+    <p class="needs" id="needs"></p>
+    <div class="cards" id="cards"></div>
+    <h3 id="strip-caption"></h3>
+    <canvas class="strip" id="strip"></canvas>
+    <script type="module" src="/src/gallery/main.ts"></script>
+  </body>
+</html>

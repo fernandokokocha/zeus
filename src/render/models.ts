@@ -10,6 +10,8 @@ import { isPerforming } from '../sim/schools';
 import { isBurning } from '../sim/safety';
 import type { Building, GameState } from '../sim/state';
 import { PALETTE, tileHash } from './palette';
+import { bakedOnce } from './bake';
+import { hovelModel, hutModel, shackModel } from './house-models';
 
 const lambert = (color: number) => new THREE.MeshLambertMaterial({ color });
 const earth = lambert(PALETTE.dirt);
@@ -76,8 +78,6 @@ const spray = new THREE.SphereGeometry(0.06, 8, 6);
 const tongue = new THREE.ConeGeometry(0.09, 0.32, 7).translate(0, 0.16, 0);
 const puff = new THREE.SphereGeometry(0.12, 8, 6);
 const log = new THREE.CylinderGeometry(0.04, 0.04, 0.3, 8).rotateZ(Math.PI / 2);
-const beamEnd = new THREE.CylinderGeometry(0.025, 0.025, 0.12, 6).rotateX(Math.PI / 2);
-const oven = new THREE.SphereGeometry(0.16, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2);
 const amphora = new THREE.LatheGeometry(
   [[0, 0], [0.04, 0.01], [0.08, 0.08], [0.085, 0.14], [0.05, 0.22], [0.03, 0.26], [0.045, 0.28]].map(
     ([r, y]) => new THREE.Vector2(r, y),
@@ -142,36 +142,6 @@ function vacantLotModel(): THREE.Object3D {
   group.add(packedEarth(), stoneBorder(), brickPile(LOT_WIDTH - 0.55, LOT_DEPTH - 0.5));
   return group;
 }
-
-function hutModel(): THREE.Object3D {
-  const group = new THREE.Group();
-  group.add(packedEarth());
-
-  const x0 = 0.2;
-  const z0 = 0.2;
-  const width = 1.0;
-  const depth = 0.9;
-  const wallHeight = 0.48;
-  const cx = x0 + width / 2;
-  const cz = z0 + depth / 2;
-  group.add(box(width + 0.06, 0.07, depth + 0.06, fieldstone, cx, 0.03, cz));
-  group.add(box(width, wallHeight, depth, mudBrick, cx, 0.1, cz));
-  group.add(box(width + 0.14, 0.06, depth + 0.14, reed, cx, 0.1 + wallHeight, cz));
-  for (const bx of [x0 + 0.15, x0 + 0.5, x0 + 0.85]) group.add(placed(beamEnd, timber, bx, 0.1 + wallHeight - 0.03, z0 + depth + 0.04));
-  group.add(box(0.2, 0.3, 0.02, doorway, x0 + 0.3, 0.1, z0 + depth + 0.005));
-  group.add(box(0.02, 0.07, 0.14, doorway, x0 + width + 0.005, 0.38, cz));
-
-  const wallHeightYard = 0.16;
-  const yardEdge = LOT_WIDTH - 0.16;
-  group.add(box(yardEdge - x0 - 0.45, wallHeightYard, 0.08, fieldstone, (x0 + 0.45 + yardEdge) / 2 + 0.04, 0.03, yardEdge));
-  group.add(box(0.08, wallHeightYard, yardEdge - z0, fieldstone, yardEdge, 0.03, (z0 + yardEdge) / 2));
-
-  group.add(placed(oven, mudBrick, LOT_WIDTH - 0.45, 0.03, 0.45));
-  group.add(placed(amphora, clay, LOT_WIDTH - 0.5, 0.03, LOT_DEPTH - 0.55));
-  group.add(placed(amphora, clay, LOT_WIDTH - 0.68, 0.03, LOT_DEPTH - 0.45));
-  return group;
-}
-
 
 function cylinder(radius: number, height: number, material: THREE.Material, x: number, y: number, z: number): THREE.Mesh {
   const mesh = placed(disc, material, x, y, z);
@@ -308,38 +278,6 @@ function palaceModel(): THREE.Object3D {
     group.add(placed(shrub, foliage, W / 2 + side * 1.6, 0.52, 4.75));
     for (const dz of [0.2, 1.3]) group.add(placed(shrub, foliage, W / 2 + side * 3.6, 0.2, 3.7 + dz));
   }
-  return group;
-}
-
-function shackModel(): THREE.Object3D {
-  const group = new THREE.Group();
-  group.add(packedEarth());
-  const x0 = 0.18;
-  const z0 = 0.18;
-  const width = 1.25;
-  const depth = 1.0;
-  const wallHeight = 0.55;
-  const cx = x0 + width / 2;
-  const cz = z0 + depth / 2;
-  group.add(box(width + 0.06, 0.07, depth + 0.06, fieldstone, cx, 0.03, cz));
-  group.add(box(width, wallHeight, depth, plaster, cx, 0.1, cz));
-  const roof = gableRoof(depth + 0.16, 0.32, width + 0.14, mudBrick);
-  roof.rotation.y = Math.PI / 2;
-  roof.position.set(cx, 0.1 + wallHeight, cz);
-  group.add(roof);
-  group.add(box(0.22, 0.34, 0.02, doorway, x0 + 0.35, 0.1, z0 + depth + 0.005));
-  group.add(box(0.15, 0.1, 0.02, doorway, x0 + 0.9, 0.38, z0 + depth + 0.005));
-  group.add(box(0.02, 0.1, 0.15, doorway, x0 + width + 0.005, 0.38, cz));
-
-  const leanX = x0 + width + 0.22;
-  group.add(box(0.36, 0.34, 0.6, mudBrick, leanX, 0.03, z0 + 0.4));
-  const leanRoof = box(0.48, 0.04, 0.7, reed, leanX, 0.37, z0 + 0.4);
-  leanRoof.rotation.z = -0.25;
-  group.add(leanRoof);
-
-  group.add(box(0.08, 0.14, LOT_DEPTH - 0.3, fieldstone, LOT_WIDTH - 0.16, 0.03, LOT_DEPTH / 2 + 0.05));
-  for (const [x, z] of [[1.5, 1.55], [1.66, 1.62], [1.58, 1.76]]) group.add(placed(amphora, clay, x, 0.03, z));
-  group.add(box(0.16, 0.12, 0.12, sack, 1.2, 0.03, 1.62));
   return group;
 }
 
@@ -496,36 +434,6 @@ function flowerGardenModel(): THREE.Object3D {
     }
   });
   group.add(placed(amphora, marble, W / 2, 0.05, D / 2));
-  return group;
-}
-
-function hovelModel(): THREE.Object3D {
-  const group = new THREE.Group();
-  group.add(packedEarth());
-  const wallHeight = 0.6;
-  group.add(box(1.3, 0.07, 0.9, fieldstone, 0.8, 0.03, 0.6));
-  group.add(box(1.24, wallHeight, 0.84, plaster, 0.8, 0.1, 0.6));
-  const roof = gableRoof(0.98, 0.34, 1.38, plaster);
-  roof.rotation.y = Math.PI / 2;
-  roof.position.set(0.8, 0.1 + wallHeight, 0.6);
-  group.add(roof);
-
-  group.add(box(0.7, 0.07, 0.9, fieldstone, 0.5, 0.03, 1.38));
-  group.add(box(0.64, 0.48, 0.84, plaster, 0.5, 0.1, 1.38));
-  const wingRoof = gableRoof(0.78, 0.26, 0.98, plaster);
-  wingRoof.position.set(0.5, 0.58, 1.38);
-  group.add(wingRoof);
-  group.add(box(0.22, 0.34, 0.02, doorway, 0.5, 0.1, 1.805));
-  group.add(box(0.14, 0.1, 0.02, doorway, 1.1, 0.44, 1.025));
-  group.add(box(0.02, 0.1, 0.14, doorway, 1.425, 0.44, 0.45));
-
-  const yardEdge = LOT_WIDTH - 0.14;
-  group.add(box(0.08, 0.2, 0.86, plaster, yardEdge, 0.03, 1.42));
-  group.add(box(0.98, 0.2, 0.08, plaster, 1.33, 0.03, yardEdge));
-  group.add(cylinder(0.14, 0.16, fieldstone, 1.38, 0.03, 1.4));
-  group.add(cylinder(0.1, 0.01, water, 1.38, 0.19, 1.4));
-  group.add(placed(amphora, clay, 1.65, 0.03, 1.15));
-  group.add(placed(shrub, foliage, 1.7, 0.18, 0.25));
   return group;
 }
 
@@ -1486,9 +1394,9 @@ const MODELS: Record<Exclude<BuildingType, 'house'>, (building: Building, state:
 };
 
 const HOUSE_MODELS: Record<HouseLevel, () => THREE.Object3D> = {
-  hut: hutModel,
-  shack: shackModel,
-  hovel: hovelModel,
+  hut: bakedOnce(hutModel),
+  shack: bakedOnce(shackModel),
+  hovel: bakedOnce(hovelModel),
   homestead: homesteadModel,
   tenement: tenementModel,
   apartment: apartmentModel,
