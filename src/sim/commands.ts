@@ -192,7 +192,7 @@ export function placeBuilding(state: GameState, type: BuildingType, x: number, y
   return OK;
 }
 
-function build(state: GameState, placement: Placement): void {
+export function build(state: GameState, placement: Placement): Building {
   const building = {
     id: state.nextBuildingId++,
     ...placement,
@@ -210,10 +210,14 @@ function build(state: GameState, placement: Placement): void {
     growth: placement.type === 'oliveTree' ? RIPE_CROP : 0,
     production: 0,
     performingUntil: 0,
+    fireRisk: 0,
+    collapseRisk: 0,
+    burningUntil: 0,
   };
   state.buildings.push(building);
   for (const p of footprint(placement)) state.buildingIdAt[tileIndex(state, p.x, p.y)] = building.id;
   state.treasury -= BUILDING_SPECS[placement.type].cost;
+  return building;
 }
 
 function lotStarts(from: number, to: number, size: number): number[] {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { houseAppeal } from '../../src/sim/appeal';
 import { TICKS_PER_MONTH } from '../../src/sim/clock';
-import { demolish, placeBuilding, placeHouses, placeOliveTrees, placeRoad, placeSheep } from '../../src/sim/commands';
+import { demolish, placeBuilding, placeHouses, placeOliveTrees, placeRoad, placeRoadblock, placeSheep } from '../../src/sim/commands';
 import { LEVEL_CHANGE_TICKS, houseCapacity } from '../../src/sim/housing';
 import { SETTLER_SPAWN_INTERVAL_TICKS } from '../../src/sim/settlers';
 import type { Building, GameState } from '../../src/sim/state';
@@ -94,6 +94,7 @@ describe('a city with the whole food chain', () => {
     placeBuilding(game, 'granary', 18, 16);
     setMeadow(game, 24, 16, 3, 3);
     placeBuilding(game, 'wheatFarm', 24, 16);
+    placeBuilding(game, 'maintenanceOffice', 4, 16);
     const houses = game.buildings.filter((b) => b.type === 'house');
 
     runTicks(game, 6 * TICKS_PER_MONTH);
@@ -201,6 +202,9 @@ describe('a city with food, water and athletes', () => {
     placeRoad(game, { x: 0, y: 20 }, { x: 39, y: 20 });
     placeHouses(game, { x: 0, y: 18 }, { x: 11, y: 19 });
     for (let x = 0; x < 12; x += 2) placeBuilding(game, 'flowerGarden', x, 16);
+    placeHouses(game, { x: 9, y: 21 }, { x: 12, y: 22 });
+    placeBuilding(game, 'maintenanceOffice', 3, 21);
+    placeRoadblock(game, { x: 14, y: 20 });
     placeBuilding(game, 'agora', 0, 21);
     placeBuilding(game, 'foodVendor', 0, 21);
     placeBuilding(game, 'granary', 28, 21);
@@ -342,6 +346,9 @@ describe('a city of Hovels with sheep', () => {
     placeRoad(game, { x: 0, y: 20 }, { x: 39, y: 20 });
     placeHouses(game, { x: 0, y: 18 }, { x: 11, y: 19 });
     for (let x = 0; x < 12; x += 2) placeBuilding(game, 'flowerGarden', x, 16);
+    placeHouses(game, { x: 9, y: 21 }, { x: 12, y: 22 });
+    placeBuilding(game, 'maintenanceOffice', 3, 21);
+    placeRoadblock(game, { x: 14, y: 20 });
     const houses = game.buildings.filter((b) => b.type === 'house');
     for (const house of houses) {
       Object.assign(house, { level: 'hovel', residents: 24, food: 50 });

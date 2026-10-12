@@ -23,7 +23,9 @@ export type BuildingType =
   | 'oliveTree'
   | 'growersLodge'
   | 'olivePress'
-  | 'oilVendor';
+  | 'oilVendor'
+  | 'maintenanceOffice'
+  | 'ruins';
 
 export interface BuildingSpec {
   name: string;
@@ -59,6 +61,8 @@ export const BUILDING_SPECS: Record<BuildingType, BuildingSpec> = {
   growersLodge: { name: "Growers' Lodge", width: 2, height: 2, cost: 25, workers: 12, appeal: [-3, -2], needsRoad: true },
   olivePress: { name: 'Olive Press', width: 2, height: 2, cost: 45, workers: 12, appeal: [-4, -4, -2, -2], needsRoad: true },
   oilVendor: { name: 'Oil Vendor', width: 2, height: 2, cost: 10, workers: 4, appeal: [], needsRoad: true },
+  maintenanceOffice: { name: 'Maintenance Office', width: 2, height: 2, cost: 10, workers: 5, appeal: [], needsRoad: true },
+  ruins: { name: 'Ruins', width: 1, height: 1, cost: 0, workers: 0, appeal: [], needsRoad: false },
 };
 
 export type Rotation = 0 | 1 | 2 | 3;

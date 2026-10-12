@@ -74,33 +74,33 @@ agora) with demolishing it. The superintendent is a roamer whose service is main
 **Files:** Create `src/sim/safety.ts`, `tests/sim/safety.test.ts`. Modify
 `src/sim/buildings.ts`, `src/sim/state.ts`, `src/sim/commands.ts`, `src/sim/tick.ts`.
 
-- [ ] **Step 1:** Write failing tests: a Tax Office builds up 5 fire risk a month and
+- [x] **Step 1:** Write failing tests: a Tax Office builds up 5 fire risk a month and
   burns after 12 months, leaving 4 burning ruin tiles; a vacant lot builds up none; an
   occupied house burns after 7.5 months and its residents are gone; a Fountain collapses
   after 7.5 months into rubble that is not burning; a Park never burns or collapses; a
   collapsing agora takes its vendor; ruins block placement and are cleared by demolish;
   a destroyed farm's cart pusher vanishes.
-- [ ] **Step 2:** Implement. Tests pass.
+- [x] **Step 2:** Implement. Tests pass.
 
 ### Task 4: Fire spread
 
 **Files:** Modify `src/sim/safety.ts`, `tests/sim/safety.test.ts`.
 
-- [ ] **Step 1:** Write failing tests: burning ruins raise a neighbouring house's fire risk
+- [x] **Step 1:** Write failing tests: burning ruins raise a neighbouring house's fire risk
   by 60 a month and it catches fire; a fountain beside them never burns; a house 2 tiles
   away is untouched; ruins stop burning after 2 months and stop spreading.
-- [ ] **Step 2:** Implement. Tests pass.
+- [x] **Step 2:** Implement. Tests pass.
 
 ### Task 5: Maintenance Office
 
 **Files:** Modify `src/sim/roamers.ts`, `src/sim/state.ts`, `src/sim/buildings.ts`.
 Extend `tests/sim/safety.test.ts`.
 
-- [ ] **Step 1:** Write failing tests: a staffed Maintenance Office sends a superintendent
+- [x] **Step 1:** Write failing tests: a staffed Maintenance Office sends a superintendent
   who resets both risks of buildings within 2 tiles of his road, not farther; he puts
   out burning ruins he passes; a city with a Maintenance Office keeps its houses standing
   for years.
-- [ ] **Step 2:** Implement. Tests pass.
+- [x] **Step 2:** Implement. Tests pass.
 
 ### Task 6: Inspector
 
