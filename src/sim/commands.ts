@@ -11,6 +11,7 @@ import {
   type Rotation,
 } from './buildings';
 import { rectBetween, tilesIn, type Point } from './point';
+import { RIPE_CROP } from './olives';
 import { GRAZE_PAUSE_TICKS, isPasture } from './sheep';
 import { NO_BUILDING, clampToMap, inBounds, tileIndex, type Building, type GameState } from './state';
 import { BUILDABLE, TERRAIN_NAMES } from './terrain';
@@ -158,14 +159,20 @@ export function checkBuildingPlacement(
   return { obstacle: placementObstacle(state, placement), roadAccess: hasRoadAccess(state, placement) };
 }
 
+const MEADOW_REASONS: Partial<Record<BuildingType, string>> = {
+  wheatFarm: 'A wheat farm needs meadow',
+  oliveTree: 'An olive tree needs meadow',
+};
+
 function placementObstacle(state: GameState, placement: Placement): string | null {
   const { type, x, y } = placement;
   if (type === 'palace' && state.buildings.some((b) => b.type === 'palace')) return 'Only one palace is allowed';
   if (isAgoraVendor(type)) return vendorObstacle(state, x, y);
-  const obstacle = footprintObstacle(state, placement);
-  if (obstacle || type !== 'wheatFarm') return obstacle;
-  const onMeadow = footprint(placement).every((p) => state.terrain[tileIndex(state, p.x, p.y)] === 'meadow');
-  return onMeadow ? null : 'A wheat farm needs meadow';
+const obstacle = footprintObstacle(state, placement);
+const meadowReason = MEADOW_REASONS[type];
+if (obstacle || !meadowReason) return obstacle;
+const onMeadow = footprint(placement).every((p) => state.terrain[tileIndex(state, p.x, p.y)] === 'meadow');
+return onMeadow ? null : meadowReason;
 }
 
 function vendorObstacle(state: GameState, x: number, y: number): string | null {
@@ -196,7 +203,7 @@ function build(state: GameState, placement: Placement): void {
     level: 'hut' as const,
     food: 0,
     fleece: 0,
-    growth: 0,
+    growth: placement.type === 'oliveTree' ? RIPE_CROP : 0,
     performingUntil: 0,
   };
   state.buildings.push(building);
@@ -217,6 +224,10 @@ export function lotOrigins(from: Point, to: Point, type: BuildingType = 'house')
 
 export function placeHouses(state: GameState, from: Point, to: Point, rotation: Rotation = 0): Result {
   return placeLots(state, 'house', from, to, rotation);
+}
+
+export function placeOliveTrees(state: GameState, from: Point, to: Point): Result {
+  return placeLots(state, 'oliveTree', from, to, 0);
 }
 
 function placeLots(state: GameState, type: BuildingType, from: Point, to: Point, rotation: Rotation): Result {
