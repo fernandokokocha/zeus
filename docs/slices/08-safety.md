@@ -65,7 +65,7 @@ agora) with demolishing it. The superintendent is a roamer whose service is main
 
 **Files:** Modify `src/sim/commands.ts`.
 
-- [ ] **Step 1:** Refactor: demolish's cleanup of doomed buildings (vendors on a doomed
+- [x] **Step 1:** Refactor: demolish's cleanup of doomed buildings (vendors on a doomed
   agora, walkers homed there, tiles) becomes `removeBuildings(state, ids)`. No behavior
   change.
 

@@ -267,6 +267,11 @@ export function demolish(state: GameState, from: Point, to: Point): void {
     if (state.terrain[i] === 'forest') state.terrain[i] = 'grass';
     if (state.buildingIdAt[i] !== NO_BUILDING) doomed.add(state.buildingIdAt[i]);
   }
+  removeBuildings(state, doomed);
+  state.version++;
+}
+
+export function removeBuildings(state: GameState, doomed: Set<number>): void {
   const agoraOfVendor = new Map<number, number>();
   for (const vendor of state.buildings.filter((b) => isAgoraVendor(b.type))) {
     const agoraId = roadSite(state, vendor).id;
@@ -280,5 +285,4 @@ export function demolish(state: GameState, from: Point, to: Point): void {
   state.shepherds = state.shepherds.filter((s) => !doomed.has(s.homeId));
   state.growers = state.growers.filter((g) => !doomed.has(g.homeId));
   state.buildingIdAt = state.buildingIdAt.map((id) => (doomed.has(id) ? (agoraOfVendor.get(id) ?? NO_BUILDING) : id));
-  state.version++;
 }
