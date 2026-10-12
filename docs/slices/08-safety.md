@@ -106,10 +106,10 @@ Extend `tests/sim/safety.test.ts`.
 
 **Files:** Modify `src/sim/inspect.ts`, `tests/sim/inspect.test.ts`.
 
-- [ ] **Step 1:** Write failing tests: a house and a workplace show their fire risk and
+- [x] **Step 1:** Write failing tests: a house and a workplace show their fire risk and
   collapse risk as a share of the limit; a Park shows neither; ruins show whether they
   are burning and how to clear them; a superintendent describes his walk.
-- [ ] **Step 2:** Implement. Tests pass.
+- [x] **Step 2:** Implement. Tests pass.
 
 ### Task 7: UI and rendering
 

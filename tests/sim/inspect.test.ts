@@ -6,6 +6,7 @@ import { TICKS_PER_MONTH } from '../../src/sim/clock';
 import { ROAMER_REST_TICKS } from '../../src/sim/roamers';
 import type { Building, GameState } from '../../src/sim/state';
 import { describeTile } from '../../src/sim/inspect';
+import { FIRE_BURN_TICKS, RISK_LIMIT } from '../../src/sim/safety';
 import { SETTLER_SPAWN_INTERVAL_TICKS } from '../../src/sim/settlers';
 import { walkerTile } from '../../src/sim/walking';
 import { grassGame, placeHouse, runTicks, setMeadow, setTerrain } from './helpers';
@@ -66,6 +67,7 @@ describe('describeTile', () => {
         'No culture has passed',
         'No tax collector has passed',
         'Needs for Shack: food',
+        'Fire risk 1%',
       ],
     });
   });
@@ -103,6 +105,7 @@ describe('describeTile for services', () => {
       'No culture has passed',
       'Pays 0.72 dr tax a month',
       'Needs for Shack: food',
+      'Fire risk 0%',
     ]);
   });
 
@@ -140,7 +143,7 @@ it('shows the water running down until the next carrier', () => {
     runTicks(game, 1);
     expect(describeTile(game, 7, 12)).toEqual({
       title: 'Fountain',
-      lines: ['Tile 6, 11', 'Workers 4/4', 'Water Carrier getting ready'],
+      lines: ['Tile 6, 11', 'Workers 4/4', 'Water Carrier getting ready', 'Collapse risk 0%'],
     });
     runTicks(game, ROAMER_REST_TICKS);
     expect(describeTile(game, 6, 11).lines).toContain('Water Carrier out in the streets');
@@ -151,8 +154,8 @@ it('shows the water running down until the next carrier', () => {
     placeBuilding(game, 'taxOffice', 2, 11);
     placeBuilding(game, 'fountain', 6, 14);
     runTicks(game, 1);
-    expect(describeTile(game, 2, 11).lines).toEqual(['Tile 2, 11', 'Workers 0/8', 'No workers: does not work']);
-    expect(describeTile(game, 6, 14).lines).toEqual(['Tile 6, 14', 'No road access: does not work']);
+    expect(describeTile(game, 2, 11).lines).toEqual(['Tile 2, 11', 'Workers 0/8', 'No workers: does not work', 'Fire risk 0%']);
+    expect(describeTile(game, 6, 14).lines).toEqual(['Tile 6, 14', 'No road access: does not work', 'Collapse risk 0%']);
   });
 
   it("shows last month's taxes and wages on the Palace", () => {
@@ -250,7 +253,7 @@ describe('describeTile for food and appeal', () => {
     runTicks(game, 1);
     expect(describeTile(game, 7, 13)).toEqual({
       title: 'Wheat Farm',
-      lines: ['Tile 6, 12', 'Workers 10/10', 'Crop 43% grown, harvest in July', 'Cart Pusher at the farm'],
+      lines: ['Tile 6, 12', 'Workers 10/10', 'Crop 43% grown, harvest in July', 'Cart Pusher at the farm', 'Fire risk 0%'],
     });
     farm.food = 600;
     runTicks(game, 1);
@@ -272,10 +275,10 @@ describe('describeTile for food and appeal', () => {
     const { game } = street();
     game.buildings[0].residents = 100;
     placeBuilding(game, 'agora', 10, 16);
-    expect(describeTile(game, 11, 18).lines).toEqual(['Tile 10, 16', 'No vendors yet: place one on a free spot']);
+    expect(describeTile(game, 11, 18).lines).toEqual(['Tile 10, 16', 'No vendors yet: place one on a free spot', 'Collapse risk 0%']);
     placeBuilding(game, 'foodVendor', 10, 16);
     placeBuilding(game, 'granary', 20, 11);
-    expect(describeTile(game, 12, 18).lines).toEqual(['Tile 10, 16', 'Vendors: Food Vendor']);
+    expect(describeTile(game, 12, 18).lines).toEqual(['Tile 10, 16', 'Vendors: Food Vendor', 'Collapse risk 0%']);
     runTicks(game, 1);
     expect(describeTile(game, 10, 17)).toEqual({
       title: 'Food Vendor',
@@ -340,7 +343,7 @@ describe('describeTile for culture', () => {
     runTicks(game, 1);
     expect(describeTile(game, 7, 13)).toEqual({
       title: 'College',
-      lines: ['Tile 6, 12', 'Workers 12/12', 'Philosopher waits for a staffed Podium'],
+      lines: ['Tile 6, 12', 'Workers 12/12', 'Philosopher waits for a staffed Podium', 'Collapse risk 0%'],
     });
     placeBuilding(game, 'podium', 16, 13);
     runTicks(game, 1);
@@ -427,7 +430,7 @@ describe('describeTile for fleece', () => {
     placeBuilding(game, 'storehouse', 10, 12);
     const storehouse = lastBuilding(game);
     runTicks(game, 1);
-    expect(describeTile(game, 11, 13)).toEqual({ title: 'Storehouse', lines: ['Tile 10, 12', 'Workers 12/12', 'Empty: 8 slots of 4 loads'] });
+    expect(describeTile(game, 11, 13)).toEqual({ title: 'Storehouse', lines: ['Tile 10, 12', 'Workers 12/12', 'Empty: 8 slots of 4 loads', 'Fire risk 0%'] });
     storehouse.fleece = 600;
     expect(describeTile(game, 11, 13).lines).toContain('Fleece: 6 loads in 2 of 8 slots');
   });
@@ -439,7 +442,7 @@ describe('describeTile for fleece', () => {
     runTicks(game, 1);
     expect(describeTile(game, 6, 13)).toEqual({
       title: 'Carding Shed',
-      lines: ['Tile 6, 13', 'Workers 8/8', 'Shepherd waits for a sheep with a full fleece within 40 tiles', 'Cart Pusher at the shed'],
+      lines: ['Tile 6, 13', 'Workers 8/8', 'Shepherd waits for a sheep with a full fleece within 40 tiles', 'Cart Pusher at the shed', 'Fire risk 0%'],
     });
     setMeadow(game, 7, 5, 7, 7);
     placeSheep(game, { x: 10, y: 8 });
@@ -536,7 +539,7 @@ describe('describeTile for olive oil', () => {
     runTicks(game, 1);
     expect(describeTile(game, 6, 13)).toEqual({
       title: "Growers' Lodge",
-      lines: ['Tile 6, 13', 'Workers 12/12', 'Grower waits for a ripe olive tree within 20 tiles', 'Cart Pusher at the lodge'],
+      lines: ['Tile 6, 13', 'Workers 12/12', 'Grower waits for a ripe olive tree within 20 tiles', 'Cart Pusher at the lodge', 'Fire risk 0%'],
     });
     placeOliveTrees(game, { x: 10, y: 8 }, { x: 10, y: 8 });
     expect(describeTile(game, 6, 13).lines).toContain('Grower resting');
@@ -566,7 +569,7 @@ describe('describeTile for olive oil', () => {
     runTicks(game, 1);
     expect(describeTile(game, 6, 13)).toEqual({
       title: 'Olive Press',
-      lines: ['Tile 6, 13', 'Workers 12/12', 'Olives: 0 of 4 loads', 'Waits for olives', 'Cart Pusher at the press'],
+      lines: ['Tile 6, 13', 'Workers 12/12', 'Olives: 0 of 4 loads', 'Waits for olives', 'Cart Pusher at the press', 'Collapse risk 0%'],
     });
     Object.assign(press, { olives: 200, production: 300 });
     expect(describeTile(game, 6, 13).lines).toEqual(expect.arrayContaining(['Olives: 2 of 4 loads', 'Pressing: 50% of a load']));
@@ -581,7 +584,7 @@ describe('describeTile for olive oil', () => {
     placeBuilding(game, 'storehouse', 10, 12);
     Object.assign(lastBuilding(game), { fleece: 600, oil: 100 });
     runTicks(game, 1);
-    expect(describeTile(game, 11, 13).lines).toEqual(['Tile 10, 12', 'Workers 12/12', 'Fleece: 6 loads in 2 of 8 slots', 'Oil: 1 load in 1 of 8 slots']);
+    expect(describeTile(game, 11, 13).lines).toEqual(['Tile 10, 12', 'Workers 12/12', 'Fleece: 6 loads in 2 of 8 slots', 'Oil: 1 load in 1 of 8 slots', 'Fire risk 0%']);
   });
 
   it('describes an oil vendor', () => {
@@ -592,6 +595,57 @@ describe('describeTile for olive oil', () => {
     expect(describeTile(game, 10, 17)).toEqual({
       title: 'Oil Vendor',
       lines: ['Tile 10, 16', 'Workers 4/4', 'Stock: 0 of 800 units', 'Oil Peddler waits for oil', 'Buyer waits for a storehouse with oil'],
+    });
+  });
+});
+
+describe('the inspector on safety', () => {
+  function street(): GameState {
+    const game = grassGame(30);
+    placeRoad(game, { x: 0, y: 15 }, { x: 29, y: 15 });
+    placeHouse(game, 2, 13);
+    game.buildings[0].residents = 8;
+    return game;
+  }
+
+  it("shows a house's fire risk", () => {
+    const game = street();
+    game.buildings[0].fireRisk = 0.25 * RISK_LIMIT * TICKS_PER_MONTH;
+    expect(describeTile(game, 2, 13).lines.at(-1)).toBe('Fire risk 25%');
+  });
+
+  it("shows a workplace's fire and collapse risks, and none for a Park", () => {
+    const game = street();
+    placeBuilding(game, 'granary', 6, 11);
+    Object.assign(game.buildings[1], { fireRisk: 0.5 * RISK_LIMIT * TICKS_PER_MONTH, collapseRisk: 0.1 * RISK_LIMIT * TICKS_PER_MONTH });
+    expect(describeTile(game, 6, 11).lines.slice(-2)).toEqual(['Fire risk 50%', 'Collapse risk 10%']);
+    placeBuilding(game, 'park', 12, 12);
+    expect(describeTile(game, 12, 12).lines.join()).not.toMatch(/risk/);
+  });
+
+  it('describes burning ruins and rubble', () => {
+    const game = street();
+    placeBuilding(game, 'taxOffice', 6, 13);
+    game.buildings[1].fireRisk = RISK_LIMIT * TICKS_PER_MONTH;
+    runTicks(game, 1);
+    expect(describeTile(game, 7, 14)).toEqual({ title: 'Ruins', lines: ['Tile 7, 14', 'On fire: a superintendent puts it out'] });
+    runTicks(game, FIRE_BURN_TICKS);
+    expect(describeTile(game, 7, 14)).toEqual({ title: 'Ruins', lines: ['Tile 7, 14', 'Clear it with the demolish tool'] });
+  });
+
+  it('describes a Maintenance Office and its superintendent', () => {
+    const game = street();
+    placeBuilding(game, 'maintenanceOffice', 0, 16);
+    runTicks(game, 1);
+    expect(describeTile(game, 0, 16)).toEqual({
+      title: 'Maintenance Office',
+      lines: ['Tile 0, 16', 'Workers 4/5', 'Superintendent getting ready'],
+    });
+    runTicks(game, 2 * ROAMER_REST_TICKS);
+    const { x, y } = walkerTile(game.roamers[0]);
+    expect(describeTile(game, x, y)).toEqual({
+      title: 'Superintendent',
+      lines: ['From the Maintenance Office at 0, 16', `Walked ${game.roamers[0].step} of 44 tiles`],
     });
   });
 });

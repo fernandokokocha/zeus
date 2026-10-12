@@ -10,6 +10,7 @@ import { type HouseLevel, HOUSE_LEVELS, LEVEL_CHANGE_TICKS, NEXT_LEVEL, PREVIOUS
 import { ROAMER_SPECS, hasService, isGood, type RoamerSpec, roamerKindSentBy, serviceLeft } from './roamers';
 import { TRAINEE_SPECS, isPerforming, staffedVenues, traineeKindFor, traineeKindSentBy } from './schools';
 import { GROVE_RANGE, LODGE_CAPACITY, PRESSING_TICKS, PRESS_OLIVE_CAPACITY, canPress, growerAfter, isRipe, treesToPick } from './olives';
+import { canBurn, canCollapse, isBurning, riskShare } from './safety';
 import { canSettlersReach } from './settlers';
 import { SHEARING_RANGE, SHED_CAPACITY, hasFullFleece, sheepTile, sheepToShear, shepherdAfter } from './sheep';
 import { STOREHOUSE_GOODS, STOREHOUSE_SLOTS, SLOT_SIZE, slotsOf } from './storehouse';
@@ -45,7 +46,10 @@ export function describeTile(state: GameState, x: number, y: number): Descriptio
   if (buildingId !== NO_BUILDING) {
     const building = buildingById(state, buildingId);
     if (!building) throw new Error(`Tile ${x}, ${y} points at missing building ${buildingId}`);
-    return building.type === 'house' ? describeHouse(state, building) : describeWorkplace(state, building);
+if (building.type === 'ruins') return describeRuins(state, building);
+const description = building.type === 'house' ? describeHouse(state, building) : describeWorkplace(state, building);
+description.lines.push(...riskLines(building));
+return description;
   }
 
   const standsHere = (walker: Walk) => {
@@ -325,6 +329,19 @@ function carrierStatus(state: GameState, building: Building, kind: Carrier['kind
   if (carrier) return `${name} ${carrier.returning ? `bringing ${goodName} home` : `out fetching ${goodName}`}`;
   if (carrierDestinations(state, kind).length === 0) return `${name} waits for ${withArticle(storeName)} with ${goodName}`;
   return atHome;
+}
+
+function riskLines(building: Building): string[] {
+  const percent = (risk: number) => `${Math.round(riskShare(risk) * 100)}%`;
+  const lines: string[] = [];
+  if (canBurn(building)) lines.push(`Fire risk ${percent(building.fireRisk)}`);
+  if (canCollapse(building)) lines.push(`Collapse risk ${percent(building.collapseRisk)}`);
+  return lines;
+}
+
+function describeRuins(state: GameState, ruins: Building): Description {
+  const status = isBurning(state, ruins) ? 'On fire: a superintendent puts it out' : 'Clear it with the demolish tool';
+  return { title: BUILDING_SPECS.ruins.name, lines: [`Tile ${ruins.x}, ${ruins.y}`, status] };
 }
 
 function describeSettler(state: GameState, settler: Settler): Description {
