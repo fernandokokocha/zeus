@@ -28,7 +28,7 @@ export const ROAMER_SPECS: Record<RoamerKind, RoamerSpec> = {
 };
 
 export const SERVICE_REACH = 2;
-export const SERVICE_MONTHS = 2;
+export const COVERAGE_MONTHS: Record<Coverage, number> = { water: 4, tax: 2, philosophy: 2, athletics: 2, drama: 2 };
 export const ROAMER_REST_TICKS = TICKS_PER_MONTH / 4;
 
 const GOODS: ReadonlySet<Service> = new Set<Service>(['food', 'fleece', 'oil']);
@@ -47,7 +47,7 @@ export function hasService(state: GameState, house: Building, service: Coverage)
 }
 
 export function serviceLeft(state: GameState, house: Building, service: Coverage): number {
-  return Math.max(0, house.coveredUntil[service] - state.tick) / (SERVICE_MONTHS * TICKS_PER_MONTH);
+  return Math.max(0, house.coveredUntil[service] - state.tick) / (COVERAGE_MONTHS[service] * TICKS_PER_MONTH);
 }
 
 export function exitTile(state: GameState, building: Building): Point | null {
@@ -164,6 +164,6 @@ function serveAround(state: GameState, roamer: Roamer): void {
     for (const house of houses) stockHouse(stall, house, service);
     return;
   }
-  const until = state.tick + SERVICE_MONTHS * TICKS_PER_MONTH;
+  const until = state.tick + COVERAGE_MONTHS[service] * TICKS_PER_MONTH;
   for (const house of houses) house.coveredUntil[service] = until;
 }

@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { TICKS_PER_MONTH } from '../../src/sim/clock';
 import { demolish, placeBuilding, placeRoad, placeRoadblock } from '../../src/sim/commands';
 import {
+  COVERAGE_MONTHS,
   ROAMER_REST_TICKS,
   ROAMER_SPECS,
-  SERVICE_MONTHS,
   exitTile,
   hasService,
   nextRoamTile,
@@ -177,14 +177,14 @@ describe('a water carrier', () => {
     expect(hasService(game, beside, 'tax')).toBe(false);
   });
 
-  it('leaves water for 2 months', () => {
+  it('leaves water for 4 months', () => {
     const game = cityOf(20);
     const house = fullHouse(game, 2, 11);
     placeBuilding(game, 'fountain', 0, 11);
     runTicks(game, ROAMER_REST_TICKS);
-    expect(house.coveredUntil.water).toBe(game.tick + SERVICE_MONTHS * TICKS_PER_MONTH);
+    expect(house.coveredUntil.water).toBe(game.tick + 4 * TICKS_PER_MONTH);
     demolish(game, { x: 0, y: 11 }, { x: 0, y: 11 });
-    runTicks(game, SERVICE_MONTHS * TICKS_PER_MONTH - 1);
+    runTicks(game, COVERAGE_MONTHS.water * TICKS_PER_MONTH - 1);
     expect(hasService(game, house, 'water')).toBe(true);
     tick(game);
     expect(hasService(game, house, 'water')).toBe(false);
