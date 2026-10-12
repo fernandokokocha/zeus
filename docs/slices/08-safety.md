@@ -119,8 +119,8 @@ Extend `tests/sim/safety.test.ts`.
 **Files:** Modify `src/ui/tools.ts`, `src/render/models.ts`, `src/render/palette.ts`,
 `src/render/walker-layer.ts`.
 
-- [ ] **Step 1:** A Maintenance Office tool in a new Safety group.
-- [ ] **Step 2:** Models: Maintenance Office (a workshop with a ladder, buckets and a tool
+- [x] **Step 1:** A Maintenance Office tool in a new Safety group.
+- [x] **Step 2:** Models: Maintenance Office (a workshop with a ladder, buckets and a tool
   rack), ruins (scorched stones and a charred beam; flames and smoke while burning).
   Walker: superintendent (with a bucket).
 
@@ -128,8 +128,8 @@ Extend `tests/sim/safety.test.ts`.
 
 **Files:** Modify `e2e/smoke.spec.ts`.
 
-- [ ] **Step 1:** Extend the smoke test: place a Maintenance Office, screenshot.
-- [ ] **Step 2:** Run `npm run typecheck`, `npm test`, `npm run build` and
+- [x] **Step 1:** Extend the smoke test: place a Maintenance Office, screenshot.
+- [x] **Step 2:** Run `npm run typecheck`, `npm test`, `npm run build` and
   `npm run test:e2e`. Open the screenshot and check it.
 
 ### Task 9: PR
