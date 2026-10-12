@@ -14,7 +14,7 @@ interface Part {
   color: number;
 }
 
-type Figure = 'settler' | RoamerKind | CarrierKind | TraineeKind | 'shepherd' | 'shepherdWithFleece' | SheepCoat;
+type Figure = 'settler' | RoamerKind | CarrierKind | TraineeKind | 'shepherd' | 'shepherdWithFleece' | 'grower' | 'growerWithOlives' | SheepCoat;
 
 type SheepCoat = 'shornSheep' | 'halfGrownSheep' | 'woollySheep';
 
@@ -65,7 +65,38 @@ const shepherd: Part[] = [
   { geometry: new THREE.TorusGeometry(0.03, 0.01, 6, 10, Math.PI).translate(0.07, 0.44, 0.03), color: PALETTE.trunk },
 ];
 
+const grower: Part[] = [
+  ...body(PALETTE.growerTunic),
+  { geometry: new THREE.CylinderGeometry(0.07, 0.05, 0.08, 10).translate(0.1, 0.12, 0), color: PALETTE.reed },
+];
+
+const oliveHeap = (x: number, y: number, z: number, size: number): Part => ({
+  geometry: new THREE.SphereGeometry(0.06 * size, 8, 6).scale(1.2, 0.6, 1.2).translate(x, y, z),
+  color: PALETTE.olive,
+});
+
+function cart(load: Part[]): Part[] {
+  return [
+    ...body(PALETTE.cartTunic),
+    { geometry: new THREE.BoxGeometry(0.2, 0.08, 0.24).translate(0, 0.1, 0.22), color: PALETTE.trunk },
+    { geometry: new THREE.CylinderGeometry(0.06, 0.06, 0.26, 10).rotateZ(Math.PI / 2).translate(0, 0.06, 0.24), color: PALETTE.doorway },
+    ...load,
+  ];
+}
+
+const smallAmphora = (x: number, y: number, z: number): Part => ({ geometry: jar.clone().translate(x, y, z), color: PALETTE.terracotta });
+
 const FIGURES: Record<Figure, Part[]> = {
+  grower,
+  growerWithOlives: [...grower, oliveHeap(0.1, 0.16, 0, 0.9)],
+  oliveCart: cart([oliveHeap(0, 0.16, 0.22, 1.4)]),
+  oilCart: cart([smallAmphora(-0.05, 0.14, 0.18), smallAmphora(0.05, 0.14, 0.27)]),
+  oilBuyer: [...body(PALETTE.oilBuyerTunic), smallAmphora(0.1, 0.06, 0.02)],
+  oilPeddler: [
+    ...body(PALETTE.oilPeddlerTunic),
+    smallAmphora(0, 0.37, 0),
+    { geometry: new THREE.CylinderGeometry(0.03, 0.03, 0.01, 8).translate(0, 0.545, 0), color: PALETTE.oil },
+  ],
   shepherd,
   shepherdWithFleece: [
     ...shepherd,
@@ -182,10 +213,10 @@ export function createWalkerLayer(): { group: THREE.Group; sync(state: GameState
     group,
     sync(state, ticksAhead) {
       sets.settler.show(state.settlers, ticksAhead);
-      for (const kind of ['waterCarrier', 'taxCollector', 'peddler', 'fleecePeddler', 'philosopher', 'athlete', 'actor'] as const) {
+      for (const kind of ['waterCarrier', 'taxCollector', 'peddler', 'fleecePeddler', 'oilPeddler', 'philosopher', 'athlete', 'actor'] as const) {
         sets[kind].show(state.roamers.filter((r) => r.kind === kind), ticksAhead);
       }
-      for (const kind of ['cartPusher', 'buyer', 'fleeceCart', 'fleeceBuyer'] as const) {
+      for (const kind of ['cartPusher', 'buyer', 'fleeceCart', 'fleeceBuyer', 'oliveCart', 'oilCart', 'oilBuyer'] as const) {
         sets[kind].show(state.carriers.filter((c) => c.kind === kind), ticksAhead);
       }
       for (const kind of ['philosopherTrainee', 'actorTrainee'] as const) {
@@ -193,6 +224,8 @@ export function createWalkerLayer(): { group: THREE.Group; sync(state: GameState
       }
       sets.shepherd.show(state.shepherds.filter((s) => s.fleece === 0), ticksAhead);
       sets.shepherdWithFleece.show(state.shepherds.filter((s) => s.fleece > 0), ticksAhead);
+      sets.grower.show(state.growers.filter((g) => g.olives === 0), ticksAhead);
+      sets.growerWithOlives.show(state.growers.filter((g) => g.olives > 0), ticksAhead);
       const coat = (fleece: number): SheepCoat => (fleece >= FULL_FLEECE ? 'woollySheep' : fleece >= HALF_GROWN ? 'halfGrownSheep' : 'shornSheep');
       for (const kind of ['shornSheep', 'halfGrownSheep', 'woollySheep'] as const) {
         sets[kind].show(state.sheep.filter((s) => coat(s.fleece) === kind), ticksAhead);

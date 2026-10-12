@@ -29,7 +29,18 @@ describe('previewTiles', () => {
     expect(previewTiles(game, 'sheep', null, { x: 4, y: 1 })).toEqual([{ x: 4, y: 1, kind: 'invalid' }]);
   });
 
-  it('warns about a building without road access', () => {
+it('marks each tile of an olive grove valid on meadow and invalid elsewhere, with no road needed', () => {
+  const game = grassGame();
+  setTerrain(game, 1, 1, 'meadow');
+  setTerrain(game, 2, 1, 'meadow');
+  expect(previewTiles(game, 'oliveTree', { x: 1, y: 1 }, { x: 3, y: 1 })).toEqual([
+    { x: 1, y: 1, kind: 'valid' },
+    { x: 2, y: 1, kind: 'valid' },
+    { x: 3, y: 1, kind: 'invalid' },
+  ]);
+});
+
+it('warns about a building without road access', () => {
     const tiles = previewTiles(grassGame(), 'house', null, { x: 2, y: 2 });
     expect(tiles).toHaveLength(4);
     expect(tiles.every((t) => t.kind === 'warning')).toBe(true);

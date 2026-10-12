@@ -28,6 +28,10 @@ export const TOOL_LABELS: Record<Tool, string> = {
   theater: priced('theater'),
   storehouse: priced('storehouse'),
   cardingShed: priced('cardingShed'),
+  oliveTree: priced('oliveTree'),
+  growersLodge: priced('growersLodge'),
+  olivePress: priced('olivePress'),
+  oilVendor: priced('oilVendor'),
   sheep: `Sheep (${SHEEP_COST} dr)`,
   demolish: 'Demolish',
 };
@@ -40,9 +44,9 @@ export interface ToolGroup {
 export const TOOL_GROUPS: ToolGroup[] = [
   { name: 'Roads', tools: ['road', 'roadblock'] },
   { name: 'Housing', tools: ['house'] },
-  { name: 'Husbandry', tools: ['wheatFarm', 'sheep'] },
-  { name: 'Industry', tools: ['cardingShed'] },
-  { name: 'Distribution', tools: ['granary', 'storehouse', 'agora', 'foodVendor', 'fleeceVendor'] },
+  { name: 'Husbandry', tools: ['wheatFarm', 'sheep', 'oliveTree', 'growersLodge'] },
+  { name: 'Industry', tools: ['cardingShed', 'olivePress'] },
+  { name: 'Distribution', tools: ['granary', 'storehouse', 'agora', 'foodVendor', 'fleeceVendor', 'oilVendor'] },
   { name: 'Hygiene', tools: ['fountain'] },
   { name: 'Administration', tools: ['palace', 'taxOffice'] },
   { name: 'Culture', tools: ['college', 'podium', 'gymnasium', 'dramaSchool', 'theater'] },
