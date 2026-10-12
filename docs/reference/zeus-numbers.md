@@ -169,3 +169,13 @@ https://zeus.heavengames.com/gameinfo/gods/
   home while full.
 - House fleece stock: a fleece peddler fills a house to **3 months** of use (6 units),
   like food.
+- Olive trees: a tree ripens a crop in **1 year**, and one picking gives **1 load**. A newly
+  planted tree arrives bearing ripe olives.
+- Growers' Lodge: rests **0.6 months** between pickings at full staff (at most 20 loads a
+  year), picks trees within **20 tiles**, holds up to **4 loads** and keeps its grower home
+  while full.
+- Olive Press: holds **4 loads** of olives and **4 loads** of oil; presses a load in 2 months
+  at full staff (6 a year).
+- Storehouse slots each hold one good, so all goods share the 8 slots.
+- House oil stock: an oil peddler fills a house to **3 months** of use (6 units), like
+  fleece.

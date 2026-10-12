@@ -74,9 +74,9 @@ fleece and oil. A house's use of each good comes from one table in `food.ts`.
 
 **Files:** Modify `src/sim/food.ts`, `src/sim/inspect.ts`, `src/sim/commands.ts`.
 
-- [ ] **Step 1:** Refactor: a house's monthly use and stock target of each good come from
+- [x] **Step 1:** Refactor: a house's monthly use and stock target of each good come from
   one table. No behavior change.
-- [ ] **Step 2:** Refactor: placing housing lots by area becomes placing lots of a given
+- [x] **Step 2:** Refactor: placing housing lots by area becomes placing lots of a given
   building type. No behavior change.
 
 ### Task 3: Olive trees
@@ -84,22 +84,22 @@ fleece and oil. A house's use of each good comes from one table in `food.ts`.
 **Files:** Modify `src/sim/buildings.ts`, `src/sim/commands.ts`, `src/sim/tick.ts`.
 Create `src/sim/olives.ts`, `tests/sim/olives.test.ts`.
 
-- [ ] **Step 1:** Write failing tests: olive trees are planted on every free meadow tile
+- [x] **Step 1:** Write failing tests: olive trees are planted on every free meadow tile
   of a dragged area for 3 dr each, and refused on grass; a tree arrives ripe, and once
   picked ripens again in a year; it radiates appeal 1.
-- [ ] **Step 2:** Implement. Tests pass.
+- [x] **Step 2:** Implement. Tests pass.
 
 ### Task 4: Growers' Lodge
 
 **Files:** Modify `src/sim/state.ts`, `src/sim/commands.ts`, `src/sim/pathfinding.ts`,
 `src/sim/olives.ts`. Extend `tests/sim/olives.test.ts`.
 
-- [ ] **Step 1:** Write failing tests: a staffed lodge sends its grower 0.6 months after
+- [x] **Step 1:** Write failing tests: a staffed lodge sends its grower 0.6 months after
   staffing (slower at half staff, never without workers) to the nearest ripe tree within
   20 tiles, across open land and through groves; he picks it and brings a load home.
   Not to a tree another grower is after, nor while the lodge holds 4 loads. A tree
   demolished sends him home empty; a demolished lodge takes him with it.
-- [ ] **Step 2:** Implement. Tests pass.
+- [x] **Step 2:** Implement. Tests pass.
 
 ### Task 5: Olive Press, oil carts and the storehouse
 
@@ -107,51 +107,51 @@ Create `src/sim/olives.ts`, `tests/sim/olives.test.ts`.
 `src/sim/state.ts`, `src/sim/buildings.ts`. Extend `tests/sim/storehouse.test.ts`,
 `tests/sim/olives.test.ts`.
 
-- [ ] **Step 1:** Write failing tests: the lodge's cart pusher takes olives to the nearest
+- [x] **Step 1:** Write failing tests: the lodge's cart pusher takes olives to the nearest
   staffed press with room, counting carts on the way; a staffed press with olives makes
   a load of oil in 2 months at full staff, slower at half staff, and stops while 4 loads
   of oil wait; its cart pusher takes oil to the storehouse; fleece and oil share the
   storehouse's 8 slots; the oil buyer fetches 4 loads for his stall.
-- [ ] **Step 2:** Implement. Tests pass.
+- [x] **Step 2:** Implement. Tests pass.
 
 ### Task 6: Oil peddler
 
 **Files:** Modify `src/sim/roamers.ts`, `src/sim/food.ts`. Extend
 `tests/sim/roamers.test.ts`.
 
-- [ ] **Step 1:** Write failing tests: an oil peddler only sets out with oil in his stall,
+- [x] **Step 1:** Write failing tests: an oil peddler only sets out with oil in his stall,
   and fills houses he passes to 6 units.
-- [ ] **Step 2:** Implement. Tests pass.
+- [x] **Step 2:** Implement. Tests pass.
 
 ### Task 7: Apartment and Townhouse
 
 **Files:** Modify `src/sim/housing.ts`, `tests/sim/housing.test.ts`.
 
-- [ ] **Step 1:** Write failing tests: a Tenement with oil and appeal 30 becomes an
+- [x] **Step 1:** Write failing tests: a Tenement with oil and appeal 30 becomes an
   Apartment of 48; without oil it stays. An Apartment with 45 culture and appeal 100
   becomes a Townhouse of 60. An Apartment uses 2 units of oil a month and falls back
   when it runs out. An Apartment stays at appeal 16 and falls back at 15. A whole city
   with an olive grove reaches Apartments.
-- [ ] **Step 2:** Implement. Tests pass.
+- [x] **Step 2:** Implement. Tests pass.
 
 ### Task 8: Inspector
 
 **Files:** Modify `src/sim/inspect.ts`, `tests/sim/inspect.test.ts`.
 
-- [ ] **Step 1:** Write failing tests: a house shows its oil once it is a Tenement and
+- [x] **Step 1:** Write failing tests: a house shows its oil once it is a Tenement and
   what blocks the Apartment ("Needs for Apartment: oil"); a tree shows its crop; a lodge
   shows its olives, grower and cart; a press shows its olives, oil, pressing and cart;
   a storehouse shows each good it holds; a grower describes his errand.
-- [ ] **Step 2:** Implement. Tests pass.
+- [x] **Step 2:** Implement. Tests pass.
 
 ### Task 9: UI and rendering
 
 **Files:** Modify `src/ui/tools.ts`, `src/ui/tool-input.ts`, `src/ui/preview.ts`,
 `src/render/models.ts`, `src/render/palette.ts`, `src/render/walker-layer.ts`.
 
-- [ ] **Step 1:** Tools for the Olive Tree (drag an area), Growers' Lodge, Olive Press and
+- [x] **Step 1:** Tools for the Olive Tree (drag an area), Growers' Lodge, Olive Press and
   Oil Vendor.
-- [ ] **Step 2:** Models: olive tree (gnarled trunk, silvery crown, dark olives when
+- [x] **Step 2:** Models: olive tree (gnarled trunk, silvery crown, dark olives when
   ripe), Growers' Lodge (a farmhouse with a ladder and baskets of olives), Olive Press
   (a stone press house with a crushing stone and press beam; amphorae when oil waits),
   Oil Vendor (a stall of amphorae), Apartment (a three-storey block with a balcony),
@@ -162,13 +162,13 @@ Create `src/sim/olives.ts`, `tests/sim/olives.test.ts`.
 
 **Files:** Modify `e2e/smoke.spec.ts`.
 
-- [ ] **Step 1:** Extend the smoke test: plant a grove, place a lodge, press and oil
+- [x] **Step 1:** Extend the smoke test: plant a grove, place a lodge, press and oil
   vendor, screenshot.
-- [ ] **Step 2:** Run `npm run typecheck`, `npm test`, `npm run build` and
+- [x] **Step 2:** Run `npm run typecheck`, `npm test`, `npm run build` and
   `npm run test:e2e`. Open the screenshot and check it.
 
 ### Task 11: PR
 
-- [ ] **Step 1:** Tick slice 7 in `docs/roadmap.md`. Record the new **ours** numbers in
+- [x] **Step 1:** Tick slice 7 in `docs/roadmap.md`. Record the new **ours** numbers in
   zeus-numbers.
-- [ ] **Step 2:** Open the PR `Slice 07: Olive oil`. Wait for CI and Pages.
+- [x] **Step 2:** Open the PR `Slice 07: Olive oil`. Wait for CI and Pages.
