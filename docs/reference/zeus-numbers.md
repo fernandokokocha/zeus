@@ -189,3 +189,13 @@ https://zeus.heavengames.com/gameinfo/gods/
   building that can burn within 1 tile.
 - A superintendent maintains every building within **2 tiles** of the road he walks,
   resetting both risks and putting out fires, like other roamers' reach.
+- Material workshops (Timber Mill, Masonry Shop, Foundry): a lumberjack, quarryman or miner
+  walks to the nearest free resource tile within **20 tiles** and brings home **1 load**. The
+  workshop rests **12/13 of a month** between trips (Masonry Shop **1 month**) at full staff,
+  so the walk gives Zeus's 13 / 10 / 7–8 loads by distance. It holds up to **4 loads** and
+  keeps its gatherer home while full.
+- Felled forest grows back in **4 years**, and walkers can cross it meanwhile. Marble and
+  copper ore never run out.
+- Sculpture Studio: holds **8 loads** of bronze and **4 sculptures** (1 sculpture = 1 load),
+  casts one in **2 months** at full staff. Foundries send bronze to a studio with room before
+  a storehouse.

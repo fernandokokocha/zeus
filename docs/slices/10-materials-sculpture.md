@@ -140,6 +140,6 @@ Extend `tests/sim/materials.test.ts`, `tests/sim/storehouse.test.ts`.
 
 ### Task 8: PR
 
-- [ ] **Step 1:** Tick slice 10 in `docs/roadmap.md`. Record the new **ours** numbers in
+- [x] **Step 1:** Tick slice 10 in `docs/roadmap.md`. Record the new **ours** numbers in
   zeus-numbers.
 - [ ] **Step 2:** Open the PR `Slice 10: Materials & sculpture`. Wait for CI and Pages.
