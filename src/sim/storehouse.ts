@@ -10,7 +10,7 @@ export function slotsUsed(stock: Record<Good, number>): number {
   return STOREHOUSE_GOODS.reduce((sum, good) => sum + slotsOf(stock, good), 0);
 }
 
-function slotsOf(stock: Record<Good, number>, good: Good): number {
+export function slotsOf(stock: Record<Good, number>, good: Good): number {
   return Math.ceil(stock[good] / SLOT_SIZE);
 }
 

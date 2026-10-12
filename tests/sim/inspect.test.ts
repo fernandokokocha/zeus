@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { demolish, placeBuilding, placeRoad, placeRoadblock, placeSheep } from '../../src/sim/commands';
+import { demolish, placeBuilding, placeOliveTrees, placeRoad, placeRoadblock, placeSheep } from '../../src/sim/commands';
+import { PICKING_REST_TICKS } from '../../src/sim/olives';
 import { SHEARING_REST_TICKS, sheepTile } from '../../src/sim/sheep';
 import { TICKS_PER_MONTH } from '../../src/sim/clock';
 import { ROAMER_REST_TICKS } from '../../src/sim/roamers';
@@ -475,6 +476,111 @@ describe('describeTile for fleece', () => {
     expect(describeTile(game, 10, 15)).toEqual({
       title: 'Buyer',
       lines: ['From the Fleece Vendor at 10, 16', 'Fetching fleece from the Storehouse at 20, 12'],
+    });
+  });
+});
+
+describe('describeTile for olive oil', () => {
+  const LONG = 10 * TICKS_PER_MONTH;
+
+  function street(): { game: GameState; house: Building } {
+    const game = grassGame(30);
+    placeRoad(game, { x: 0, y: 15 }, { x: 29, y: 15 });
+    placeHouse(game, 2, 13);
+    const house = game.buildings[0];
+    house.residents = 100;
+    setMeadow(game, 7, 5, 7, 7);
+    return { game, house };
+  }
+
+  function lastBuilding(game: GameState): Building {
+    return game.buildings[game.buildings.length - 1];
+  }
+
+  it("shows a Tenement's oil and what keeps it from becoming an Apartment", () => {
+    const { game, house } = street();
+    Object.assign(house, { level: 'tenement', residents: 40, food: 50, fleece: 6 });
+    Object.assign(house.coveredUntil, { water: LONG, philosophy: LONG, athletics: LONG });
+    const lines = describeTile(game, 2, 13).lines;
+    expect(lines).toContain('No oil');
+    expect(lines.find((line) => line.startsWith('Needs for Apartment'))).toMatch(/^Needs for Apartment: oil, appeal 30/);
+    house.oil = 6;
+    expect(describeTile(game, 2, 13).lines).toContain('Oil: 6 units');
+    Object.assign(house, { level: 'apartment', residents: 48 });
+    expect(describeTile(game, 2, 13).lines).toContain('Oil: 6 units (3 months)');
+  });
+
+  it('describes an olive tree', () => {
+    const { game } = street();
+    placeOliveTrees(game, { x: 10, y: 8 }, { x: 10, y: 8 });
+    expect(describeTile(game, 10, 8)).toEqual({ title: 'Olive Tree', lines: ['Tile 10, 8', 'Appeal 1 by distance', 'Ripe: ready to pick'] });
+    lastBuilding(game).growth = 0.426;
+    expect(describeTile(game, 10, 8).lines).toContain('Olives 43% grown');
+  });
+
+  it("describes a growers' lodge, its grower and its cart", () => {
+    const { game } = street();
+    placeBuilding(game, 'growersLodge', 6, 13);
+    const lodge = lastBuilding(game);
+    runTicks(game, 1);
+    expect(describeTile(game, 6, 13)).toEqual({
+      title: "Growers' Lodge",
+      lines: ['Tile 6, 13', 'Workers 12/12', 'Grower waits for a ripe olive tree within 20 tiles', 'Cart Pusher at the lodge'],
+    });
+    placeOliveTrees(game, { x: 10, y: 8 }, { x: 10, y: 8 });
+    expect(describeTile(game, 6, 13).lines).toContain('Grower resting');
+    runTicks(game, PICKING_REST_TICKS);
+    expect(describeTile(game, 6, 13).lines).toContain('Grower out to pick the olive tree at 10, 8');
+    expect(describeTile(game, 10, 8).lines).toContain('A grower is on the way');
+    const { x, y } = walkerTile(game.growers[0]);
+    expect(describeTile(game, x, y)).toEqual({
+      title: 'Grower',
+      lines: ["From the Growers' Lodge at 6, 13", 'Going to pick the olive tree at 10, 8'],
+    });
+    game.growers[0].returning = true;
+    game.growers[0].olives = 100;
+    expect(describeTile(game, x, y).lines).toContain('Bringing 1 load of olives home');
+    expect(describeTile(game, 6, 13).lines).toContain('Grower bringing olives home');
+    lodge.olives = 400;
+    game.growers = [];
+    expect(describeTile(game, 6, 13).lines).toEqual(
+      expect.arrayContaining(['Olives waiting: 4 loads', 'Grower waits: the lodge is full', 'Cart Pusher waits for an olive press with room']),
+    );
+  });
+
+  it('describes an olive press by its olives, oil and pressing', () => {
+    const { game } = street();
+    placeBuilding(game, 'olivePress', 6, 13);
+    const press = lastBuilding(game);
+    runTicks(game, 1);
+    expect(describeTile(game, 6, 13)).toEqual({
+      title: 'Olive Press',
+      lines: ['Tile 6, 13', 'Workers 12/12', 'Olives: 0 of 4 loads', 'Waits for olives', 'Cart Pusher at the press'],
+    });
+    Object.assign(press, { olives: 200, production: 300 });
+    expect(describeTile(game, 6, 13).lines).toEqual(expect.arrayContaining(['Olives: 2 of 4 loads', 'Pressing: 50% of a load']));
+    press.oil = 400;
+    expect(describeTile(game, 6, 13).lines).toEqual(
+      expect.arrayContaining(['Oil waiting: 4 loads', 'Full of oil: waits for its cart', 'Cart Pusher waits for a storehouse with room']),
+    );
+  });
+
+  it('describes a storehouse by each good it holds', () => {
+    const { game } = street();
+    placeBuilding(game, 'storehouse', 10, 12);
+    Object.assign(lastBuilding(game), { fleece: 600, oil: 100 });
+    runTicks(game, 1);
+    expect(describeTile(game, 11, 13).lines).toEqual(['Tile 10, 12', 'Workers 12/12', 'Fleece: 6 loads in 2 of 8 slots', 'Oil: 1 load in 1 of 8 slots']);
+  });
+
+  it('describes an oil vendor', () => {
+    const { game } = street();
+    placeBuilding(game, 'agora', 10, 16);
+    placeBuilding(game, 'oilVendor', 10, 16);
+    runTicks(game, 1);
+    expect(describeTile(game, 10, 17)).toEqual({
+      title: 'Oil Vendor',
+      lines: ['Tile 10, 16', 'Workers 4/4', 'Stock: 0 of 800 units', 'Oil Peddler waits for oil', 'Buyer waits for a storehouse with oil'],
     });
   });
 });
