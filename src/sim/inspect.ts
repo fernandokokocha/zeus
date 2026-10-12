@@ -5,7 +5,7 @@ import { culturePoints, culturesPassed } from './culture';
 import { CARRIER_SPECS, carrierDestinations, carrierKindSentBy } from './carriers';
 import { adjacentRoadTiles, agoraAt } from './commands';
 import { hasWorkingPalace, houseTax } from './economy';
-import { GRANARY_CAPACITY, HARVEST_MONTH, UNITS_PER_LOAD, VENDOR_CAPACITY, monthlyFleece, monthlyFood } from './food';
+import { GRANARY_CAPACITY, HARVEST_MONTH, UNITS_PER_LOAD, VENDOR_CAPACITY, monthlyUse } from './food';
 import { HOUSE_LEVELS, NEXT_LEVEL, houseCapacity, houseLevel, houseName, lacksCulture, missingNeeds } from './housing';
 import { ROAMER_SPECS, hasService, isGood, type RoamerSpec, roamerKindSentBy, serviceLeft } from './roamers';
 import { TRAINEE_SPECS, isPerforming, staffedVenues, traineeKindFor, traineeKindSentBy } from './schools';
@@ -98,25 +98,18 @@ function describeHouse(state: GameState, house: Building): Description {
   }
   const appeal = houseAppeal(state, house);
   const next = NEXT_LEVEL[level];
-  lines.push(`Appeal ${appeal}`, foodStatus(house));
-  if ([level, next].some((l) => l && HOUSE_LEVELS[l].needs.includes('fleece'))) lines.push(fleeceStatus(house));
+  lines.push(`Appeal ${appeal}`, stockStatus(house, 'food'));
+  if ([level, next].some((l) => l && HOUSE_LEVELS[l].needs.includes('fleece'))) lines.push(stockStatus(house, 'fleece'));
   lines.push(waterStatus(state, house), cultureStatus(state, house), taxStatus(state, house));
   if (next) lines.push(nextLevelStatus(state, house, next, appeal));
   return { title: houseName(house), lines };
 }
 
-function foodStatus(house: Building): string {
-  if (house.food <= 0) return 'No food';
-  const eaten = monthlyFood(house);
-  const lasts = eaten > 0 ? ` (${amount(house.food / eaten)} months)` : '';
-  return `Food: ${amount(house.food)} units${lasts}`;
-}
-
-function fleeceStatus(house: Building): string {
-  if (house.fleece <= 0) return 'No fleece';
-  const used = monthlyFleece(house);
-  const lasts = used > 0 ? ` (${amount(house.fleece / used)} months)` : '';
-  return `Fleece: ${amount(house.fleece)} units${lasts}`;
+function stockStatus(house: Building, good: Good): string {
+  if (house[good] <= 0) return `No ${good}`;
+  const used = monthlyUse(house, good);
+  const lasts = used > 0 ? ` (${amount(house[good] / used)} months)` : '';
+  return `${good[0].toUpperCase()}${good.slice(1)}: ${amount(house[good])} units${lasts}`;
 }
 
 function nextLevelStatus(state: GameState, house: Building, next: keyof typeof HOUSE_LEVELS, appeal: number): string {

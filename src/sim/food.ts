@@ -40,26 +40,26 @@ export function harvestIfDue(state: GameState): void {
   state.version++;
 }
 
-export function monthlyFood(house: Building): number {
-  const level = houseLevel(house);
-  return level && HOUSE_LEVELS[level].needs.includes('food') ? house.residents * FOOD_PER_RESIDENT_PER_MONTH : 0;
-}
+const MONTHLY_NEED: Record<Good, (house: Building) => number> = {
+  food: (house) => house.residents * FOOD_PER_RESIDENT_PER_MONTH,
+  fleece: () => FLEECE_PER_HOUSE_PER_MONTH,
+};
 
-export function monthlyFleece(house: Building): number {
+const HOUSE_GOODS = Object.keys(MONTHLY_NEED) as Good[];
+
+export function monthlyUse(house: Building, good: Good): number {
   const level = houseLevel(house);
-  return level && HOUSE_LEVELS[level].needs.includes('fleece') ? FLEECE_PER_HOUSE_PER_MONTH : 0;
+  return level && HOUSE_LEVELS[level].needs.includes(good) ? MONTHLY_NEED[good](house) : 0;
 }
 
 export function eat(state: GameState): void {
   for (const house of state.buildings.filter((b) => b.type === 'house')) {
-    house.food = Math.max(0, house.food - monthlyFood(house));
-    house.fleece = Math.max(0, house.fleece - monthlyFleece(house));
+    for (const good of HOUSE_GOODS) house[good] = Math.max(0, house[good] - monthlyUse(house, good));
   }
 }
 
 export function houseStockTarget(house: Building, good: Good): number {
-  const monthly = good === 'food' ? house.residents * FOOD_PER_RESIDENT_PER_MONTH : FLEECE_PER_HOUSE_PER_MONTH;
-  return monthly * HOUSE_STOCK_MONTHS;
+  return MONTHLY_NEED[good](house) * HOUSE_STOCK_MONTHS;
 }
 
 export function stockHouse(stall: Building, house: Building, good: Good): void {
