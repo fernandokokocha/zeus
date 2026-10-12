@@ -127,37 +127,27 @@ const FIGURES: Record<Figure, Part[]> = {
     ...body(PALETTE.buyerTunic),
     { geometry: new THREE.CylinderGeometry(0.07, 0.05, 0.08, 10).translate(0.1, 0.12, 0.02), color: PALETTE.reed },
   ],
-philosopher,
-philosopherTrainee: philosopher,
-athlete: [
-  { geometry: new THREE.CylinderGeometry(0.06, 0.07, 0.24, 8).translate(0, 0.15, 0), color: PALETTE.skin },
-  { geometry: new THREE.CylinderGeometry(0.075, 0.08, 0.07, 8).translate(0, 0.07, 0), color: PALETTE.loincloth },
-  { geometry: new THREE.SphereGeometry(0.06, 10, 8).translate(0, 0.33, 0), color: PALETTE.skin },
-  { geometry: new THREE.CylinderGeometry(0.06, 0.06, 0.015, 12).rotateZ(Math.PI / 2).translate(0.1, 0.16, 0), color: PALETTE.bronze },
-],
-actor,
-actorTrainee: actor,
-fleecePeddler: [
+  philosopher,
+  philosopherTrainee: philosopher,
+  athlete: [
+    { geometry: new THREE.CylinderGeometry(0.06, 0.07, 0.24, 8).translate(0, 0.15, 0), color: PALETTE.skin },
+    { geometry: new THREE.CylinderGeometry(0.075, 0.08, 0.07, 8).translate(0, 0.07, 0), color: PALETTE.loincloth },
+    { geometry: new THREE.SphereGeometry(0.06, 10, 8).translate(0, 0.33, 0), color: PALETTE.skin },
+    { geometry: new THREE.CylinderGeometry(0.06, 0.06, 0.015, 12).rotateZ(Math.PI / 2).translate(0.1, 0.16, 0), color: PALETTE.bronze },
+  ],
+  actor,
+  actorTrainee: actor,
+  fleecePeddler: [
     ...body(PALETTE.fleeceAwning),
     { geometry: new THREE.CylinderGeometry(0.09, 0.07, 0.06, 10).translate(0, 0.41, 0), color: PALETTE.reed },
     { geometry: new THREE.SphereGeometry(0.07, 8, 6).scale(1.2, 0.6, 1.2).translate(0, 0.45, 0), color: PALETTE.wool },
   ],
-  fleeceCart: [
-    ...body(PALETTE.cartTunic),
-    { geometry: new THREE.BoxGeometry(0.2, 0.08, 0.24).translate(0, 0.1, 0.22), color: PALETTE.trunk },
-    { geometry: new THREE.CylinderGeometry(0.06, 0.06, 0.26, 10).rotateZ(Math.PI / 2).translate(0, 0.06, 0.24), color: PALETTE.doorway },
-    { geometry: new THREE.BoxGeometry(0.16, 0.1, 0.18).translate(0, 0.19, 0.22), color: PALETTE.wool },
-  ],
+  fleeceCart: cart([{ geometry: new THREE.BoxGeometry(0.16, 0.1, 0.18).translate(0, 0.19, 0.22), color: PALETTE.wool }]),
   fleeceBuyer: [
     ...body(PALETTE.fleeceBuyerTunic),
     { geometry: new THREE.SphereGeometry(0.07, 8, 6).scale(1.3, 0.8, 1).translate(0, 0.26, -0.08), color: PALETTE.wool },
   ],
-cartPusher: [
-    ...body(PALETTE.cartTunic),
-    { geometry: new THREE.BoxGeometry(0.2, 0.08, 0.24).translate(0, 0.1, 0.22), color: PALETTE.trunk },
-    { geometry: new THREE.CylinderGeometry(0.06, 0.06, 0.26, 10).rotateZ(Math.PI / 2).translate(0, 0.06, 0.24), color: PALETTE.doorway },
-    { geometry: new THREE.BoxGeometry(0.15, 0.08, 0.16).translate(0, 0.18, 0.22), color: PALETTE.sack },
-  ],
+  cartPusher: cart([{ geometry: new THREE.BoxGeometry(0.15, 0.08, 0.16).translate(0, 0.18, 0.22), color: PALETTE.sack }]),
 };
 
 function createFigureSet(parts: Part[], group: THREE.Group): { show(walks: Walk[], ticksAhead: number): void } {
