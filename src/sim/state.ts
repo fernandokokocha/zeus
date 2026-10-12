@@ -9,7 +9,8 @@ export type Speed = 0 | 1 | 2 | 4;
 export type PlayingSpeed = Exclude<Speed, 0>;
 
 export type HouseGood = 'food' | 'fleece' | 'oil';
-export type Good = HouseGood | 'olives';
+export type Material = 'wood' | 'marble' | 'bronze';
+export type Good = HouseGood | 'olives' | Material | 'sculptures';
 export type Culture = 'philosophy' | 'athletics' | 'drama';
 export type Service = 'water' | 'tax' | HouseGood | Culture | 'maintenance';
 export type Coverage = Exclude<Service, HouseGood | 'maintenance'>;
@@ -31,6 +32,10 @@ export interface Building {
   fleece: number;
   olives: number;
   oil: number;
+  wood: number;
+  marble: number;
+  bronze: number;
+  sculptures: number;
   growth: number;
   production: number;
   performingUntil: number;
@@ -103,6 +108,10 @@ export interface Carrier extends Walk {
   fleece: number;
   olives: number;
   oil: number;
+  wood: number;
+  marble: number;
+  bronze: number;
+  sculptures: number;
   returning: boolean;
 }
 

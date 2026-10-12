@@ -37,7 +37,7 @@ const STORE_SPACE: Record<Store, (stock: Record<Good, number>, good: Good) => nu
   olivePress: (stock) => PRESS_OLIVE_CAPACITY - stock.olives,
 };
 
-const GOODS: Good[] = ['food', 'fleece', 'olives', 'oil'];
+const GOODS: Good[] = ['food', 'fleece', 'olives', 'oil', 'wood', 'marble', 'bronze', 'sculptures'];
 
 export function carrierKindsSentBy(type: BuildingType): CarrierKind[] {
   return (Object.keys(CARRIER_SPECS) as CarrierKind[]).filter((kind) => CARRIER_SPECS[kind].home === type);
@@ -105,6 +105,10 @@ function sendCarrier(state: GameState, building: Building, kind: CarrierKind): v
     fleece: 0,
     olives: 0,
     oil: 0,
+    wood: 0,
+    marble: 0,
+    bronze: 0,
+    sculptures: 0,
     [good]: load,
     returning: false,
     path: target.path,

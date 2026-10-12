@@ -94,7 +94,16 @@ function loads(units: number): string {
   return `${amount(count)} ${count === 1 ? 'load' : 'loads'}`;
 }
 
-const GOOD_NAMES: Record<Good, string> = { food: 'wheat', fleece: 'fleece', olives: 'olives', oil: 'oil' };
+const GOOD_NAMES: Record<Good, string> = {
+  food: 'wheat',
+  fleece: 'fleece',
+  olives: 'olives',
+  oil: 'oil',
+  wood: 'wood',
+  marble: 'marble',
+  bronze: 'bronze',
+  sculptures: 'sculptures',
+};
 
 const CARRIER_HOMES: Record<Carrier['kind'], string> = {
   cartPusher: 'farm',
