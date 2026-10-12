@@ -23,6 +23,19 @@ import {
   type Workshop,
 } from './materials';
 import { GROVE_RANGE, LODGE_CAPACITY, PRESSING_TICKS, PRESS_OLIVE_CAPACITY, canPress, growerAfter, isRipe, treesToPick } from './olives';
+import {
+  SANCTUARY_MATERIALS,
+  SANCTUARY_SPECS,
+  SANCTUARY_STAGES,
+  VISITS_PER_STAGE,
+  builtStages,
+  isSanctuary,
+  isUnderConstruction,
+  materialNeeded,
+  sitesToBuild,
+  suppliedStages,
+  type Sanctuary,
+} from './sanctuaries';
 import { canBurn, canCollapse, isBurning, riskShare } from './safety';
 import { canSettlersReach } from './settlers';
 import { SHEARING_RANGE, SHED_CAPACITY, hasFullFleece, sheepTile, sheepToShear, shepherdAfter } from './sheep';
@@ -31,6 +44,7 @@ import {
   NO_BUILDING,
   buildingById,
   tileIndex,
+  type Artisan,
   type Building,
   type Carrier,
   type Gatherer,
@@ -60,10 +74,11 @@ export function describeTile(state: GameState, x: number, y: number): Descriptio
   if (buildingId !== NO_BUILDING) {
     const building = buildingById(state, buildingId);
     if (!building) throw new Error(`Tile ${x}, ${y} points at missing building ${buildingId}`);
-if (building.type === 'ruins') return describeRuins(state, building);
-const description = building.type === 'house' ? describeHouse(state, building) : describeWorkplace(state, building);
-description.lines.push(...riskLines(building));
-return description;
+    if (building.type === 'ruins') return describeRuins(state, building);
+    if (isUnderConstruction(building)) return describeSite(state, building);
+    const description = building.type === 'house' ? describeHouse(state, building) : describeWorkplace(state, building);
+    description.lines.push(...riskLines(building));
+    return description;
   }
 
   const standsHere = (walker: Walk) => {
@@ -84,6 +99,8 @@ return description;
   if (grower) return describeGrower(state, grower);
   const gatherer = state.gatherers.find(standsHere);
   if (gatherer) return describeGatherer(state, gatherer);
+  const artisan = state.artisans.find(standsHere);
+  if (artisan) return describeArtisan(state, artisan);
   const sheep = state.sheep.find(standsHere);
   if (sheep) return describeSheep(state, sheep);
 
@@ -277,6 +294,10 @@ case 'olivePress':
         ? [`Vendors: ${vendors.map((v) => BUILDING_SPECS[v.type].name).join(', ')}`]
         : ['No vendors yet: place one on a free spot'];
     }
+    case 'demeterSanctuary':
+    case 'athenaSanctuary':
+    case 'hephaestusSanctuary':
+      return [`Finished: honors ${SANCTUARY_SPECS[building.type].god}`];
     default:
       return venueLines(state, building);
   }
@@ -317,11 +338,27 @@ function walkerLines(state: GameState, building: Building): string[] {
   if (building.type === 'cardingShed') lines.push(shepherdStatus(state, building));
   if (building.type === 'growersLodge') lines.push(growerStatus(state, building));
   if (isWorkshop(building.type)) lines.push(gathererStatus(state, building, building.type));
-  if (building.type === 'artisansGuild') lines.push('Artisans wait for a sanctuary to build');
-  for (const kind of carrierKindsSentBy(building.type)) lines.push(carrierStatus(state, building, kind));
+  if (building.type === 'artisansGuild') lines.push(artisanStatus(state, building));
+  for (const kind of carrierKindsSentBy(building.type)) {
+    if (supplies(kind) && !state.carriers.some((c) => c.homeId === building.id && c.kind === kind)) continue;
+    lines.push(carrierStatus(state, building, kind));
+  }
   const traineeKind = traineeKindSentBy(building.type);
   if (traineeKind) lines.push(traineeStatus(state, building, traineeKind));
   return lines;
+}
+
+function supplies(kind: Carrier['kind']): boolean {
+  return CARRIER_SPECS[kind].stores.every(isSanctuary);
+}
+
+function artisanStatus(state: GameState, guild: Building): string {
+  const artisan = state.artisans.find((a) => a.homeId === guild.id);
+  const site = artisan && buildingById(state, artisan.destinationId);
+  if (site) return `Artisan on the way to the ${BUILDING_SPECS[site.type].name} at ${site.x}, ${site.y}`;
+  if (sitesToBuild(state).length > 0) return 'Artisan getting ready';
+  if (state.buildings.some(isUnderConstruction)) return 'Artisans wait for materials at a sanctuary';
+  return 'Artisans wait for a sanctuary to build';
 }
 
 function roamerWaitsFor(state: GameState, building: Building, spec: RoamerSpec): string | null {
@@ -398,6 +435,24 @@ function riskLines(building: Building): string[] {
   if (canBurn(building)) lines.push(`Fire risk ${percent(building.fireRisk)}`);
   if (canCollapse(building)) lines.push(`Collapse risk ${percent(building.collapseRisk)}`);
   return lines;
+}
+
+function describeSite(state: GameState, site: Building): Description {
+  const type = site.type as Sanctuary;
+  const lines = [`Tile ${site.x}, ${site.y}`, `Under construction: ${builtStages(site)} of ${SANCTUARY_STAGES} stages built`];
+  lines.push(`Marble: ${amount(site.marble / UNITS_PER_LOAD)} of ${loads(materialNeeded(type, 'marble'))}`);
+  lines.push(`Wood: ${amount(site.wood / UNITS_PER_LOAD)} of ${loads(materialNeeded(type, 'wood'))}`);
+  lines.push(`Sculptures: ${amount(site.sculptures / UNITS_PER_LOAD)} of ${SANCTUARY_SPECS[type].loads.sculptures}`);
+  if (adjacentRoadTiles(state, site).length === 0) {
+    lines.push('No road access: carts and artisans cannot reach it');
+  } else if (suppliedStages(site) > builtStages(site)) {
+    lines.push(`Artisans at work: ${site.production % VISITS_PER_STAGE} of ${VISITS_PER_STAGE} visits for the next stage`);
+  } else {
+    const next = builtStages(site) + 1;
+    const short = SANCTUARY_MATERIALS.filter((m) => site[m] * SANCTUARY_STAGES < materialNeeded(type, m) * next);
+    lines.push(`Waits for ${short.join(', ')} to start the next stage`);
+  }
+  return { title: BUILDING_SPECS[type].name, lines };
 }
 
 function describeRuins(state: GameState, ruins: Building): Description {
@@ -481,6 +536,12 @@ function describeGatherer(state: GameState, gatherer: Gatherer): Description {
       : 'Returning home'
     : `Going to ${work} the ${site} at ${gatherer.site.x}, ${gatherer.site.y}`;
   return { title: name, lines: [homeLine(state, gatherer.homeId), errand] };
+}
+
+function describeArtisan(state: GameState, artisan: Artisan): Description {
+  const site = buildingById(state, artisan.destinationId);
+  const errand = site ? `Going to build the ${BUILDING_SPECS[site.type].name} at ${site.x}, ${site.y}` : 'Looking for another sanctuary';
+  return { title: 'Artisan', lines: [homeLine(state, artisan.homeId), errand] };
 }
 
 function describeSheep(state: GameState, sheep: Sheep): Description {

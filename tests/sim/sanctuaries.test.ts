@@ -6,6 +6,7 @@ import { UNITS_PER_LOAD } from '../../src/sim/food';
 import { ROAMER_REST_TICKS } from '../../src/sim/roamers';
 import {
   SANCTUARY_SPECS,
+  initialMarble,
   SANCTUARY_WORK,
   VISITS_PER_STAGE,
   builtStages,
@@ -53,7 +54,7 @@ describe('placing a sanctuary', () => {
     ['hephaestusSanctuary', 13, 8, 760],
   ])('a %s is %i×%i, costs %i dr and takes its initial marble from the storehouse', (type, width, height, cost) => {
     const { game, storehouse } = city();
-    const initial = SANCTUARY_SPECS[type].initialMarble;
+    const initial = initialMarble(type);
     storehouse.marble = initial + loads(1);
     const treasury = game.treasury;
     expect(placeBuilding(game, type, 10, ROAD_Y + 1)).toEqual({ ok: true });
@@ -65,9 +66,9 @@ describe('placing a sanctuary', () => {
   });
 
   it('uses the zeus-numbers materials', () => {
-    expect(SANCTUARY_SPECS.demeterSanctuary).toEqual({ god: 'Demeter', initialMarble: loads(27), needs: { marble: loads(110), wood: loads(20), sculptures: loads(10) } });
-    expect(SANCTUARY_SPECS.athenaSanctuary).toEqual({ god: 'Athena', initialMarble: loads(24), needs: { marble: loads(67), wood: loads(22), sculptures: loads(8) } });
-    expect(SANCTUARY_SPECS.hephaestusSanctuary).toEqual({ god: 'Hephaestus', initialMarble: loads(13), needs: { marble: loads(48), wood: loads(14), sculptures: loads(6) } });
+    expect(SANCTUARY_SPECS.demeterSanctuary).toEqual({ god: 'Demeter', initialMarbleLoads: 27, loads: { marble: 110, wood: 20, sculptures: 10 } });
+    expect(SANCTUARY_SPECS.athenaSanctuary).toEqual({ god: 'Athena', initialMarbleLoads: 24, loads: { marble: 67, wood: 22, sculptures: 8 } });
+    expect(SANCTUARY_SPECS.hephaestusSanctuary).toEqual({ god: 'Hephaestus', initialMarbleLoads: 13, loads: { marble: 48, wood: 14, sculptures: 6 } });
   });
 
   it('takes marble from the fullest storehouses first', () => {

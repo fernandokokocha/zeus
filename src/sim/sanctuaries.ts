@@ -12,21 +12,14 @@ export type SanctuaryMaterial = 'marble' | 'wood' | 'sculptures';
 
 export interface SanctuarySpec {
   god: string;
-  initialMarble: number;
-  needs: Record<SanctuaryMaterial, number>;
-}
-
-function inLoads(initialMarble: number, marble: number, wood: number, sculptures: number): Omit<SanctuarySpec, 'god'> {
-  return {
-    initialMarble: initialMarble * UNITS_PER_LOAD,
-    needs: { marble: marble * UNITS_PER_LOAD, wood: wood * UNITS_PER_LOAD, sculptures: sculptures * UNITS_PER_LOAD },
-  };
+  initialMarbleLoads: number;
+  loads: Record<SanctuaryMaterial, number>;
 }
 
 export const SANCTUARY_SPECS: Record<Sanctuary, SanctuarySpec> = {
-  demeterSanctuary: { god: 'Demeter', ...inLoads(27, 110, 20, 10) },
-  athenaSanctuary: { god: 'Athena', ...inLoads(24, 67, 22, 8) },
-  hephaestusSanctuary: { god: 'Hephaestus', ...inLoads(13, 48, 14, 6) },
+  demeterSanctuary: { god: 'Demeter', initialMarbleLoads: 27, loads: { marble: 110, wood: 20, sculptures: 10 } },
+  athenaSanctuary: { god: 'Athena', initialMarbleLoads: 24, loads: { marble: 67, wood: 22, sculptures: 8 } },
+  hephaestusSanctuary: { god: 'Hephaestus', initialMarbleLoads: 13, loads: { marble: 48, wood: 14, sculptures: 6 } },
 };
 
 export const SANCTUARIES = Object.keys(SANCTUARY_SPECS) as Sanctuary[];
@@ -34,6 +27,14 @@ export const SANCTUARY_MATERIALS: SanctuaryMaterial[] = ['marble', 'wood', 'scul
 export const SANCTUARY_STAGES = 5;
 export const VISITS_PER_STAGE = 4;
 export const SANCTUARY_WORK = SANCTUARY_STAGES * VISITS_PER_STAGE;
+
+export function initialMarble(type: Sanctuary): number {
+  return SANCTUARY_SPECS[type].initialMarbleLoads * UNITS_PER_LOAD;
+}
+
+export function materialNeeded(type: Sanctuary, material: SanctuaryMaterial): number {
+  return SANCTUARY_SPECS[type].loads[material] * UNITS_PER_LOAD;
+}
 
 export function isSanctuary(type: BuildingType): type is Sanctuary {
   return type in SANCTUARY_SPECS;
@@ -57,13 +58,13 @@ function sanctuaryOf(site: Building): Sanctuary {
 }
 
 export function suppliedStages(site: Building): number {
-  const { needs } = SANCTUARY_SPECS[sanctuaryOf(site)];
-  return Math.min(...SANCTUARY_MATERIALS.map((m) => Math.floor((site[m] * SANCTUARY_STAGES) / needs[m])));
+  const type = sanctuaryOf(site);
+  return Math.min(...SANCTUARY_MATERIALS.map((m) => Math.floor((site[m] * SANCTUARY_STAGES) / materialNeeded(type, m))));
 }
 
 export function stillNeeded(type: Sanctuary, stock: Record<Good, number>, good: Good): number {
   const material = good as SanctuaryMaterial;
-  return SANCTUARY_SPECS[type].needs[material] - stock[material];
+  return materialNeeded(type, material) - stock[material];
 }
 
 export function storedMarble(state: GameState): number {
@@ -76,20 +77,19 @@ function storehouses(state: GameState): Building[] {
 
 export function sanctuaryObstacle(state: GameState, type: Sanctuary): string | null {
   if (state.buildings.some((b) => b.type === type)) return `Only one ${BUILDING_SPECS[type].name} is allowed`;
-  const { initialMarble } = SANCTUARY_SPECS[type];
   const stored = storedMarble(state);
-  if (stored >= initialMarble) return null;
-  return `Needs ${initialMarble / UNITS_PER_LOAD} loads of marble in storehouses (has ${Math.floor(stored / UNITS_PER_LOAD)})`;
+  if (stored >= initialMarble(type)) return null;
+  return `Needs ${SANCTUARY_SPECS[type].initialMarbleLoads} loads of marble in storehouses (has ${Math.floor(stored / UNITS_PER_LOAD)})`;
 }
 
 export function takeInitialMarble(state: GameState, site: Building): void {
-  let left = SANCTUARY_SPECS[sanctuaryOf(site)].initialMarble;
+  let left = initialMarble(sanctuaryOf(site));
   for (const storehouse of storehouses(state).sort((a, b) => b.marble - a.marble)) {
     const taken = Math.min(left, storehouse.marble);
     storehouse.marble -= taken;
     left -= taken;
   }
-  site.marble = SANCTUARY_SPECS[sanctuaryOf(site)].initialMarble;
+  site.marble = initialMarble(sanctuaryOf(site));
 }
 
 function visitsLeft(state: GameState, site: Building): number {
