@@ -26,6 +26,11 @@ For things that come in levels (houses, upgrades, sanctuary stages):
   upgrade still has something new to show.
 - **Poor reads as rough materials, not dirt.** Show it with reed roofs held down by stones,
   bare window holes and loose stone walls, while the walls stay clean white.
+- **A new level must read as new from above, at default zoom.** Change the silhouette or the
+  roof; new props in the yard are not enough.
+- **Roofs climb with the levels:** reed (Hut–Hovel), flat white with a blue band
+  (Homestead–Tenement), blue tiles (Apartment–Townhouse). Red tiles are kept for non-housing
+  buildings such as temples.
 
 ## Layout of the code
 
@@ -117,7 +122,7 @@ draw call for that figure type, however many walkers are on screen.
 - **Gallery figures** go on a 1×1 tile with a road under them, shown next to a house so you
   can judge scale.
 
-## What slowed the first session (houses 1–3)
+## What slowed past sessions
 
 - Prototypes lived in `src/gallery/` with their own kit, so the port meant moving five
   files and rewiring imports. Build in `src/render/kit/` from the start.
@@ -125,3 +130,6 @@ draw call for that figure type, however many walkers are on screen.
   gallery render.
 - Every round of options got a full write-up before the owner had picked a direction. Keep
   notes to four lines and spend the effort on screenshots instead.
+- Townhouse took six rounds: courtyards, pediments and atrium roofs all read as modern or
+  odd. The owner wanted what Zeus does, a tall cluster of blocks each under its own roof. For
+  the top of a family, start from the original game’s look before inventing.

@@ -3,6 +3,10 @@ import { PALETTE, TERRAIN_COLORS } from '../render/palette';
 import { HUT_OPTIONS } from './hut-options';
 import { SHACK_OPTIONS } from './shack-options';
 import { HOVEL_OPTIONS } from './hovel-options';
+import { HOMESTEAD_OPTIONS } from './homestead-options';
+import { TENEMENT_OPTIONS } from './tenement-options';
+import { APARTMENT_OPTIONS } from './apartment-options';
+import { TOWNHOUSE_OPTIONS } from './townhouse-options';
 import { bake } from '../render/bake';
 import type { DesignSet } from './options';
 
@@ -10,6 +14,10 @@ const SETS: Record<string, DesignSet> = {
   hut: { title: 'Hut', needs: 'Level 1 · 8 people · needs nothing — fresh settlers', options: HUT_OPTIONS, chosen: 2 },
   shack: { title: 'Shack', needs: 'Level 2 · 16 people · needs food', options: SHACK_OPTIONS, chosen: 2, previous: HUT_OPTIONS[2] },
   hovel: { title: 'Hovel', needs: 'Level 3 · 24 people · needs food and water', options: HOVEL_OPTIONS, chosen: 1, previous: SHACK_OPTIONS[2] },
+  homestead: { title: 'Homestead', needs: 'Level 4 · 32 people · needs food, water and fleece', options: HOMESTEAD_OPTIONS, chosen: 2, previous: HOVEL_OPTIONS[1] },
+  tenement: { title: 'Tenement', needs: 'Level 5 · 40 people · needs food, water, fleece and more culture and appeal', options: TENEMENT_OPTIONS, chosen: 2, previous: HOMESTEAD_OPTIONS[2] },
+  apartment: { title: 'Apartment', needs: 'Level 6 · 48 people · needs food, water, fleece and oil', options: APARTMENT_OPTIONS, chosen: 0, previous: TENEMENT_OPTIONS[2] },
+  townhouse: { title: 'Townhouse', needs: 'Level 7 · 60 people · needs food, water, fleece, oil and top culture and appeal', options: TOWNHOUSE_OPTIONS, chosen: 1, previous: APARTMENT_OPTIONS[0] },
 };
 
 const ELEVATION = Math.PI / 6;

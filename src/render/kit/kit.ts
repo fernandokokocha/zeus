@@ -51,6 +51,26 @@ function speckle(ctx: CanvasRenderingContext2D, size: number, rand: () => number
   }
 }
 
+function tilePainter(color: number): Painter {
+  return (ctx, size, rand) => {
+    ctx.fillStyle = shade(color, -0.12);
+    ctx.fillRect(0, 0, size, size);
+    const rows = 6;
+    const h = size / rows;
+    for (let row = 0; row < rows; row++) {
+      const offset = row % 2 ? size / 12 : 0;
+      for (let col = -1; col < 6; col++) {
+        ctx.fillStyle = shade(color, (rand() - 0.5) * 0.1);
+        ctx.beginPath();
+        ctx.roundRect(offset + col * (size / 6) + 1, row * h + 1, size / 6 - 2, h - 3, 3);
+        ctx.fill();
+      }
+      ctx.fillStyle = 'rgba(60,20,10,0.35)';
+      ctx.fillRect(0, row * h + h - 3, size, 2);
+    }
+  };
+}
+
 const painters = {
   mudBrick: ((ctx, size, rand) => {
     ctx.fillStyle = shade(COLORS.mudBrick, -0.12);
@@ -160,6 +180,9 @@ const painters = {
       ctx.fillRect(rand() * size, rand() * size, 2 + rand() * 6, 1 + rand() * 3);
     }
   }) as Painter,
+  tiles: tilePainter(COLORS.clay),
+  blueTiles: tilePainter(COLORS.aegean),
+  slate: tilePainter(0x6f7378),
   hide: ((ctx, size, rand) => {
     ctx.fillStyle = hex(COLORS.hide);
     ctx.fillRect(0, 0, size, size);
@@ -197,7 +220,7 @@ export function flat(color: number): THREE.Material {
 export const glowing = new THREE.MeshBasicMaterial({ color: COLORS.ember });
 export const smoke = new THREE.MeshLambertMaterial({ color: 0x8a8580, transparent: true, opacity: 0.45 });
 
-const TEXTURE_WORLD_SIZE = 0.5;
+export const TEXTURE_WORLD_SIZE = 0.5;
 
 function scaleUVs(geometry: THREE.BufferGeometry, perFace: [number, number][]): void {
   const uv = geometry.getAttribute('uv') as THREE.BufferAttribute;

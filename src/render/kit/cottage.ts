@@ -168,3 +168,27 @@ export function whiteCottage(x0: number, z0: number, w: number, d: number, doorX
   group.add(windowHole(x0 + windowX, front, 0.3));
   return group;
 }
+
+export function terraceBlock(x0: number, z0: number, w: number, d: number, wallTop: number): THREE.Object3D {
+  const group = new THREE.Group();
+  const cx = x0 + w / 2;
+  const cz = z0 + d / 2;
+  group.add(box(w + 0.05, PLINTH, d + 0.05, surface('rubble'), cx, 0.03, cz));
+  group.add(box(w, wallTop - 0.03 - PLINTH, d, surface('whitewash'), cx, 0.03 + PLINTH, cz));
+  group.add(box(w + 0.02, 0.05, d + 0.02, flat(COLORS.aegean), cx, wallTop - 0.1, cz));
+  group.add(box(w + 0.06, 0.06, d + 0.06, surface('whitewash'), cx, wallTop - 0.03, cz));
+  group.add(box(w - 0.06, 0.01, d - 0.06, flat(0xe8e4dc), cx, wallTop + 0.02, cz));
+  return group;
+}
+
+export const BALCONY_DEPTH = 0.18;
+
+export function woodenBalcony(x0: number, x1: number, front: number, floor: number): THREE.Object3D {
+  const group = new THREE.Group();
+  const width = x1 - x0;
+  const posts = Math.round(width / 0.2);
+  group.add(box(width, 0.03, BALCONY_DEPTH, flat(0x8a6238), (x0 + x1) / 2, floor, front + BALCONY_DEPTH / 2));
+  for (let i = 0; i <= posts; i++) group.add(box(0.02, 0.14, 0.02, flat(COLORS.timber), x0 + (i * width) / posts, floor + 0.03, front + BALCONY_DEPTH - 0.01));
+  group.add(log(width + 0.02, 0.012, (x0 + x1) / 2, floor + 0.16, front + BALCONY_DEPTH - 0.01, 0));
+  return group;
+}

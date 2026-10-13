@@ -47,15 +47,6 @@ export function domeOven(x: number, z: number, lit: boolean): THREE.Object3D {
   return group;
 }
 
-export function table(x: number, z: number, w: number, d: number, turn = 0): THREE.Group {
-  const group = new THREE.Group();
-  group.add(box(w, 0.02, d, flat(0x8a6238), 0, 0.16, 0));
-  for (const [lx, lz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) group.add(cylinder(0.008, 0.008, 0.16, flat(COLORS.timber), (lx * (w - 0.04)) / 2, 0, (lz * (d - 0.04)) / 2, 4));
-  group.position.set(x, 0.03, z);
-  group.rotation.y = turn;
-  return group;
-}
-
 export function onionString(x: number, y: number, z: number, count = 5): THREE.Object3D {
   const group = new THREE.Group();
   group.add(cylinder(0.003, 0.003, count * 0.03, flat(0x9c7a48), x, y - count * 0.03, z, 4));
