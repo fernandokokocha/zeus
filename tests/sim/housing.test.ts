@@ -22,10 +22,12 @@ function shackOn(game: GameState, house: Building): void {
 }
 
 describe('a Hut', () => {
-  it('becomes a Shack with food and appeal 0', () => {
+  it('becomes a Shack with food and appeal -10', () => {
     const { game, house } = street();
+    placeBuilding(game, 'granary', 4, 6);
+    placeBuilding(game, 'park', 1, 11);
     house.food = 1;
-    expect(houseAppeal(game, house)).toBe(0);
+    expect(houseAppeal(game, house)).toBe(-10);
     runTicks(game, LEVEL_CHANGE_TICKS);
     expect(house.level).toBe('shack');
   });
@@ -36,11 +38,11 @@ describe('a Hut', () => {
     expect(house.level).toBe('hut');
   });
 
-  it('stays a Hut below appeal 0', () => {
+  it('stays a Hut at appeal -11', () => {
     const { game, house } = street();
-    placeBuilding(game, 'taxOffice', 5, 6);
+    placeBuilding(game, 'granary', 4, 6);
     house.food = 1;
-    expect(houseAppeal(game, house)).toBe(-2);
+    expect(houseAppeal(game, house)).toBe(-11);
     runTicks(game, LEVEL_CHANGE_TICKS);
     expect(house.level).toBe('hut');
   });
@@ -111,30 +113,27 @@ describe('a Shack on its way to a Hovel', () => {
     const { game, house } = street();
     shackOn(game, house);
     Object.assign(house.coveredUntil, { water: LONG, philosophy: LONG });
-    placeBuilding(game, 'flowerGarden', 2, 6);
     return { game, house };
   }
 
-  it('becomes a Hovel with food, water, 15 culture and appeal 10', () => {
+  it('becomes a Hovel with food, water, 15 culture and appeal 0', () => {
     const { game, house } = servedShack();
-    placeBuilding(game, 'park', 4, 8);
-    expect(houseAppeal(game, house)).toBe(10);
+    expect(houseAppeal(game, house)).toBe(0);
     runTicks(game, LEVEL_CHANGE_TICKS);
     expect(house.level).toBe('hovel');
     expect(houseCapacity(house)).toBe(24);
   });
 
-  it('stays a Shack at appeal 9', () => {
+  it('stays a Shack at appeal -1', () => {
     const { game, house } = servedShack();
-    placeBuilding(game, 'park', 5, 8);
-    expect(houseAppeal(game, house)).toBe(9);
+    placeBuilding(game, 'storehouse', 2, 2);
+    expect(houseAppeal(game, house)).toBe(-1);
     runTicks(game, LEVEL_CHANGE_TICKS);
     expect(house.level).toBe('shack');
   });
 
   it('stays a Shack without water', () => {
     const { game, house } = servedShack();
-    placeBuilding(game, 'park', 4, 8);
     house.coveredUntil.water = 0;
     runTicks(game, LEVEL_CHANGE_TICKS);
     expect(house.level).toBe('shack');
@@ -142,7 +141,6 @@ describe('a Shack on its way to a Hovel', () => {
 
   it('stays a Shack without culture', () => {
     const { game, house } = servedShack();
-    placeBuilding(game, 'park', 4, 8);
     house.coveredUntil.philosophy = 0;
     runTicks(game, LEVEL_CHANGE_TICKS);
     expect(house.level).toBe('shack');
@@ -258,7 +256,7 @@ describe('a Homestead', () => {
     Object.assign(house, { level: 'homestead', residents: 32, food: 50, fleece: 6 });
     house.coveredUntil.water = LONG;
     for (const culture of cultures) house.coveredUntil[culture] = LONG;
-    for (const x of [0, 2, 4]) placeBuilding(game, 'flowerGarden', x, 6);
+    placeBuilding(game, 'flowerGarden', 2, 6);
     return { game, house };
   }
 
@@ -278,10 +276,10 @@ describe('a Homestead', () => {
     expect(house.residents).toBe(24);
   });
 
-  it('becomes a Tenement of 40 with 35 culture and appeal 20', () => {
+  it('becomes a Tenement of 40 with 35 culture and appeal 10', () => {
     const { game, house } = homestead(['philosophy', 'athletics']);
-    placeBuilding(game, 'taxOffice', 5, 8);
-    expect(houseAppeal(game, house)).toBe(20);
+    placeBuilding(game, 'park', 4, 8);
+    expect(houseAppeal(game, house)).toBe(10);
     runTicks(game, LEVEL_CHANGE_TICKS);
     expect(house.level).toBe('tenement');
     expect(houseCapacity(house)).toBe(40);
@@ -289,15 +287,15 @@ describe('a Homestead', () => {
 
   it('stays a Homestead with 15 culture', () => {
     const { game, house } = homestead(['philosophy']);
+    placeBuilding(game, 'park', 4, 8);
     runTicks(game, LEVEL_CHANGE_TICKS);
     expect(house.level).toBe('homestead');
   });
 
-  it('stays a Homestead at appeal 19', () => {
+  it('stays a Homestead at appeal 9', () => {
     const { game, house } = homestead(['philosophy', 'athletics']);
-    placeBuilding(game, 'taxOffice', 5, 8);
-    placeBuilding(game, 'storehouse', 2, 2);
-    expect(houseAppeal(game, house)).toBe(19);
+    placeBuilding(game, 'park', 5, 8);
+    expect(houseAppeal(game, house)).toBe(9);
     runTicks(game, LEVEL_CHANGE_TICKS);
     expect(house.level).toBe('homestead');
   });
@@ -376,14 +374,13 @@ describe('a Tenement on its way to an Apartment', () => {
     Object.assign(house, { level: 'tenement', residents: 40, food: 50, fleece: 6, oil: 6 });
     Object.assign(house.coveredUntil, { water: LONG, philosophy: LONG, athletics: LONG });
     for (const x of [0, 2, 4]) placeBuilding(game, 'flowerGarden', x, 6);
-    placeBuilding(game, 'flowerGarden', 4, 8);
-    placeBuilding(game, 'park', 1, 11);
+    placeBuilding(game, 'taxOffice', 5, 8);
     return { game, house };
   }
 
-  it('becomes an Apartment of 48 with oil and appeal 30', () => {
+  it('becomes an Apartment of 48 with oil and appeal 20', () => {
     const { game, house } = servedTenement();
-    expect(houseAppeal(game, house)).toBe(31);
+    expect(houseAppeal(game, house)).toBe(20);
     runTicks(game, LEVEL_CHANGE_TICKS);
     expect(house.level).toBe('apartment');
     expect(houseCapacity(house)).toBe(48);
@@ -396,10 +393,10 @@ describe('a Tenement on its way to an Apartment', () => {
     expect(house.level).toBe('tenement');
   });
 
-  it('stays a Tenement at appeal 29', () => {
+  it('stays a Tenement at appeal 19', () => {
     const { game, house } = servedTenement();
-    demolish(game, { x: 1, y: 11 }, { x: 1, y: 11 });
-    expect(houseAppeal(game, house)).toBe(29);
+    placeBuilding(game, 'storehouse', 2, 2);
+    expect(houseAppeal(game, house)).toBe(19);
     runTicks(game, LEVEL_CHANGE_TICKS);
     expect(house.level).toBe('tenement');
   });
@@ -450,9 +447,42 @@ describe('an Apartment', () => {
     expect(house.level).toBe('tenement');
   });
 
-  it('needs appeal 100 and 45 culture to become a Townhouse', () => {
-    const { game, house } = apartment();
-    house.coveredUntil.drama = LONG;
+});
+
+describe('an Apartment on its way to a Townhouse', () => {
+  const LONG = 10 * TICKS_PER_MONTH;
+
+  function servedApartment(): { game: GameState; house: Building } {
+    const { game, house } = street();
+    Object.assign(house, { level: 'apartment', residents: 48, food: 50, fleece: 6, oil: 6 });
+    Object.assign(house.coveredUntil, { water: LONG, philosophy: LONG, athletics: LONG, drama: LONG });
+    for (const x of [0, 2, 4]) placeBuilding(game, 'flowerGarden', x, 6);
+    placeBuilding(game, 'flowerGarden', 4, 8);
+    return { game, house };
+  }
+
+  it('becomes a Townhouse of 60 with 45 culture and appeal 30', () => {
+    const { game, house } = servedApartment();
+    placeBuilding(game, 'park', 1, 11);
+    placeBuilding(game, 'storehouse', 2, 2);
+    expect(houseAppeal(game, house)).toBe(30);
+    runTicks(game, LEVEL_CHANGE_TICKS);
+    expect(house.level).toBe('townhouse');
+    expect(houseCapacity(house)).toBe(60);
+  });
+
+  it('stays an Apartment at appeal 29', () => {
+    const { game, house } = servedApartment();
+    expect(houseAppeal(game, house)).toBe(29);
+    runTicks(game, LEVEL_CHANGE_TICKS);
+    expect(house.level).toBe('apartment');
+  });
+
+  it('stays an Apartment with 35 culture', () => {
+    const { game, house } = servedApartment();
+    placeBuilding(game, 'park', 1, 11);
+    placeBuilding(game, 'storehouse', 2, 2);
+    house.coveredUntil.drama = 0;
     runTicks(game, LEVEL_CHANGE_TICKS);
     expect(house.level).toBe('apartment');
   });

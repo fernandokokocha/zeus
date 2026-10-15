@@ -127,7 +127,7 @@ function levelWanted(state: GameState, house: Building, level: HouseLevel, appea
   const previous = PREVIOUS_LEVEL[level];
   const next = NEXT_LEVEL[level];
   if (previous && (!meetsNeeds(state, house, level) || appeal <= HOUSE_LEVELS[level].appeal.devolve)) return previous;
-  if (next && meetsNeeds(state, house, next) && appeal >= HOUSE_LEVELS[next].appeal.evolve) return next;
+  if (next && meetsNeeds(state, house, next) && appeal >= HOUSE_LEVELS[level].appeal.evolve) return next;
   return null;
 }
 

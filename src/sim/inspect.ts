@@ -170,7 +170,7 @@ function describeHouse(state: GameState, house: Building): Description {
     if ([level, next].some((l) => l && HOUSE_LEVELS[l].needs.includes(good))) lines.push(stockStatus(house, good));
   }
   lines.push(waterStatus(state, house), cultureStatus(state, house), taxStatus(state, house));
-  if (next) lines.push(nextLevelStatus(state, house, next, appeal));
+  if (next) lines.push(nextLevelStatus(state, house, level, next, appeal));
   if (house.pendingLevel) lines.push(levelChangeStatus(house, level, house.pendingLevel));
   return { title: houseName(house), lines };
 }
@@ -182,11 +182,12 @@ function stockStatus(house: Building, good: HouseGood): string {
   return `${capitalized(good)}: ${amount(house[good])} units${lasts}`;
 }
 
-function nextLevelStatus(state: GameState, house: Building, next: keyof typeof HOUSE_LEVELS, appeal: number): string {
-  const { name, appeal: thresholds } = HOUSE_LEVELS[next];
+function nextLevelStatus(state: GameState, house: Building, level: HouseLevel, next: HouseLevel, appeal: number): string {
+  const { name } = HOUSE_LEVELS[next];
+  const { evolve } = HOUSE_LEVELS[level].appeal;
   const blockers: string[] = missingNeeds(state, house, next);
   if (lacksCulture(state, house, next)) blockers.push(`culture ${HOUSE_LEVELS[next].culture} (has ${culturePoints(state, house)})`);
-  if (appeal < thresholds.evolve) blockers.push(`appeal ${thresholds.evolve} (has ${appeal})`);
+  if (appeal < evolve) blockers.push(`appeal ${evolve} (has ${appeal})`);
   return blockers.length > 0 ? `Needs for ${name}: ${blockers.join(', ')}` : `Ready to become a ${name}`;
 }
 

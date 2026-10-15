@@ -229,11 +229,11 @@ describe('describeTile for food and appeal', () => {
 
   it('shows what keeps a Hut from becoming a Shack', () => {
     const { game, house } = street();
-    placeBuilding(game, 'taxOffice', 5, 11);
+    placeBuilding(game, 'granary', 4, 11);
     house.food = 3;
-    expect(describeTile(game, 2, 13).lines).toEqual(expect.arrayContaining(['Appeal -2', 'Food: 3 units', 'Needs for Shack: appeal 0 (has -2)']));
+    expect(describeTile(game, 2, 13).lines).toEqual(expect.arrayContaining(['Appeal -11', 'Food: 3 units', 'Needs for Shack: appeal -10 (has -11)']));
     house.food = 0;
-    expect(describeTile(game, 2, 13).lines).toContain('Needs for Shack: food, appeal 0 (has -2)');
+    expect(describeTile(game, 2, 13).lines).toContain('Needs for Shack: food, appeal -10 (has -11)');
   });
 
   it("shows how long a Shack's food lasts", () => {
@@ -323,10 +323,10 @@ describe('describeTile for culture', () => {
     placeBuilding(game, 'podium', 5, 13);
     const lines = describeTile(game, 2, 13).lines;
     expect(lines).toContain('No culture has passed');
-    expect(lines).toContain('Needs for Hovel: water, culture 15 (has 0), appeal 10 (has 1)');
+    expect(lines).toContain('Needs for Hovel: water, culture 15 (has 0)');
     Object.assign(house.coveredUntil, { water: TICKS_PER_MONTH, philosophy: TICKS_PER_MONTH, drama: TICKS_PER_MONTH });
     expect(describeTile(game, 2, 13).lines).toEqual(
-      expect.arrayContaining(['Culture 40: philosophy, drama', 'Needs for Hovel: appeal 10 (has 1)']),
+      expect.arrayContaining(['Culture 40: philosophy, drama', 'Ready to become a Hovel']),
     );
   });
 
@@ -518,7 +518,7 @@ describe('describeTile for olive oil', () => {
     Object.assign(house.coveredUntil, { water: LONG, philosophy: LONG, athletics: LONG });
     const lines = describeTile(game, 2, 13).lines;
     expect(lines).toContain('No oil');
-    expect(lines.find((line) => line.startsWith('Needs for Apartment'))).toMatch(/^Needs for Apartment: oil, appeal 30/);
+    expect(lines.find((line) => line.startsWith('Needs for Apartment'))).toMatch(/^Needs for Apartment: oil, appeal 20/);
     house.oil = 6;
     expect(describeTile(game, 2, 13).lines).toContain('Oil: 6 units');
     Object.assign(house, { level: 'apartment', residents: 48 });
