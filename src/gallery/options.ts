@@ -13,7 +13,8 @@ export interface DesignSet {
   options: DesignOption[];
   chosen?: number;
   previous?: DesignOption;
-  size?: number;
+  footprint?: [number, number];
+  stripCopies?: number;
 }
 
 export function withoutAndWithWorkers(build: (staffed: boolean) => THREE.Object3D): { label: string; build: () => THREE.Object3D }[] {

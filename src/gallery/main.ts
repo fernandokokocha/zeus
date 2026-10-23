@@ -10,6 +10,7 @@ import { TOWNHOUSE_OPTIONS } from './townhouse-options';
 import { FARM_OPTIONS } from './farm-options';
 import { MAINTENANCE_OPTIONS } from './maintenance-options';
 import { MASONRY_OPTIONS } from './masonry-options';
+import { PALACE_OPTIONS } from './palace-options';
 import { bake } from '../render/bake';
 import type { Animate } from '../render/kit/figure';
 import type { DesignSet } from './options';
@@ -22,10 +23,13 @@ const SETS: Record<string, DesignSet> = {
   tenement: { title: 'Tenement', needs: 'Level 5 · 40 people · needs food, water, fleece and more culture and appeal', options: TENEMENT_OPTIONS, chosen: 2, previous: HOMESTEAD_OPTIONS[2] },
   apartment: { title: 'Apartment', needs: 'Level 6 · 48 people · needs food, water, fleece and oil', options: APARTMENT_OPTIONS, chosen: 0, previous: TENEMENT_OPTIONS[2] },
   townhouse: { title: 'Townhouse', needs: 'Level 7 · 60 people · needs food, water, fleece, oil and top culture and appeal', options: TOWNHOUSE_OPTIONS, chosen: 1, previous: APARTMENT_OPTIONS[0] },
-  wheatFarm: { title: 'Wheat Farm', needs: '3×3 · 10 workers · every growth stage, without and with workers', options: FARM_OPTIONS, chosen: 0, size: 3 },
+  wheatFarm: { title: 'Wheat Farm', needs: '3×3 · 10 workers · every growth stage, without and with workers', options: FARM_OPTIONS, chosen: 0, footprint: [3, 3] },
   maintenance: { title: 'Maintenance Office', needs: '2×2 · 5 workers · each option without and with workers', options: MAINTENANCE_OPTIONS, chosen: 1 },
   masonry: { title: 'Masonry Shop', needs: '2×2 · 15 workers · each option without and with workers, holding 3 loads of marble', options: MASONRY_OPTIONS, chosen: 1 },
+  palace: { title: 'Palace', needs: '9×6 · no workers · collects the city’s taxes', options: PALACE_OPTIONS, chosen: 0, footprint: [9, 6], stripCopies: 1 },
 };
+
+const footprint = (set: DesignSet): [number, number] => set.footprint ?? [2, 2];
 
 const ELEVATION = Math.PI / 6;
 const ISO = new THREE.Vector3(Math.cos(ELEVATION) * Math.SQRT1_2, Math.sin(ELEVATION), Math.cos(ELEVATION) * Math.SQRT1_2);
@@ -64,19 +68,23 @@ function camera(width: number, height: number, target: THREE.Vector3, pixelsPerU
   return cam;
 }
 
-function closeUp(canvas: HTMLCanvasElement, build: () => THREE.Object3D, size: number): void {
+function closeUpPixelsPerTile(canvas: HTMLCanvasElement, [w, d]: [number, number]): number {
+  const isoWidth = (w + d) * Math.SQRT1_2;
+  return Math.min(GAME_PIXELS_PER_TILE * MAX_ZOOM, (canvas.clientWidth * 0.95) / isoWidth);
+}
+
+function closeUp(canvas: HTMLCanvasElement, build: () => THREE.Object3D, [w, d]: [number, number]): void {
   const r = renderer(canvas);
   const s = scene();
-  const half = size / 2;
-  s.add(ground(-3, -3, size + 7, size + 7, TERRAIN_COLORS.grass));
-  s.add(ground(-3, size, size + 7, 1, PALETTE.road, 0.005));
+  s.add(ground(-3, -3, w + 7, d + 7, TERRAIN_COLORS.grass));
+  s.add(ground(-3, d, w + 7, 1, PALETTE.road, 0.005));
   const pivot = new THREE.Group();
-  pivot.position.set(half, 0, half);
+  pivot.position.set(w / 2, 0, d / 2);
   const model = build();
-  model.position.set(-half, 0, -half);
+  model.position.set(-w / 2, 0, -d / 2);
   pivot.add(model);
   s.add(pivot);
-  const cam = camera(canvas.clientWidth, canvas.clientHeight, new THREE.Vector3(half, new THREE.Box3().setFromObject(model).getCenter(new THREE.Vector3()).y, half), GAME_PIXELS_PER_TILE * MAX_ZOOM);
+  const cam = camera(canvas.clientWidth, canvas.clientHeight, new THREE.Vector3(w / 2, new THREE.Box3().setFromObject(model).getCenter(new THREE.Vector3()).y, d / 2), closeUpPixelsPerTile(canvas, [w, d]));
   const draw = () => r.render(s, cam);
   const animations: Animate[] = [];
   model.traverse((node) => node.userData.animate && animations.push(node.userData.animate));
@@ -100,22 +108,25 @@ function closeUp(canvas: HTMLCanvasElement, build: () => THREE.Object3D, size: n
   draw();
 }
 
+const STRIP_PIXELS_PER_DEPTH_TILE = 90;
+
 function strip(canvas: HTMLCanvasElement, set: DesignSet): void {
+  canvas.style.height = `${Math.max(canvas.clientHeight, footprint(set)[1] * STRIP_PIXELS_PER_DEPTH_TILE)}px`;
   const r = renderer(canvas);
   r.setScissorTest(true);
   const s = scene();
   s.add(ground(-20, -20, 60, 60, TERRAIN_COLORS.grass));
-  const size = set.size ?? 2;
-  s.add(ground(-20, size, 60, 1, PALETTE.road, 0.005));
+  const [w, d] = footprint(set);
+  s.add(ground(-20, d, 60, 1, PALETTE.road, 0.005));
   const row = set.previous ? [set.previous, ...set.options] : set.options;
   let rowEnd = 0;
   row.forEach((option) => {
-    const builds = option.variants?.map((v) => v.build) ?? [option.build, option.build];
+    const builds = option.variants?.map((v) => v.build) ?? Array(set.stripCopies ?? 2).fill(option.build);
     builds.forEach((build) => {
       const model = bake(build());
       model.position.set(rowEnd, 0, 0);
       s.add(model);
-      rowEnd += size;
+      rowEnd += w;
     });
     rowEnd += 1;
   });
@@ -123,7 +134,7 @@ function strip(canvas: HTMLCanvasElement, set: DesignSet): void {
   const height = canvas.clientHeight;
   const halves = [{ zoom: 1, x: 0 }, { zoom: 2, x: width / 2 }];
   for (const { zoom, x } of halves) {
-    const cam = camera(width / 2, height, new THREE.Vector3(rowEnd / 2 - 0.5, 0, size / 2 + 0.5), GAME_PIXELS_PER_TILE * zoom);
+    const cam = camera(width / 2, height, new THREE.Vector3(rowEnd / 2 - 0.5, 0, d / 2 + 0.5), GAME_PIXELS_PER_TILE * zoom);
     r.setViewport(x, 0, width / 2, height);
     r.setScissor(x, 0, width / 2, height);
     r.render(s, cam);
@@ -136,7 +147,7 @@ const stripCaption = set.previous ? 'Chosen previous level first, then the optio
 document.getElementById('nav')!.innerHTML = Object.entries(SETS).map(([key, s]) => `<a href="?level=${key}">${s.title}</a>`).join('');
 const count = set.options.length;
 document.getElementById('title')!.textContent = `${set.title} — ${count} option${count > 1 ? 's' : ''}`;
-document.getElementById('needs')!.textContent = `${set.needs}. Close-ups are at max game zoom; drag to rotate.`;
+document.getElementById('needs')!.textContent = `${set.needs}. Close-ups are at max game zoom, or as close as fits; drag to rotate.`;
 const cards = document.getElementById('cards')!;
 if (set.options.some((o) => o.variants)) cards.classList.add('single');
 set.options.forEach((option, i) => {
@@ -148,7 +159,7 @@ set.options.forEach((option, i) => {
     : '<canvas></canvas>';
   card.innerHTML = `${canvases}<h2>${option.name}</h2><ul>${option.notes.map((n) => `<li>${n}</li>`).join('')}</ul>`;
   cards.append(card);
-  card.querySelectorAll('canvas').forEach((canvas, v) => closeUp(canvas, variants[v].build, set.size ?? 2));
+  card.querySelectorAll('canvas').forEach((canvas, v) => closeUp(canvas, variants[v].build, footprint(set)));
 });
 document.getElementById('strip-caption')!.textContent = `${stripCaption}, at default game zoom (left) and 2× (right)`;
 strip(document.getElementById('strip') as HTMLCanvasElement, set);

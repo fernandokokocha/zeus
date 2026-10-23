@@ -14,6 +14,7 @@ import { bakedOnce } from './bake';
 import { wheatFarmModel } from './farm-models';
 import { maintenanceOfficeModel } from './maintenance-models';
 import { masonryShopModel } from './masonry-models';
+import { palaceModel } from './palace-models';
 import { homesteadModel, hovelModel, hutModel, shackModel, tenementModel, apartmentModel, townhouseModel } from './house-models';
 
 const lambert = (color: number) => new THREE.MeshLambertMaterial({ color });
@@ -233,50 +234,6 @@ function taxOfficeModel(working: boolean): THREE.Object3D {
     group.add(box(0.31, 0.03, 0.21, timber, 1.6, 0.2, 1.7));
   }
   group.add(placed(amphora, clay, 0.3, 0.04, 1.72));
-  return group;
-}
-
-function palaceModel(): THREE.Object3D {
-  const group = new THREE.Group();
-  const { width: W, height: D } = BUILDING_SPECS.palace;
-  group.add(box(W - 0.2, 0.04, D - 0.2, paving, W / 2, 0, D / 2));
-  group.add(box(W - 0.6, 0.18, 3.0, marble, W / 2, 0.04, 1.8));
-
-  const hallWidth = 4.6;
-  const hallDepth = 2.2;
-  const hallZ = 1.65;
-  const floor = 0.22;
-  const wallHeight = 1.1;
-  group.add(box(hallWidth - 0.6, wallHeight, hallDepth - 0.5, plaster, W / 2, floor, hallZ - 0.1));
-  const columns = 8;
-  for (let i = 0; i < columns; i++) {
-    const x = W / 2 - hallWidth / 2 + 0.15 + (i * (hallWidth - 0.3)) / (columns - 1);
-    group.add(columnAt(wallHeight, marble, x, floor, hallZ + hallDepth / 2 - 0.12));
-    group.add(columnAt(wallHeight, marble, x, floor, hallZ - hallDepth / 2 + 0.12));
-  }
-  group.add(box(hallWidth + 0.1, 0.12, hallDepth + 0.1, marble, W / 2, floor + wallHeight, hallZ));
-  const roof = gableRoof(hallWidth + 0.1, 0.65, hallDepth + 0.1, marble);
-  roof.position.set(W / 2, floor + wallHeight + 0.12, hallZ);
-  group.add(roof);
-  group.add(box(0.5, 0.7, 0.02, doorway, W / 2, floor, hallZ + hallDepth / 2 - 0.34));
-
-  for (const side of [-1, 1]) {
-    const wx = W / 2 + side * 3.25;
-    group.add(box(1.7, 0.75, 2.4, plaster, wx, 0.22, 1.8));
-    group.add(box(1.84, 0.08, 2.54, clay, wx, 0.97, 1.8));
-    for (const dz of [-0.6, 0, 0.6]) group.add(box(0.02, 0.18, 0.14, doorway, wx - side * 0.86, 0.6, 1.8 + dz));
-    for (const dx of [-0.45, 0.45]) group.add(box(0.14, 0.18, 0.02, doorway, wx + dx, 0.6, 3.01));
-  }
-
-  for (let i = 0; i < 4; i++) group.add(box(1.6 - i * 0.04, 0.045, 0.16, marble, W / 2, 0.04 + i * 0.045, 3.6 - i * 0.12));
-  group.add(box(5.2, 0.02, 1.9, marble, W / 2, 0.04, 4.7));
-  group.add(box(1.6, 0.06, 0.9, fieldstone, W / 2, 0.06, 4.75));
-  group.add(box(1.48, 0.02, 0.78, water, W / 2, 0.11, 4.75));
-  for (const side of [-1, 1]) {
-    group.add(box(0.3, 0.3, 0.3, marble, W / 2 + side * 1.6, 0.04, 4.75));
-    group.add(placed(shrub, foliage, W / 2 + side * 1.6, 0.52, 4.75));
-    for (const dz of [0.2, 1.3]) group.add(placed(shrub, foliage, W / 2 + side * 3.6, 0.2, 3.7 + dz));
-  }
   return group;
 }
 
