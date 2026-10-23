@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import './style.css';
 import { attachCameraControls } from './render/camera-controls';
 import { createGhostLayer } from './render/ghost-layer';
+import { createHighlightLayer } from './render/highlight-layer';
 import { createOverlayLayer } from './render/overlay-layer';
 import { createTerrainLayer } from './render/terrain-layer';
 import { createView, resizeView } from './render/view';
@@ -36,10 +37,12 @@ const overlay = createOverlayLayer(state.size);
 view.scene.add(overlay.mesh);
 const ghost = createGhostLayer(state.size);
 view.scene.add(ghost.mesh);
+const highlight = createHighlightLayer(state.size);
+view.scene.add(highlight.mesh);
 
 const controls = attachCameraControls(view, state.size);
 const topbar = createTopbar(state);
-const inspector = createInspector(state);
+const inspector = createInspector(state, highlight);
 const mapModes = createMapModes();
 const input = attachToolInput({
   view,

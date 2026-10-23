@@ -881,14 +881,14 @@ describe('inspectTile', () => {
     game.buildings[0].coveredUntil.water = TICKS_PER_MONTH;
     const look = inspectTile(game, 2, 8);
     runTicks(game, TICKS_PER_MONTH / 2);
-    expect(look().meters.find((m) => m.label === 'Water')).toMatchObject({ value: '13% left' });
+    expect(look().description.meters.find((m) => m.label === 'Water')).toMatchObject({ value: '13% left' });
   });
 
   it('describes the ground once the building is gone', () => {
     const game = town();
     const look = inspectTile(game, 2, 8);
     demolish(game, { x: 2, y: 8 }, { x: 2, y: 8 });
-    expect(look().title).toBe('Grass');
+    expect(look().description.title).toBe('Grass');
   });
 
   it('follows a walker off the tile it was inspected on', () => {
@@ -899,7 +899,7 @@ describe('inspectTile', () => {
     const carrier = game.roamers[0];
     while (walkerTile(carrier).x === 0) runTicks(game, 1);
     expect(game.roamers).toContain(carrier);
-    expect(look()).toMatchObject({ title: 'Water Carrier', lines: ['From the Fountain at 0, 11', 'Walked 0 of 27 tiles'] });
+    expect(look().description).toMatchObject({ title: 'Water Carrier', lines: ['From the Fountain at 0, 11', 'Walked 0 of 27 tiles'] });
   });
 
   it('describes the tile again once the walker is gone', () => {
@@ -908,6 +908,31 @@ describe('inspectTile', () => {
     runTicks(game, ROAMER_REST_TICKS);
     const look = inspectTile(game, 0, 10);
     game.roamers = [];
-    expect(look().title).toBe('Road');
+    expect(look().description.title).toBe('Road');
+  });
+  it('highlights every tile of an inspected building', () => {
+    const look = inspectTile(town(), 3, 9);
+    expect(look().tiles).toEqual([{ x: 2, y: 8 }, { x: 3, y: 8 }, { x: 2, y: 9 }, { x: 3, y: 9 }]);
+  });
+
+  it('highlights the inspected ground tile', () => {
+    expect(inspectTile(town(), 5, 5)().tiles).toEqual([{ x: 5, y: 5 }]);
+  });
+
+  it('highlights the tile under the followed walker', () => {
+    const game = town();
+    placeBuilding(game, 'fountain', 0, 11);
+    runTicks(game, ROAMER_REST_TICKS);
+    const look = inspectTile(game, 0, 10);
+    const carrier = game.roamers[0];
+    while (walkerTile(carrier).x === 0) runTicks(game, 1);
+    expect(look().tiles).toEqual([walkerTile(carrier)]);
+  });
+
+  it('highlights the inspected tile once the building is gone', () => {
+    const game = town();
+    const look = inspectTile(game, 3, 9);
+    demolish(game, { x: 2, y: 8 }, { x: 2, y: 8 });
+    expect(look().tiles).toEqual([{ x: 3, y: 9 }]);
   });
 });

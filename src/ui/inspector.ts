@@ -1,22 +1,28 @@
 import { pauseForInspection, resumeAfterInspection } from '../sim/clock';
-import type { Description, Meter } from '../sim/inspect';
+import type { Description, Inspection, Meter } from '../sim/inspect';
+import type { Point } from '../sim/point';
 import type { GameState } from '../sim/state';
 import { byId } from './dom';
 
 export interface Inspector {
-  open(look: () => Description): void;
+  open(look: () => Inspection): void;
   refresh(): void;
   close(): void;
   isOpen(): boolean;
 }
 
-export function createInspector(state: GameState): Inspector {
+export function createInspector(state: GameState, highlight: { show(tiles: Point[]): void }): Inspector {
   const panel = byId('inspector');
   const title = byId('inspector-title');
   const lines = byId('inspector-lines');
   const meters = byId('inspector-meters');
-  let look: (() => Description) | null = null;
+  let look: (() => Inspection) | null = null;
   let shown = '';
+
+  function show(inspection: Inspection): void {
+    highlight.show(inspection.tiles);
+    render(inspection.description);
+  }
 
   function render(description: Description): void {
     const serialized = JSON.stringify(description);
@@ -32,6 +38,7 @@ export function createInspector(state: GameState): Inspector {
     if (panel.hidden) return;
     panel.hidden = true;
     look = null;
+    highlight.show([]);
     resumeAfterInspection(state);
   }
 
@@ -41,11 +48,11 @@ export function createInspector(state: GameState): Inspector {
     open(next) {
       pauseForInspection(state);
       look = next;
-      render(look());
+      show(look());
       panel.hidden = false;
     },
     refresh() {
-      if (look) render(look());
+      if (look) show(look());
     },
     close,
     isOpen: () => !panel.hidden,

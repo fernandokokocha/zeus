@@ -3,7 +3,7 @@ import { BUILDING_SPECS, isAgoraVendor } from './buildings';
 import { MONTH_NAMES, TICKS_PER_MONTH } from './clock';
 import { MAX_CULTURE_POINTS, culturePoints, culturesPassed } from './culture';
 import { CARRIER_SPECS, carrierDestinations, carrierKindsSentBy } from './carriers';
-import { adjacentRoadTiles, agoraAt } from './commands';
+import { adjacentRoadTiles, agoraAt, footprint } from './commands';
 import { hasWorkingPalace, houseTax } from './economy';
 import { GRANARY_CAPACITY, HARVEST_MONTH, UNITS_PER_LOAD, VENDOR_CAPACITY, houseStockTarget, monthlyUse } from './food';
 import { type HouseLevel, type HouseNeed, HOUSE_LEVELS, LEVEL_CHANGE_TICKS, NEXT_LEVEL, PREVIOUS_LEVEL, houseCapacity, houseLevel, houseName, lacksCulture, missingNeeds } from './housing';
@@ -36,6 +36,7 @@ import {
   suppliedStages,
   type Sanctuary,
 } from './sanctuaries';
+import type { Point } from './point';
 import { canBurn, canCollapse, isBurning, riskShare } from './safety';
 import { canSettlersReach } from './settlers';
 import { SHEARING_RANGE, SHED_CAPACITY, hasFullFleece, sheepTile, sheepToShear, shepherdAfter } from './sheep';
@@ -77,10 +78,15 @@ export interface Description {
   lines: string[];
 }
 
-type Look = () => Description;
+export interface Inspection {
+  description: Description;
+  tiles: Point[];
+}
+
+type Look = () => Inspection;
 
 export function describeTile(state: GameState, x: number, y: number): Description {
-  return inspectTile(state, x, y)();
+  return inspectTile(state, x, y)().description;
 }
 
 export function inspectTile(state: GameState, x: number, y: number): Look {
@@ -88,7 +94,7 @@ export function inspectTile(state: GameState, x: number, y: number): Look {
   if (buildingId !== NO_BUILDING) {
     return () => {
       const building = buildingById(state, buildingId);
-      return building ? describeBuilding(state, building) : describeTile(state, x, y);
+      return building ? { description: describeBuilding(state, building), tiles: footprint(building) } : inspectTile(state, x, y)();
     };
   }
   const follow = <W extends Walk>(walkers: (s: GameState) => W[], describe: (s: GameState, walker: W) => Description): Look | null => {
@@ -97,7 +103,8 @@ export function inspectTile(state: GameState, x: number, y: number): Look {
       return tile.x === x && tile.y === y;
     });
     if (!walker) return null;
-    return () => (walkers(state).includes(walker) ? describe(state, walker) : describeTile(state, x, y));
+    return () =>
+      walkers(state).includes(walker) ? { description: describe(state, walker), tiles: [walkerTile(walker)] } : inspectTile(state, x, y)();
   };
   return (
     follow((s) => s.settlers, describeSettler) ??
@@ -109,7 +116,7 @@ export function inspectTile(state: GameState, x: number, y: number): Look {
     follow((s) => s.gatherers, describeGatherer) ??
     follow((s) => s.artisans, describeArtisan) ??
     follow((s) => s.sheep, describeSheep) ??
-    (() => describeGround(state, x, y))
+    (() => ({ description: describeGround(state, x, y), tiles: [{ x, y }] }))
   );
 }
 

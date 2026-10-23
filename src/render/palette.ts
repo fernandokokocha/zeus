@@ -98,6 +98,7 @@ export const PALETTE = {
   ghostValid: 0x4caf50,
   ghostWarning: 0xf28c28,
   ghostInvalid: 0xe0533d,
+  inspected: 0x6fd3ff,
 };
 
 export function tileHash(x: number, y: number): number {

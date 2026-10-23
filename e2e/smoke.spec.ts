@@ -113,6 +113,7 @@ test('boots, builds a street with services, food, culture, fleece, oil, material
   await inspect([27, 47]);
   await expect(inspector.locator('.meter')).toHaveCount(8);
   await inspector.screenshot({ path: 'test-results/inspector-storehouse.png' });
+  await page.screenshot({ path: 'test-results/inspected-storehouse.png' });
   await inspect([19, 53]);
   await expect(inspector.locator('.meter-label')).toHaveText(['Food Vendor', 'Fleece Vendor', 'Oil Vendor']);
   await inspector.screenshot({ path: 'test-results/inspector-agora.png' });
