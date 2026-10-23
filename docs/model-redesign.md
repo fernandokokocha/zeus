@@ -13,6 +13,9 @@ Unless the owner says otherwise, every design follows these:
   shutters, trim and cloth. Terracotta, thatch and stone are accents.
 - **Show what is special about the thing.** A building shows what it does or holds: a house
   shows the needs it meets, a workshop its goods, a service building its service.
+- **A building with workers shows them.** When staffed, one animated worker stands where the
+  player can see him (doing the job, or idling by the door) and the door is open; when empty,
+  nobody is there, tools are put away and the door is shut. Design both states side by side.
 - **High detail**, but it has to read at default zoom (30 px per tile). Silhouettes and
   colour blocks carry it there; small props only add to it at max zoom.
 
@@ -41,6 +44,8 @@ For things that come in levels (houses, upgrades, sanctuary stages):
 | merging a model into one mesh per material, and cloning it | `src/render/bake.ts` |
 | the comparison page | `gallery.html`, `src/gallery/main.ts` |
 | the options being compared | `src/gallery/<thing>-options.ts` |
+| workers: figure parts and motions (rest, lookout, hammer) | `src/render/kit/figure.ts` |
+| baking a worker and giving each building its own timing | `src/render/staff.ts` |
 
 Write each option as a builder function that uses only `src/render/kit/`. Then picking one is
 just moving that function into the game's models module and wiring it up. Never give the
@@ -99,6 +104,8 @@ hundreds of meshes, each with its own geometry.
   leaks GPU memory on every rebuild and costs hundreds of draw calls per building.
 - **A building with states** (working or idle, crop stages, sanctuary stages, burning) gets
   one baked template per state, keyed by state.
+- **A worker is not baked into the building.** Bake his parts once with `bakedFigure`, add him
+  to the shell with `posedFigure`, and the world layer animates him every frame.
 - **A building with counts** (storehouse loads, granary sacks) bakes the static shell, and
   adds the counted pieces as meshes that share one geometry and one material.
 - **Reuse materials.** `surface()` and `flat()` cache theirs. A part that creates
