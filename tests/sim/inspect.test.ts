@@ -6,27 +6,33 @@ import { SHEARING_REST_TICKS, sheepTile } from '../../src/sim/sheep';
 import { TICKS_PER_MONTH } from '../../src/sim/clock';
 import { ROAMER_REST_TICKS } from '../../src/sim/roamers';
 import { tileIndex, type Building, type GameState } from '../../src/sim/state';
-import { describeTile } from '../../src/sim/inspect';
+import { describeTile, inspectTile, type Meter } from '../../src/sim/inspect';
 import { FIRE_BURN_TICKS, RISK_LIMIT, catchFire } from '../../src/sim/safety';
 import { SETTLER_SPAWN_INTERVAL_TICKS } from '../../src/sim/settlers';
 import { walkerTile } from '../../src/sim/walking';
 import { grassGame, placeHouse, runTicks, setMeadow, setTerrain } from './helpers';
 
+function meter(game: GameState, x: number, y: number, label: string): Meter {
+  const found = describeTile(game, x, y).meters.find((m) => m.label === label);
+  if (!found) throw new Error(`No ${label} meter at ${x}, ${y}`);
+  return found;
+}
+
 describe('describeTile', () => {
   it('describes buildable terrain', () => {
-    expect(describeTile(grassGame(), 4, 4)).toEqual({ title: 'Grass', lines: ['Tile 4, 4', 'Buildable'] });
+    expect(describeTile(grassGame(), 4, 4)).toEqual({ title: 'Grass', meters: [], lines: ['Tile 4, 4', 'Buildable'] });
   });
 
   it('describes unbuildable terrain', () => {
     const game = grassGame();
     setTerrain(game, 4, 4, 'marble');
-    expect(describeTile(game, 4, 4)).toEqual({ title: 'Marble', lines: ['Tile 4, 4', 'Not buildable'] });
+    expect(describeTile(game, 4, 4)).toEqual({ title: 'Marble', meters: [], lines: ['Tile 4, 4', 'Not buildable'] });
   });
 
   it('describes a road', () => {
     const game = grassGame();
     placeRoad(game, { x: 4, y: 4 }, { x: 4, y: 4 });
-    expect(describeTile(game, 4, 4)).toEqual({ title: 'Road', lines: ['Tile 4, 4'] });
+    expect(describeTile(game, 4, 4)).toEqual({ title: 'Road', meters: [], lines: ['Tile 4, 4'] });
   });
 
   it('describes a vacant lot from any of its tiles', () => {
@@ -34,6 +40,7 @@ describe('describeTile', () => {
     placeHouse(game, 2, 2);
     expect(describeTile(game, 3, 3)).toEqual({
       title: 'Vacant Lot',
+      meters: [],
       lines: ['Tile 2, 2', 'Residents 0/8', 'No road access: settlers cannot reach it'],
     });
   });
@@ -59,13 +66,17 @@ describe('describeTile', () => {
     runTicks(game, 2 * SETTLER_SPAWN_INTERVAL_TICKS);
     expect(describeTile(game, 2, 8)).toEqual({
       title: 'Hut',
+      meters: [
+        { label: 'Food', fill: 0, value: 'None', need: 'missing' },
+        { label: 'Water', fill: 0, value: 'None', need: null },
+        { label: 'Fleece', fill: 0, value: 'None', need: null },
+        { label: 'Oil', fill: 0, value: 'None', need: null },
+        { label: 'Culture', fill: 0, value: 'None', need: null },
+      ],
       lines: [
         'Tile 2, 8',
         'Residents 8/8',
         'Appeal 0',
-        'No food',
-        'No water carrier has passed',
-        'No culture has passed',
         'No tax collector has passed',
         'Needs for Shack: food',
         'Fire risk 1%',
@@ -79,6 +90,7 @@ describe('describeTile', () => {
     runTicks(game, SETTLER_SPAWN_INTERVAL_TICKS);
     expect(describeTile(game, 0, 10)).toEqual({
       title: 'Settler',
+      meters: [],
       lines: ['Carrying 8 people', 'Heading to Vacant Lot at 2, 8'],
     });
   });
@@ -101,13 +113,11 @@ describe('describeTile for services', () => {
       'Tile 2, 8',
       'Residents 8/8',
       'Appeal 16',
-      'No food',
-      'Water: 25% left',
-      'No culture has passed',
       'Pays 0.72 dr tax a month',
       'Needs for Shack: food',
       'Fire risk 0%',
     ]);
+    expect(meter(game, 2, 8, 'Water')).toEqual({ label: 'Water', fill: 0.25, value: '25% left', need: null });
   });
 
 it('says when a house is about to change level', () => {
@@ -125,11 +135,11 @@ it('shows the water running down until the next carrier', () => {
     const game = town();
     game.buildings[0].coveredUntil.water = TICKS_PER_MONTH;
     game.tick = TICKS_PER_MONTH / 2;
-    expect(describeTile(game, 2, 8).lines).toContain('Water: 13% left');
+    expect(meter(game, 2, 8, 'Water').value).toBe('13% left');
     game.tick = TICKS_PER_MONTH - 1;
-    expect(describeTile(game, 2, 8).lines).toContain('Water: 1% left');
+    expect(meter(game, 2, 8, 'Water').value).toBe('1% left');
     game.tick = TICKS_PER_MONTH;
-    expect(describeTile(game, 2, 8).lines).toContain('No water carrier has passed');
+    expect(meter(game, 2, 8, 'Water')).toMatchObject({ fill: 0, value: 'None' });
   });
 
   it('says when a registered house has no palace to pay', () => {
@@ -144,6 +154,7 @@ it('shows the water running down until the next carrier', () => {
     runTicks(game, 1);
     expect(describeTile(game, 7, 12)).toEqual({
       title: 'Fountain',
+      meters: [],
       lines: ['Tile 6, 11', 'Workers 4/4', 'Water Carrier getting ready', 'Collapse risk 0%'],
     });
     runTicks(game, ROAMER_REST_TICKS);
@@ -165,6 +176,7 @@ it('shows the water running down until the next carrier', () => {
     game.lastMonth = { taxes: 12.5, wages: 3 };
     expect(describeTile(game, 6, 4)).toEqual({
       title: 'Palace',
+      meters: [],
       lines: ['Tile 6, 4', 'Taxes last month: 12.5 dr', 'Wages last month: 3 dr'],
     });
   });
@@ -175,6 +187,7 @@ it('shows the water running down until the next carrier', () => {
     runTicks(game, ROAMER_REST_TICKS);
     expect(describeTile(game, 0, 10)).toEqual({
       title: 'Water Carrier',
+      meters: [],
       lines: ['From the Fountain at 0, 11', 'Walked 0 of 27 tiles'],
     });
     game.roamers[0].returning = true;
@@ -190,6 +203,7 @@ describe('describeTile after a demolition while paused', () => {
     demolish(game, { x: 4, y: 8 }, { x: 4, y: 8 });
     expect(describeTile(game, 0, 10)).toEqual({
       title: 'Settler',
+      meters: [],
       lines: ['Carrying 8 people', 'Looking for another lot'],
     });
   });
@@ -212,6 +226,7 @@ describe('describeTile for a roadblock', () => {
     placeRoadblock(game, { x: 4, y: 10 });
     expect(describeTile(game, 4, 10)).toEqual({
       title: 'Roadblock',
+      meters: [],
       lines: ['Tile 4, 10', 'Stops roaming walkers; settlers pass'],
     });
   });
@@ -231,7 +246,8 @@ describe('describeTile for food and appeal', () => {
     const { game, house } = street();
     placeBuilding(game, 'granary', 4, 11);
     house.food = 3;
-    expect(describeTile(game, 2, 13).lines).toEqual(expect.arrayContaining(['Appeal -11', 'Food: 3 units', 'Needs for Shack: appeal -10 (has -11)']));
+    expect(describeTile(game, 2, 13).lines).toEqual(expect.arrayContaining(['Appeal -11', 'Needs for Shack: appeal -10 (has -11)']));
+    expect(meter(game, 2, 13, 'Food')).toMatchObject({ value: '3 units', need: 'met' });
     house.food = 0;
     expect(describeTile(game, 2, 13).lines).toContain('Needs for Shack: food, appeal -10 (has -11)');
   });
@@ -239,8 +255,7 @@ describe('describeTile for food and appeal', () => {
   it("shows how long a Shack's food lasts", () => {
     const { game, house } = street();
     Object.assign(house, { level: 'shack', residents: 16, food: 6 });
-    const lines = describeTile(game, 2, 13).lines;
-    expect(lines).toContain('Food: 6 units (1.5 months)');
+    expect(meter(game, 2, 13, 'Food')).toEqual({ label: 'Food', fill: 6 / 12, value: '6 units (1.5 months)', need: 'met' });
   });
 
   it('describes a farm, its crop and its cart', () => {
@@ -254,6 +269,7 @@ describe('describeTile for food and appeal', () => {
     runTicks(game, 1);
     expect(describeTile(game, 7, 13)).toEqual({
       title: 'Wheat Farm',
+      meters: [],
       lines: ['Tile 6, 12', 'Workers 10/10', 'Crop 43% grown, harvest in July', 'Cart Pusher at the farm', 'Fire risk 0%'],
     });
     farm.food = 600;
@@ -261,6 +277,7 @@ describe('describeTile for food and appeal', () => {
     expect(describeTile(game, 7, 13).lines).toEqual(expect.arrayContaining(['Harvest waiting: 2 loads', 'Cart Pusher out with a load']));
     expect(describeTile(game, game.carriers[0].path[0].x, 15)).toEqual({
       title: 'Cart Pusher',
+      meters: [],
       lines: ['From the Wheat Farm at 6, 12', 'Carrying 4 loads to the Granary at 14, 11'],
     });
   });
@@ -269,7 +286,7 @@ describe('describeTile for food and appeal', () => {
     const { game } = street();
     placeBuilding(game, 'granary', 14, 11);
     game.buildings[1].food = 1250;
-    expect(describeTile(game, 14, 11).lines).toContain('Wheat: 12.5 of 32 loads');
+    expect(describeTile(game, 14, 11).meters).toEqual([{ label: 'Wheat', fill: 1250 / 3200, value: '12.5 of 32 loads', need: null }]);
   });
 
   it('describes an agora, its vendor and the buyer', () => {
@@ -279,16 +296,22 @@ describe('describeTile for food and appeal', () => {
     expect(describeTile(game, 11, 18).lines).toEqual(['Tile 10, 16', 'No vendors yet: place one on a free spot', 'Collapse risk 0%']);
     placeBuilding(game, 'foodVendor', 10, 16);
     placeBuilding(game, 'granary', 20, 11);
-    expect(describeTile(game, 12, 18).lines).toEqual(['Tile 10, 16', 'Vendors: Food Vendor', 'Collapse risk 0%']);
+    expect(describeTile(game, 12, 18)).toEqual({
+      title: 'Agora',
+      meters: [{ label: 'Food Vendor', fill: 0, value: '0 of 8 loads', need: null }],
+      lines: ['Tile 10, 16', 'Collapse risk 0%'],
+    });
     runTicks(game, 1);
     expect(describeTile(game, 10, 17)).toEqual({
       title: 'Food Vendor',
-      lines: ['Tile 10, 16', 'Workers 4/4', 'Stock: 0 of 800 units', 'Peddler waits for food', 'Buyer waits for a granary with wheat'],
+      meters: [{ label: 'Food', fill: 0, value: '0 of 8 loads', need: null }],
+      lines: ['Tile 10, 16', 'Workers 4/4', 'Peddler waits for food', 'Buyer waits for a granary with wheat'],
     });
     game.buildings[3].food = 1000;
     runTicks(game, 1);
     expect(describeTile(game, 10, 15)).toEqual({
       title: 'Buyer',
+      meters: [],
       lines: ['From the Food Vendor at 10, 16', 'Fetching wheat from the Granary at 20, 11'],
     });
     game.carriers[0].returning = true;
@@ -296,10 +319,25 @@ describe('describeTile for food and appeal', () => {
     expect(describeTile(game, 10, 15).lines).toContain('Bringing home 400 units');
   });
 
+  it("shows the stock of each of an agora's vendors", () => {
+    const { game } = street();
+    placeBuilding(game, 'agora', 10, 16);
+    placeBuilding(game, 'foodVendor', 10, 16);
+    placeBuilding(game, 'fleeceVendor', 10, 18);
+    placeBuilding(game, 'oilVendor', 10, 20);
+    Object.assign(game.buildings[2], { food: 400 });
+    Object.assign(game.buildings[3], { fleece: 800 });
+    expect(describeTile(game, 12, 18).meters).toEqual([
+      { label: 'Food Vendor', fill: 0.5, value: '4 of 8 loads', need: null },
+      { label: 'Fleece Vendor', fill: 1, value: '8 of 8 loads', need: null },
+      { label: 'Oil Vendor', fill: 0, value: '0 of 8 loads', need: null },
+    ]);
+  });
+
   it('describes a decoration by its appeal', () => {
     const game = grassGame();
     placeBuilding(game, 'flowerGarden', 4, 4);
-    expect(describeTile(game, 5, 5)).toEqual({ title: 'Flower Garden', lines: ['Tile 4, 4', 'Appeal 8, 7, 6 by distance'] });
+    expect(describeTile(game, 5, 5)).toEqual({ title: 'Flower Garden', meters: [], lines: ['Tile 4, 4', 'Appeal 8, 7, 6 by distance'] });
   });
 });
 
@@ -321,13 +359,11 @@ describe('describeTile for culture', () => {
     const { game, house } = street();
     Object.assign(house, { level: 'shack', residents: 16, food: 6 });
     placeBuilding(game, 'podium', 5, 13);
-    const lines = describeTile(game, 2, 13).lines;
-    expect(lines).toContain('No culture has passed');
-    expect(lines).toContain('Needs for Hovel: water, culture 15 (has 0)');
+    expect(meter(game, 2, 13, 'Culture')).toEqual({ label: 'Culture', fill: 0, value: 'None', need: 'missing' });
+    expect(describeTile(game, 2, 13).lines).toContain('Needs for Hovel: water, culture 15 (has 0)');
     Object.assign(house.coveredUntil, { water: TICKS_PER_MONTH, philosophy: TICKS_PER_MONTH, drama: TICKS_PER_MONTH });
-    expect(describeTile(game, 2, 13).lines).toEqual(
-      expect.arrayContaining(['Culture 40: philosophy, drama', 'Ready to become a Hovel']),
-    );
+    expect(meter(game, 2, 13, 'Culture')).toEqual({ label: 'Culture', fill: 40 / 60, value: '40: philosophy, drama', need: 'met' });
+    expect(describeTile(game, 2, 13).lines).toContain('Ready to become a Hovel');
   });
 
   it('shows no next level for a Townhouse', () => {
@@ -344,6 +380,7 @@ describe('describeTile for culture', () => {
     runTicks(game, 1);
     expect(describeTile(game, 7, 13)).toEqual({
       title: 'College',
+      meters: [],
       lines: ['Tile 6, 12', 'Workers 12/12', 'Philosopher waits for a staffed Podium', 'Collapse risk 0%'],
     });
     placeBuilding(game, 'podium', 16, 13);
@@ -354,6 +391,7 @@ describe('describeTile for culture', () => {
     const { x, y } = walkerTile(game.trainees[0]);
     expect(describeTile(game, x, y)).toEqual({
       title: 'Philosopher',
+      meters: [],
       lines: ['From the College at 6, 12', 'Heading to the Podium at 16, 13'],
     });
     demolish(game, { x: 16, y: 13 }, { x: 16, y: 13 });
@@ -367,6 +405,7 @@ describe('describeTile for culture', () => {
     runTicks(game, 1);
     expect(describeTile(game, 16, 13)).toEqual({
       title: 'Podium',
+      meters: [],
       lines: ['Tile 16, 13', 'Workers 4/4', 'No philosophers here: a College sends them', 'Philosopher waits for one to arrive'],
     });
     podium.performingUntil = game.tick + TICKS_PER_MONTH * 1.5;
@@ -384,6 +423,7 @@ describe('describeTile for culture', () => {
     runTicks(game, ROAMER_REST_TICKS);
     expect(describeTile(game, 17, 13)).toEqual({
       title: 'Gymnasium',
+      meters: [],
       lines: ['Tile 16, 12', 'Workers 7/7', 'Athlete out in the streets'],
     });
   });
@@ -411,19 +451,19 @@ describe('describeTile for fleece', () => {
     Object.assign(house.coveredUntil, { water: LONG, philosophy: LONG });
     placeBuilding(game, 'flowerGarden', 2, 11);
     placeBuilding(game, 'flowerGarden', 4, 13);
-    const lines = describeTile(game, 2, 13).lines;
-    expect(lines).toContain('No fleece');
-    expect(lines).toContain('Needs for Homestead: fleece');
+    expect(meter(game, 2, 13, 'Fleece')).toMatchObject({ value: 'None', need: 'missing' });
+    expect(describeTile(game, 2, 13).lines).toContain('Needs for Homestead: fleece');
     house.fleece = 6;
-    expect(describeTile(game, 2, 13).lines).toEqual(expect.arrayContaining(['Fleece: 6 units', 'Ready to become a Homestead']));
+    expect(meter(game, 2, 13, 'Fleece')).toMatchObject({ value: '6 units', need: 'met' });
+    expect(describeTile(game, 2, 13).lines).toContain('Ready to become a Homestead');
   });
 
-  it("shows how long a Homestead's fleece lasts and leaves fleece off a Shack", () => {
+  it("shows how long a Homestead's fleece lasts and that a Shack does not need it yet", () => {
     const { game, house } = street();
     Object.assign(house, { level: 'homestead', residents: 32, food: 50, fleece: 6 });
-    expect(describeTile(game, 2, 13).lines).toContain('Fleece: 6 units (3 months)');
-    Object.assign(house, { level: 'shack', residents: 16 });
-    expect(describeTile(game, 2, 13).lines.some((line) => line.includes('leece'))).toBe(false);
+    expect(meter(game, 2, 13, 'Fleece')).toEqual({ label: 'Fleece', fill: 1, value: '6 units (3 months)', need: 'met' });
+    Object.assign(house, { level: 'shack', residents: 16, fleece: 0 });
+    expect(meter(game, 2, 13, 'Fleece')).toEqual({ label: 'Fleece', fill: 0, value: 'None', need: null });
   });
 
   it('describes a storehouse by its fleece and slots', () => {
@@ -431,9 +471,20 @@ describe('describeTile for fleece', () => {
     placeBuilding(game, 'storehouse', 10, 12);
     const storehouse = lastBuilding(game);
     runTicks(game, 1);
-    expect(describeTile(game, 11, 13)).toEqual({ title: 'Storehouse', lines: ['Tile 10, 12', 'Workers 12/12', 'Empty: 8 slots of 4 loads', 'Fire risk 0%'] });
+    expect(describeTile(game, 11, 13).lines).toEqual(['Tile 10, 12', 'Workers 12/12', 'Fire risk 0%']);
+    expect(describeTile(game, 11, 13).meters).toEqual([
+      { label: 'Slots', fill: 0, value: '0 of 8 slots of 4 loads', need: null },
+      { label: 'Fleece', fill: 0, value: 'None', need: null },
+      { label: 'Olives', fill: 0, value: 'None', need: null },
+      { label: 'Oil', fill: 0, value: 'None', need: null },
+      { label: 'Wood', fill: 0, value: 'None', need: null },
+      { label: 'Marble', fill: 0, value: 'None', need: null },
+      { label: 'Bronze', fill: 0, value: 'None', need: null },
+      { label: 'Sculptures', fill: 0, value: 'None', need: null },
+    ]);
     storehouse.fleece = 600;
-    expect(describeTile(game, 11, 13).lines).toContain('Fleece: 6 loads in 2 of 8 slots');
+    expect(meter(game, 11, 13, 'Slots')).toMatchObject({ fill: 2 / 8, value: '2 of 8 slots of 4 loads' });
+    expect(meter(game, 11, 13, 'Fleece')).toEqual({ label: 'Fleece', fill: 600 / 3200, value: '6 loads in 2 slots', need: null });
   });
 
   it('describes a carding shed, its shepherd and its cart', () => {
@@ -443,6 +494,7 @@ describe('describeTile for fleece', () => {
     runTicks(game, 1);
     expect(describeTile(game, 6, 13)).toEqual({
       title: 'Carding Shed',
+      meters: [],
       lines: ['Tile 6, 13', 'Workers 8/8', 'Shepherd waits for a sheep with a full fleece within 40 tiles', 'Cart Pusher at the shed', 'Fire risk 0%'],
     });
     setMeadow(game, 7, 5, 7, 7);
@@ -454,6 +506,7 @@ describe('describeTile for fleece', () => {
     const { x, y } = walkerTile(game.shepherds[0]);
     expect(describeTile(game, x, y)).toEqual({
       title: 'Shepherd',
+      meters: [],
       lines: ['From the Carding Shed at 6, 13', `Going to shear the sheep at ${at.x}, ${at.y}`],
     });
     game.shepherds[0].returning = true;
@@ -471,7 +524,7 @@ describe('describeTile for fleece', () => {
     const { game } = street();
     setMeadow(game, 7, 5, 7, 7);
     placeSheep(game, { x: 10, y: 8 });
-    expect(describeTile(game, 10, 8)).toEqual({ title: 'Sheep', lines: ['Grazing near 10, 8', 'Full fleece: ready to shear'] });
+    expect(describeTile(game, 10, 8)).toEqual({ title: 'Sheep', meters: [], lines: ['Grazing near 10, 8', 'Full fleece: ready to shear'] });
     game.sheep[0].fleece = 0.426;
     expect(describeTile(game, 10, 8).lines).toContain('Fleece 43% grown');
   });
@@ -484,12 +537,14 @@ describe('describeTile for fleece', () => {
     runTicks(game, 1);
     expect(describeTile(game, 10, 17)).toEqual({
       title: 'Fleece Vendor',
-      lines: ['Tile 10, 16', 'Workers 4/4', 'Stock: 0 of 800 units', 'Fleece Peddler waits for fleece', 'Buyer waits for a storehouse with fleece'],
+      meters: [{ label: 'Fleece', fill: 0, value: '0 of 8 loads', need: null }],
+      lines: ['Tile 10, 16', 'Workers 4/4', 'Fleece Peddler waits for fleece', 'Buyer waits for a storehouse with fleece'],
     });
     lastBuilding(game).fleece = 1000;
     runTicks(game, 1);
     expect(describeTile(game, 10, 15)).toEqual({
       title: 'Buyer',
+      meters: [],
       lines: ['From the Fleece Vendor at 10, 16', 'Fetching fleece from the Storehouse at 20, 12'],
     });
   });
@@ -517,18 +572,18 @@ describe('describeTile for olive oil', () => {
     Object.assign(house, { level: 'tenement', residents: 40, food: 50, fleece: 6 });
     Object.assign(house.coveredUntil, { water: LONG, philosophy: LONG, athletics: LONG });
     const lines = describeTile(game, 2, 13).lines;
-    expect(lines).toContain('No oil');
+    expect(meter(game, 2, 13, 'Oil')).toMatchObject({ value: 'None', need: 'missing' });
     expect(lines.find((line) => line.startsWith('Needs for Apartment'))).toMatch(/^Needs for Apartment: oil, appeal 20/);
     house.oil = 6;
-    expect(describeTile(game, 2, 13).lines).toContain('Oil: 6 units');
+    expect(meter(game, 2, 13, 'Oil')).toMatchObject({ value: '6 units', need: 'met' });
     Object.assign(house, { level: 'apartment', residents: 48 });
-    expect(describeTile(game, 2, 13).lines).toContain('Oil: 6 units (3 months)');
+    expect(meter(game, 2, 13, 'Oil')).toMatchObject({ value: '6 units (3 months)', need: 'met' });
   });
 
   it('describes an olive tree', () => {
     const { game } = street();
     placeOliveTrees(game, { x: 10, y: 8 }, { x: 10, y: 8 });
-    expect(describeTile(game, 10, 8)).toEqual({ title: 'Olive Tree', lines: ['Tile 10, 8', 'Appeal 1 by distance', 'Ripe: ready to pick'] });
+    expect(describeTile(game, 10, 8)).toEqual({ title: 'Olive Tree', meters: [], lines: ['Tile 10, 8', 'Appeal 1 by distance', 'Ripe: ready to pick'] });
     lastBuilding(game).growth = 0.426;
     expect(describeTile(game, 10, 8).lines).toContain('Olives 43% grown');
   });
@@ -540,6 +595,7 @@ describe('describeTile for olive oil', () => {
     runTicks(game, 1);
     expect(describeTile(game, 6, 13)).toEqual({
       title: "Growers' Lodge",
+      meters: [],
       lines: ['Tile 6, 13', 'Workers 12/12', 'Grower waits for a ripe olive tree within 20 tiles', 'Cart Pusher at the lodge', 'Fire risk 0%'],
     });
     placeOliveTrees(game, { x: 10, y: 8 }, { x: 10, y: 8 });
@@ -550,6 +606,7 @@ describe('describeTile for olive oil', () => {
     const { x, y } = walkerTile(game.growers[0]);
     expect(describeTile(game, x, y)).toEqual({
       title: 'Grower',
+      meters: [],
       lines: ["From the Growers' Lodge at 6, 13", 'Going to pick the olive tree at 10, 8'],
     });
     game.growers[0].returning = true;
@@ -570,6 +627,7 @@ describe('describeTile for olive oil', () => {
     runTicks(game, 1);
     expect(describeTile(game, 6, 13)).toEqual({
       title: 'Olive Press',
+      meters: [],
       lines: ['Tile 6, 13', 'Workers 12/12', 'Olives: 0 of 4 loads', 'Waits for olives', 'Cart Pusher at the press', 'Buyer waits for a storehouse with olives', 'Collapse risk 0%'],
     });
     Object.assign(press, { olives: 200, production: 300 });
@@ -585,7 +643,9 @@ describe('describeTile for olive oil', () => {
     placeBuilding(game, 'storehouse', 10, 12);
     Object.assign(lastBuilding(game), { fleece: 600, oil: 100 });
     runTicks(game, 1);
-    expect(describeTile(game, 11, 13).lines).toEqual(['Tile 10, 12', 'Workers 12/12', 'Fleece: 6 loads in 2 of 8 slots', 'Oil: 1 load in 1 of 8 slots', 'Fire risk 0%']);
+    expect(meter(game, 11, 13, 'Slots').value).toBe('3 of 8 slots of 4 loads');
+    expect(meter(game, 11, 13, 'Fleece').value).toBe('6 loads in 2 slots');
+    expect(meter(game, 11, 13, 'Oil').value).toBe('1 load in 1 slot');
   });
 
 it('describes olives in a storehouse and a press buyer fetching them', () => {
@@ -594,7 +654,7 @@ it('describes olives in a storehouse and a press buyer fetching them', () => {
   lastBuilding(game).olives = 800;
   placeBuilding(game, 'olivePress', 20, 13);
   runTicks(game, 1);
-  expect(describeTile(game, 11, 13).lines).toContain('Olives: 8 loads in 2 of 8 slots');
+  expect(meter(game, 11, 13, 'Olives').value).toBe('8 loads in 2 slots');
   expect(describeTile(game, 20, 13).lines).toContain('Buyer out fetching olives');
 });
 
@@ -605,6 +665,7 @@ it('describes olives in a storehouse and a press buyer fetching them', () => {
     runTicks(game, 1);
     expect(describeTile(game, 6, 13)).toEqual({
       title: 'Timber Mill',
+      meters: [],
       lines: ['Tile 6, 13', 'Workers 12/12', 'Lumberjack waits for forest within 20 tiles', 'Cart Pusher at the mill', 'Fire risk 0%'],
     });
     setTerrain(game, 10, 8, 'forest');
@@ -612,7 +673,7 @@ it('describes olives in a storehouse and a press buyer fetching them', () => {
     runTicks(game, gatheringRestTicks('timberMill'));
     expect(describeTile(game, 6, 13).lines).toContain('Lumberjack out to fell the tree at 10, 8');
     const { x, y } = walkerTile(game.gatherers[0]);
-    expect(describeTile(game, x, y)).toEqual({ title: 'Lumberjack', lines: ['From the Timber Mill at 6, 13', 'Going to fell the tree at 10, 8'] });
+    expect(describeTile(game, x, y)).toEqual({ title: 'Lumberjack', meters: [], lines: ['From the Timber Mill at 6, 13', 'Going to fell the tree at 10, 8'] });
     Object.assign(game.gatherers[0], { returning: true, load: 100 });
     expect(describeTile(game, x, y).lines).toContain('Bringing 1 load of wood home');
     expect(describeTile(game, 6, 13).lines).toContain('Lumberjack bringing wood home');
@@ -622,7 +683,7 @@ it('describes olives in a storehouse and a press buyer fetching them', () => {
       expect.arrayContaining(['Wood waiting: 4 loads', 'Lumberjack waits: the mill is full', 'Cart Pusher waits for a storehouse with room']),
     );
     game.felledUntil[tileIndex(game, 10, 8)] = game.tick + 3 * TICKS_PER_MONTH;
-    expect(describeTile(game, 10, 8)).toEqual({ title: 'Forest', lines: ['Tile 10, 8', 'Not buildable', 'Felled: grows back in 3 months'] });
+    expect(describeTile(game, 10, 8)).toEqual({ title: 'Forest', meters: [], lines: ['Tile 10, 8', 'Not buildable', 'Felled: grows back in 3 months'] });
   });
 
   it('describes a masonry shop and a foundry by what they gather', () => {
@@ -644,6 +705,7 @@ it('describes olives in a storehouse and a press buyer fetching them', () => {
     runTicks(game, 1);
     expect(describeTile(game, 6, 13)).toEqual({
       title: 'Sculpture Studio',
+      meters: [],
       lines: [
         'Tile 6, 13',
         'Workers 12/12',
@@ -666,6 +728,7 @@ it('describes olives in a storehouse and a press buyer fetching them', () => {
     runTicks(game, 1);
     expect(describeTile(game, 6, 13)).toEqual({
       title: "Artisans' Guild",
+      meters: [],
       lines: ['Tile 6, 13', 'Workers 25/25', 'Artisans wait for a sanctuary to build', 'Fire risk 0%'],
     });
   });
@@ -677,7 +740,8 @@ it('describes olives in a storehouse and a press buyer fetching them', () => {
     runTicks(game, 1);
     expect(describeTile(game, 10, 17)).toEqual({
       title: 'Oil Vendor',
-      lines: ['Tile 10, 16', 'Workers 4/4', 'Stock: 0 of 800 units', 'Oil Peddler waits for oil', 'Buyer waits for a storehouse with oil'],
+      meters: [{ label: 'Oil', fill: 0, value: '0 of 8 loads', need: null }],
+      lines: ['Tile 10, 16', 'Workers 4/4', 'Oil Peddler waits for oil', 'Buyer waits for a storehouse with oil'],
     });
   });
 });
@@ -711,9 +775,9 @@ describe('the inspector on safety', () => {
     placeBuilding(game, 'taxOffice', 6, 13);
     catchFire(game, game.buildings[1]);
     runTicks(game, 1);
-    expect(describeTile(game, 7, 14)).toEqual({ title: 'Ruins', lines: ['Tile 7, 14', 'On fire: a superintendent puts it out'] });
+    expect(describeTile(game, 7, 14)).toEqual({ title: 'Ruins', meters: [], lines: ['Tile 7, 14', 'On fire: a superintendent puts it out'] });
     runTicks(game, FIRE_BURN_TICKS);
-    expect(describeTile(game, 7, 14)).toEqual({ title: 'Ruins', lines: ['Tile 7, 14', 'Clear it with the demolish tool'] });
+    expect(describeTile(game, 7, 14)).toEqual({ title: 'Ruins', meters: [], lines: ['Tile 7, 14', 'Clear it with the demolish tool'] });
   });
 
   it('describes a Maintenance Office and its superintendent', () => {
@@ -722,12 +786,14 @@ describe('the inspector on safety', () => {
     runTicks(game, 1);
     expect(describeTile(game, 0, 16)).toEqual({
       title: 'Maintenance Office',
+      meters: [],
       lines: ['Tile 0, 16', 'Workers 4/5', 'Superintendent getting ready'],
     });
     runTicks(game, 2 * ROAMER_REST_TICKS);
     const { x, y } = walkerTile(game.roamers[0]);
     expect(describeTile(game, x, y)).toEqual({
       title: 'Superintendent',
+      meters: [],
       lines: ['From the Maintenance Office at 0, 16', `Walked ${game.roamers[0].step} of 44 tiles`],
     });
   });
@@ -751,6 +817,7 @@ describe('describeTile for sanctuaries', () => {
     runTicks(game, 1);
     expect(describeTile(game, 21, 17)).toEqual({
       title: 'Forge of Hephaestus',
+      meters: [],
       lines: [
         'Tile 20, 16',
         'Under construction: 0 of 5 stages built',
@@ -772,7 +839,7 @@ describe('describeTile for sanctuaries', () => {
     const { game, forge } = site();
     forge.production = 20;
     runTicks(game, 1);
-    expect(describeTile(game, 21, 17)).toEqual({ title: 'Forge of Hephaestus', lines: ['Tile 20, 16', 'Workers 60/60', 'Finished: honors Hephaestus'] });
+    expect(describeTile(game, 21, 17)).toEqual({ title: 'Forge of Hephaestus', meters: [], lines: ['Tile 20, 16', 'Workers 60/60', 'Finished: honors Hephaestus'] });
   });
 
   it("describes a guild's artisan and the site he goes to build", () => {
@@ -785,7 +852,7 @@ describe('describeTile for sanctuaries', () => {
     runTicks(game, ROAMER_REST_TICKS);
     expect(describeTile(game, 8, 13).lines).toContain('Artisan on the way to the Forge of Hephaestus at 20, 16');
     const { x, y } = walkerTile(game.artisans[0]);
-    expect(describeTile(game, x, y)).toEqual({ title: 'Artisan', lines: ["From the Artisans' Guild at 8, 13", 'Going to build the Forge of Hephaestus at 20, 16'] });
+    expect(describeTile(game, x, y)).toEqual({ title: 'Artisan', meters: [], lines: ["From the Artisans' Guild at 8, 13", 'Going to build the Forge of Hephaestus at 20, 16'] });
   });
 
   it("shows a storehouse's supply cart only while it is out", () => {
@@ -797,5 +864,50 @@ describe('describeTile for sanctuaries', () => {
     expect(describeTile(game, 3, 13).lines).toContain('Cart Pusher out with a load');
     const { x, y } = walkerTile(game.carriers[0]);
     expect(describeTile(game, x, y).lines).toContain('Carrying 4 loads to the Forge of Hephaestus at 20, 16');
+  });
+});
+
+describe('inspectTile', () => {
+  function town(): GameState {
+    const game = grassGame();
+    placeRoad(game, { x: 0, y: 10 }, { x: 19, y: 10 });
+    placeHouse(game, 2, 8);
+    game.buildings[0].residents = 8;
+    return game;
+  }
+
+  it('keeps describing a building as time passes', () => {
+    const game = town();
+    game.buildings[0].coveredUntil.water = TICKS_PER_MONTH;
+    const look = inspectTile(game, 2, 8);
+    runTicks(game, TICKS_PER_MONTH / 2);
+    expect(look().meters.find((m) => m.label === 'Water')).toMatchObject({ value: '13% left' });
+  });
+
+  it('describes the ground once the building is gone', () => {
+    const game = town();
+    const look = inspectTile(game, 2, 8);
+    demolish(game, { x: 2, y: 8 }, { x: 2, y: 8 });
+    expect(look().title).toBe('Grass');
+  });
+
+  it('follows a walker off the tile it was inspected on', () => {
+    const game = town();
+    placeBuilding(game, 'fountain', 0, 11);
+    runTicks(game, ROAMER_REST_TICKS);
+    const look = inspectTile(game, 0, 10);
+    const carrier = game.roamers[0];
+    while (walkerTile(carrier).x === 0) runTicks(game, 1);
+    expect(game.roamers).toContain(carrier);
+    expect(look()).toMatchObject({ title: 'Water Carrier', lines: ['From the Fountain at 0, 11', 'Walked 0 of 27 tiles'] });
+  });
+
+  it('describes the tile again once the walker is gone', () => {
+    const game = town();
+    placeBuilding(game, 'fountain', 0, 11);
+    runTicks(game, ROAMER_REST_TICKS);
+    const look = inspectTile(game, 0, 10);
+    game.roamers = [];
+    expect(look().title).toBe('Road');
   });
 });

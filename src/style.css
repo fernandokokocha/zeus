@@ -141,6 +141,58 @@ body {
   padding-left: 18px;
 }
 
+#inspector-meters {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 13px;
+}
+
+#inspector-meters[hidden] {
+  display: none;
+}
+
+.meter {
+  --meter-color: #9a8463;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 8px;
+}
+
+.meter-met {
+  --meter-color: #4f8a3a;
+}
+
+.meter-missing {
+  --meter-color: #b8382a;
+}
+
+.meter-met .meter-label,
+.meter-missing .meter-label {
+  color: var(--meter-color);
+  font-weight: bold;
+}
+
+.meter-value {
+  text-align: right;
+}
+
+.meter-bar {
+  grid-column: 1 / -1;
+  height: 6px;
+  margin-top: 2px;
+  background: #e2d5ba;
+  border: 1px solid var(--meter-color);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.meter-fill {
+  height: 100%;
+  background: var(--meter-color);
+}
+
 button {
   font: inherit;
   background: #fffaf0;

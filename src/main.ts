@@ -73,6 +73,7 @@ function frame(now: number): void {
   walkers.sync(state, state.speed > 0 ? pendingTicks : 0);
   overlay.sync(state, mapModes.shown());
   topbar.update();
+  inspector.refresh();
   view.renderer.render(view.scene, view.camera);
   requestAnimationFrame(frame);
 }

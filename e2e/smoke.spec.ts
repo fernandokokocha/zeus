@@ -99,6 +99,27 @@ test('boots, builds a street with services, food, culture, fleece, oil, material
   await page.getByRole('button', { name: '4×' }).click();
   await expect(page.locator('#population')).not.toHaveText('Population 0', { timeout: 15_000 });
   await expect(page.locator('#labor')).toHaveText(/^(Unemployed|Need) \d+/);
+  const inspector = page.locator('#inspector');
+  const inspect = async (at: [number, number]) => {
+    const tile = await tileOnScreen(page, ...at);
+    await page.mouse.click(tile.x, tile.y, { button: 'right' });
+  };
+  await inspect([9, 51]);
+  await expect(inspector.locator('.meter-label')).toHaveText(['Food', 'Water', 'Fleece', 'Oil', 'Culture']);
+  const paused = await inspector.innerText();
+  await page.getByRole('button', { name: '4×' }).click();
+  await expect(inspector).not.toHaveText(paused, { timeout: 20_000 });
+  await inspector.screenshot({ path: 'test-results/inspector-house.png' });
+  await inspect([27, 47]);
+  await expect(inspector.locator('.meter')).toHaveCount(8);
+  await inspector.screenshot({ path: 'test-results/inspector-storehouse.png' });
+  await inspect([19, 53]);
+  await expect(inspector.locator('.meter-label')).toHaveText(['Food Vendor', 'Fleece Vendor', 'Oil Vendor']);
+  await inspector.screenshot({ path: 'test-results/inspector-agora.png' });
+  await inspect([17, 51]);
+  await expect(inspector.locator('.meter')).toHaveCount(1);
+  await inspector.screenshot({ path: 'test-results/inspector-vendor.png' });
+  await page.locator('#inspector-close').click();
   const centre = await tileOnScreen(page, START_VIEW_CENTER.x, START_VIEW_CENTER.y);
   await page.mouse.move(centre.x, centre.y);
   await page.mouse.wheel(0, -800);

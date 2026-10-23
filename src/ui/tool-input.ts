@@ -1,11 +1,12 @@
 import type { View } from '../render/view';
 import type { Rotation } from '../sim/buildings';
 import { demolish, placeBuilding, placeHouses, placeOliveTrees, placeRoad, placeRoadblock, placeSheep, type Result } from '../sim/commands';
-import { describeTile, type Description } from '../sim/inspect';
+import { inspectTile } from '../sim/inspect';
 import type { Point } from '../sim/point';
 import { clampToMap, inBounds, type GameState } from '../sim/state';
 import { tileUnderPointer } from '../render/picking';
 import { placementOrigin, previewTiles, type PreviewTile } from './preview';
+import type { Inspector } from './inspector';
 import type { Tool } from './tools';
 
 const LEFT_BUTTON = 0;
@@ -17,7 +18,7 @@ export interface ToolInputDeps {
   state: GameState;
   toolbar: { current(): Tool | null; clear(): void };
   ghost: { show(tiles: PreviewTile[]): void };
-  inspector: { open(d: Description): void; close(): void; isOpen(): boolean };
+  inspector: Inspector;
   topbar: { showStatus(text: string): void };
 }
 
@@ -64,7 +65,7 @@ export function attachToolInput({ view, state, toolbar, ghost, inspector, topbar
   view.canvas.addEventListener('mousedown', (e) => {
     const tile = tileUnderPointer(view, e.clientX, e.clientY);
     if (e.button === RIGHT_BUTTON) {
-      if (inBounds(state, tile.x, tile.y)) inspector.open(describeTile(state, tile.x, tile.y));
+      if (inBounds(state, tile.x, tile.y)) inspector.open(inspectTile(state, tile.x, tile.y));
       return;
     }
     if (e.button === LEFT_BUTTON && toolbar.current()) {
