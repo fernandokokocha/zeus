@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { terraceBlock } from './cottage';
-import { COLORS, box, cone, cylinder, flat, sphere, surface } from './kit';
+import { COLORS, box, cone, cylinder, flat, scaled, sphere, surface } from './kit';
 import { hipRoof, tiledRoofAlongZ } from './roofs';
 
 export const PALACE = {
@@ -45,6 +45,35 @@ export function entablature(x0: number, z0: number, w: number, d: number, y: num
 
 export const ENTABLATURE_HEIGHT = 0.2;
 
+export const polishedGold = new THREE.MeshPhongMaterial({ color: 0xf5c542, emissive: 0x6b4500, specular: 0xfff4c0, shininess: 80 });
+const glint = new THREE.MeshBasicMaterial({ color: 0xfffbe6 });
+const MAX_MEDALLION_RADIUS = 0.22;
+
+export function sparkle(x: number, y: number, z: number, size: number): THREE.Mesh {
+  const star = new THREE.Mesh(new THREE.OctahedronGeometry(size), glint);
+  star.position.set(x, y, z);
+  star.scale.set(0.5, 1.6, 0.5);
+  return star;
+}
+
+export function medallion(x: number, y: number, z: number, radius: number): THREE.Object3D {
+  const group = new THREE.Group();
+  const face = cylinder(radius * 0.92, radius * 0.92, radius * 0.18, polishedGold, 0, 0, 0, 24);
+  const boss = cylinder(radius * 0.5, radius * 0.55, radius * 0.34, polishedGold, 0, 0, 0, 18);
+  for (const disc of [face, boss]) {
+    disc.rotation.x = Math.PI / 2;
+    disc.position.set(x, y, z);
+    group.add(disc);
+  }
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(radius, radius * 0.13, 8, 28), polishedGold);
+  rim.position.set(x, y, z + radius * 0.05);
+  group.add(rim);
+  group.add(scaled(sphere(radius * 0.22, polishedGold, x, y, z + radius * 0.3), 1, 1, 0.6));
+  group.add(sparkle(x - radius * 0.6, y + radius * 0.6, z + radius * 0.2, radius * 0.18));
+  group.add(sparkle(x + radius * 0.35, y - radius * 0.15, z + radius * 0.3, radius * 0.12));
+  return group;
+}
+
 export function tympanum(x: number, front: number, span: number, rise: number, eaves: number): THREE.Object3D {
   const group = new THREE.Group();
   const half = span / 2 - 0.12;
@@ -52,10 +81,8 @@ export function tympanum(x: number, front: number, span: number, rise: number, e
   const panel = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, { depth: 0.02, bevelEnabled: false }), flat(COLORS.aegean));
   panel.position.set(x, eaves + 0.05, front);
   group.add(panel);
-  const disc = cylinder(0.09, 0.09, 0.02, flat(PALACE.gold), 0, 0, 0, 14);
-  disc.rotation.x = Math.PI / 2;
-  disc.position.set(x, eaves + 0.05 + rise * 0.3, front + 0.03);
-  group.add(disc);
+  const radius = Math.min(MAX_MEDALLION_RADIUS, rise * 0.38);
+  group.add(medallion(x, eaves + 0.03 + radius * 0.95, front + 0.03, radius));
   return group;
 }
 

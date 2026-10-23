@@ -16,7 +16,7 @@ const FIGURE_SCALE = 1.25;
 const BASE = 0.03;
 
 export type Animate = (seconds: number) => void;
-export type Hat = 'straw' | 'pilos';
+export type Hat = 'straw' | 'pilos' | 'bare';
 export type Motion = 'rest' | 'lookout' | 'hammer';
 
 export interface FigureParts {
@@ -57,7 +57,7 @@ export function head(hat: Hat): THREE.Group {
   if (hat === 'straw') {
     group.add(cylinder(0.035, 0.115, 0.03, flat(FIGURE.straw), 0, 0.02, 0, 12));
     group.add(cylinder(0.025, 0.035, 0.04, flat(FIGURE.straw), 0, 0.04, 0, 8));
-  } else {
+  } else if (hat === 'pilos') {
     group.add(cone(0.052, 0.09, flat(FIGURE.felt), 0, 0.02, 0, 12));
   }
   return group;

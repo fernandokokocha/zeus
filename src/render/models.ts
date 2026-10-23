@@ -15,6 +15,7 @@ import { wheatFarmModel } from './farm-models';
 import { maintenanceOfficeModel } from './maintenance-models';
 import { masonryShopModel } from './masonry-models';
 import { palaceModel } from './palace-models';
+import { taxOfficeModel } from './tax-models';
 import { homesteadModel, hovelModel, hutModel, shackModel, tenementModel, apartmentModel, townhouseModel } from './house-models';
 
 const lambert = (color: number) => new THREE.MeshLambertMaterial({ color });
@@ -30,7 +31,6 @@ const plaster = lambert(PALETTE.plaster);
 const paving = lambert(PALETTE.paving);
 const water = lambert(PALETTE.water);
 const bronze = lambert(PALETTE.bronze);
-const gold = lambert(PALETTE.coins);
 const foliage = lambert(PALETTE.foliage);
 const furrow = lambert(PALETTE.furrow);
 const ripeWheat = lambert(PALETTE.wheat);
@@ -199,41 +199,6 @@ function fountainModel(working: boolean): THREE.Object3D {
     }
   }
   for (const [x, z] of [[0.22, 0.22], [1.78, 0.22], [0.22, 1.78], [1.78, 1.78]]) group.add(placed(shrub, foliage, x, 0.16, z));
-  return group;
-}
-
-function taxOfficeModel(working: boolean): THREE.Object3D {
-  const group = new THREE.Group();
-  group.add(box(1.84, 0.04, 1.84, paving, 1, 0, 1));
-  const width = 1.5;
-  const depth = 0.95;
-  const wallHeight = 0.6;
-  const cz = 0.2 + depth / 2;
-  group.add(box(width + 0.08, 0.08, depth + 0.08, fieldstone, 1, 0.04, cz));
-  group.add(box(width, wallHeight, depth, plaster, 1, 0.12, cz));
-  const roof = gableRoof(depth + 0.2, 0.3, width + 0.16, plaster);
-  roof.rotation.y = Math.PI / 2;
-  roof.position.set(1, 0.12 + wallHeight, cz);
-  group.add(roof);
-  group.add(box(0.26, 0.4, 0.02, doorway, 1, 0.12, cz + depth / 2 + 0.005));
-  for (const wx of [0.55, 1.45]) group.add(box(0.16, 0.12, 0.02, doorway, wx, 0.42, cz + depth / 2 + 0.005));
-
-  const porchZ = cz + depth / 2 + 0.3;
-  for (const px of [0.62, 1.38]) group.add(columnAt(wallHeight, marble, px, 0.12, porchZ));
-  group.add(box(0.96, 0.06, 0.4, clay, 1, 0.12 + wallHeight, porchZ - 0.12));
-  group.add(box(1.0, 0.08, 0.5, fieldstone, 1, 0.04, porchZ - 0.15));
-
-  group.add(box(0.3, 0.16, 0.2, timber, 1.6, 0.04, 1.7));
-  if (working) {
-    group.add(box(0.26, 0.04, 0.16, gold, 1.6, 0.2, 1.7));
-    const lid = box(0.3, 0.02, 0.2, timber, 0, 0, 0);
-    lid.position.set(1.6, 0.29, 1.6);
-    lid.rotation.x = -1.2;
-    group.add(lid);
-  } else {
-    group.add(box(0.31, 0.03, 0.21, timber, 1.6, 0.2, 1.7));
-  }
-  group.add(placed(amphora, clay, 0.3, 0.04, 1.72));
   return group;
 }
 
@@ -1105,7 +1070,7 @@ function sanctuaryModel(site: Building): THREE.Object3D {
 
 const MODELS: Record<Exclude<BuildingType, 'house'>, (building: Building, state: GameState) => THREE.Object3D> = {
   fountain: (b) => fountainModel(b.workers > 0),
-  taxOffice: (b) => taxOfficeModel(b.workers > 0),
+  taxOffice: taxOfficeModel,
   palace: palaceModel,
   wheatFarm: wheatFarmModel,
   granary: granaryModel,
