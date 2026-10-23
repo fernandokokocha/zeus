@@ -73,6 +73,7 @@ function frame(now: number): void {
 
   terrain.sync(state);
   world.sync(state);
+  world.animate(now / 1000);
   walkers.sync(state, state.speed > 0 ? pendingTicks : 0);
   overlay.sync(state, mapModes.shown());
   topbar.update();

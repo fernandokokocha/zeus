@@ -37,7 +37,6 @@ export const PALETTE = {
   tablet: 0xe8dcb5,
   coins: 0xd9b23c,
   furrow: 0x8a6b45,
-  sprout: 0x8fb04a,
   wheat: 0xe3c35c,
   sack: 0xc49a52,
   bread: 0xc4873f,

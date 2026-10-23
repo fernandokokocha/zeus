@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { AGORA_VENDOR_SPOTS, BUILDING_SPECS, type BuildingType } from '../sim/buildings';
-import { CROP_STAGES, UNITS_PER_LOAD, cropStage } from '../sim/food';
+import { UNITS_PER_LOAD } from '../sim/food';
 import { SLOT_SIZE, STOREHOUSE_GOODS, STOREHOUSE_SLOTS, slotsOf, type StoredGood } from '../sim/storehouse';
 import { houseLevel, type HouseLevel } from '../sim/housing';
 import { BRONZE_PER_SCULPTURE } from '../sim/materials';
@@ -11,6 +11,7 @@ import { isBurning } from '../sim/safety';
 import type { Building, GameState } from '../sim/state';
 import { PALETTE, tileHash } from './palette';
 import { bakedOnce } from './bake';
+import { wheatFarmModel } from './farm-models';
 import { homesteadModel, hovelModel, hutModel, shackModel, tenementModel, apartmentModel, townhouseModel } from './house-models';
 
 const lambert = (color: number) => new THREE.MeshLambertMaterial({ color });
@@ -52,9 +53,6 @@ const ripeOlive = lambert(PALETTE.olive);
 const oilGold = lambert(PALETTE.oil);
 const oilAwning = lambert(PALETTE.oilAwning);
 const petalMaterials = PALETTE.petals.map(lambert);
-const sprouts = Array.from({ length: CROP_STAGES }, (_, stage) =>
-  lambert(new THREE.Color(PALETTE.sprout).lerp(new THREE.Color(PALETTE.wheat), stage / (CROP_STAGES - 1)).getHex()),
-);
 const charred = lambert(PALETTE.char);
 const ash = lambert(PALETTE.ash);
 const ember = new THREE.MeshBasicMaterial({ color: PALETTE.ember });
@@ -276,31 +274,6 @@ function palaceModel(): THREE.Object3D {
     group.add(box(0.3, 0.3, 0.3, marble, W / 2 + side * 1.6, 0.04, 4.75));
     group.add(placed(shrub, foliage, W / 2 + side * 1.6, 0.52, 4.75));
     for (const dz of [0.2, 1.3]) group.add(placed(shrub, foliage, W / 2 + side * 3.6, 0.2, 3.7 + dz));
-  }
-  return group;
-}
-
-function wheatRow(length: number, stage: number, x: number, z: number): THREE.Mesh {
-  if (stage === 0) return box(0.16, 0.03, length, furrow, x, 0.03, z);
-  return box(0.18, 0.05 + stage * 0.07, length, sprouts[stage], x, 0.03, z);
-}
-
-function wheatFarmModel(farm: Building): THREE.Object3D {
-  const group = new THREE.Group();
-  const { width: W, height: D } = BUILDING_SPECS.wheatFarm;
-  group.add(box(W - 0.1, 0.03, D - 0.1, earth, W / 2, 0, D / 2));
-  const stage = cropStage(farm);
-  for (let i = 0; i < 6; i++) group.add(wheatRow(D - 0.3, stage, 1.15 + i * 0.3, D / 2));
-  for (let i = 0; i < 3; i++) group.add(wheatRow(D - 1.25, stage, 0.25 + i * 0.3, 1.0 + (D - 1.25) / 2 + 0.07));
-
-  group.add(box(0.8, 0.42, 0.62, timber, 0.48, 0.03, 0.4));
-  const roof = gableRoof(0.74, 0.26, 0.92, timber, reed);
-  roof.rotation.y = Math.PI / 2;
-  roof.position.set(0.48, 0.45, 0.4);
-  group.add(roof);
-  group.add(box(0.26, 0.3, 0.02, doorway, 0.48, 0.03, 0.715));
-  if (farm.food > 0) {
-    for (const [x, z] of [[0.15, 0.85], [0.3, 0.9], [0.22, 0.98]]) group.add(box(0.13, 0.13, 0.1, sack, x + 0.6, 0.03, z));
   }
   return group;
 }

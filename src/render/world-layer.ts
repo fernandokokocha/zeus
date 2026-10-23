@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { BUILDING_SPECS, buildingSize } from '../sim/buildings';
 import type { Building, GameState } from '../sim/state';
+import type { Animate } from './kit/farm';
 import { buildingModel, roadblockModel } from './models';
 import { PALETTE } from './palette';
 
@@ -8,9 +9,10 @@ const ROAD_HEIGHT = 0.02;
 const roadGeometry = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
 const roadMaterial = new THREE.MeshLambertMaterial({ color: PALETTE.road });
 
-export function createWorldLayer(): { group: THREE.Group; sync(state: GameState): void } {
+export function createWorldLayer(): { group: THREE.Group; sync(state: GameState): void; animate(seconds: number): void } {
   const group = new THREE.Group();
   let renderedVersion = -1;
+  let animations: Animate[] = [];
   let roads: THREE.InstancedMesh = new THREE.InstancedMesh(roadGeometry, roadMaterial, 0);
 
   return {
@@ -27,6 +29,11 @@ export function createWorldLayer(): { group: THREE.Group; sync(state: GameState)
       for (const building of state.buildings) {
         group.add(placedModel(building, state));
       }
+      animations = [];
+      group.traverse((node) => node.userData.animate && animations.push(node.userData.animate));
+    },
+    animate(seconds) {
+      for (const animate of animations) animate(seconds);
     },
   };
 }

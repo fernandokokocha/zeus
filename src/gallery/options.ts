@@ -4,6 +4,7 @@ export interface DesignOption {
   name: string;
   notes: string[];
   build: () => THREE.Object3D;
+  variants?: { label: string; build: () => THREE.Object3D }[];
 }
 
 export interface DesignSet {
@@ -12,4 +13,5 @@ export interface DesignSet {
   options: DesignOption[];
   chosen?: number;
   previous?: DesignOption;
+  size?: number;
 }

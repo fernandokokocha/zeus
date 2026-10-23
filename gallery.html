@@ -14,6 +14,10 @@
       .card canvas { width: 100%; height: 400px; display: block; border-radius: 4px; cursor: grab; }
       .card h2 { font-size: 18px; margin: 10px 0 6px; }
       .card ul { margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.45; }
+      .cards.single { grid-template-columns: 1fr; }
+      .variants { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+      .variants figure { margin: 0; }
+      .variants figcaption { font-size: 13px; color: #6a5d45; margin-top: 4px; text-align: center; }
       .card.chosen { border: 3px solid #2f6fb3; }
       .card.chosen h2::after { content: " — chosen"; color: #2f6fb3; }
       h3 { margin: 26px 0 8px; font-size: 16px; }
