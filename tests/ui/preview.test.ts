@@ -121,9 +121,9 @@ describe('previewTiles for a roadblock', () => {
 describe('previewTiles for an agora vendor', () => {
   it('covers the whole spot under the cursor', () => {
     const game = grassGame();
-    placeRoad(game, { x: 8, y: 2 }, { x: 8, y: 12 });
+    placeRoad(game, { x: 7, y: 2 }, { x: 7, y: 12 });
     placeBuilding(game, 'agora', 5, 4);
-    expect(previewTiles(game, 'foodVendor', null, { x: 7, y: 7 })).toEqual([
+    expect(previewTiles(game, 'foodVendor', null, { x: 6, y: 7 })).toEqual([
       { x: 5, y: 6, kind: 'valid' },
       { x: 6, y: 6, kind: 'valid' },
       { x: 5, y: 7, kind: 'valid' },

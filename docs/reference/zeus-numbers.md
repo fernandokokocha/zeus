@@ -75,7 +75,7 @@ https://zeus.heavengames.com/gameinfo/appeal/. Fire/collapse are risk increments
 | Wheat Farm (on meadow) | 3×3 | 10 | 20 | -3,-2,-1 | 5 | — |
 | Granary | 4×4 | 18 | 50 | -12,-10,-8,-6 | 8 | 8 |
 | Storehouse | 3×3 | 12 | 25 | -2,-2,-2,-2 | 5 | — |
-| Agora (common) | 3×6 | — | 25 | 12,12,10,10,8,8 | — | 6 |
+| Agora (common) | 2×6 | — | 25 | 12,12,10,10,8,8 | — | 6 |
 | Agora vendor (food/fleece/oil), placed on an agora | 2×2 | 4 | 10 | — | — | — |
 | Carding Shed | 2×2 | 8 | 16 | -5,-3,-1 | 5 | — |
 | Sheep (placed animal) | 1×1 | — | 4 | — | — | — |

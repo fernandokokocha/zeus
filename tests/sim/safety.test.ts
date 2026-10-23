@@ -142,7 +142,7 @@ describe('collapse risk', () => {
     placeBuilding(game, 'agora', 4, 4);
     placeBuilding(game, 'foodVendor', 4, 4);
     runTicks(game, 10 * TICKS_PER_MONTH);
-    expect(game.buildings.map((b) => b.type)).toEqual(Array(18).fill('ruins'));
+    expect(game.buildings.map((b) => b.type)).toEqual(Array(12).fill('ruins'));
   });
 });
 

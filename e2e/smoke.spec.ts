@@ -61,7 +61,7 @@ test('boots, builds a street with services, food, culture, fleece, oil, material
   await place(page, null, /^Fountain/, [18, 48]);
   await place(page, 'Administration', /^Tax Office/, [20, 48]);
   await place(page, 'Distribution', /^Granary/, [23, 47]);
-  await place(page, 'Distribution', /^Agora/, [18, 53]);
+  await place(page, 'Distribution', /^Agora/, [17, 53]);
   await place(page, 'Distribution', /^Food Vendor/, [17, 51]);
   await place(page, 'Administration', /^Palace/, [25, 53]);
   await place(page, 'Aesthetics', /^Flower Garden/, [9, 53]);
@@ -114,9 +114,6 @@ test('boots, builds a street with services, food, culture, fleece, oil, material
   await expect(inspector.locator('.meter')).toHaveCount(8);
   await inspector.screenshot({ path: 'test-results/inspector-storehouse.png' });
   await page.screenshot({ path: 'test-results/inspected-storehouse.png' });
-  await inspect([19, 53]);
-  await expect(inspector.locator('.meter-label')).toHaveText(['Food Vendor', 'Fleece Vendor', 'Oil Vendor']);
-  await inspector.screenshot({ path: 'test-results/inspector-agora.png' });
   await inspect([17, 51]);
   await expect(inspector.locator('.meter')).toHaveCount(1);
   await inspector.screenshot({ path: 'test-results/inspector-vendor.png' });

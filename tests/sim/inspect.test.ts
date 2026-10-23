@@ -296,7 +296,7 @@ describe('describeTile for food and appeal', () => {
     expect(describeTile(game, 11, 18).lines).toEqual(['Tile 10, 16', 'No vendors yet: place one on a free spot', 'Collapse risk 0%']);
     placeBuilding(game, 'foodVendor', 10, 16);
     placeBuilding(game, 'granary', 20, 11);
-    expect(describeTile(game, 12, 18)).toEqual({
+    expect(describeTile(game, 11, 18)).toEqual({
       title: 'Agora',
       meters: [{ label: 'Food Vendor', fill: 0, value: '0 of 8 loads', need: null }],
       lines: ['Tile 10, 16', 'Collapse risk 0%'],
@@ -324,13 +324,11 @@ describe('describeTile for food and appeal', () => {
     placeBuilding(game, 'agora', 10, 16);
     placeBuilding(game, 'foodVendor', 10, 16);
     placeBuilding(game, 'fleeceVendor', 10, 18);
-    placeBuilding(game, 'oilVendor', 10, 20);
     Object.assign(game.buildings[2], { food: 400 });
     Object.assign(game.buildings[3], { fleece: 800 });
-    expect(describeTile(game, 12, 18).meters).toEqual([
+    expect(describeTile(game, 11, 21).meters).toEqual([
       { label: 'Food Vendor', fill: 0.5, value: '4 of 8 loads', need: null },
       { label: 'Fleece Vendor', fill: 1, value: '8 of 8 loads', need: null },
-      { label: 'Oil Vendor', fill: 0, value: '0 of 8 loads', need: null },
     ]);
   });
 

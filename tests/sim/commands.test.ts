@@ -297,7 +297,7 @@ describe('a wheat farm', () => {
 describe('a food vendor', () => {
   function agoraGame() {
     const game = grassGame();
-    placeRoad(game, { x: 8, y: 2 }, { x: 8, y: 12 });
+    placeRoad(game, { x: 7, y: 2 }, { x: 7, y: 12 });
     placeBuilding(game, 'agora', 5, 4);
     return { game, agora: game.buildings[0] };
   }
@@ -308,7 +308,7 @@ describe('a food vendor', () => {
     expect(placeBuilding(game, 'foodVendor', 5, 6)).toEqual({ ok: true });
     const vendor = game.buildings[1];
     expect(game.buildingIdAt[tileIndex(game, 6, 7)]).toBe(vendor.id);
-    expect(game.buildingIdAt[tileIndex(game, 7, 7)]).toBe(game.buildings[0].id);
+    expect(game.buildingIdAt[tileIndex(game, 6, 9)]).toBe(game.buildings[0].id);
     expect(game.treasury).toBe(before - 10);
   });
 
@@ -324,7 +324,7 @@ describe('a food vendor', () => {
 
   it('finds the spot under any tile of the agora', () => {
     const { game } = agoraGame();
-    expect(vendorSpotAt(game, { x: 7, y: 9 })).toEqual({ x: 5, y: 8 });
+    expect(vendorSpotAt(game, { x: 6, y: 9 })).toEqual({ x: 5, y: 8 });
     expect(vendorSpotAt(game, { x: 5, y: 4 })).toEqual({ x: 5, y: 4 });
     expect(vendorSpotAt(game, { x: 4, y: 4 })).toBeNull();
   });
@@ -347,7 +347,7 @@ describe('a food vendor', () => {
     const { game } = agoraGame();
     placeBuilding(game, 'foodVendor', 5, 4);
     placeBuilding(game, 'foodVendor', 5, 8);
-    demolish(game, { x: 7, y: 6 }, { x: 7, y: 6 });
+    demolish(game, { x: 6, y: 6 }, { x: 6, y: 6 });
     expect(game.buildings).toEqual([]);
     expect(game.buildingIdAt.every((id) => id === NO_BUILDING)).toBe(true);
   });
@@ -379,9 +379,9 @@ describe('a rotated building', () => {
 describe('a rotated agora', () => {
   it('turns its vendor spots with it', () => {
     const game = grassGame();
-    placeRoad(game, { x: 0, y: 4 }, { x: 19, y: 4 });
+    placeRoad(game, { x: 0, y: 3 }, { x: 19, y: 3 });
     placeBuilding(game, 'agora', 5, 1, 1);
-    expect(vendorSpotAt(game, { x: 10, y: 3 })).toEqual({ x: 9, y: 1 });
+    expect(vendorSpotAt(game, { x: 10, y: 2 })).toEqual({ x: 9, y: 1 });
     expect(vendorSpotAt(game, { x: 7, y: 1 })).toEqual({ x: 7, y: 1 });
     expect(vendorSpotAt(game, { x: 5, y: 2 })).toEqual({ x: 5, y: 1 });
     expect(placeBuilding(game, 'foodVendor', 7, 1)).toEqual({ ok: true });
@@ -392,8 +392,8 @@ describe('a rotated agora', () => {
     const game = grassGame();
     placeRoad(game, { x: 0, y: 18 }, { x: 19, y: 18 });
     placeBuilding(game, 'agora', 5, 12, 2);
-    expect(vendorSpotAt(game, { x: 5, y: 17 })).toEqual({ x: 6, y: 16 });
-    placeBuilding(game, 'foodVendor', 6, 16);
+    expect(vendorSpotAt(game, { x: 5, y: 17 })).toEqual({ x: 5, y: 16 });
+    placeBuilding(game, 'foodVendor', 5, 16);
     expect(game.buildings[1].rotation).toBe(2);
   });
 });

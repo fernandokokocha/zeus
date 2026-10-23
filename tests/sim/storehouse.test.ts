@@ -95,7 +95,7 @@ describe('a fleece vendor', () => {
     const { game, vendor } = market();
     expect(vendor).toMatchObject({ type: 'fleeceVendor', x: 0, y: 18 });
     expect(placeBuilding(game, 'fleeceVendor', 0, 16)).toEqual({ ok: false, reason: 'A vendor goes on a free spot of an agora' });
-    demolish(game, { x: 2, y: 16 }, { x: 2, y: 16 });
+    demolish(game, { x: 1, y: 20 }, { x: 1, y: 20 });
     expect(game.buildings.some((b) => b.type === 'fleeceVendor')).toBe(false);
   });
 
