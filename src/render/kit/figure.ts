@@ -63,11 +63,18 @@ export function head(hat: Hat): THREE.Group {
   return group;
 }
 
+const HAND = at(0.12, -0.08, 0.02);
+const HAMMER_HANDLE = 0.11;
+const HAMMER_HEAD = 0.07;
+
 export function hammerArm(): THREE.Group {
   const group = new THREE.Group();
-  group.add(rod(at(0, 0, 0), at(0.12, -0.08, 0.02), 0.017, FIGURE.skin));
-  group.add(rod(at(0.12, -0.08, 0.02), at(0.12, 0.02, 0.02), 0.009, COLORS.timber));
-  group.add(cylinder(0.018, 0.018, 0.06, flat(0x6a6e72), 0.12, 0.01, 0.02, 6).rotateX(Math.PI / 2));
+  group.add(rod(at(0, 0, 0), HAND, 0.017, FIGURE.skin));
+  const along = HAND.clone().setZ(0).normalize();
+  const across = at(-along.y, along.x, 0);
+  const top = HAND.clone().addScaledVector(across, HAMMER_HANDLE);
+  group.add(rod(HAND, top, 0.009, COLORS.timber));
+  group.add(rod(top.clone().addScaledVector(along, -HAMMER_HEAD / 2), top.clone().addScaledVector(along, HAMMER_HEAD / 2), 0.018, 0x6a6e72));
   return group;
 }
 
