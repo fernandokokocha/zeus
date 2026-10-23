@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { AGORA_VENDOR_SPOTS, BUILDING_SPECS, type BuildingType } from '../sim/buildings';
+import { BUILDING_SPECS, type BuildingType } from '../sim/buildings';
 import { UNITS_PER_LOAD } from '../sim/food';
 import { SLOT_SIZE, STOREHOUSE_GOODS, STOREHOUSE_SLOTS, slotsOf, type StoredGood } from '../sim/storehouse';
 import { houseLevel, type HouseLevel } from '../sim/housing';
@@ -14,6 +14,7 @@ import { bakedOnce } from './bake';
 import { wheatFarmModel } from './farm-models';
 import { maintenanceOfficeModel } from './maintenance-models';
 import { masonryShopModel } from './masonry-models';
+import { agoraModel, vendorModel } from './agora-models';
 import { palaceModel } from './palace-models';
 import { taxOfficeModel } from './tax-models';
 import { homesteadModel, hovelModel, hutModel, shackModel, tenementModel, apartmentModel, townhouseModel } from './house-models';
@@ -35,14 +36,12 @@ const foliage = lambert(PALETTE.foliage);
 const furrow = lambert(PALETTE.furrow);
 const ripeWheat = lambert(PALETTE.wheat);
 const sack = lambert(PALETTE.sack);
-const bread = lambert(PALETTE.bread);
 const awning = lambert(PALETTE.awning);
 const lawn = lambert(PALETTE.lawn);
 const sand = lambert(PALETTE.sand);
 const wool = lambert(PALETTE.wool);
 const twine = lambert(PALETTE.twine);
 const shutter = lambert(PALETTE.shutter);
-const fleeceAwning = lambert(PALETTE.fleeceAwning);
 const scroll = lambert(PALETTE.scroll);
 const skin = lambert(PALETTE.skin);
 const philosopherRobe = lambert(PALETTE.philosopherRobe);
@@ -54,7 +53,6 @@ const oliveLeaf = lambert(PALETTE.oliveLeaf);
 const oliveLeafDark = lambert(PALETTE.oliveLeafDark);
 const ripeOlive = lambert(PALETTE.olive);
 const oilGold = lambert(PALETTE.oil);
-const oilAwning = lambert(PALETTE.oilAwning);
 const petalMaterials = PALETTE.petals.map(lambert);
 const charred = lambert(PALETTE.char);
 const ash = lambert(PALETTE.ash);
@@ -240,55 +238,6 @@ function granaryModel(granary: Building): THREE.Object3D {
 const GRANARY_BIN_SIZE = 0.86;
 const GRANARY_SACKS_PER_BIN = 4;
 const GRANARY_BINS = [2.4, 3.4].flatMap((z) => [0.55, 1.52, 2.48, 3.45].map((x) => [x, z]));
-
-function agoraModel(): THREE.Object3D {
-  const group = new THREE.Group();
-  const { width: W, height: D } = BUILDING_SPECS.agora;
-  group.add(box(W - 0.06, 0.04, D - 0.06, paving, W / 2, 0, D / 2));
-  group.add(box(0.9, 0.05, D - 0.1, marble, 2.5, 0, D / 2));
-  for (const spot of AGORA_VENDOR_SPOTS) {
-    const { width, height } = BUILDING_SPECS.foodVendor;
-    for (const [w, d, x, z] of [
-      [width - 0.2, 0.04, width / 2, 0.12],
-      [width - 0.2, 0.04, width / 2, height - 0.12],
-      [0.04, height - 0.2, 0.12, height / 2],
-      [0.04, height - 0.2, width - 0.12, height / 2],
-    ]) {
-      group.add(box(w, 0.02, d, fieldstone, spot.x + x, 0.04, spot.y + z));
-    }
-  }
-  for (const z of [0.5, D - 0.5]) {
-    group.add(box(0.3, 0.2, 0.3, marble, 2.5, 0.05, z));
-    group.add(placed(shrub, foliage, 2.5, 0.42, z));
-  }
-  group.add(box(0.3, 0.32, 0.3, marble, 2.5, 0.05, D / 2));
-  group.add(cylinder(0.08, 0.36, bronze, 2.5, 0.37, D / 2));
-  group.add(placed(spray, bronze, 2.5, 0.78, D / 2));
-  return group;
-}
-
-function foodVendorModel(vendor: Building): THREE.Object3D {
-  const group = new THREE.Group();
-  const posts: [number, number][] = [[0.35, 0.35], [1.65, 0.35], [0.35, 1.45], [1.65, 1.45]];
-  for (const [x, z] of posts) group.add(columnAt(0.62, timber, x, 0.05, z));
-  for (let i = 0; i < 6; i++) {
-    const stripe = box(0.24, 0.04, 1.36, i % 2 === 0 ? awning : plaster, 0.38 + i * 0.25, 0.68, 0.9);
-    stripe.rotation.x = 0.12;
-    group.add(stripe);
-  }
-  group.add(box(1.2, 0.24, 0.32, timber, 1, 0.05, 1.3));
-  if (vendor.workers > 0 && vendor.food > 0) {
-    for (const x of [0.55, 0.8, 1.05, 1.3]) {
-      const loaf = placed(spray, bread, x, 0.33, 1.3);
-      loaf.scale.set(1.3, 0.8, 1);
-      group.add(loaf);
-    }
-    for (const [x, z] of [[0.55, 0.7], [0.85, 0.65]]) group.add(cylinder(0.12, 0.14, reed, x, 0.05, z));
-    for (const [x, z] of [[0.55, 0.7], [0.85, 0.65]]) group.add(cylinder(0.1, 0.02, ripeWheat, x, 0.19, z));
-  }
-  group.add(placed(amphora, clay, 1.5, 0.05, 0.7));
-  return group;
-}
 
 function parkModel(): THREE.Object3D {
   const group = new THREE.Group();
@@ -565,26 +514,6 @@ function storehouseModel(storehouse: Building): THREE.Object3D {
   return group;
 }
 
-function fleeceVendorModel(vendor: Building): THREE.Object3D {
-  const group = new THREE.Group();
-  const posts: [number, number][] = [[0.35, 0.35], [1.65, 0.35], [0.35, 1.45], [1.65, 1.45]];
-  for (const [x, z] of posts) group.add(columnAt(0.62, timber, x, 0.05, z));
-  for (let i = 0; i < 6; i++) {
-    const stripe = box(0.24, 0.04, 1.36, i % 2 === 0 ? fleeceAwning : plaster, 0.38 + i * 0.25, 0.68, 0.9);
-    stripe.rotation.x = 0.12;
-    group.add(stripe);
-  }
-  group.add(box(1.2, 0.24, 0.32, timber, 1, 0.05, 1.3));
-  group.add(box(1.3, 0.03, 0.03, timber, 1, 0.58, 0.4));
-  if (vendor.workers > 0 && vendor.fleece > 0) {
-    for (const x of [0.6, 1.0, 1.4]) group.add(box(0.26, 0.24, 0.03, wool, x, 0.32, 0.42));
-    group.add(bale(0.75, 0.29, 1.3, 0.1));
-    group.add(bale(1.15, 0.29, 1.3, -0.15));
-  }
-  group.add(placed(amphora, clay, 1.5, 0.05, 0.75));
-  return group;
-}
-
 const oliveBerry = new THREE.SphereGeometry(0.025, 6, 4);
 const OLIVE_SPOTS = Array.from({ length: 14 }, (_, i) => {
   const angle = i * 2.4;
@@ -686,23 +615,6 @@ function olivePressModel(press: Building): THREE.Object3D {
   const loads = Math.floor(press.oil / UNITS_PER_LOAD);
   for (let i = 0; i < loads; i++) {
     group.add(oilJar(1.05 + i * 0.2, 0.04, 1.75));
-  }
-  return group;
-}
-
-function oilVendorModel(vendor: Building): THREE.Object3D {
-  const group = new THREE.Group();
-  const posts: [number, number][] = [[0.35, 0.35], [1.65, 0.35], [0.35, 1.45], [1.65, 1.45]];
-  for (const [x, z] of posts) group.add(columnAt(0.62, timber, x, 0.05, z));
-  for (let i = 0; i < 6; i++) {
-    const stripe = box(0.24, 0.04, 1.36, i % 2 === 0 ? oilAwning : plaster, 0.38 + i * 0.25, 0.68, 0.9);
-    stripe.rotation.x = 0.12;
-    group.add(stripe);
-  }
-  group.add(box(1.2, 0.24, 0.32, timber, 1, 0.05, 1.3));
-  if (vendor.workers > 0 && vendor.oil > 0) {
-    for (const x of [0.55, 0.85, 1.15, 1.45]) group.add(placed(amphora, clay, x, 0.29, 1.3));
-    for (const [x, z] of [[0.5, 0.65], [0.8, 0.6]]) group.add(oilJar(x, 0.05, z));
   }
   return group;
 }
@@ -1075,7 +987,7 @@ const MODELS: Record<Exclude<BuildingType, 'house'>, (building: Building, state:
   wheatFarm: wheatFarmModel,
   granary: granaryModel,
   agora: agoraModel,
-  foodVendor: foodVendorModel,
+  foodVendor: vendorModel,
   park: parkModel,
   column: columnModel,
   flowerGarden: flowerGardenModel,
@@ -1086,11 +998,11 @@ const MODELS: Record<Exclude<BuildingType, 'house'>, (building: Building, state:
   theater: (b, state) => theaterModel(isPerforming(state, b)),
   cardingShed: cardingShedModel,
   storehouse: storehouseModel,
-  fleeceVendor: fleeceVendorModel,
+  fleeceVendor: vendorModel,
   oliveTree: oliveTreeModel,
   growersLodge: growersLodgeModel,
   olivePress: olivePressModel,
-  oilVendor: oilVendorModel,
+  oilVendor: vendorModel,
   timberMill: timberMillModel,
   masonryShop: masonryShopModel,
   foundry: foundryModel,

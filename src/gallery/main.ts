@@ -12,6 +12,7 @@ import { MAINTENANCE_OPTIONS } from './maintenance-options';
 import { MASONRY_OPTIONS } from './masonry-options';
 import { PALACE_OPTIONS } from './palace-options';
 import { TAX_OPTIONS } from './tax-options';
+import { AGORA_OPTIONS } from './agora-options';
 import { bake } from '../render/bake';
 import type { Animate } from '../render/kit/figure';
 import type { DesignSet } from './options';
@@ -29,6 +30,7 @@ const SETS: Record<string, DesignSet> = {
   masonry: { title: 'Masonry Shop', needs: '2×2 · 15 workers · each option without and with workers, holding 3 loads of marble', options: MASONRY_OPTIONS, chosen: 1 },
   palace: { title: 'Palace', needs: '9×6 · no workers · collects the city’s taxes', options: PALACE_OPTIONS, chosen: 0, footprint: [9, 6], stripCopies: 1 },
   taxOffice: { title: 'Tax Office', needs: '2×2 · 8 workers · each option without and with workers', options: TAX_OPTIONS, chosen: 2 },
+  agora: { title: 'Agora and vendors', needs: 'Agora 2×6, no workers · Food, Fleece and Oil Vendors 2×2 on its spots, 4 workers each, up to 8 loads', options: AGORA_OPTIONS, chosen: 0, footprint: [2, 6] },
 };
 
 const footprint = (set: DesignSet): [number, number] => set.footprint ?? [2, 2];
