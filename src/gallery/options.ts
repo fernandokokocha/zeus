@@ -15,3 +15,10 @@ export interface DesignSet {
   previous?: DesignOption;
   size?: number;
 }
+
+export function withoutAndWithWorkers(build: (staffed: boolean) => THREE.Object3D): { label: string; build: () => THREE.Object3D }[] {
+  return [
+    { label: 'No workers', build: () => build(false) },
+    { label: 'With workers', build: () => build(true) },
+  ];
+}

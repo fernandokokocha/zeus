@@ -8,8 +8,10 @@ import { TENEMENT_OPTIONS } from './tenement-options';
 import { APARTMENT_OPTIONS } from './apartment-options';
 import { TOWNHOUSE_OPTIONS } from './townhouse-options';
 import { FARM_OPTIONS } from './farm-options';
+import { MAINTENANCE_OPTIONS } from './maintenance-options';
+import { MASONRY_OPTIONS } from './masonry-options';
 import { bake } from '../render/bake';
-import type { Animate } from '../render/kit/farm';
+import type { Animate } from '../render/kit/figure';
 import type { DesignSet } from './options';
 
 const SETS: Record<string, DesignSet> = {
@@ -21,6 +23,8 @@ const SETS: Record<string, DesignSet> = {
   apartment: { title: 'Apartment', needs: 'Level 6 · 48 people · needs food, water, fleece and oil', options: APARTMENT_OPTIONS, chosen: 0, previous: TENEMENT_OPTIONS[2] },
   townhouse: { title: 'Townhouse', needs: 'Level 7 · 60 people · needs food, water, fleece, oil and top culture and appeal', options: TOWNHOUSE_OPTIONS, chosen: 1, previous: APARTMENT_OPTIONS[0] },
   wheatFarm: { title: 'Wheat Farm', needs: '3×3 · 10 workers · every growth stage, without and with workers', options: FARM_OPTIONS, chosen: 0, size: 3 },
+  maintenance: { title: 'Maintenance Office', needs: '2×2 · 5 workers · each option without and with workers', options: MAINTENANCE_OPTIONS, chosen: 1 },
+  masonry: { title: 'Masonry Shop', needs: '2×2 · 15 workers · each option without and with workers, holding 3 loads of marble', options: MASONRY_OPTIONS, chosen: 1 },
 };
 
 const ELEVATION = Math.PI / 6;
@@ -72,7 +76,7 @@ function closeUp(canvas: HTMLCanvasElement, build: () => THREE.Object3D, size: n
   model.position.set(-half, 0, -half);
   pivot.add(model);
   s.add(pivot);
-  const cam = camera(canvas.clientWidth, canvas.clientHeight, new THREE.Vector3(half, 0.35, half), GAME_PIXELS_PER_TILE * MAX_ZOOM);
+  const cam = camera(canvas.clientWidth, canvas.clientHeight, new THREE.Vector3(half, new THREE.Box3().setFromObject(model).getCenter(new THREE.Vector3()).y, half), GAME_PIXELS_PER_TILE * MAX_ZOOM);
   const draw = () => r.render(s, cam);
   const animations: Animate[] = [];
   model.traverse((node) => node.userData.animate && animations.push(node.userData.animate));

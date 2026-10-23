@@ -4,17 +4,17 @@ import { CROP_STAGES, cropStage } from '../sim/food';
 import type { Building } from '../sim/state';
 import { bakedOnce } from './bake';
 import { blueDoor, poorCube, windowHole } from './kit/cottage';
-import { type FarmerParts, farmerParts, leaningHoe, restingFarmer, wheatRow } from './kit/farm';
+import { farmerParts, leaningHoe, wheatRow } from './kit/farm';
+import { type FigureParts, posedFigure } from './kit/figure';
 import { sack } from './kit/food';
 import { box, surface } from './kit/kit';
-import { tileHash } from './palette';
+import { bakedFigure, staffPhase } from './staff';
 
 const { width: W, height: D } = BUILDING_SPECS.wheatFarm;
 const CLOSED = 0;
 const OPEN = 1.2;
 const FARMER_SPOT = { x: 1.13, z: 1.12, turn: -Math.PI / 4 };
 const RIPE_STAGE = CROP_STAGES - 1;
-const PHASE_SPREAD = 20;
 
 function wheatFarmShell(stage: number, staffed: boolean, stocked: boolean): THREE.Object3D {
   const group = new THREE.Group();
@@ -30,8 +30,8 @@ function wheatFarmShell(stage: number, staffed: boolean, stocked: boolean): THRE
   return group;
 }
 
-function withFarmer(shell: THREE.Object3D, phase: number, parts: FarmerParts): THREE.Object3D {
-  shell.add(restingFarmer(FARMER_SPOT.x, FARMER_SPOT.z, FARMER_SPOT.turn, phase, parts));
+function withFarmer(shell: THREE.Object3D, phase: number, parts: FigureParts): THREE.Object3D {
+  shell.add(posedFigure(FARMER_SPOT.x, FARMER_SPOT.z, FARMER_SPOT.turn, phase, parts, 'rest'));
   return shell;
 }
 
@@ -41,11 +41,7 @@ export function wheatFarm(stage: number, staffed: boolean, stocked: boolean): TH
 }
 
 const shells = new Map<string, () => THREE.Object3D>();
-const bakedFarmer = {
-  legs: bakedOnce(() => farmerParts().legs),
-  torso: bakedOnce(() => farmerParts().torso),
-  head: bakedOnce(() => farmerParts().head),
-};
+const bakedFarmer = bakedFigure(farmerParts);
 
 export function wheatFarmModel(farm: Building): THREE.Object3D {
   const stage = Math.min(cropStage(farm), RIPE_STAGE);
@@ -54,7 +50,5 @@ export function wheatFarmModel(farm: Building): THREE.Object3D {
   const key = `${stage}/${staffed}/${stocked}`;
   if (!shells.has(key)) shells.set(key, bakedOnce(() => wheatFarmShell(stage, staffed, stocked)));
   const shell = shells.get(key)!();
-  if (!staffed) return shell;
-  const parts = { legs: bakedFarmer.legs(), torso: bakedFarmer.torso(), head: bakedFarmer.head() };
-  return withFarmer(shell, tileHash(farm.x, farm.y) * PHASE_SPREAD, parts);
+  return staffed ? withFarmer(shell, staffPhase(farm), bakedFarmer()) : shell;
 }

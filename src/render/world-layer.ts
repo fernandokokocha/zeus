@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { BUILDING_SPECS, buildingSize } from '../sim/buildings';
 import type { Building, GameState } from '../sim/state';
-import type { Animate } from './kit/farm';
+import type { Animate } from './kit/figure';
 import { buildingModel, roadblockModel } from './models';
 import { PALETTE } from './palette';
 
