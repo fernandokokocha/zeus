@@ -10,6 +10,9 @@ build it one slice at a time, and the owner playtests the deployed build between
 - **Slice plans:** `docs/slices/NN-name.md`.
 - **Redesigning models** with the owner (buildings, houses, walkers): `docs/model-redesign.md`.
 - **Redesign backlog:** `docs/redesign-backlog.md`, the things still on placeholder models.
+  When the owner says "redesign" followed by items (backlog numbers or names, one or many),
+  that is a request for a bulk round: one background agent per item, run as "Bulk rounds"
+  in `docs/model-redesign.md` describes.
 
 ## Working agreement
 
