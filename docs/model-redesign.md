@@ -134,6 +134,46 @@ draw call for that figure type, however many walkers are on screen.
 - **Gallery figures** go on a 1×1 tile with a road under them, shown next to a house so you
   can judge scale.
 
+## Variants
+
+Things that repeat across a map (terrain props, trees, parks, gardens) can have several
+approved options, and the game picks one per tile from its position, so a city always looks
+the same after a reload.
+
+- **Gallery:** make 5 options that look right next to each other, and mark every approved
+  one with `chosen: [0, 2, 3]` in `SETS`.
+- **Buildings:** bake each variant once and pick it with `variantIndexAt(b.x, b.y, n)` from
+  `palette.ts`. See `park-models.ts` and `olive-models.ts`.
+- **Terrain:** each variant is one vertex-coloured geometry built with `vertexColoured` from
+  `kit/rocks.ts`, kept under about 150 triangles, and listed through `varied(cover, builds)`
+  in `terrain-layer.ts`. Never pass these through `bake()`, because it drops the vertex
+  colours. A tile's stump has the same index as its tree, so the right stump appears.
+- **Check at scale:** a single tile looks different from a field of hundreds. Render a real
+  map's tiles of that terrain with every variant mixed in before showing the owner.
+
+## Bulk rounds
+
+The owner picks several items from `docs/redesign-backlog.md`, and one background agent
+designs each one in parallel.
+
+1. **Set up first, in the main session.** Make an empty `<thing>-options.ts` for each item
+   and register its set in `SETS`, so the agents never edit `main.ts`. Start the dev server
+   once.
+2. **Brief each agent** with this file, the existing model, its states, a sibling already
+   redesigned to copy, the file names it owns, and the screenshot command. Builders go
+   straight into `src/render/<thing>-models.ts` with the shell, worker and stock split
+   already made, and the gallery imports them.
+3. **Shared files:** agents may only add to `palette.ts`, `kit/figure.ts` and shared kit
+   files, using Edit and re-reading when it fails. A full rewrite of a shared file has wiped
+   another agent's work before.
+4. **Present all items at once:** one table of gallery links, plus what stood out in the
+   screenshots.
+5. **Feedback** goes to the agent that made the design (`SendMessage`), so it keeps its
+   context. The main session wires the picks into the game one at a time, because they all
+   edit `models.ts`.
+6. **After wiring,** run `npx tsc --noUnusedLocals` repeatedly until it is clean. It finds
+   the helpers, materials and palette colours the old models leave behind.
+
 ## What slowed past sessions
 
 - Prototypes lived in `src/gallery/` with their own kit, so the port meant moving five

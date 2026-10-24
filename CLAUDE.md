@@ -9,6 +9,7 @@ build it one slice at a time, and the owner playtests the deployed build between
 - **Progress:** `docs/roadmap.md`.
 - **Slice plans:** `docs/slices/NN-name.md`.
 - **Redesigning models** with the owner (buildings, houses, walkers): `docs/model-redesign.md`.
+- **Redesign backlog:** `docs/redesign-backlog.md`, the things still on placeholder models.
 
 ## Working agreement
 
