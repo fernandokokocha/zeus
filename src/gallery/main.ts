@@ -23,6 +23,9 @@ import { COLUMN_OPTIONS } from './column-options';
 import { FLOWER_GARDEN_OPTIONS } from './flower-garden-options';
 import { FOUNTAIN_OPTIONS } from './fountain-options';
 import { TIMBER_MILL_OPTIONS } from './timber-mill-options';
+import { COLLEGE_OPTIONS } from './college-options';
+import { DRAMA_SCHOOL_OPTIONS } from './drama-school-options';
+import { THEATER_OPTIONS } from './theater-options';
 import { bake } from '../render/bake';
 import type { Animate } from '../render/kit/figure';
 import type { DesignSet } from './options';
@@ -51,6 +54,9 @@ const SETS: Record<string, DesignSet> = {
   flowerGarden: { title: 'Flower Garden', needs: '2×2 · no workers · decoration', options: FLOWER_GARDEN_OPTIONS },
   fountain: { title: 'Fountain', needs: '2×2 · 4 workers · each option without and with workers', options: FOUNTAIN_OPTIONS },
   timberMill: { title: 'Timber Mill', needs: '2×2 · 12 workers · each option without and with workers, empty and stocked', options: TIMBER_MILL_OPTIONS },
+  college: { title: 'College', needs: '3×3 · 12 workers · each option without and with workers', options: COLLEGE_OPTIONS, footprint: [3, 3] },
+  dramaSchool: { title: 'Drama School', needs: '3×3 · 10 workers · each option without and with workers', options: DRAMA_SCHOOL_OPTIONS, footprint: [3, 3] },
+  theater: { title: 'Theater', needs: '5×5 · 18 workers · idle and performing', options: THEATER_OPTIONS, footprint: [5, 5] },
 };
 
 const footprint = (set: DesignSet): [number, number] => set.footprint ?? [2, 2];

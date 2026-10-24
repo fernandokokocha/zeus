@@ -16,7 +16,6 @@ Drawn in `src/render/terrain-layer.ts`; colours in `TERRAIN_COLORS` (`src/render
 |---|---|---|---|
 | 1 | Ground: grass and meadow | — | Flat coloured squares with a per-tile shade. Meadow must stay readable as "olive trees go here". Variants. |
 | 2 | Water | — | Flat blue squares; no shore, no waves. |
-| 3 | Roads | — | One flat plane per tile (`world-layer.ts`). Paving, edges, joins between neighbours. |
 | 4 | Roadblock | — | `roadblockModel` in `models.ts`; rotates with the road. |
 
 ## Buildings
@@ -33,10 +32,7 @@ Old models live in `src/render/models.ts`, each wired in `MODELS`.
 | 10 | Foundry | 2×2 · 15 | no workers / with workers; ore and bronze stock | Smoke and a glowing furnace when staffed. |
 | 11 | Sculpture Studio | 2×2 · 12 | no workers / with workers; marble and bronze in, statues out | |
 | 12 | Artisans' Guild | 2×2 · 25 | no workers / with workers | Sends artisans to sanctuary sites. |
-| 13 | College | 3×3 · 12 | no workers / with workers | Trains philosophers. |
-| 14 | Drama School | 3×3 · 10 | no workers / with workers | Trains actors. |
 | 15 | Podium | 2×2 · 4 | idle / performing (`isPerforming`) | Philosophers speak here. |
-| 16 | Theater | 5×5 · 18 | idle / performing | The Gymnasium is now a stadion with stone tiers; the theater must not look like it. |
 | 17 | Sanctuary building stages | 13×8 to 18×12 · 60 | stages 0–4 (`builtStages`), then finished | Shared by all three gods: staked outline, platform, columns, cella and beams, roof, scaffolding, material piles. |
 | 18 | Sanctuary precincts | as above | finished | Each god's garden: Demeter, Athena, Hephaestus (`PRECINCT_GARDENS`). One agent per god. |
 | 19 | Ruins and vacant lot | 1×1 / 2×2 | ruins smouldering / burning; vacant lot | Ruins are left by fire or collapse; the vacant lot is a house plot nobody has moved into. |
@@ -64,6 +60,6 @@ superintendent (Maintenance Office). Match them.
 ## Suggested batches
 
 - **Easy:** 7, 8, 9, 12, 15, 19 — small, few states.
-- **Medium:** 5, 6, 10, 11, 13, 14, 1, 2, 3+4.
-- **Hard:** 16, 17, 18 (big footprints, many stages), and the walker groups 20–27, which
+- **Medium:** 5, 6, 10, 11, 1, 2, 4.
+- **Hard:** 17, 18 (big footprints, many stages), and the walker groups 20–27, which
   need the walker gallery set-up first.

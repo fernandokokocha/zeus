@@ -58,8 +58,6 @@ export const PALETTE = {
   wheat: 0xe3c35c,
   sack: 0xc49a52,
   bread: 0xc4873f,
-  awning: 0xb5452e,
-  lawn: 0x7fa84a,
   peddlerTunic: 0x5d8a4a,
   buyerTunic: 0x3f8f8a,
   cartTunic: 0x8a6a45,

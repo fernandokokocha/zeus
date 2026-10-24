@@ -20,6 +20,9 @@ import { gymnasiumModel } from './gymnasium-models';
 import { oliveTreeModel } from './olive-models';
 import { parkModel } from './park-models';
 import { timberMillModel } from './timber-models';
+import { collegeModel } from './college-models';
+import { dramaSchoolModel } from './drama-school-models';
+import { theaterModel } from './theater-models';
 import { columnModel } from './column-models';
 import { fountainModel } from './fountain-models';
 import { flowerGardenModel } from './flower-garden-models';
@@ -41,18 +44,11 @@ const foliage = lambert(PALETTE.foliage);
 const furrow = lambert(PALETTE.furrow);
 const ripeWheat = lambert(PALETTE.wheat);
 const sack = lambert(PALETTE.sack);
-const awning = lambert(PALETTE.awning);
-const lawn = lambert(PALETTE.lawn);
 const wool = lambert(PALETTE.wool);
 const twine = lambert(PALETTE.twine);
 const shutter = lambert(PALETTE.shutter);
-const scroll = lambert(PALETTE.scroll);
 const skin = lambert(PALETTE.skin);
 const philosopherRobe = lambert(PALETTE.philosopherRobe);
-const actorRobe = lambert(PALETTE.actorRobe);
-const tragicRobe = lambert(PALETTE.tragicRobe);
-const comicMask = lambert(PALETTE.mask);
-const tragicMask = lambert(PALETTE.tragicMask);
 const oliveLeaf = lambert(PALETTE.oliveLeaf);
 const oliveLeafDark = lambert(PALETTE.oliveLeafDark);
 const ripeOlive = lambert(PALETTE.olive);
@@ -212,40 +208,6 @@ const GRANARY_BINS = [2.4, 3.4].flatMap((z) => [0.55, 1.52, 2.48, 3.45].map((x) 
 
 
 
-function scrollRack(x: number, z: number): THREE.Object3D {
-  const group = new THREE.Group();
-  group.add(box(0.5, 0.36, 0.14, timber, x, 0.04, z));
-  for (const dy of [0.1, 0.22]) {
-    for (const dx of [-0.15, 0, 0.15]) {
-      const roll = cylinder(0.035, 0.12, scroll, x + dx, 0.04 + dy, z + 0.02);
-      roll.rotation.x = Math.PI / 2;
-      group.add(roll);
-    }
-  }
-  return group;
-}
-
-function collegeModel(): THREE.Object3D {
-  const group = new THREE.Group();
-  const { width: W, height: D } = BUILDING_SPECS.college;
-  group.add(box(W - 0.1, 0.04, D - 0.1, paving, W / 2, 0, D / 2));
-  group.add(box(2.6, 0.1, 1.5, marble, W / 2, 0.04, 0.95));
-  group.add(box(2.4, 0.75, 0.95, plaster, W / 2, 0.14, 0.75));
-  for (let i = 0; i < 6; i++) group.add(columnAt(0.75, marble, 0.4 + i * 0.44, 0.14, 1.55));
-  group.add(box(2.6, 0.08, 1.5, marble, W / 2, 0.89, 0.95));
-  const roof = gableRoof(1.55, 0.42, 2.66, clay);
-  roof.rotation.y = Math.PI / 2;
-  roof.position.set(W / 2, 0.97, 0.95);
-  group.add(roof);
-  group.add(box(0.36, 0.5, 0.02, doorway, W / 2, 0.14, 1.235));
-  group.add(scrollRack(0.75, 1.3));
-  group.add(scrollRack(2.25, 1.3));
-  for (const x of [0.7, 2.3]) group.add(box(0.7, 0.12, 0.22, marble, x, 0.04, 2.4));
-  group.add(box(0.24, 0.5, 0.24, marble, W / 2, 0.04, 2.35));
-  group.add(placed(spray, bronze, W / 2, 0.64, 2.35));
-  return group;
-}
-
 function standingFigure(robe: THREE.Material, x: number, y: number, z: number): THREE.Object3D {
   const group = new THREE.Group();
   group.add(cylinder(0.07, 0.34, robe, x, y, z));
@@ -265,73 +227,6 @@ function podiumModel(performing: boolean): THREE.Object3D {
   return group;
 }
 
-
-function maskAt(material: THREE.Material, x: number, y: number, z: number): THREE.Object3D {
-  const group = new THREE.Group();
-  const face = placed(spray, material, x, y, z);
-  face.scale.set(1.6, 2, 0.6);
-  group.add(face);
-  for (const dx of [-0.035, 0.035]) group.add(box(0.025, 0.02, 0.02, doorway, x + dx, y + 0.02, z + 0.035));
-  group.add(box(0.05, 0.015, 0.02, doorway, x, y - 0.05, z + 0.035));
-  return group;
-}
-
-function dramaSchoolModel(): THREE.Object3D {
-  const group = new THREE.Group();
-  const { width: W, height: D } = BUILDING_SPECS.dramaSchool;
-  group.add(box(W - 0.1, 0.04, D - 0.1, paving, W / 2, 0, D / 2));
-  group.add(box(2.5, 0.08, 1.4, fieldstone, W / 2, 0.04, 0.9));
-  group.add(box(2.4, 0.8, 1.3, plaster, W / 2, 0.12, 0.9));
-  const roof = gableRoof(1.5, 0.4, 2.56, clay);
-  roof.rotation.y = Math.PI / 2;
-  roof.position.set(W / 2, 0.92, 0.9);
-  group.add(roof);
-  group.add(box(0.4, 0.52, 0.02, doorway, W / 2, 0.12, 1.555));
-  group.add(maskAt(comicMask, W / 2 - 0.42, 0.7, 1.58));
-  group.add(maskAt(tragicMask, W / 2 + 0.42, 0.7, 1.58));
-  group.add(box(1.4, 0.14, 0.6, timber, W / 2, 0.04, 2.25));
-  for (const x of [0.35, 2.65]) group.add(columnAt(0.5, timber, x, 0.04, 2.25));
-  group.add(box(W - 0.4, 0.04, 0.06, awning, W / 2, 0.54, 2.25));
-  group.add(placed(amphora, clay, 0.4, 0.04, 2.7));
-  return group;
-}
-
-const THEATER_TIERS = 5;
-const THEATER_RADIUS = 2.35;
-const THEATER_ORCHESTRA = 0.85;
-const THEATER_AISLE = 0.15;
-const THEATER_RISER = 0.13;
-const theaterTiers = Array.from({ length: THEATER_TIERS }, (_, i) => {
-  const firstRow = THEATER_ORCHESTRA + THEATER_AISLE;
-  const inner = firstRow + (i * (THEATER_RADIUS - firstRow)) / THEATER_TIERS;
-  const shape = new THREE.Shape();
-  shape.absarc(0, 0, THEATER_RADIUS, 0, Math.PI, false);
-  shape.absarc(0, 0, inner, Math.PI, 0, true);
-  return new THREE.ExtrudeGeometry(shape, { depth: (i + 1) * THEATER_RISER, bevelEnabled: false, curveSegments: 24 }).rotateX(
-    -Math.PI / 2,
-  );
-});
-
-function theaterModel(performing: boolean): THREE.Object3D {
-  const group = new THREE.Group();
-  const { width: W, height: D } = BUILDING_SPECS.theater;
-  const orchestraZ = 3.15;
-  group.add(box(W - 0.1, 0.04, D - 0.1, lawn, W / 2, 0, D / 2));
-  theaterTiers.forEach((tier, i) => group.add(placed(tier, i % 2 === 0 ? marble : fieldstone, W / 2, 0.04, orchestraZ)));
-  group.add(cylinder(THEATER_ORCHESTRA, 0.04, paving, W / 2, 0.04, orchestraZ));
-  group.add(box(4.0, 0.12, 0.7, fieldstone, W / 2, 0.04, 4.35));
-  group.add(box(3.6, 0.55, 0.3, plaster, W / 2, 0.16, 4.55));
-  for (let i = 0; i < 6; i++) group.add(columnAt(0.55, marble, 0.95 + i * 0.62, 0.16, 4.3));
-  group.add(box(3.8, 0.06, 0.6, clay, W / 2, 0.71, 4.45));
-  for (const x of [1.6, 3.4]) group.add(box(0.3, 0.4, 0.02, doorway, x, 0.16, 4.39));
-  if (performing) {
-    group.add(standingFigure(actorRobe, W / 2 - 0.3, 0.08, orchestraZ + 0.2));
-    group.add(standingFigure(tragicRobe, W / 2 + 0.3, 0.08, orchestraZ + 0.1));
-    group.add(maskAt(comicMask, W / 2 - 0.3, 0.5, orchestraZ + 0.27));
-    group.add(maskAt(tragicMask, W / 2 + 0.3, 0.5, orchestraZ + 0.17));
-  }
-  return group;
-}
 
 function fleecePile(x: number, z: number, size: number): THREE.Object3D {
   const group = new THREE.Group();
@@ -850,7 +745,7 @@ const MODELS: Record<Exclude<BuildingType, 'house'>, (building: Building, state:
   podium: (b, state) => podiumModel(isPerforming(state, b)),
   gymnasium: gymnasiumModel,
   dramaSchool: dramaSchoolModel,
-  theater: (b, state) => theaterModel(isPerforming(state, b)),
+  theater: (b, state) => theaterModel(b, isPerforming(state, b)),
   cardingShed: cardingShedModel,
   storehouse: storehouseModel,
   fleeceVendor: vendorModel,
