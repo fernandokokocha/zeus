@@ -2,7 +2,7 @@ import type * as THREE from 'three';
 
 export interface DesignOption {
   name: string;
-  notes: string[];
+  notes?: string[];
   build: () => THREE.Object3D;
   variants?: { label: string; build: () => THREE.Object3D }[];
 }
@@ -14,7 +14,7 @@ export interface DesignSet {
   chosen?: number;
   previous?: DesignOption;
   footprint?: [number, number];
-  stripCopies?: number;
+  strip?: boolean;
 }
 
 export function withoutAndWithWorkers(build: (staffed: boolean) => THREE.Object3D): { label: string; build: () => THREE.Object3D }[] {

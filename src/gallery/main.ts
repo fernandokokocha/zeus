@@ -18,19 +18,19 @@ import type { Animate } from '../render/kit/figure';
 import type { DesignSet } from './options';
 
 const SETS: Record<string, DesignSet> = {
-  hut: { title: 'Hut', needs: 'Level 1 · 8 people · needs nothing — fresh settlers', options: HUT_OPTIONS, chosen: 2 },
-  shack: { title: 'Shack', needs: 'Level 2 · 16 people · needs food', options: SHACK_OPTIONS, chosen: 2, previous: HUT_OPTIONS[2] },
-  hovel: { title: 'Hovel', needs: 'Level 3 · 24 people · needs food and water', options: HOVEL_OPTIONS, chosen: 1, previous: SHACK_OPTIONS[2] },
-  homestead: { title: 'Homestead', needs: 'Level 4 · 32 people · needs food, water and fleece', options: HOMESTEAD_OPTIONS, chosen: 2, previous: HOVEL_OPTIONS[1] },
-  tenement: { title: 'Tenement', needs: 'Level 5 · 40 people · needs food, water, fleece and more culture and appeal', options: TENEMENT_OPTIONS, chosen: 2, previous: HOMESTEAD_OPTIONS[2] },
-  apartment: { title: 'Apartment', needs: 'Level 6 · 48 people · needs food, water, fleece and oil', options: APARTMENT_OPTIONS, chosen: 0, previous: TENEMENT_OPTIONS[2] },
-  townhouse: { title: 'Townhouse', needs: 'Level 7 · 60 people · needs food, water, fleece, oil and top culture and appeal', options: TOWNHOUSE_OPTIONS, chosen: 1, previous: APARTMENT_OPTIONS[0] },
-  wheatFarm: { title: 'Wheat Farm', needs: '3×3 · 10 workers · every growth stage, without and with workers', options: FARM_OPTIONS, chosen: 0, footprint: [3, 3] },
-  maintenance: { title: 'Maintenance Office', needs: '2×2 · 5 workers · each option without and with workers', options: MAINTENANCE_OPTIONS, chosen: 1 },
-  masonry: { title: 'Masonry Shop', needs: '2×2 · 15 workers · each option without and with workers, holding 3 loads of marble', options: MASONRY_OPTIONS, chosen: 1 },
-  palace: { title: 'Palace', needs: '9×6 · no workers · collects the city’s taxes', options: PALACE_OPTIONS, chosen: 0, footprint: [9, 6], stripCopies: 1 },
-  taxOffice: { title: 'Tax Office', needs: '2×2 · 8 workers · each option without and with workers', options: TAX_OPTIONS, chosen: 2 },
-  agora: { title: 'Agora and vendors', needs: 'Agora 2×6, no workers · Food, Fleece and Oil Vendors 2×2 on its spots, 4 workers each, up to 8 loads', options: AGORA_OPTIONS, chosen: 0, footprint: [2, 6] },
+  hut: { title: 'Hut', needs: 'Level 1 · 8 people · needs nothing — fresh settlers', options: HUT_OPTIONS, chosen: 2, strip: true },
+  shack: { title: 'Shack', needs: 'Level 2 · 16 people · needs food', options: SHACK_OPTIONS, chosen: 2, previous: HUT_OPTIONS[2], strip: true },
+  hovel: { title: 'Hovel', needs: 'Level 3 · 24 people · needs food and water', options: HOVEL_OPTIONS, chosen: 1, previous: SHACK_OPTIONS[2], strip: true },
+  homestead: { title: 'Homestead', needs: 'Level 4 · 32 people · needs food, water and fleece', options: HOMESTEAD_OPTIONS, chosen: 2, previous: HOVEL_OPTIONS[1], strip: true },
+  tenement: { title: 'Tenement', needs: 'Level 5 · 40 people · needs food, water, fleece and more culture and appeal', options: TENEMENT_OPTIONS, chosen: 2, previous: HOMESTEAD_OPTIONS[2], strip: true },
+  apartment: { title: 'Apartment', needs: 'Level 6 · 48 people · needs food, water, fleece and oil', options: APARTMENT_OPTIONS, chosen: 0, previous: TENEMENT_OPTIONS[2], strip: true },
+  townhouse: { title: 'Townhouse', needs: 'Level 7 · 60 people · needs food, water, fleece, oil and top culture and appeal', options: TOWNHOUSE_OPTIONS, chosen: 1, previous: APARTMENT_OPTIONS[0], strip: true },
+  wheatFarm: { title: 'Wheat Farm', needs: '3×3 · 10 workers · every growth stage, without and with workers', options: FARM_OPTIONS, chosen: 0, footprint: [3, 3], strip: true },
+  maintenance: { title: 'Maintenance Office', needs: '2×2 · 5 workers · each option without and with workers', options: MAINTENANCE_OPTIONS, chosen: 1, strip: true },
+  masonry: { title: 'Masonry Shop', needs: '2×2 · 15 workers · each option without and with workers, holding 3 loads of marble', options: MASONRY_OPTIONS, chosen: 1, strip: true },
+  palace: { title: 'Palace', needs: '9×6 · no workers · always animated, guards at the gate', options: PALACE_OPTIONS, chosen: 2, footprint: [9, 6] },
+  taxOffice: { title: 'Tax Office', needs: '2×2 · 8 workers · each option without and with workers', options: TAX_OPTIONS, chosen: 2, strip: true },
+  agora: { title: 'Agora and vendors', needs: 'Agora 2×6, no workers · Food, Fleece and Oil Vendors 2×2 on its spots, 4 workers each, up to 8 loads', options: AGORA_OPTIONS, chosen: 0, footprint: [2, 6], strip: true },
 };
 
 const footprint = (set: DesignSet): [number, number] => set.footprint ?? [2, 2];
@@ -125,7 +125,7 @@ function strip(canvas: HTMLCanvasElement, set: DesignSet): void {
   const row = set.previous ? [set.previous, ...set.options] : set.options;
   let rowEnd = 0;
   row.forEach((option) => {
-    const builds = option.variants?.map((v) => v.build) ?? Array(set.stripCopies ?? 2).fill(option.build);
+    const builds = option.variants?.map((v) => v.build) ?? [option.build, option.build];
     builds.forEach((build) => {
       const model = bake(build());
       model.position.set(rowEnd, 0, 0);
@@ -161,9 +161,16 @@ set.options.forEach((option, i) => {
   const canvases = option.variants
     ? `<div class="variants">${variants.map((v) => `<figure><canvas></canvas><figcaption>${v.label}</figcaption></figure>`).join('')}</div>`
     : '<canvas></canvas>';
-  card.innerHTML = `${canvases}<h2>${option.name}</h2><ul>${option.notes.map((n) => `<li>${n}</li>`).join('')}</ul>`;
+  card.innerHTML = `${canvases}<h2>${option.name}</h2>${option.notes ? `<ul>${option.notes.map((n) => `<li>${n}</li>`).join('')}</ul>` : ''}`;
   cards.append(card);
   card.querySelectorAll('canvas').forEach((canvas, v) => closeUp(canvas, variants[v].build, footprint(set)));
 });
-document.getElementById('strip-caption')!.textContent = `${stripCaption}, at default game zoom (left) and 2× (right)`;
-strip(document.getElementById('strip') as HTMLCanvasElement, set);
+const stripCanvas = document.getElementById('strip') as HTMLCanvasElement;
+const stripHeading = document.getElementById('strip-caption')!;
+if (set.strip) {
+  stripHeading.textContent = `${stripCaption}, at default game zoom (left) and 2× (right)`;
+  strip(stripCanvas, set);
+} else {
+  stripHeading.remove();
+  stripCanvas.remove();
+}

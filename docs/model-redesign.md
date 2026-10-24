@@ -57,22 +57,28 @@ gallery its own copy of the kit.
    `walker-layer.ts`), the thing's footprint in `BUILDING_SPECS`, and its states (working,
    stocked, stages, burning).
 2. **Add a set to the gallery.** Make `src/gallery/<thing>-options.ts` with three options,
-   each a `DesignOption` with a name, 3–4 notes and a builder. Register it in `SETS` in
-   `src/gallery/main.ts`. Set `previous` to the chosen design of the level below, if there is
-   one.
+   each a `DesignOption` with a short name and a builder. Register it in `SETS` in
+   `src/gallery/main.ts`. Keep the page lean, because every extra render and line is paid for
+   in tokens:
+   - **No notes.** The rotating model speaks for itself; leave `notes` out.
+   - **No strip.** Leave `strip` out, so the page shows only the close-ups. (Older sets keep
+     theirs through `strip: true`; don't add it to new ones.)
+   - **One close-up per critical state,** as `variants`: without and with workers
+     (`withoutAndWithWorkers`), empty and full stock, each growth or upgrade stage. Nothing
+     beyond the states the game actually shows.
 3. **Make the three options really different** in silhouette or idea, not three versions of
-   one layout. Each note should say what the player learns from looking at it.
+   one layout.
 4. **Screenshot and look before showing anything:**
    ```
    npx vite --port 5199 --strictPort &      # once per session
    npx playwright screenshot --viewport-size=1600,1000 --wait-for-timeout=3000 \
      "http://localhost:5199/gallery.html?level=<key>" <scratchpad>/<key>.png
    ```
-   Read the image. Check the close-up (max zoom) and the strip (default zoom and 2×). Fix
-   anything that hides inside the model, fights the ground, or disappears at default zoom.
+   Read the image. Fix anything that hides inside the model or fights the ground, and judge
+   whether the silhouette and colour blocks would still read at a quarter of the close-up size.
    If Chromium is missing, run `npx playwright install chromium` once.
-5. **Present.** Give the gallery URL, one line per option, which one reads best at default
-   zoom, and one question: which one, or which parts combined?
+5. **Present.** Give the gallery URL, the option names, and one question: which one, or which
+   parts combined?
 6. **Iterate on feedback.** The owner usually answers with a letter plus corrections ("C, but
    walls white like Hut B, simpler, no jars"). Apply exactly that to the option, mark it
    `chosen` in `SETS`, re-screenshot and show it. "Try again" means three new options in the
@@ -88,10 +94,9 @@ gallery its own copy of the kit.
    `npx tsc --noUnusedLocals` lists them.
 4. Verify:
    - `npx tsc --noUnusedLocals` and `npm test` pass
-   - the gallery strip, which renders baked models, looks the same as the close-ups
    - `npm run test:e2e` passes, and `test-results/screenshot.png` shows the model in the
-     game. The smoke test only reaches early content, so the gallery strip is the check for
-     anything later.
+     game. The smoke test only reaches early content; for anything later, the gallery
+     close-ups are the check.
 5. Work on `main`; no branch or PR. Commit only when the owner asks.
 
 ## Performance rules
@@ -135,8 +140,8 @@ draw call for that figure type, however many walkers are on screen.
   files and rewiring imports. Build in `src/render/kit/` from the start.
 - The merge-and-clone requirement only came up at port time. Use `bakedOnce` from the first
   gallery render.
-- Every round of options got a full write-up before the owner had picked a direction. Keep
-  notes to four lines and spend the effort on screenshots instead.
+- Gallery pages grew notes, a strip and a scene, and each one cost tokens to write, render
+  and read back. The owner wants rotating close-ups of each state and nothing else.
 - Townhouse took six rounds: courtyards, pediments and atrium roofs all read as modern or
   odd. The owner wanted what Zeus does, a tall cluster of blocks each under its own roof. For
   the top of a family, start from the original game’s look before inventing.
