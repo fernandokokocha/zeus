@@ -1,7 +1,6 @@
 import * as THREE from 'three';
-import { terraceBlock } from './cottage';
 import { COLORS, box, cone, cylinder, flat, scaled, sphere, surface } from './kit';
-import { hipRoof, tiledRoofAlongZ } from './roofs';
+import { tiledRoofAlongZ } from './roofs';
 
 export const PALACE = {
   marble: 0xf4f1ea,
@@ -22,12 +21,6 @@ export function marbleColumn(x: number, z: number, height: number, base: number)
   group.add(box(0.19, 0.05, 0.19, marble, x, base, z));
   group.add(cylinder(COLUMN_RADIUS * 0.85, COLUMN_RADIUS, height - 0.11, marble, x, base + 0.05, z, 10));
   group.add(box(0.19, 0.06, 0.19, marble, x, base + height - 0.06, z));
-  return group;
-}
-
-export function colonnade(spots: [number, number][], height: number, base: number): THREE.Object3D {
-  const group = new THREE.Group();
-  for (const [x, z] of spots) group.add(marbleColumn(x, z, height, base));
   return group;
 }
 
@@ -114,59 +107,6 @@ export function palaceDoor(x: number, front: number, base: number, width: number
   return group;
 }
 
-export function raised<T extends THREE.Object3D>(object: T, height: number): T {
-  object.position.y += height;
-  return object;
-}
-
-export function banner(x: number, top: number, z: number, length: number, facingX = false): THREE.Object3D {
-  const group = new THREE.Group();
-  const [w, d] = facingX ? [0.02, 0.22] : [0.22, 0.02];
-  group.add(box(w, length, d, flat(COLORS.aegean), x, top - length, z));
-  group.add(box(facingX ? 0.025 : 0.22, 0.06, facingX ? 0.22 : 0.025, flat(PALACE.gold), x, top - length - 0.02, z));
-  group.add(box(facingX ? 0.03 : 0.28, 0.025, facingX ? 0.28 : 0.03, flat(PALACE.gold), x, top, z));
-  return group;
-}
-
-export function bannerPole(x: number, z: number, height: number): THREE.Object3D {
-  const group = new THREE.Group();
-  group.add(box(0.12, 0.08, 0.12, flat(PALACE.marble), x, 0.03, z));
-  group.add(cylinder(0.018, 0.022, height, flat(COLORS.timber), x, 0.11, z, 6));
-  group.add(sphere(0.04, flat(PALACE.gold), x, 0.13 + height, z));
-  group.add(banner(x + 0.13, height - 0.04, z, height * 0.55));
-  return group;
-}
-
-export function goldTripod(x: number, z: number, y = 0.03): THREE.Object3D {
-  const group = new THREE.Group();
-  for (let i = 0; i < 3; i++) {
-    const a = (i / 3) * Math.PI * 2;
-    const leg = cylinder(0.012, 0.012, 0.24, flat(PALACE.bronze), x + Math.cos(a) * 0.06, y, z + Math.sin(a) * 0.06, 5);
-    leg.rotation.set(Math.sin(a) * 0.25, 0, -Math.cos(a) * 0.25);
-    group.add(leg);
-  }
-  group.add(cylinder(0.11, 0.06, 0.1, flat(PALACE.gold), x, y + 0.22, z, 14));
-  group.add(cylinder(0.08, 0.08, 0.01, flat(COLORS.ember), x, y + 0.31, z, 12));
-  return group;
-}
-
-export function pedestalStatue(x: number, z: number, scale = 1): THREE.Object3D {
-  const group = new THREE.Group();
-  const marble = flat(PALACE.marble);
-  const gold = flat(PALACE.gold);
-  group.add(box(0.26 * scale, 0.28 * scale, 0.26 * scale, marble, x, 0.03, z));
-  const top = 0.03 + 0.28 * scale;
-  group.add(cylinder(0.05 * scale, 0.07 * scale, 0.3 * scale, gold, x, top, z, 8));
-  group.add(sphere(0.045 * scale, gold, x, top + 0.36 * scale, z));
-  group.add(box(0.02 * scale, 0.2 * scale, 0.02 * scale, gold, x + 0.07 * scale, top + 0.25 * scale, z).rotateZ(-0.5));
-  group.add(cylinder(0.006 * scale, 0.006 * scale, 0.5 * scale, gold, x - 0.08 * scale, top, z, 4));
-  return group;
-}
-
-export function hedge(x0: number, z0: number, w: number, d: number): THREE.Mesh {
-  return box(w, 0.16, d, flat(0x4e7330), x0 + w / 2, 0.03, z0 + d / 2);
-}
-
 export function marbleTerrace(x0: number, z0: number, w: number, d: number, top: number): THREE.Object3D {
   const group = new THREE.Group();
   group.add(box(w, top - 0.06, d, surface('rubble'), x0 + w / 2, 0.03, z0 + d / 2));
@@ -182,7 +122,50 @@ export function pedimentRoof(group: THREE.Group, x0: number, z0: number, w: numb
   for (const x of [x0 + 0.05, x0 + w - 0.05]) group.add(acroterion(x, eaves, z0 + d));
 }
 
-export function wing(group: THREE.Group, x0: number, z0: number, w: number, d: number, top: number): void {
-  group.add(terraceBlock(x0, z0, w, d, top));
-  group.add(hipRoof(x0, z0, w, d, top + 0.03, 0.35, 'tiles'));
+const PAINT = { red: 0xa83a2a, cream: 0xefe4cc };
+
+export function megaronColumn(x: number, z: number, height: number, base: number): THREE.Object3D {
+  const group = new THREE.Group();
+  const lower = height * 0.35;
+  group.add(box(0.24, 0.06, 0.24, flat(PALACE.marble), x, base, z));
+  group.add(cylinder(0.095, 0.1, lower, flat(PAINT.cream), x, base + 0.06, z, 12));
+  group.add(cylinder(0.11, 0.095, height - lower - 0.18, flat(PAINT.red), x, base + 0.06 + lower, z, 12));
+  group.add(cylinder(0.15, 0.11, 0.06, flat(PAINT.cream), x, base + height - 0.12, z, 12));
+  group.add(box(0.3, 0.06, 0.3, flat(PAINT.cream), x, base + height - 0.06, z));
+  return group;
+}
+
+export function paintedFrieze(x0: number, x1: number, y: number, z: number): THREE.Object3D {
+  const group = new THREE.Group();
+  group.add(box(x1 - x0, 0.16, 0.14, flat(PAINT.cream), (x0 + x1) / 2, y, z));
+  const colors = [COLORS.aegean, PAINT.red];
+  for (let x = x0 + 0.15, i = 0; x < x1 - 0.1; x += 0.22, i++) group.add(box(0.12, 0.08, 0.02, flat(colors[i % 2]), x, y + 0.04, z + 0.07));
+  return group;
+}
+
+export function throne(x: number, z: number, y: number): THREE.Object3D {
+  const group = new THREE.Group();
+  const gold = flat(PALACE.gold);
+  group.add(box(0.36, 0.06, 0.12, flat(PAINT.red), x, y, z + 0.18));
+  group.add(box(0.24, 0.16, 0.2, gold, x, y, z));
+  group.add(box(0.26, 0.42, 0.05, gold, x, y, z - 0.1));
+  group.add(sphere(0.035, gold, x, y + 0.45, z - 0.1));
+  return group;
+}
+
+const MERLON = 0.18;
+
+export function crenellatedWall(x0: number, z0: number, x1: number, z1: number, height: number): THREE.Object3D {
+  const group = new THREE.Group();
+  const ashlar = surface('ashlar');
+  const thick = 0.24;
+  const alongX = Math.abs(x1 - x0) > Math.abs(z1 - z0);
+  const length = alongX ? x1 - x0 : z1 - z0;
+  const [cx, cz] = [(x0 + x1) / 2, (z0 + z1) / 2];
+  group.add(box(alongX ? length : thick, height, alongX ? thick : length, ashlar, cx, 0.03, cz));
+  for (let t = MERLON / 2; t < length; t += MERLON * 2) {
+    const [mx, mz] = alongX ? [x0 + t, cz] : [cx, z0 + t];
+    group.add(box(MERLON, MERLON, MERLON, ashlar, mx, 0.03 + height, mz));
+  }
+  return group;
 }

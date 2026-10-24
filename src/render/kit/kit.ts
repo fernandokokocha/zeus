@@ -182,6 +182,22 @@ const painters = {
   }) as Painter,
   tiles: tilePainter(COLORS.clay),
   blueTiles: tilePainter(COLORS.aegean),
+  ashlar: ((ctx, size, rand) => {
+    const sand = 0xd2c09c;
+    ctx.fillStyle = shade(sand, -0.18);
+    ctx.fillRect(0, 0, size, size);
+    const course = size / 4;
+    for (let row = 0; row < 4; row++) {
+      let x = row % 2 ? -size / 6 : 0;
+      while (x < size) {
+        const w = size / 4 + rand() * (size / 6);
+        ctx.fillStyle = shade(sand, (rand() - 0.5) * 0.1);
+        ctx.fillRect(x + 1.5, row * course + 1.5, w - 3, course - 3);
+        x += w;
+      }
+    }
+    speckle(ctx, size, rand, sand, 250, 0.12);
+  }) as Painter,
   slate: tilePainter(0x6f7378),
   hide: ((ctx, size, rand) => {
     ctx.fillStyle = hex(COLORS.hide);

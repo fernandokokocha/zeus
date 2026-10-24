@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { COLORS, cone, cylinder, flat, sphere } from './kit';
+import { COLORS, box, cone, cylinder, flat, sphere } from './kit';
 
 export const FIGURE = {
   skin: 0xd9a77a,
@@ -7,6 +7,8 @@ export const FIGURE = {
   belt: 0xffffff,
   straw: 0xd8b46a,
   felt: 0x9a5a3a,
+  bronze: 0xb8863b,
+  crest: 0xc0392b,
 };
 
 export const HIP = 0.2;
@@ -15,9 +17,12 @@ const NECK = 0.27;
 const FIGURE_SCALE = 1.25;
 const BASE = 0.03;
 
+const PATROL_SPEED = 0.45;
+const PATROL_REACH = 0.5;
+
 export type Animate = (seconds: number) => void;
-export type Hat = 'straw' | 'pilos' | 'bare';
-export type Motion = 'rest' | 'lookout' | 'hammer';
+export type Hat = 'straw' | 'pilos' | 'helmet' | 'bare';
+export type Motion = 'rest' | 'lookout' | 'hammer' | 'patrol';
 
 export interface FigureParts {
   legs: THREE.Object3D;
@@ -59,6 +64,9 @@ export function head(hat: Hat): THREE.Group {
     group.add(cylinder(0.025, 0.035, 0.04, flat(FIGURE.straw), 0, 0.04, 0, 8));
   } else if (hat === 'pilos') {
     group.add(cone(0.052, 0.09, flat(FIGURE.felt), 0, 0.02, 0, 12));
+  } else if (hat === 'helmet') {
+    group.add(sphere(0.056, flat(FIGURE.bronze), -0.004, 0.012, 0));
+    group.add(box(0.13, 0.05, 0.018, flat(FIGURE.crest), -0.015, 0.05, 0));
   }
   return group;
 }
@@ -95,6 +103,14 @@ const MOTIONS: Record<Motion, (pose: { torso: THREE.Object3D; neck: THREE.Object
     arm!.rotation.z = 0.2 + Math.max(swing, -0.4) * 0.9;
     torso.rotation.z = -0.15 - swing * 0.04;
     neck.rotation.y = Math.sin(t * 0.3) * 0.15;
+  },
+  patrol: ({ torso, neck, body }, t) => {
+    const pace = t * PATROL_SPEED;
+    body.position.z = Math.sin(pace) * PATROL_REACH;
+    body.rotation.y = Math.cos(pace) > 0 ? -Math.PI / 2 : Math.PI / 2;
+    body.position.y = Math.abs(Math.sin(t * 6)) * 0.012;
+    torso.rotation.z = Math.sin(t * 6) * 0.03;
+    neck.rotation.y = Math.sin(t * 0.7) * 0.3;
   },
 };
 
