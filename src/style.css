@@ -21,7 +21,6 @@ body {
 
 #topbar,
 #toolbar,
-#tool-menu,
 #inspector,
 #map-modes,
 #overlay-legend {
@@ -83,42 +82,65 @@ body {
 #toolbar {
   top: 60px;
   left: 8px;
+  width: 222px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  width: 170px;
+  gap: 6px;
+  padding: 8px;
 }
 
-#toolbar button {
-  text-align: left;
-  padding: 3px 8px;
+#toolbar .quick-tools,
+#toolbar .tool-groups {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
 }
 
 #toolbar .quick-tools {
-  display: flex;
-  gap: 4px;
-  padding-bottom: 4px;
+  grid-template-columns: repeat(4, 1fr);
+  padding-bottom: 7px;
   border-bottom: 1px solid var(--terracotta);
 }
 
-#toolbar .quick-tools button {
-  padding: 2px;
-  line-height: 0;
+#toolbar .quick-tools button,
+#toolbar .tool-groups button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 5px 1px 3px;
+  font-size: 11px;
+  line-height: 1.1;
 }
 
-#toolbar button small {
-  display: block;
-  font-size: 12px;
+#toolbar button.active {
+  background: #f2d3bf;
+  color: var(--ink);
+  border-color: var(--terracotta);
+  box-shadow: inset 0 0 0 1px var(--terracotta);
 }
 
-#tool-menu {
+#toolbar .tool-drawer {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  padding-top: 7px;
+  border-top: 1px solid var(--terracotta);
 }
 
-#tool-menu[hidden] {
+#toolbar .tool-drawer[hidden] {
   display: none;
+}
+
+#toolbar .tool-drawer h3 {
+  margin: 0 0 2px;
+  font-size: 14px;
+}
+
+#toolbar .tool-drawer button {
+  text-align: left;
+  padding: 3px 7px;
+  font-size: 14px;
 }
 
 #inspector {

@@ -1,77 +1,76 @@
 import { byId } from './dom';
-import { TOOL_ICONS } from './icons';
-import { QUICK_TOOLS, TOOL_GROUPS, TOOL_LABELS, type Tool, type ToolGroup } from './tools';
+import { GROUP_ICONS, TOOL_ICONS } from './icons';
+import { QUICK_TILE_LABELS, QUICK_TOOLS, TOOL_GROUPS, TOOL_LABELS, type Tool, type ToolGroup } from './tools';
 
 export function createToolbar(onChange: () => void): { current(): Tool | null; clear(): void } {
   const box = byId('toolbar');
-  const menu = byId('tool-menu');
   let current: Tool | null = null;
-let openGroup: ToolGroup | null = null;
+  let openGroup: ToolGroup | null = null;
 
-const quickRow = document.createElement('div');
-quickRow.className = 'quick-tools';
-box.append(quickRow);
-const quickButtons = QUICK_TOOLS.map((tool) => {
-  const button = document.createElement('button');
-  button.innerHTML = TOOL_ICONS[tool];
-  button.title = TOOL_LABELS[tool];
-  button.setAttribute('aria-label', TOOL_LABELS[tool]);
-  button.addEventListener('click', () => select(current === tool ? null : tool));
-  quickRow.append(button);
-  return { button, tool };
-});
+  const quickRow = document.createElement('div');
+  quickRow.className = 'quick-tools';
+  const quickButtons = QUICK_TOOLS.map((tool) => {
+    const button = tileButton(TOOL_ICONS[tool], QUICK_TILE_LABELS[tool], TOOL_LABELS[tool]);
+    button.addEventListener('click', () => select(current === tool ? null : tool));
+    quickRow.append(button);
+    return { button, tool };
+  });
 
+  const groupGrid = document.createElement('div');
+  groupGrid.className = 'tool-groups';
   const groupButtons = TOOL_GROUPS.map((group) => {
-    const button = document.createElement('button');
+    const button = tileButton(GROUP_ICONS[group.name], group.tileLabel, group.name);
     button.addEventListener('click', () => {
-      if (group.tools.length === 1) select(current === group.tools[0] ? null : group.tools[0]);
-      else showMenu(openGroup === group ? null : group, button);
+      openGroup = openGroup === group ? null : group;
+      render();
     });
-    box.append(button);
+    groupGrid.append(button);
     return { button, group };
   });
 
-  function showMenu(group: ToolGroup | null, anchor?: HTMLElement): void {
-    openGroup = group;
-    menu.replaceChildren();
-    menu.hidden = !group || !anchor;
-    if (!group || !anchor) return;
-    menu.style.top = `${anchor.getBoundingClientRect().top}px`;
-    menu.style.left = `${box.getBoundingClientRect().right + 4}px`;
-    for (const tool of group.tools) {
+  const drawer = document.createElement('div');
+  drawer.className = 'tool-drawer';
+  box.append(quickRow, groupGrid, drawer);
+
+  function tileButton(icon: string, tileLabel: string, name: string): HTMLButtonElement {
+    const button = document.createElement('button');
+    button.innerHTML = `${icon}<span>${tileLabel}</span>`;
+    button.title = name;
+    button.setAttribute('aria-label', name);
+    return button;
+  }
+
+  function renderDrawer(): void {
+    drawer.replaceChildren();
+    drawer.hidden = !openGroup;
+    if (!openGroup) return;
+    const heading = document.createElement('h3');
+    heading.textContent = openGroup.name;
+    drawer.append(heading);
+    for (const tool of openGroup.tools) {
       const button = document.createElement('button');
       button.textContent = TOOL_LABELS[tool];
       button.classList.toggle('active', tool === current);
       button.addEventListener('click', () => select(current === tool ? null : tool));
-      menu.append(button);
+      drawer.append(button);
     }
   }
 
   function render(): void {
     for (const { button, tool } of quickButtons) button.classList.toggle('active', tool === current);
     for (const { button, group } of groupButtons) {
-      const single = group.tools.length === 1;
-      const chosen = current !== null && group.tools.includes(current) ? current : null;
-      button.classList.toggle('active', chosen !== null);
-      button.textContent = single ? TOOL_LABELS[group.tools[0]] : `${group.name} ▸`;
-      if (chosen && !single) {
-        const detail = document.createElement('small');
-        detail.textContent = TOOL_LABELS[chosen];
-        button.append(detail);
-      }
+      const holdsCurrent = current !== null && group.tools.includes(current);
+      button.classList.toggle('active', group === openGroup || holdsCurrent);
     }
+    renderDrawer();
   }
 
   function select(tool: Tool | null): void {
     current = tool;
-    showMenu(null);
     render();
     onChange();
   }
 
-  window.addEventListener('mousedown', (e) => {
-    if (openGroup && !box.contains(e.target as Node) && !menu.contains(e.target as Node)) showMenu(null);
-  });
   render();
 
   return { current: () => current, clear: () => select(null) };

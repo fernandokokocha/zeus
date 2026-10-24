@@ -49,24 +49,39 @@ export const TOOL_LABELS: Record<Tool, string> = {
   demolish: 'Demolish',
 };
 
+export const QUICK_TOOLS = ['road', 'roadblock', 'house', 'demolish'] as const satisfies Tool[];
+export type QuickTool = (typeof QUICK_TOOLS)[number];
+
+export const QUICK_TILE_LABELS: Record<QuickTool, string> = {
+  road: 'Road',
+  roadblock: 'Block',
+  house: 'Housing',
+  demolish: 'Demolish',
+};
+
+export type GroupName =
+  | 'Husbandry'
+  | 'Industry'
+  | 'Distribution'
+  | 'Hygiene & Safety'
+  | 'Administration'
+  | 'Mythology'
+  | 'Culture'
+  | 'Aesthetics';
+
 export interface ToolGroup {
-  name: string;
+  name: GroupName;
+  tileLabel: string;
   tools: Tool[];
 }
 
-export const QUICK_TOOLS = ['road', 'roadblock'] as const satisfies Tool[];
-export type QuickTool = (typeof QUICK_TOOLS)[number];
-
 export const TOOL_GROUPS: ToolGroup[] = [
-  { name: 'Housing', tools: ['house'] },
-  { name: 'Husbandry', tools: ['wheatFarm', 'sheep', 'oliveTree', 'growersLodge'] },
-  { name: 'Industry', tools: ['cardingShed', 'olivePress', 'timberMill', 'masonryShop', 'foundry', 'sculptureStudio'] },
-  { name: 'Distribution', tools: ['granary', 'storehouse', 'agora', 'foodVendor', 'fleeceVendor', 'oilVendor'] },
-  { name: 'Hygiene', tools: ['fountain'] },
-  { name: 'Safety', tools: ['maintenanceOffice'] },
-  { name: 'Administration', tools: ['palace', 'taxOffice'] },
-  { name: 'Mythology', tools: ['artisansGuild', 'demeterSanctuary', 'athenaSanctuary', 'hephaestusSanctuary'] },
-  { name: 'Culture', tools: ['college', 'podium', 'gymnasium', 'dramaSchool', 'theater'] },
-  { name: 'Aesthetics', tools: ['park', 'column', 'flowerGarden'] },
-  { name: 'Demolish', tools: ['demolish'] },
+  { name: 'Husbandry', tileLabel: 'Husbandry', tools: ['wheatFarm', 'sheep', 'oliveTree', 'growersLodge'] },
+  { name: 'Industry', tileLabel: 'Industry', tools: ['cardingShed', 'olivePress', 'timberMill', 'masonryShop', 'foundry', 'sculptureStudio'] },
+  { name: 'Distribution', tileLabel: 'Distribution', tools: ['granary', 'storehouse', 'agora', 'foodVendor', 'fleeceVendor', 'oilVendor'] },
+  { name: 'Hygiene & Safety', tileLabel: 'Hygiene', tools: ['fountain', 'maintenanceOffice'] },
+  { name: 'Administration', tileLabel: 'Admin', tools: ['palace', 'taxOffice'] },
+  { name: 'Mythology', tileLabel: 'Mythology', tools: ['artisansGuild', 'demeterSanctuary', 'athenaSanctuary', 'hephaestusSanctuary'] },
+  { name: 'Culture', tileLabel: 'Culture', tools: ['college', 'podium', 'gymnasium', 'dramaSchool', 'theater'] },
+  { name: 'Aesthetics', tileLabel: 'Aesthetics', tools: ['park', 'column', 'flowerGarden'] },
 ];

@@ -24,13 +24,15 @@ async function drag(page: Page, from: [number, number], to: [number, number]): P
 }
 
 async function chooseTool(page: Page, group: string, tool: RegExp): Promise<void> {
-  await page.getByRole('button', { name: `${group} ▸` }).click();
-  await page.locator('#tool-menu').getByRole('button', { name: tool }).click();
+  const drawer = page.locator('#toolbar .tool-drawer');
+  if (!(await drawer.getByRole('heading', { name: group, exact: true }).isVisible())) {
+    await page.locator('#toolbar .tool-groups').getByRole('button', { name: group, exact: true }).click();
+  }
+  await drawer.getByRole('button', { name: tool }).click();
 }
 
-async function place(page: Page, group: string | null, tool: RegExp, at: [number, number]): Promise<void> {
-  if (group) await chooseTool(page, group, tool);
-  else await page.locator('#toolbar').getByRole('button', { name: tool }).click();
+async function place(page: Page, group: string, tool: RegExp, at: [number, number]): Promise<void> {
+  await chooseTool(page, group, tool);
   await drag(page, at, at);
 }
 
@@ -46,7 +48,7 @@ test('boots, builds a street with services, food, culture, fleece, oil, material
   await expect(page.locator('#date')).toHaveText('January, Year 1');
   await expect(page.locator('#population')).toHaveText('Population 0');
   await expect(page.locator('#treasury')).toHaveText('5,000 dr');
-  await expect(page.locator('#toolbar button')).toHaveCount(13);
+  await expect(page.locator('#toolbar button')).toHaveCount(12);
 
   await page.getByRole('button', { name: 'Demolish' }).click();
   await drag(page, [8, 38], [30, 57]);
@@ -58,7 +60,7 @@ test('boots, builds a street with services, food, culture, fleece, oil, material
   await drag(page, [9, 48], [12, 49]);
   await drag(page, [9, 51], [16, 52]);
   await place(page, 'Husbandry', /^Wheat Farm/, [15, 48]);
-  await place(page, null, /^Fountain/, [18, 48]);
+  await place(page, 'Hygiene & Safety', /^Fountain/, [18, 48]);
   await place(page, 'Administration', /^Tax Office/, [20, 48]);
   await place(page, 'Distribution', /^Granary/, [23, 47]);
   await place(page, 'Distribution', /^Agora/, [17, 53]);
@@ -81,7 +83,7 @@ test('boots, builds a street with services, food, culture, fleece, oil, material
   await place(page, 'Husbandry', /^Growers' Lodge/, [29, 48]);
   await place(page, 'Industry', /^Olive Press/, [29, 43]);
   await place(page, 'Distribution', /^Oil Vendor/, [17, 55]);
-  await place(page, null, /^Maintenance Office/, [9, 46]);
+  await place(page, 'Hygiene & Safety', /^Maintenance Office/, [9, 46]);
   await page.getByRole('button', { name: /^Road \(/ }).click();
   await drag(page, [29, 50], [35, 50]);
   await place(page, 'Industry', /^Timber Mill/, [33, 51]);
