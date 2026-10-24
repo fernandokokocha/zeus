@@ -24,12 +24,30 @@ export const PALETTE = {
   tunic: 0x4a74a8,
   skin: 0xd9a77a,
   bundle: 0x8a6a45,
-  marbleRock: 0xeeeae0,
-  copperRock: 0xa0623a,
+  marbleFace: 0xf8f6f0,
+  marbleCut: 0xffffff,
+  marbleCream: 0xf1ebdc,
+  marbleVein: 0x8f96a3,
+  marbleBase: 0xc9c2b2,
+  oreRock: 0x6b5d52,
+  oreRockShadow: 0x4d423a,
+  copperVein: 0xd9772c,
+  copperGlint: 0xf3a64a,
+  pineNeedles: 0x4c7a30,
+  pineNeedlesLit: 0x6a9a3c,
+  pineNeedlesShade: 0x34561f,
+  cypress: 0x2f5426,
+  cypressLit: 0x46703a,
+  holmOak: 0x56703a,
+  holmOakLit: 0x74904a,
+  holmOakShade: 0x3a4f27,
+  pineBark: 0x7a4a2e,
+  stumpCut: 0xdcb878,
+  stumpRing: 0xb98d55,
+  malachite: 0x3f9f78,
   marble: 0xf6f3ec,
   paving: 0xd9cdb4,
   water: 0x5a9bd0,
-  spray: 0xa9d3f2,
   bronze: 0xb08d57,
   carrierTunic: 0xf2efe6,
   carrierJar: 0x3c6fb4,
@@ -42,7 +60,6 @@ export const PALETTE = {
   bread: 0xc4873f,
   awning: 0xb5452e,
   lawn: 0x7fa84a,
-  petals: [0xd8433b, 0xf0c93a, 0x8f5bb5, 0xf7f2ea] as number[],
   peddlerTunic: 0x5d8a4a,
   buyerTunic: 0x3f8f8a,
   cartTunic: 0x8a6a45,
@@ -86,7 +103,6 @@ export const PALETTE = {
   glow: 0xff7a26,
   artisanTunic: 0x3f6f8f,
   log: 0x8a5f36,
-  sawdust: 0xd9be8c,
   overlayGood: 0x3fae4a,
   overlayFair: 0xa8c43a,
   overlayMid: 0xf0c53a,
@@ -102,4 +118,10 @@ export const PALETTE = {
 export function tileHash(x: number, y: number): number {
   const s = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
   return s - Math.floor(s);
+}
+
+const VARIANT_SALT = 57.3;
+
+export function variantIndexAt(x: number, y: number, variants: number): number {
+  return Math.floor(tileHash(x + VARIANT_SALT, y) * variants);
 }

@@ -11,7 +11,7 @@ export interface DesignSet {
   title: string;
   needs: string;
   options: DesignOption[];
-  chosen?: number;
+  chosen?: number | number[];
   previous?: DesignOption;
   footprint?: [number, number];
   strip?: boolean;

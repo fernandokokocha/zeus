@@ -5,7 +5,6 @@ import { SLOT_SIZE, STOREHOUSE_GOODS, STOREHOUSE_SLOTS, slotsOf, type StoredGood
 import { houseLevel, type HouseLevel } from '../sim/housing';
 import { BRONZE_PER_SCULPTURE } from '../sim/materials';
 import { SANCTUARY_STAGES, builtStages, isFinished, materialNeeded, type Sanctuary, type SanctuaryMaterial } from '../sim/sanctuaries';
-import { isRipe } from '../sim/olives';
 import { isPerforming } from '../sim/schools';
 import { isBurning } from '../sim/safety';
 import type { Building, GameState } from '../sim/state';
@@ -17,6 +16,13 @@ import { masonryShopModel } from './masonry-models';
 import { agoraModel, vendorModel } from './agora-models';
 import { palaceModel } from './palace-models';
 import { taxOfficeModel } from './tax-models';
+import { gymnasiumModel } from './gymnasium-models';
+import { oliveTreeModel } from './olive-models';
+import { parkModel } from './park-models';
+import { timberMillModel } from './timber-models';
+import { columnModel } from './column-models';
+import { fountainModel } from './fountain-models';
+import { flowerGardenModel } from './flower-garden-models';
 import { homesteadModel, hovelModel, hutModel, shackModel, tenementModel, apartmentModel, townhouseModel } from './house-models';
 
 const lambert = (color: number) => new THREE.MeshLambertMaterial({ color });
@@ -30,7 +36,6 @@ const clay = lambert(PALETTE.terracotta);
 const marble = lambert(PALETTE.marble);
 const plaster = lambert(PALETTE.plaster);
 const paving = lambert(PALETTE.paving);
-const water = lambert(PALETTE.water);
 const bronze = lambert(PALETTE.bronze);
 const foliage = lambert(PALETTE.foliage);
 const furrow = lambert(PALETTE.furrow);
@@ -38,7 +43,6 @@ const ripeWheat = lambert(PALETTE.wheat);
 const sack = lambert(PALETTE.sack);
 const awning = lambert(PALETTE.awning);
 const lawn = lambert(PALETTE.lawn);
-const sand = lambert(PALETTE.sand);
 const wool = lambert(PALETTE.wool);
 const twine = lambert(PALETTE.twine);
 const shutter = lambert(PALETTE.shutter);
@@ -53,25 +57,21 @@ const oliveLeaf = lambert(PALETTE.oliveLeaf);
 const oliveLeafDark = lambert(PALETTE.oliveLeafDark);
 const ripeOlive = lambert(PALETTE.olive);
 const oilGold = lambert(PALETTE.oil);
-const petalMaterials = PALETTE.petals.map(lambert);
 const charred = lambert(PALETTE.char);
 const ash = lambert(PALETTE.ash);
 const ember = new THREE.MeshBasicMaterial({ color: PALETTE.ember });
 const flame = new THREE.MeshBasicMaterial({ color: PALETTE.flame });
 const ore = lambert(PALETTE.ore);
 const logWood = lambert(PALETTE.log);
-const sawdust = lambert(PALETTE.sawdust);
 const steel = lambert(PALETTE.axeHead);
 const glow = new THREE.MeshBasicMaterial({ color: PALETTE.glow });
 const smoke = new THREE.MeshLambertMaterial({ color: PALETTE.smoke, transparent: true, opacity: 0.55 });
-const falling = new THREE.MeshBasicMaterial({ color: PALETTE.spray, transparent: true, opacity: 0.85 });
 
 const unitBox = new THREE.BoxGeometry(1, 1, 1);
 const stone = new THREE.DodecahedronGeometry(0.05);
 const column = new THREE.CylinderGeometry(0.07, 0.08, 1, 10).translate(0, 0.5, 0);
 const disc = new THREE.CylinderGeometry(1, 1, 1, 20).translate(0, 0.5, 0);
 const shrub = new THREE.SphereGeometry(0.22, 8, 6);
-const stream = new THREE.CylinderGeometry(0.035, 0.06, 1, 8);
 const spray = new THREE.SphereGeometry(0.06, 8, 6);
 const tongue = new THREE.ConeGeometry(0.09, 0.32, 7).translate(0, 0.16, 0);
 const puff = new THREE.SphereGeometry(0.12, 8, 6);
@@ -86,8 +86,6 @@ const amphora = new THREE.LatheGeometry(
 const { width: LOT_WIDTH, height: LOT_DEPTH } = BUILDING_SPECS.house;
 const LOT_INSET = 0.1;
 const STONE_SPACING = 0.22;
-const FOUNTAIN_STREAMS = 6;
-
 function box(w: number, h: number, d: number, material: THREE.Material, x: number, y: number, z: number): THREE.Mesh {
   const mesh = new THREE.Mesh(unitBox, material);
   mesh.scale.set(w, h, d);
@@ -170,35 +168,7 @@ function gableRoof(span: number, rise: number, length: number, gable: THREE.Mate
   return group;
 }
 
-function waterStream(from: THREE.Vector3, to: THREE.Vector3): THREE.Mesh {
-  const mesh = new THREE.Mesh(stream, falling);
-  mesh.position.copy(from).add(to).multiplyScalar(0.5);
-  mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), to.clone().sub(from).normalize());
-  mesh.scale.y = from.distanceTo(to);
-  return mesh;
-}
 
-function fountainModel(working: boolean): THREE.Object3D {
-  const group = new THREE.Group();
-  group.add(box(1.84, 0.04, 1.84, paving, 1, 0, 1));
-  group.add(cylinder(0.7, 0.24, marble, 1, 0.04, 1));
-  group.add(cylinder(0.6, 0.02, working ? water : earth, 1, 0.27, 1));
-  group.add(cylinder(0.14, 0.12, marble, 1, 0.04, 1));
-  group.add(columnAt(0.55, marble, 1, 0.16, 1));
-  group.add(cylinder(0.24, 0.07, marble, 1, 0.7, 1));
-  group.add(cylinder(0.2, 0.02, working ? water : fieldstone, 1, 0.76, 1));
-  group.add(cylinder(0.05, 0.12, bronze, 1, 0.77, 1));
-  if (working) {
-    group.add(placed(spray, falling, 1, 0.93, 1));
-    for (let i = 0; i < FOUNTAIN_STREAMS; i++) {
-      const angle = (i / FOUNTAIN_STREAMS) * Math.PI * 2;
-      const out = (r: number, y: number) => new THREE.Vector3(1 + Math.cos(angle) * r, y, 1 + Math.sin(angle) * r);
-      group.add(waterStream(out(0.24, 0.76), out(0.38, 0.29)));
-    }
-  }
-  for (const [x, z] of [[0.22, 0.22], [1.78, 0.22], [0.22, 1.78], [1.78, 1.78]]) group.add(placed(shrub, foliage, x, 0.16, z));
-  return group;
-}
 
 function granaryModel(granary: Building): THREE.Object3D {
   const group = new THREE.Group();
@@ -239,48 +209,8 @@ const GRANARY_BIN_SIZE = 0.86;
 const GRANARY_SACKS_PER_BIN = 4;
 const GRANARY_BINS = [2.4, 3.4].flatMap((z) => [0.55, 1.52, 2.48, 3.45].map((x) => [x, z]));
 
-function parkModel(): THREE.Object3D {
-  const group = new THREE.Group();
-  group.add(box(0.94, 0.04, 0.94, lawn, 0.5, 0, 0.5));
-  group.add(columnAt(0.35, timber, 0.35, 0.04, 0.35));
-  const canopy = placed(shrub, foliage, 0.35, 0.55, 0.35);
-  canopy.scale.setScalar(1.4);
-  group.add(canopy);
-  group.add(box(0.4, 0.04, 0.12, timber, 0.62, 0.15, 0.75));
-  for (const x of [0.46, 0.78]) group.add(box(0.04, 0.12, 0.1, fieldstone, x, 0.04, 0.75));
-  group.add(placed(shrub, petalMaterials[0], 0.78, 0.1, 0.25));
-  return group;
-}
 
-function columnModel(): THREE.Object3D {
-  const group = new THREE.Group();
-  group.add(box(0.6, 0.1, 0.6, marble, 0.5, 0, 0.5));
-  group.add(box(0.44, 0.1, 0.44, marble, 0.5, 0.1, 0.5));
-  group.add(columnAt(1.1, marble, 0.5, 0.2, 0.5));
-  group.add(box(0.26, 0.08, 0.26, marble, 0.5, 1.3, 0.5));
-  group.add(placed(spray, bronze, 0.5, 1.45, 0.5));
-  return group;
-}
 
-function flowerGardenModel(): THREE.Object3D {
-  const group = new THREE.Group();
-  const { width: W, height: D } = BUILDING_SPECS.flowerGarden;
-  group.add(box(W - 0.1, 0.04, D - 0.1, lawn, W / 2, 0, D / 2));
-  group.add(box(W - 0.2, 0.05, 0.22, paving, W / 2, 0, D / 2));
-  group.add(box(0.22, 0.05, D - 0.2, paving, W / 2, 0, D / 2));
-  const beds: [number, number][] = [[0.5, 0.5], [1.5, 0.5], [0.5, 1.5], [1.5, 1.5]];
-  beds.forEach(([bx, bz], bed) => {
-    group.add(box(0.66, 0.08, 0.66, fieldstone, bx, 0.03, bz));
-    group.add(box(0.58, 0.04, 0.58, earth, bx, 0.07, bz));
-    for (let i = 0; i < 9; i++) {
-      const flower = placed(spray, petalMaterials[(bed + i) % petalMaterials.length], bx - 0.2 + (i % 3) * 0.2, 0.15, bz - 0.2 + Math.floor(i / 3) * 0.2);
-      flower.scale.setScalar(0.9);
-      group.add(flower);
-    }
-  });
-  group.add(placed(amphora, marble, W / 2, 0.05, D / 2));
-  return group;
-}
 
 function scrollRack(x: number, z: number): THREE.Object3D {
   const group = new THREE.Group();
@@ -335,29 +265,6 @@ function podiumModel(performing: boolean): THREE.Object3D {
   return group;
 }
 
-function gymnasiumModel(): THREE.Object3D {
-  const group = new THREE.Group();
-  const { width: W, height: D } = BUILDING_SPECS.gymnasium;
-  group.add(box(W - 0.06, 0.04, D - 0.06, sand, W / 2, 0, D / 2));
-  group.add(box(W - 0.9, 0.05, D - 1.6, lawn, W / 2, 0, 1.75));
-  for (const [w, d, x, z] of [
-    [W - 0.3, 0.05, W / 2, 0.85],
-    [W - 0.3, 0.05, W / 2, D - 0.15],
-    [0.05, D - 1.0, 0.15, 1.85],
-    [0.05, D - 1.0, W - 0.15, 1.85],
-  ]) {
-    group.add(box(w, 0.06, d, fieldstone, x, 0.04, z));
-  }
-  group.add(box(W - 0.2, 0.06, 0.7, fieldstone, W / 2, 0.04, 0.4));
-  group.add(box(W - 0.3, 0.55, 0.2, plaster, W / 2, 0.1, 0.18));
-  for (let i = 0; i < 6; i++) group.add(columnAt(0.55, marble, 0.25 + i * 0.5, 0.1, 0.65));
-  const roof = box(W - 0.1, 0.06, 0.8, clay, W / 2, 0.65, 0.4);
-  roof.rotation.x = -0.18;
-  group.add(roof);
-  for (const x of [0.6, 2.4]) group.add(box(0.12, 0.6, 0.12, marble, x, 0.04, 1.75));
-  group.add(cylinder(0.1, 0.03, bronze, W / 2, 0.06, 2.3));
-  return group;
-}
 
 function maskAt(material: THREE.Material, x: number, y: number, z: number): THREE.Object3D {
   const group = new THREE.Group();
@@ -515,11 +422,6 @@ function storehouseModel(storehouse: Building): THREE.Object3D {
 }
 
 const oliveBerry = new THREE.SphereGeometry(0.025, 6, 4);
-const OLIVE_SPOTS = Array.from({ length: 14 }, (_, i) => {
-  const angle = i * 2.4;
-  const radius = 0.12 + (i % 3) * 0.06;
-  return [0.5 + Math.cos(angle) * radius, 0.42 + (i % 4) * 0.06, 0.5 + Math.sin(angle) * radius];
-});
 
 function oilJar(x: number, y: number, z: number): THREE.Object3D {
   const group = new THREE.Group();
@@ -528,34 +430,6 @@ function oilJar(x: number, y: number, z: number): THREE.Object3D {
   return group;
 }
 
-function oliveTreeModel(tree: Building): THREE.Object3D {
-  const group = new THREE.Group();
-  group.add(cylinder(0.3, 0.02, earth, 0.5, 0, 0.5));
-  const trunk = columnAt(0.36, timber, 0.5, 0.02, 0.5);
-  trunk.scale.set(1.1, 0.36, 1.1);
-  trunk.rotation.z = 0.18;
-  group.add(trunk);
-  const bough = columnAt(0.22, timber, 0.47, 0.25, 0.5);
-  bough.rotation.z = -0.5;
-  group.add(bough);
-  for (const [x, y, z, s, leaf] of [
-    [0.42, 0.46, 0.45, 1.1, oliveLeaf],
-    [0.62, 0.5, 0.55, 0.9, oliveLeafDark],
-    [0.5, 0.6, 0.62, 0.8, oliveLeaf],
-    [0.36, 0.52, 0.66, 0.7, oliveLeafDark],
-  ] as [number, number, number, number, THREE.Material][]) {
-    const crown = placed(shrub, leaf, x, y, z);
-    crown.scale.set(s, 0.6 * s, s);
-    group.add(crown);
-  }
-  if (isRipe(tree)) {
-    for (const [x, y, z] of OLIVE_SPOTS) {
-      const reach = 1.25;
-      group.add(placed(oliveBerry, ripeOlive, 0.5 + (x - 0.5) * reach, y, 0.5 + (z - 0.5) * reach));
-    }
-  }
-  return group;
-}
 
 function basket(x: number, z: number, full: boolean): THREE.Object3D {
   const group = new THREE.Group();
@@ -704,25 +578,6 @@ function addStock(
   spots.slice(0, Math.floor(units / UNITS_PER_LOAD)).forEach(([x, z], i) => group.add(piece(x, z, tileHash(i, x * 9) * 0.6 - 0.3)));
 }
 
-function timberMillModel(mill: Building): THREE.Object3D {
-  const group = new THREE.Group();
-  group.add(workshopBase(earth));
-  for (const [x, z] of [[0.25, 0.2], [1.75, 0.2], [0.25, 1.0], [1.75, 1.0]]) group.add(columnAt(0.6, timber, x, 0.04, z));
-  const roof = gableRoof(1.0, 0.3, 1.7, timber, reed);
-  roof.rotation.y = Math.PI / 2;
-  roof.position.set(1, 0.64, 0.6);
-  group.add(roof);
-  group.add(box(1.1, 0.24, 0.3, timber, 1, 0.04, 0.6));
-  const trunkOnBench = placed(log, logWood, 1, 0.33, 0.6);
-  trunkOnBench.scale.set(3.4, 1.4, 1.4);
-  group.add(trunkOnBench);
-  group.add(box(0.02, 0.18, 0.2, steel, 1, 0.28, 0.6));
-  group.add(cylinder(0.32, 0.015, sawdust, 1.3, 0.04, 1.0));
-  addStock(group, mill.wood + 2 * UNITS_PER_LOAD, [[0.4, 1.55], [0.75, 1.6], [1.1, 1.55], [1.45, 1.6], [1.75, 1.45], [0.35, 1.25]], (x, z, turn) =>
-    logPile(x, 0.04, z, turn),
-  );
-  return group;
-}
 
 function foundryModel(foundry: Building): THREE.Object3D {
   const group = new THREE.Group();
@@ -981,7 +836,7 @@ function sanctuaryModel(site: Building): THREE.Object3D {
 }
 
 const MODELS: Record<Exclude<BuildingType, 'house'>, (building: Building, state: GameState) => THREE.Object3D> = {
-  fountain: (b) => fountainModel(b.workers > 0),
+  fountain: fountainModel,
   taxOffice: taxOfficeModel,
   palace: palaceModel,
   wheatFarm: wheatFarmModel,

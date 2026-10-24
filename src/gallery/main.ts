@@ -13,6 +13,16 @@ import { MASONRY_OPTIONS } from './masonry-options';
 import { PALACE_OPTIONS } from './palace-options';
 import { TAX_OPTIONS } from './tax-options';
 import { AGORA_OPTIONS } from './agora-options';
+import { MARBLE_OPTIONS } from './marble-options';
+import { COPPER_OPTIONS } from './copper-options';
+import { OLIVE_TREE_OPTIONS } from './olive-tree-options';
+import { GYMNASIUM_OPTIONS } from './gymnasium-options';
+import { PARK_OPTIONS } from './park-options';
+import { FOREST_OPTIONS } from './forest-options';
+import { COLUMN_OPTIONS } from './column-options';
+import { FLOWER_GARDEN_OPTIONS } from './flower-garden-options';
+import { FOUNTAIN_OPTIONS } from './fountain-options';
+import { TIMBER_MILL_OPTIONS } from './timber-mill-options';
 import { bake } from '../render/bake';
 import type { Animate } from '../render/kit/figure';
 import type { DesignSet } from './options';
@@ -31,6 +41,16 @@ const SETS: Record<string, DesignSet> = {
   palace: { title: 'Palace', needs: '9×6 · no workers · always animated, guards at the gate', options: PALACE_OPTIONS, chosen: 2, footprint: [9, 6] },
   taxOffice: { title: 'Tax Office', needs: '2×2 · 8 workers · each option without and with workers', options: TAX_OPTIONS, chosen: 2, strip: true },
   agora: { title: 'Agora and vendors', needs: 'Agora 2×6, no workers · Food, Fleece and Oil Vendors 2×2 on its spots, 4 workers each, up to 8 loads', options: AGORA_OPTIONS, chosen: 0, footprint: [2, 6], strip: true },
+  marble: { title: 'Marble outcrop', needs: 'Terrain · 1 tile · unbuildable, quarried for marble', options: MARBLE_OPTIONS, chosen: [0, 1, 2, 3, 4], footprint: [1, 1] },
+  copper: { title: 'Copper ore', needs: 'Terrain · 1 tile · unbuildable, mined for bronze', options: COPPER_OPTIONS, chosen: [0, 1, 2, 3, 4], footprint: [1, 1] },
+  oliveTree: { title: 'Olive Tree', needs: '1×1 · no workers · growing and ripe', options: OLIVE_TREE_OPTIONS, chosen: [0, 1], footprint: [1, 1] },
+  gymnasium: { title: 'Gymnasium', needs: '3×3 · 7 workers · each option without and with workers', options: GYMNASIUM_OPTIONS, chosen: 1, footprint: [3, 3] },
+  park: { title: 'Park', needs: '1×1 · no workers · decoration', options: PARK_OPTIONS, chosen: [0, 1, 2], footprint: [1, 1] },
+  forest: { title: 'Forest', needs: 'Terrain · 1 tile · standing and felled', options: FOREST_OPTIONS, chosen: [0, 1, 2, 3, 4], footprint: [1, 1] },
+  column: { title: 'Column', needs: '1×1 · no workers · decoration', options: COLUMN_OPTIONS, chosen: 0, footprint: [1, 1] },
+  flowerGarden: { title: 'Flower Garden', needs: '2×2 · no workers · decoration', options: FLOWER_GARDEN_OPTIONS },
+  fountain: { title: 'Fountain', needs: '2×2 · 4 workers · each option without and with workers', options: FOUNTAIN_OPTIONS },
+  timberMill: { title: 'Timber Mill', needs: '2×2 · 12 workers · each option without and with workers, empty and stocked', options: TIMBER_MILL_OPTIONS },
 };
 
 const footprint = (set: DesignSet): [number, number] => set.footprint ?? [2, 2];
@@ -156,7 +176,7 @@ const cards = document.getElementById('cards')!;
 if (set.options.some((o) => o.variants)) cards.classList.add('single');
 set.options.forEach((option, i) => {
   const card = document.createElement('div');
-  card.className = i === set.chosen ? 'card chosen' : 'card';
+  card.className = [set.chosen].flat().includes(i) ? 'card chosen' : 'card';
   const variants = option.variants ?? [{ label: '', build: option.build }];
   const canvases = option.variants
     ? `<div class="variants">${variants.map((v) => `<figure><canvas></canvas><figcaption>${v.label}</figcaption></figure>`).join('')}</div>`

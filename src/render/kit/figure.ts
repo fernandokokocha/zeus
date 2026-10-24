@@ -19,10 +19,14 @@ const BASE = 0.03;
 
 const PATROL_SPEED = 0.45;
 const PATROL_REACH = 0.5;
+const THROW_TEMPO = 2.2;
+const SPRINT_SPEED = 1.1;
+const SPRINT_REACH = 0.85;
+const SAW_TEMPO = 4;
 
 export type Animate = (seconds: number) => void;
 export type Hat = 'straw' | 'pilos' | 'helmet' | 'bare';
-export type Motion = 'rest' | 'lookout' | 'hammer' | 'patrol';
+export type Motion = 'rest' | 'lookout' | 'hammer' | 'patrol' | 'throw' | 'sprint' | 'saw';
 
 export interface FigureParts {
   legs: THREE.Object3D;
@@ -111,6 +115,29 @@ const MOTIONS: Record<Motion, (pose: { torso: THREE.Object3D; neck: THREE.Object
     body.position.y = Math.abs(Math.sin(t * 6)) * 0.012;
     torso.rotation.z = Math.sin(t * 6) * 0.03;
     neck.rotation.y = Math.sin(t * 0.7) * 0.3;
+  },
+  throw: ({ torso, neck, arm, body }, t) => {
+    const swing = Math.sin(t * THROW_TEMPO);
+    body.rotation.y = swing * 0.9;
+    body.position.y = Math.max(-swing, 0) * 0.02;
+    arm!.rotation.z = -swing * 1.4;
+    torso.rotation.z = -0.25 + swing * 0.1;
+    neck.rotation.y = -swing * 0.5;
+  },
+  sprint: ({ torso, neck, body }, t) => {
+    const pace = t * SPRINT_SPEED;
+    body.position.x = Math.sin(pace) * SPRINT_REACH;
+    body.rotation.y = Math.cos(pace) > 0 ? 0 : Math.PI;
+    body.position.y = Math.abs(Math.sin(t * 12)) * 0.025;
+    torso.rotation.z = -0.22 + Math.sin(t * 12) * 0.04;
+    neck.rotation.z = 0.15;
+  },
+  saw: ({ torso, neck, arm, body }, t) => {
+    const stroke = Math.sin(t * SAW_TEMPO);
+    arm!.rotation.z = 0.35 + stroke * 0.35;
+    torso.rotation.z = -0.2 - stroke * 0.08;
+    body.position.y = -Math.abs(stroke) * 0.008;
+    neck.rotation.z = 0.25;
   },
 };
 
