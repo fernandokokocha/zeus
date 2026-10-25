@@ -14,6 +14,7 @@ import { createGame } from './sim/state';
 import { byId } from './ui/dom';
 import { createInspector } from './ui/inspector';
 import { createMapModes } from './ui/map-modes';
+import { createNotices } from './ui/notices';
 import { attachToolInput } from './ui/tool-input';
 import { createToolbar } from './ui/toolbar';
 import { createTopbar } from './ui/topbar';
@@ -45,6 +46,7 @@ const controls = attachCameraControls(view, state.size);
 const topbar = createTopbar(state);
 const inspector = createInspector(state, highlight);
 const mapModes = createMapModes();
+const notices = createNotices(state, (at) => controls.focus(at));
 const input = attachToolInput({
   view,
   state,
@@ -78,6 +80,7 @@ function frame(now: number): void {
   walkers.sync(state, state.speed > 0 ? pendingTicks : 0);
   overlay.sync(state, mapModes.shown());
   topbar.update();
+  notices.update(now / 1000);
   inspector.refresh();
   view.renderer.render(view.scene, view.camera);
   requestAnimationFrame(frame);

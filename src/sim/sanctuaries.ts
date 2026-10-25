@@ -1,6 +1,7 @@
 import { BUILDING_SPECS, type BuildingType } from './buildings';
 import { adjacentRoadTiles } from './commands';
 import { UNITS_PER_LOAD } from './food';
+import { postNotice } from './notices';
 import { findRoadPath, nearestByRoad } from './pathfinding';
 import type { Point } from './point';
 import { ROAMER_REST_TICKS, exitTile } from './roamers';
@@ -156,6 +157,7 @@ function arrive(state: GameState, artisan: Artisan): void {
   if (site.production < suppliedStages(site) * VISITS_PER_STAGE) {
     site.production++;
     state.version++;
+    if (isFinished(site)) postNotice(state, `The ${BUILDING_SPECS[site.type].name} is finished`, site);
   }
   dismiss(state, artisan);
 }

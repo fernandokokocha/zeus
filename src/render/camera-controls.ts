@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import type { Point } from '../sim/point';
 import { placeCamera, type View } from './view';
 
 const KEY_PAN_PIXELS_PER_SECOND = 700;
@@ -6,13 +7,14 @@ const ZOOM_PER_WHEEL_PIXEL = 0.00075;
 const MIN_ZOOM = 0.4;
 const MAX_ZOOM = 4;
 const MIDDLE_BUTTON = 1;
+const TILE_CENTRE = 0.5;
 const SCREEN_RIGHT_ON_GROUND = new THREE.Vector3(1, 0, -1).normalize();
 const SCREEN_UP_ON_GROUND = new THREE.Vector3(-1, 0, -1).normalize();
 const GROUND_STRETCH_ALONG_SCREEN_UP = 1 / Math.sin(Math.PI / 6);
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
-export function attachCameraControls(view: View, mapSize: number): { update(dt: number): void } {
+export function attachCameraControls(view: View, mapSize: number): { update(dt: number): void; focus(tile: Point): void } {
   const { canvas, camera, target } = view;
   const held = new Set<string>();
   let dragFrom: { x: number; y: number } | null = null;
@@ -65,6 +67,11 @@ export function attachCameraControls(view: View, mapSize: number): { update(dt: 
       if (held.has('w') || held.has('arrowup')) dy += step;
       if (held.has('s') || held.has('arrowdown')) dy -= step;
       if (dx !== 0 || dy !== 0) pan(dx, dy);
+    },
+    focus(tile) {
+      target.x = tile.x + TILE_CENTRE;
+      target.z = tile.y + TILE_CENTRE;
+      placeCamera(view);
     },
   };
 }

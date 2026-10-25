@@ -49,6 +49,11 @@ test('boots, builds a street with services, food, culture, fleece, oil, cloth, m
   await expect(page.locator('#population')).toHaveText('Population 0');
   await expect(page.locator('#treasury')).toHaveText('5,000 dr');
   await expect(page.locator('#toolbar button')).toHaveCount(12);
+  const noticeLog = page.locator('#notice-log');
+  await page.getByRole('button', { name: 'Notices' }).click();
+  await expect(noticeLog).toContainText('No notices yet');
+  await page.keyboard.press('n');
+  await expect(noticeLog).toBeHidden();
 
   await page.getByRole('button', { name: 'Demolish' }).click();
   await drag(page, [8, 38], [30, 57]);

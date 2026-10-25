@@ -22,6 +22,7 @@ body {
 #topbar,
 #toolbar,
 #inspector,
+#notice-log,
 #map-modes,
 #overlay-legend {
   position: fixed;
@@ -261,4 +262,69 @@ button.active {
   width: 18px;
   height: 12px;
   border: 1px solid var(--ink);
+}
+
+#notice-feed {
+  position: fixed;
+  top: 56px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+}
+
+#notice-feed .notice {
+  pointer-events: auto;
+  background: var(--parchment);
+  border: 2px solid var(--terracotta);
+  border-radius: 4px;
+  padding: 4px 12px;
+  box-shadow: 0 2px 4px rgb(59 42 26 / 25%);
+  transition: opacity 1s;
+}
+
+#notice-feed .notice.fading {
+  opacity: 0;
+}
+
+#notice-log {
+  top: 56px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 460px;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+#notice-log-close {
+  float: right;
+}
+
+#notice-log h2 {
+  margin: 0 0 6px;
+  font-size: 18px;
+}
+
+#notice-log ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+}
+
+#notice-log .notice {
+  width: 100%;
+  text-align: left;
+  border: none;
+  border-bottom: 1px solid #e2d5ba;
+  border-radius: 0;
+  background: none;
+  padding: 4px 2px;
+}
+
+#notice-log .notice:hover {
+  background: #f2d3bf;
 }

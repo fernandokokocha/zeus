@@ -1,6 +1,8 @@
-import type { BuildingType } from './buildings';
 import { TICKS_PER_MONTH } from './clock';
+import { BUILDING_SPECS, type BuildingType } from './buildings';
 import { build, footprint, removeBuildings } from './commands';
+import { houseName } from './housing';
+import { postNotice } from './notices';
 import { NEIGHBOUR_STEPS } from './pathfinding';
 import { nextRandom } from './rng';
 import { NO_BUILDING, inBounds, tileIndex, type Building, type GameState } from './state';
@@ -71,7 +73,7 @@ export function tickSafety(state: GameState): void {
     if (building.fireRisk >= RISK_LIMIT_TICKS && (exposed.has(building) || nextRandom(state) < IGNITION_CHANCE_PER_TICK)) {
       catchFire(state, building);
     } else if (building.collapseRisk >= RISK_LIMIT_TICKS) {
-      ruin(state, building, false);
+      collapse(state, building);
     }
   }
 }
@@ -111,7 +113,17 @@ function buildingsAround(state: GameState, tile: Building): Building[] {
 }
 
 export function catchFire(state: GameState, building: Building): void {
+  postNotice(state, `Fire! The ${placeName(building)} at ${building.x},${building.y} is burning`, building);
   ruin(state, building, true);
+}
+
+function collapse(state: GameState, building: Building): void {
+  postNotice(state, `The ${placeName(building)} at ${building.x},${building.y} collapsed`, building);
+  ruin(state, building, false);
+}
+
+function placeName(building: Building): string {
+  return building.type === 'house' ? houseName(building) : BUILDING_SPECS[building.type].name;
 }
 
 function ruin(state: GameState, building: Building, burning: boolean): void {

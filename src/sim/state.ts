@@ -150,6 +150,13 @@ export interface Carrier extends Walk {
   returning: boolean;
 }
 
+export interface Notice {
+  id: number;
+  tick: number;
+  text: string;
+  at: Point;
+}
+
 export interface GameState {
   size: number;
   terrain: Terrain[];
@@ -178,6 +185,8 @@ export interface GameState {
   felledUntil: number[];
   artisans: Artisan[];
   nextArtisanId: number;
+  notices: Notice[];
+  nextNoticeId: number;
   rngState: number;
   entry: Point;
   treasury: number;
@@ -222,6 +231,8 @@ export function newGameState(size: number, terrain: Terrain[], mainRoad: Point[]
     felledUntil: new Array<number>(size * size).fill(0),
     artisans: [],
     nextArtisanId: 1,
+    notices: [],
+    nextNoticeId: 1,
     rngState: DEFAULT_SEED,
     entry: mainRoad[0],
     treasury: STARTING_TREASURY,

@@ -2,6 +2,7 @@ import { appealMap, houseAppeal } from './appeal';
 import { culturePoints } from './culture';
 import { hasService } from './roamers';
 import { TICKS_PER_MONTH } from './clock';
+import { postNotice } from './notices';
 import type { Building, GameState } from './state';
 
 export type HouseLevel = 'hut' | 'shack' | 'hovel' | 'homestead' | 'tenement' | 'apartment' | 'townhouse';
@@ -132,9 +133,19 @@ function levelWanted(state: GameState, house: Building, level: HouseLevel, appea
 }
 
 function setLevel(state: GameState, house: Building, level: HouseLevel): void {
+  if (level === PREVIOUS_LEVEL[house.level]) postDevolved(state, house, level);
   house.level = level;
   house.residents = Math.min(house.residents, HOUSE_LEVELS[level].capacity);
   house.pendingLevel = null;
   house.pendingTicks = 0;
   state.version++;
+}
+
+function postDevolved(state: GameState, house: Building, level: HouseLevel): void {
+  const from = HOUSE_LEVELS[house.level].name;
+  postNotice(state, `${from} at ${house.x},${house.y} devolved to ${withArticle(HOUSE_LEVELS[level].name)}`, house);
+}
+
+function withArticle(name: string): string {
+  return `${/^[AEIOU]/.test(name) ? 'an' : 'a'} ${name}`;
 }

@@ -212,3 +212,5 @@ https://zeus.heavengames.com/gameinfo/gods/
 - Sanctuary construction: **5 stages**, each needing a fifth of every material on site and
   **4 artisan visits**. A guild sends one artisan at a time, **a quarter month** apart at full
   staff. A site hires nobody and radiates no appeal until finished.
+- Notices: the log keeps the **50** most recent. A new one shows under the top bar for
+  **8 s** of real time and fades over **1 s**, at most **4** at once.
