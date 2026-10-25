@@ -36,6 +36,7 @@ const groundMaterial = new THREE.MeshLambertMaterial({ vertexColors: true });
 export function createTerrainLayer(): { group: THREE.Group; sync(state: GameState): void } {
   const group = new THREE.Group();
   let renderedVersion = -1;
+  let renderedCovers = '';
   let ground: THREE.Mesh | null = null;
   let scattered: THREE.InstancedMesh[] = [];
 
@@ -44,12 +45,16 @@ export function createTerrainLayer(): { group: THREE.Group; sync(state: GameStat
     sync(state) {
       if (state.version === renderedVersion) return;
       renderedVersion = state.version;
+      const covers = coversOf(state);
+      const key = covers.join();
+      if (key === renderedCovers) return;
+      renderedCovers = key;
       if (ground) ground.geometry.dispose();
       for (const mesh of scattered) mesh.dispose();
       group.clear();
 
       ground = groundMesh(state);
-      scattered = SCATTERED.map((s) => scatter(tilesOf(state, s), s.geometry, s.material));
+      scattered = SCATTERED.map((s) => scatter(tilesOf(state, covers, s), s.geometry, s.material));
       group.add(ground, ...scattered);
     },
   };
@@ -74,15 +79,17 @@ function groundMesh(state: GameState): THREE.Mesh {
   return new THREE.Mesh(geometry, groundMaterial);
 }
 
-function coverOf(state: GameState, x: number, y: number): Cover {
-  const terrain = state.terrain[tileIndex(state, x, y)];
-  return terrain === 'forest' && isFelled(state, { x, y }) ? 'stump' : terrain;
+function coversOf(state: GameState): Cover[] {
+  return state.terrain.map((terrain, i) => {
+    const tile = { x: i % state.size, y: Math.floor(i / state.size) };
+    return terrain === 'forest' && isFelled(state, tile) ? 'stump' : terrain;
+  });
 }
 
-function tilesOf(state: GameState, { cover, variant, variants }: Scattered): Point[] {
+function tilesOf(state: GameState, covers: Cover[], { cover, variant, variants }: Scattered): Point[] {
   const tiles: Point[] = [];
   for (let y = 0; y < state.size; y++) {
-    for (let x = 0; x < state.size; x++) if (coverOf(state, x, y) === cover && variantIndexAt(x, y, variants) === variant) tiles.push({ x, y });
+    for (let x = 0; x < state.size; x++) if (covers[tileIndex(state, x, y)] === cover && variantIndexAt(x, y, variants) === variant) tiles.push({ x, y });
   }
   return tiles;
 }

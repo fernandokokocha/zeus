@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { BUILDING_SPECS, buildingSize } from '../sim/buildings';
 import type { Building, GameState } from '../sim/state';
 import type { Animate } from './kit/figure';
+import { lookKey } from './look-key';
 import { buildingModel, roadblockModel } from './models';
 import { PALETTE, tileHash } from './palette';
 
@@ -17,37 +18,97 @@ const jointMaterial = new THREE.MeshLambertMaterial({ color: PALETTE.pavingJoint
 const slabGeometry = new THREE.BoxGeometry(pavingSlabSize, PAVING_SLAB_HEIGHT, pavingSlabSize);
 const slabMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff });
 
+interface Placed {
+  key: string;
+  object: THREE.Object3D;
+  animations: Animate[];
+}
+
 export function createWorldLayer(): { group: THREE.Group; sync(state: GameState): void; animate(seconds: number): void } {
   const group = new THREE.Group();
+  const streets = new THREE.Group();
+  group.add(streets);
+  const geometries = geometryUsers();
+  const placed = new Map<number, Placed>();
   let renderedVersion = -1;
-  let animations: Animate[] = [];
-  let roads: THREE.InstancedMesh = new THREE.InstancedMesh(roadGeometry, roadMaterial, 0);
-  let paving: THREE.InstancedMesh[] = [];
+  let renderedStreets = '';
+
+  function syncStreets(state: GameState): void {
+    const key = streetsKey(state);
+    if (key === renderedStreets) return;
+    renderedStreets = key;
+    const old = [...streets.children];
+    streets.clear();
+    streets.add(roadMesh(state, (i) => state.roads[i] && !state.mainRoad[i], roadMaterial), ...pavingMeshes(state), ...roadblockModels(state));
+    geometries.retain(streets);
+    for (const child of old) {
+      if (child instanceof THREE.InstancedMesh) child.dispose();
+      geometries.release(child);
+    }
+  }
+
+  function syncBuildings(state: GameState): void {
+    const present = new Set<number>();
+    for (const building of state.buildings) {
+      present.add(building.id);
+      const key = lookKey(building, state);
+      const old = placed.get(building.id);
+      if (old && old.key === key) continue;
+      const object = placedModel(building, state);
+      const animations: Animate[] = [];
+      object.traverse((node) => node.userData.animate && animations.push(node.userData.animate));
+      geometries.retain(object);
+      group.add(object);
+      placed.set(building.id, { key, object, animations });
+      if (old) remove(old);
+    }
+    for (const [id, old] of placed) {
+      if (present.has(id)) continue;
+      placed.delete(id);
+      remove(old);
+    }
+  }
+
+  function remove({ object }: Placed): void {
+    group.remove(object);
+    geometries.release(object);
+  }
 
   return {
     group,
     sync(state) {
       if (state.version === renderedVersion) return;
       renderedVersion = state.version;
-      group.clear();
-      roads.dispose();
-      roads = roadMesh(state, (i) => state.roads[i] && !state.mainRoad[i], roadMaterial);
-      group.add(roads);
-      paving.forEach((mesh) => mesh.dispose());
-      paving = pavingMeshes(state);
-      group.add(...paving);
-
-      for (const model of roadblockModels(state)) group.add(model);
-      for (const building of state.buildings) {
-        group.add(placedModel(building, state));
-      }
-      animations = [];
-      group.traverse((node) => node.userData.animate && animations.push(node.userData.animate));
+      syncStreets(state);
+      syncBuildings(state);
     },
     animate(seconds) {
-      for (const animate of animations) animate(seconds);
+      for (const { animations } of placed.values()) for (const animate of animations) animate(seconds);
     },
   };
+}
+
+function geometryUsers(): { retain(object: THREE.Object3D): void; release(object: THREE.Object3D): void } {
+  const users = new Map<THREE.BufferGeometry, number>();
+  const eachGeometry = (object: THREE.Object3D, visit: (geometry: THREE.BufferGeometry) => void) =>
+    object.traverse((node) => node instanceof THREE.Mesh && visit(node.geometry));
+  return {
+    retain: (object) => eachGeometry(object, (geometry) => users.set(geometry, (users.get(geometry) ?? 0) + 1)),
+    release: (object) =>
+      eachGeometry(object, (geometry) => {
+        const left = users.get(geometry)! - 1;
+        if (left > 0) {
+          users.set(geometry, left);
+        } else {
+          users.delete(geometry);
+          geometry.dispose();
+        }
+      }),
+  };
+}
+
+function streetsKey(state: GameState): string {
+  return state.roads.map((road, i) => +road + 2 * +state.mainRoad[i] + 4 * +state.roadblocks[i]).join('');
 }
 
 function roadMesh(state: GameState, drawn: (tile: number) => boolean, material: THREE.Material): THREE.InstancedMesh {
