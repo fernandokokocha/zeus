@@ -14,6 +14,8 @@ export const PALETTE = {
   plaster: 0xf3ead8,
   terracotta: 0xc0643b,
   road: 0xb9a88a,
+  pavingJoint: 0x8c8474,
+  pavingStone: 0xd9d2c0,
   foliage: 0x4f6f2c,
   trunk: 0x6b4a2b,
   dirt: 0xb39566,

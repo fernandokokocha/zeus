@@ -10,7 +10,7 @@ import { describeTile, inspectTile, type Meter } from '../../src/sim/inspect';
 import { FIRE_BURN_TICKS, RISK_LIMIT, catchFire } from '../../src/sim/safety';
 import { SETTLER_SPAWN_INTERVAL_TICKS } from '../../src/sim/settlers';
 import { walkerTile } from '../../src/sim/walking';
-import { grassGame, placeHouse, runTicks, setMeadow, setTerrain } from './helpers';
+import { grassGame, mainRoadGame, placeHouse, runTicks, setMeadow, setTerrain } from './helpers';
 
 function meter(game: GameState, x: number, y: number, label: string): Meter {
   const found = describeTile(game, x, y).meters.find((m) => m.label === label);
@@ -33,6 +33,11 @@ describe('describeTile', () => {
     const game = grassGame();
     placeRoad(game, { x: 4, y: 4 }, { x: 4, y: 4 });
     expect(describeTile(game, 4, 4)).toEqual({ title: 'Road', meters: [], lines: ['Tile 4, 4'] });
+  });
+
+  it('describes the Main Road', () => {
+    const game = mainRoadGame();
+    expect(describeTile(game, 3, 10)).toEqual({ title: 'Main Road', meters: [], lines: ['Tile 3, 10', 'Paved; cannot be demolished'] });
   });
 
   it('describes a vacant lot from any of its tiles', () => {

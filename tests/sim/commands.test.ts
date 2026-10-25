@@ -12,16 +12,20 @@ import {
   vendorSpotAt,
 } from '../../src/sim/commands';
 import { NO_BUILDING, createGame, tileIndex } from '../../src/sim/state';
-import { ENTRY_ROAD_LENGTH } from '../../src/sim/map';
+import { generateTerrain } from '../../src/sim/map';
 import { ROADBLOCK_COST, STARTING_TREASURY } from '../../src/sim/treasury';
-import { grassGame, placeHouse, setTerrain } from './helpers';
+import { grassGame, mainRoadGame, placeHouse, setTerrain } from './helpers';
 
 describe('createGame', () => {
-  it('starts with the entry road laid', () => {
-    const game = createGame();
-    for (let x = 0; x < ENTRY_ROAD_LENGTH; x++) {
-      expect(game.roads[tileIndex(game, x, game.entry.y)]).toBe(true);
+  it('starts with the Main Road laid, entering at its first tile', () => {
+    const game = createGame(7);
+    const { mainRoad } = generateTerrain(7);
+    for (const p of mainRoad) {
+      expect(game.roads[tileIndex(game, p.x, p.y)]).toBe(true);
+      expect(game.mainRoad[tileIndex(game, p.x, p.y)]).toBe(true);
     }
+    expect(game.mainRoad.filter(Boolean)).toHaveLength(mainRoad.length);
+    expect(game.entry).toEqual(mainRoad[0]);
   });
 });
 
@@ -125,6 +129,19 @@ describe('placeHouses with a click', () => {
 });
 
 describe('demolish', () => {
+  it('leaves the Main Road but clears what else is in the area', () => {
+    const game = mainRoadGame();
+    placeRoad(game, { x: 3, y: 9 }, { x: 3, y: 5 });
+    placeHouse(game, 4, 8);
+    placeRoadblock(game, { x: 2, y: 10 });
+    demolish(game, { x: 0, y: 5 }, { x: 6, y: 12 });
+    for (let x = 0; x < 8; x++) expect(game.roads[tileIndex(game, x, 10)]).toBe(true);
+    expect(game.roads[tileIndex(game, 3, 9)]).toBe(false);
+    expect(game.roadblocks[tileIndex(game, 2, 10)]).toBe(false);
+    expect(game.buildings).toEqual([]);
+    expect(game.version).toBe(4);
+  });
+
   it('removes roads in the area', () => {
     const game = grassGame();
     placeRoad(game, { x: 1, y: 1 }, { x: 5, y: 1 });

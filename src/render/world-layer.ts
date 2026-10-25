@@ -3,17 +3,26 @@ import { BUILDING_SPECS, buildingSize } from '../sim/buildings';
 import type { Building, GameState } from '../sim/state';
 import type { Animate } from './kit/figure';
 import { buildingModel, roadblockModel } from './models';
-import { PALETTE } from './palette';
+import { PALETTE, tileHash } from './palette';
 
 const ROAD_HEIGHT = 0.02;
 const roadGeometry = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
 const roadMaterial = new THREE.MeshLambertMaterial({ color: PALETTE.road });
+const PAVING_SLABS_PER_SIDE = 2;
+const PAVING_GAP = 0.06;
+const PAVING_SLAB_HEIGHT = 0.04;
+const PAVING_SHADE_SPREAD = 0.12;
+const pavingSlabSize = 1 / PAVING_SLABS_PER_SIDE - PAVING_GAP;
+const jointMaterial = new THREE.MeshLambertMaterial({ color: PALETTE.pavingJoint });
+const slabGeometry = new THREE.BoxGeometry(pavingSlabSize, PAVING_SLAB_HEIGHT, pavingSlabSize);
+const slabMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff });
 
 export function createWorldLayer(): { group: THREE.Group; sync(state: GameState): void; animate(seconds: number): void } {
   const group = new THREE.Group();
   let renderedVersion = -1;
   let animations: Animate[] = [];
   let roads: THREE.InstancedMesh = new THREE.InstancedMesh(roadGeometry, roadMaterial, 0);
+  let paving: THREE.InstancedMesh[] = [];
 
   return {
     group,
@@ -22,8 +31,11 @@ export function createWorldLayer(): { group: THREE.Group; sync(state: GameState)
       renderedVersion = state.version;
       group.clear();
       roads.dispose();
-      roads = roadMesh(state);
+      roads = roadMesh(state, (i) => state.roads[i] && !state.mainRoad[i], roadMaterial);
       group.add(roads);
+      paving.forEach((mesh) => mesh.dispose());
+      paving = pavingMeshes(state);
+      group.add(...paving);
 
       for (const model of roadblockModels(state)) group.add(model);
       for (const building of state.buildings) {
@@ -38,15 +50,37 @@ export function createWorldLayer(): { group: THREE.Group; sync(state: GameState)
   };
 }
 
-function roadMesh(state: GameState): THREE.InstancedMesh {
-  const roadTiles = state.roads.flatMap((isRoad, i) => (isRoad ? [i] : []));
-  const mesh = new THREE.InstancedMesh(roadGeometry, roadMaterial, roadTiles.length);
+function roadMesh(state: GameState, drawn: (tile: number) => boolean, material: THREE.Material): THREE.InstancedMesh {
+  const roadTiles = state.roads.flatMap((_, i) => (drawn(i) ? [i] : []));
+  const mesh = new THREE.InstancedMesh(roadGeometry, material, roadTiles.length);
   const matrix = new THREE.Matrix4();
   roadTiles.forEach((tile, n) => {
     matrix.makeTranslation((tile % state.size) + 0.5, ROAD_HEIGHT, Math.floor(tile / state.size) + 0.5);
     mesh.setMatrixAt(n, matrix);
   });
   return mesh;
+}
+
+function pavingMeshes(state: GameState): THREE.InstancedMesh[] {
+  const joints = roadMesh(state, (i) => state.mainRoad[i], jointMaterial);
+  const tiles = state.mainRoad.flatMap((paved, i) => (paved ? [i] : []));
+  const slabs = new THREE.InstancedMesh(slabGeometry, slabMaterial, tiles.length * PAVING_SLABS_PER_SIDE ** 2);
+  const matrix = new THREE.Matrix4();
+  const color = new THREE.Color();
+  let n = 0;
+  for (const tile of tiles) {
+    for (let sy = 0; sy < PAVING_SLABS_PER_SIDE; sy++) {
+      for (let sx = 0; sx < PAVING_SLABS_PER_SIDE; sx++) {
+        const x = (tile % state.size) + (sx + 0.5) / PAVING_SLABS_PER_SIDE;
+        const z = Math.floor(tile / state.size) + (sy + 0.5) / PAVING_SLABS_PER_SIDE;
+        matrix.makeTranslation(x, ROAD_HEIGHT + PAVING_SLAB_HEIGHT / 2, z);
+        slabs.setMatrixAt(n, matrix);
+        slabs.setColorAt(n, color.setHex(PALETTE.pavingStone).offsetHSL(0, 0, (tileHash(x, z) - 0.5) * PAVING_SHADE_SPREAD));
+        n++;
+      }
+    }
+  }
+  return [joints, slabs];
 }
 
 function roadblockModels(state: GameState): THREE.Object3D[] {

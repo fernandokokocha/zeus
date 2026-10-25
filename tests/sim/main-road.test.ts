@@ -1,0 +1,112 @@
+import { describe, expect, it } from 'vitest';
+import { MAP_SIZE, generateTerrain } from '../../src/sim/map';
+import type { Point } from '../../src/sim/point';
+import { BUILDABLE, type Terrain } from '../../src/sim/terrain';
+
+const SEEDS = Array.from({ length: 100 }, (_, i) => i + 1);
+const MIN_RUN = 12;
+const GUILD_SIZE = 4;
+const GUILD_RANGE = 4;
+const GUILD_PLACEMENTS = 8;
+const BAND = { minY: MAP_SIZE / 4, maxY: (MAP_SIZE * 3) / 4 - 1 };
+
+interface Run {
+  dx: number;
+  dy: number;
+  steps: number;
+}
+
+function runsOf(road: Point[]): Run[] {
+  const runs: Run[] = [];
+  for (let i = 1; i < road.length; i++) {
+    const dx = road[i].x - road[i - 1].x;
+    const dy = road[i].y - road[i - 1].y;
+    const last = runs.at(-1);
+    if (last && last.dx === dx && last.dy === dy) last.steps++;
+    else runs.push({ dx, dy, steps: 1 });
+  }
+  return runs;
+}
+
+function at(terrain: Terrain[], x: number, y: number): Terrain {
+  return terrain[y * MAP_SIZE + x];
+}
+
+function guildPlacementsInRange(terrain: Terrain[], road: Point[]): number {
+  const onRoad = new Set(road.map((p) => p.y * MAP_SIZE + p.x));
+  const taken = new Set<number>();
+  let count = 0;
+  for (let y = 0; y <= MAP_SIZE - GUILD_SIZE; y++) {
+    for (let x = 0; x <= MAP_SIZE - GUILD_SIZE; x++) {
+      const tiles: number[] = [];
+      for (let dy = 0; dy < GUILD_SIZE; dy++) for (let dx = 0; dx < GUILD_SIZE; dx++) tiles.push((y + dy) * MAP_SIZE + x + dx);
+      const fits = tiles.every((i) => BUILDABLE.has(terrain[i]) && !onRoad.has(i) && !taken.has(i));
+      const inRange = road.some((p) => {
+        const dx = Math.max(x - p.x, 0, p.x - (x + GUILD_SIZE - 1));
+        const dy = Math.max(y - p.y, 0, p.y - (y + GUILD_SIZE - 1));
+        return Math.max(dx, dy) <= GUILD_RANGE;
+      });
+      if (fits && inRange) {
+        tiles.forEach((i) => taken.add(i));
+        count++;
+      }
+    }
+  }
+  return count;
+}
+
+describe.each(SEEDS)('the Main Road on seed %i', (seed) => {
+  const { terrain, mainRoad } = generateTerrain(seed);
+  const runs = runsOf(mainRoad);
+
+  it('starts at the middle of the west edge', () => {
+    expect(mainRoad[0]).toEqual({ x: 0, y: MAP_SIZE / 2 });
+  });
+
+  it('is a connected path that never crosses itself', () => {
+    for (let i = 1; i < mainRoad.length; i++) {
+      expect(Math.abs(mainRoad[i].x - mainRoad[i - 1].x) + Math.abs(mainRoad[i].y - mainRoad[i - 1].y)).toBe(1);
+    }
+    expect(new Set(mainRoad.map((p) => `${p.x},${p.y}`)).size).toBe(mainRoad.length);
+  });
+
+  it('reaches the water and runs on grass', () => {
+    const end = mainRoad.at(-1)!;
+    expect(at(terrain, end.x + 1, end.y)).toBe('water');
+    for (const p of mainRoad) expect(at(terrain, p.x, p.y)).toBe('grass');
+  });
+
+  it('alternates 3 to 5 eastward horizontal runs with vertical ones', () => {
+    const horizontal = runs.filter((r) => r.dy === 0);
+    expect(horizontal.length).toBeGreaterThanOrEqual(3);
+    expect(horizontal.length).toBeLessThanOrEqual(5);
+    expect(horizontal.every((r) => r.dx === 1)).toBe(true);
+    runs.forEach((run, i) => expect(run.dy === 0).toBe(i % 2 === 0));
+  });
+
+  it('has every run at 12 tiles or longer', () => {
+    for (const run of runs) expect(run.steps).toBeGreaterThanOrEqual(MIN_RUN);
+  });
+
+  it('stays within the middle half of the map height', () => {
+    for (const p of mainRoad) {
+      expect(p.y).toBeGreaterThanOrEqual(BAND.minY);
+      expect(p.y).toBeLessThanOrEqual(BAND.maxY);
+    }
+  });
+
+  it('leaves room for 8 Traders’ Guilds within range', () => {
+    expect(guildPlacementsInRange(terrain, mainRoad)).toBeGreaterThanOrEqual(GUILD_PLACEMENTS);
+  });
+});
+
+describe('the Main Road across seeds', () => {
+  it('is the same for the same seed', () => {
+    expect(generateTerrain(7).mainRoad).toEqual(generateTerrain(7).mainRoad);
+  });
+
+  it('differs between seeds', () => {
+    const shapes = new Set(SEEDS.slice(0, 10).map((seed) => JSON.stringify(generateTerrain(seed).mainRoad)));
+    expect(shapes.size).toBe(10);
+  });
+});

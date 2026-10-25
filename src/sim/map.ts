@@ -1,10 +1,10 @@
+import { layMainRoad } from './main-road';
 import type { Point } from './point';
 import { createRng, type Rng } from './rng';
 import type { Terrain } from './terrain';
 
 export const MAP_SIZE = 100;
 export const DEFAULT_SEED = 1500;
-export const ENTRY_ROAD_LENGTH = 8;
 
 const COAST_START = 14;
 const COAST_JITTER = 8;
@@ -16,7 +16,7 @@ const COPPER_DEPOSITS = 3;
 const DEPOSIT_MARGIN = 10;
 const DEPOSIT_COAST_CLEARANCE = 25;
 
-export function generateTerrain(seed: number): { terrain: Terrain[]; entry: Point } {
+export function generateTerrain(seed: number): { terrain: Terrain[]; mainRoad: Point[] } {
   const rng = createRng(seed);
   const coast = noiseField(rng, 16);
   const forest = noiseField(rng, 10);
@@ -35,10 +35,8 @@ export function generateTerrain(seed: number): { terrain: Terrain[]; entry: Poin
   placeDeposits(rng, terrain, 'marble', MARBLE_DEPOSITS);
   placeDeposits(rng, terrain, 'copper', COPPER_DEPOSITS);
 
-  const entry = { x: 0, y: Math.floor(MAP_SIZE / 2) };
-  for (let x = 0; x < ENTRY_ROAD_LENGTH; x++) terrain[entry.y * MAP_SIZE + x] = 'grass';
-
-  return { terrain, entry };
+  const mainRoad = layMainRoad(rng, terrain, MAP_SIZE);
+  return { terrain, mainRoad };
 }
 
 function placeDeposits(rng: Rng, terrain: Terrain[], kind: Terrain, count: number): void {

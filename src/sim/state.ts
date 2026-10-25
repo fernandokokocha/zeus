@@ -1,6 +1,6 @@
 import type { BuildingType, Rotation } from './buildings';
 import type { HouseLevel } from './housing';
-import { DEFAULT_SEED, ENTRY_ROAD_LENGTH, MAP_SIZE, generateTerrain } from './map';
+import { DEFAULT_SEED, MAP_SIZE, generateTerrain } from './map';
 import { clampPoint, type Point } from './point';
 import type { Terrain } from './terrain';
 import { STARTING_TREASURY } from './treasury';
@@ -150,6 +150,7 @@ export interface GameState {
   size: number;
   terrain: Terrain[];
   roads: boolean[];
+  mainRoad: boolean[];
   roadblocks: boolean[];
   buildings: Building[];
   buildingIdAt: number[];
@@ -186,13 +187,14 @@ export interface GameState {
 
 export const NO_BUILDING = 0;
 
-export function newGameState(size: number, terrain: Terrain[], entry: Point): GameState {
-  const roads = new Array<boolean>(size * size).fill(false);
-  for (let x = entry.x; x < entry.x + ENTRY_ROAD_LENGTH; x++) roads[entry.y * size + x] = true;
+export function newGameState(size: number, terrain: Terrain[], mainRoad: Point[]): GameState {
+  const onMainRoad = new Array<boolean>(size * size).fill(false);
+  for (const p of mainRoad) onMainRoad[p.y * size + p.x] = true;
   return {
     size,
     terrain,
-    roads,
+    roads: [...onMainRoad],
+    mainRoad: onMainRoad,
     roadblocks: new Array<boolean>(size * size).fill(false),
     buildings: [],
     buildingIdAt: new Array<number>(size * size).fill(NO_BUILDING),
@@ -217,7 +219,7 @@ export function newGameState(size: number, terrain: Terrain[], entry: Point): Ga
     artisans: [],
     nextArtisanId: 1,
     rngState: DEFAULT_SEED,
-    entry,
+    entry: mainRoad[0],
     treasury: STARTING_TREASURY,
     lastMonth: { taxes: 0, wages: 0 },
     tick: 0,
@@ -229,8 +231,8 @@ export function newGameState(size: number, terrain: Terrain[], entry: Point): Ga
 }
 
 export function createGame(seed = DEFAULT_SEED): GameState {
-  const { terrain, entry } = generateTerrain(seed);
-  return newGameState(MAP_SIZE, terrain, entry);
+  const { terrain, mainRoad } = generateTerrain(seed);
+  return newGameState(MAP_SIZE, terrain, mainRoad);
 }
 
 export function tileIndex(state: GameState, x: number, y: number): number {

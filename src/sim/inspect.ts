@@ -131,6 +131,7 @@ function describeBuilding(state: GameState, building: Building): Description {
 function describeGround(state: GameState, x: number, y: number): Description {
   const i = tileIndex(state, x, y);
   if (state.roadblocks[i]) return { title: 'Roadblock', meters: [], lines: [`Tile ${x}, ${y}`, 'Stops roaming walkers; settlers pass'] };
+  if (state.mainRoad[i]) return { title: 'Main Road', meters: [], lines: [`Tile ${x}, ${y}`, 'Paved; cannot be demolished'] };
   if (state.roads[i]) return { title: 'Road', meters: [], lines: [`Tile ${x}, ${y}`] };
 
   const terrain = state.terrain[i];

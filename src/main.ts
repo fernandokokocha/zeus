@@ -22,7 +22,8 @@ const MAX_TICKS_PER_FRAME = 40;
 const MAX_FRAME_SECONDS = 0.25;
 const START_VIEW_OFFSET = 15;
 
-const state = createGame();
+const seed = new URLSearchParams(location.search).get('seed');
+const state = seed === null ? createGame() : createGame(Number(seed));
 const view = createView(
   byId<HTMLCanvasElement>('view'),
   new THREE.Vector3(state.entry.x + START_VIEW_OFFSET, 0, state.entry.y),

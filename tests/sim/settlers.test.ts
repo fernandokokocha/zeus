@@ -4,8 +4,9 @@ import { demolish, placeRoad, placeRoadblock } from '../../src/sim/commands';
 import { houseName } from '../../src/sim/housing';
 import { SETTLER_SPAWN_INTERVAL_TICKS, population } from '../../src/sim/settlers';
 import { WALKER_TILES_PER_TICK } from '../../src/sim/walking';
-import type { GameState } from '../../src/sim/state';
-import { grassGame, placeHouse, runTicks } from './helpers';
+import { generateTerrain } from '../../src/sim/map';
+import { createGame, type GameState } from '../../src/sim/state';
+import { grassGame, placeHouse, runTicks, setTerrain } from './helpers';
 
 function ticksToWalk(tiles: number): number {
   return Math.ceil(tiles / WALKER_TILES_PER_TICK);
@@ -35,6 +36,19 @@ describe('settlers', () => {
     expect(settler.path[0]).toEqual(game.entry);
     expect(settler.destinationId).toBe(game.buildings[0].id);
     expect(settler.people).toBe(8);
+  });
+
+  it('walk in along the Main Road of a generated map', () => {
+    const game = createGame(7);
+    const { mainRoad } = generateTerrain(7);
+    const stop = mainRoad[6];
+    for (const [dx, dy] of [[0, 1], [1, 1], [0, 2], [1, 2]]) setTerrain(game, stop.x + dx, stop.y + dy, 'grass');
+    placeHouse(game, stop.x, stop.y + 1);
+    runTicks(game, SETTLER_SPAWN_INTERVAL_TICKS);
+    const [settler] = game.settlers;
+    expect(settler.path).toEqual(mainRoad.slice(0, 7));
+    runTicks(game, ticksToWalk(7));
+    expect(game.buildings[0].residents).toBe(8);
   });
 
   it('turn the lot into a Hut with 8 residents when they arrive', () => {

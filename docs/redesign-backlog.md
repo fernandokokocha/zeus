@@ -16,6 +16,7 @@ Drawn in `src/render/terrain-layer.ts`; colours in `TERRAIN_COLORS` (`src/render
 |---|---|---|---|
 | 1 | Ground: grass and meadow | — | Flat coloured squares with a per-tile shade. Meadow must stay readable as "olive trees go here". Variants. |
 | 2 | Water | — | Flat blue squares; no shore, no waves. |
+| 28 | Main Road | straight, corner, the shore end, under a roadblock | Pale slabs in `pavingMeshes` (`src/render/world-layer.ts`). Paved stone that reads as grander than dirt roads, which join it at T-junctions. The future route of traders. |
 
 ## Buildings
 
@@ -54,7 +55,7 @@ superintendent (Maintenance Office). Match them.
 
 ## Suggested batches
 
-- **Easy:** 7, 8, 9, 15, 19 — small, few states.
+- **Easy:** 7, 8, 9, 15, 19, 28 — small, few states.
 - **Medium:** 5, 1, 2.
 - **Hard:** 17, 18 (big footprints, many stages), and the walker groups 20–27, which
   need the walker gallery set-up first.

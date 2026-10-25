@@ -85,12 +85,12 @@ test('boots, builds a street with services, food, culture, fleece, oil, material
   await place(page, 'Distribution', /^Oil Vendor/, [17, 55]);
   await place(page, 'Hygiene & Safety', /^Maintenance Office/, [9, 46]);
   await page.getByRole('button', { name: /^Road \(/ }).click();
-  await drag(page, [29, 50], [35, 50]);
+  await drag(page, [29, 50], [37, 50]);
   await place(page, 'Industry', /^Timber Mill/, [33, 51]);
   await place(page, 'Industry', /^Masonry Shop/, [31, 51]);
-  await place(page, 'Industry', /^Foundry/, [31, 48]);
-  await place(page, 'Industry', /^Sculpture Studio/, [33, 48]);
-  await place(page, 'Mythology', /^Artisans' Guild/, [35, 48]);
+  await place(page, 'Industry', /^Foundry/, [32, 48]);
+  await place(page, 'Industry', /^Sculpture Studio/, [34, 48]);
+  await place(page, 'Mythology', /^Artisans' Guild/, [36, 48]);
   await place(page, 'Mythology', /^Forge of Hephaestus/, [50, 53]);
   await expect(page.locator('#status')).toHaveText('Needs 13 loads of marble in storehouses (has 0)');
   await page.keyboard.press('r');

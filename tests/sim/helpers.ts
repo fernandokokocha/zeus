@@ -3,8 +3,17 @@ import { tick } from '../../src/sim/tick';
 import { newGameState, type GameState } from '../../src/sim/state';
 import type { Terrain } from '../../src/sim/terrain';
 
+const ENTRY_ROAD_LENGTH = 8;
+
+export function mainRoadGame(size = 20): GameState {
+  const entryRoad = Array.from({ length: ENTRY_ROAD_LENGTH }, (_, x) => ({ x, y: size / 2 }));
+  return newGameState(size, new Array<Terrain>(size * size).fill('grass'), entryRoad);
+}
+
 export function grassGame(size = 20): GameState {
-  return newGameState(size, new Array<Terrain>(size * size).fill('grass'), { x: 0, y: size / 2 });
+  const game = mainRoadGame(size);
+  game.mainRoad.fill(false);
+  return game;
 }
 
 export function setTerrain(state: GameState, x: number, y: number, terrain: Terrain): void {
