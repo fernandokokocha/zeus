@@ -3,8 +3,9 @@
 A browser city-builder modeled on *Zeus: Master of Olympus*. Unattended Claude sessions
 build it one slice at a time, and the owner playtests the deployed build between slices.
 
-- **Design:** `docs/superpowers/specs/2026-10-11-zeus-clone-design.md`. Read all of it
-  every session.
+- **Design:** `docs/superpowers/specs/2026-10-11-zeus-clone-design.md`, extended by
+  `docs/superpowers/specs/2026-10-25-elite-housing-design.md` (elite housing and trade,
+  slices 12 onward). Read all of both every session.
 - **Gameplay numbers:** `docs/reference/zeus-numbers.md`.
 - **Progress:** `docs/roadmap.md`.
 - **Slice plans:** `docs/slices/NN-name.md`.

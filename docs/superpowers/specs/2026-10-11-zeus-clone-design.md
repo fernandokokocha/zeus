@@ -257,23 +257,13 @@ Each slice lists its content and the houses it makes reachable.
   - Artisans build in visible stages.
 - A finished sanctuary radiates +20 appeal.
 
-### 12 · God favors
-- **Favor:** each god with a finished sanctuary has a favor meter from 0 to 100. It
-  starts at 50 and decays monthly.
-- **Sacrifices:** a sacrifice raises favor. It is triggered from the sanctuary
-  inspector and consumes a sheep.
-- **Visits:** the god periodically walks out into the city. Buildings of their industry
-  along the route become **sanctified**, which boosts output.
-- **High favor:** triggers a blessing:
-  - Demeter: food delivered to granaries.
-  - Athena: oil and olives delivered.
-  - Hephaestus: no fire risk for a period, and studios sanctified.
-- **Low favor:** sends the god on an angry visit carrying their curse.
-- The slice session chooses exact rates.
+### 12 onward · Elite housing and trade
+Slices 12–19 are specified in `2026-10-25-elite-housing-design.md`. God favors, the
+old slice 12, is dropped.
 
 ## Out of scope
 
-Elite housing, wine, armor, horses, military, invasions, monsters, heroes, trade,
-mint and silver, hunting, fishing, carrots and onions, the infirmary and disease, crime
-and watchposts, the stadium, gods without sanctuaries, campaign and scenarios,
+Elite housing other than the Traders' Guild, sea trade, god favors, wine, armor,
+horses, military, invasions, monsters, heroes, mint and silver, hunting, fishing,
+carrots and onions, the infirmary and disease, crime and watchposts, the stadium, gods without sanctuaries, campaign and scenarios,
 save/load, sound, mobile, a difficulty selector, adjustable wage and tax rates.
