@@ -76,7 +76,7 @@ https://zeus.heavengames.com/gameinfo/appeal/. Fire/collapse are risk increments
 | Granary | 4×4 | 18 | 50 | -12,-10,-8,-6 | 8 | 8 |
 | Storehouse | 3×3 | 12 | 25 | -2,-2,-2,-2 | 5 | — |
 | Agora (common) | 2×6 | — | 25 | 12,12,10,10,8,8 | — | 6 |
-| Agora vendor (food/fleece/oil), placed on an agora | 2×2 | 4 | 10 | — | — | — |
+| Agora vendor (food/fleece/oil/cloth), placed on an agora | 2×2 | 4 | 10 | — | — | — |
 | Carding Shed | 2×2 | 8 | 16 | -5,-3,-1 | 5 | — |
 | Sheep (placed animal) | 1×1 | — | 4 | — | — | — |
 | Olive tree (on meadow) | 1×1 | — | 3 | 1 | — | — |
@@ -97,6 +97,7 @@ https://zeus.heavengames.com/gameinfo/appeal/. Fire/collapse are risk increments
 | Column | 1×1 | — | 8 | 4,2,0 | — | — |
 | Flower Garden | 2×2 | — | 20 | 8,7,6 | — | — |
 | Any sanctuary | see below | | | 20,18,16,14,12,10 | — | — |
+| Traders' Guild (**ours**, elite house) | 4×4 | — (20 merchants) | 100 + 1 permit | — | 8 | — |
 
 - Collapse timing: 60 ÷ risk increment = months until collapse without maintenance.
 - Sculpture Studio workers: 12 on the industry page, 18 on the model-data page. Use 12.
@@ -216,3 +217,12 @@ https://zeus.heavengames.com/gameinfo/gods/
   **8 s** of real time and fades over **1 s**, at most **4** at once.
 - Well fed charter (spec): **24** months in a row with no house that eats going hungry
   grants **1** Traders' Guild permit, then the count restarts.
+- Traders' Guild (spec): **20** merchants who are its staff and stay out of the labor pool;
+  placed over four Townhouses in an exact 4×4 block whose nearest tile is within **4** tiles of
+  the Main Road, with block appeal at least **25**; needs a Townhouse's needs plus cloth, culture
+  **45** and appeal **25**; pays no tax. Any need missing for **1 month** breaks it into four
+  vacant lots and the permit is lost.
+- Cloth (spec, **ours**): a guild uses **8 units** a month; a cloth peddler fills it to **3 months**
+  (24 units), like other goods. Ordinary houses take no cloth.
+- Placing a guild keeps the four houses' food, fleece and oil, summed, and their latest water and
+  culture coverage; residents beyond 20 leave.

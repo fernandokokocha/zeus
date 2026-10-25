@@ -29,6 +29,8 @@ Old models live in `src/render/models.ts`, each wired in `MODELS`.
 | 8 | Growers' Lodge | 2×2 · 12 | no workers / with workers; olive stock | Sends growers to olive trees (redesigned: gnarled and twin-trunk). |
 | 9 | Olive Press | 2×2 · 12 | no workers / with workers; olives in, oil out | The press beam and jars carry it. |
 | 29 | Weaver | 2×2 · 12 | no workers / with workers; fleece in, cloth out (0–4 bolts) | Placeholder in `src/render/weaver-models.ts`: workshop, blue lean-to, an upright loom with blue weave, bolts by the road. Fine cloth is the Traders' Guild's luxury, so it should look precious, not like the Carding Shed. Also redo the stored-cloth load in storehouse bays (`clothBolts` in `src/render/kit/cloth.ts`). |
+| 30 | Traders' Guild | 4×4 · 20 merchants (its residents) | occupied and fully supplied; missing a need (`isMissingNeed`, the warning before it breaks up); burning (its 16 tiles become burning ruins) | Placeholder in `src/render/traders-guild-models.ts`: a two-storey back block and two wings with blue-tiled roofs, a white colonnade along the front, blue awnings and bolts of cloth on display tables (awnings rolled and tables bare when missing a need), amphorae and crates, a merchant. The first 4×4 house and the reward for a long plan. Grow it out of the chosen Townhouse so four Townhouses visibly become one house: white walls, blue-tiled roofs, a colonnaded front facing the road, an upper floor, a courtyard, blue cloth awnings and bolts of fine cloth on display, amphorae and crates hinting at trade. Its silhouette must read as different from a Townhouse block at default zoom. |
+| 31 | Cloth Vendor | 2×2 · 4 | no workers / with workers; cloth stock 0–8 loads | Placeholder: the agora emblem stall (`src/render/agora-models.ts`, `src/render/kit/market.ts`) in dyed blue, with folded cloth on the stand and bolts as stock. Keep the chosen emblem-tent look of the other stalls, but make it look precious beside them. |
 | 15 | Podium | 2×2 · 4 | idle / performing (`isPerforming`) | Philosophers speak here. |
 | 17 | Sanctuary building stages | 13×8 to 18×12 · 60 | stages 0–4 (`builtStages`), then finished | Shared by all three gods: staked outline, platform, columns, cella and beams, roof, scaffolding, material piles. |
 | 18 | Sanctuary precincts | as above | finished | Each god's garden: Demeter, Athena, Hephaestus (`PRECINCT_GARDENS`). One agent per god. |
@@ -42,10 +44,10 @@ Drawn in `src/render/walker-layer.ts` as `Part` lists; see "Walkers and animals"
 | # | group | figures |
 |---|---|---|
 | 20 | Service walkers | water carrier, tax collector, superintendent |
-| 21 | Peddlers | food, fleece and oil peddlers |
+| 21 | Peddlers | food, fleece, oil and cloth peddlers |
 | 22 | Culture walkers | philosopher, athlete, actor, philosopher trainee, actor trainee |
 | 23 | Cart pushers | cart pusher, and the fleece, olive, oil, wood, marble, bronze, sculpture and cloth carts and supplies |
-| 24 | Buyers | food, fleece, olive, oil and bronze buyers, and the Weaver's fleece buyer |
+| 24 | Buyers | food, fleece, olive, oil, cloth and bronze buyers, and the Weaver's fleece buyer |
 | 25 | Gatherers | lumberjack (with log), quarryman (with block), miner (with ore), olive grower |
 | 26 | Townsfolk | settler, artisan, shepherd |
 | 27 | Sheep | shorn, half-grown, woolly |
@@ -56,7 +58,7 @@ superintendent (Maintenance Office). Match them.
 
 ## Suggested batches
 
-- **Easy:** 7, 8, 9, 15, 19, 28, 29 — small, few states.
+- **Easy:** 7, 8, 9, 15, 19, 28, 29, 31 — small, few states.
 - **Medium:** 5, 1, 2.
-- **Hard:** 17, 18 (big footprints, many stages), and the walker groups 20–27, which
+- **Hard:** 30 (the guild, designed with the owner right after slice 16), 17, 18 (big footprints, many stages), and the walker groups 20–27, which
   need the walker gallery set-up first.

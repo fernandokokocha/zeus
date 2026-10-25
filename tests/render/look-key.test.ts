@@ -4,7 +4,8 @@ import { UNITS_PER_LOAD } from '../../src/sim/food';
 import type { BuildingType } from '../../src/sim/buildings';
 import type { Building, GameState } from '../../src/sim/state';
 import { lookKey } from '../../src/render/look-key';
-import { mainRoadGame } from '../sim/helpers';
+import { catchFire } from '../../src/sim/safety';
+import { mainRoadGame, placedGuild } from '../sim/helpers';
 
 function town(): GameState {
   const game = mainRoadGame();
@@ -47,5 +48,33 @@ describe('lookKey', () => {
   it('changes when a performance starts on the podium', () => {
     const game = town();
     expect(changedBy(game, () => (first(game, 'podium').performingUntil = game.tick + 10))).toEqual(['podium']);
+  });
+  it("changes when a Traders' Guild starts missing a need, and not as its clock runs", () => {
+    const { game, guild } = placedGuild();
+    expect(changedBy(game, () => (guild.pendingTicks = 1))).toEqual(['tradersGuild']);
+    expect(changedBy(game, () => (guild.pendingTicks = 2))).toEqual([]);
+    expect(changedBy(game, () => (guild.pendingTicks = 0))).toEqual(['tradersGuild']);
+  });
+
+  it("changes when a Traders' Guild's merchants leave", () => {
+    const { game, guild } = placedGuild();
+    expect(changedBy(game, () => (guild.residents = 0))).toEqual(['tradersGuild']);
+  });
+
+  it("burns as ruins whose key reads the fire", () => {
+    const { game, guild } = placedGuild();
+    catchFire(game, guild);
+    const ruins = game.buildings.filter((b) => b.type === 'ruins');
+    expect(ruins).toHaveLength(16);
+    expect(ruins.every((b) => lookKey(b, game) === 'ruins/0/true')).toBe(true);
+  });
+
+  it('changes when a cloth vendor is staffed and when it gains a load', () => {
+    const game = town();
+    placeBuilding(game, 'agora', 7, 0);
+    placeBuilding(game, 'clothVendor', 7, 0);
+    const vendor = first(game, 'clothVendor');
+    expect(changedBy(game, () => (vendor.workers = 4))).toEqual(['clothVendor']);
+    expect(changedBy(game, () => (vendor.cloth += UNITS_PER_LOAD))).toEqual(['clothVendor']);
   });
 });

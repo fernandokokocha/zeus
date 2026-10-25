@@ -1,13 +1,13 @@
 import { BUILDING_SPECS } from './buildings';
 import { adjacentRoadTiles } from './commands';
 import { isUnderConstruction } from './sanctuaries';
-import { population } from './settlers';
 import type { Building, GameState } from './state';
 
 export const WORKING_SHARE = 0.52;
 
 export function workforce(state: GameState): number {
-  return Math.floor(population(state) * WORKING_SHARE);
+  const commoners = state.buildings.filter((b) => b.type === 'house').reduce((sum, house) => sum + house.residents, 0);
+  return Math.floor(commoners * WORKING_SHARE);
 }
 
 function jobsOffered(state: GameState, building: Building): number {

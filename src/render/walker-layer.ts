@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import type { CarrierKind, GameState, Material, RoamerKind, TraineeKind, Walk } from '../sim/state';
 import { CARRIER_SPECS } from '../sim/carriers';
+import { ROAMER_SPECS } from '../sim/roamers';
 import { FULL_FLEECE } from '../sim/sheep';
 import { WALKER_TILES_PER_TICK, walkerPosition } from '../sim/walking';
 import { PALETTE } from './palette';
@@ -196,6 +197,8 @@ const FIGURES: Record<Figure, Part[]> = {
   marbleSupply: marbleCart,
   sculptureSupply: sculptureCart,
   bronzeBuyer: [...body(PALETTE.bronzeBuyerTunic), ingot(0.1, 0.12, 0.02)],
+  clothBuyer: [...body(PALETTE.clothBuyerTunic), clothBoltPart(0.2, -0.09)],
+  clothPeddler: [...body(PALETTE.clothPeddlerTunic), clothBoltPart(0.41, 0), clothBoltPart(0.49, 0)],
   artisan: [...body(PALETTE.artisanTunic), ...tool(new THREE.BoxGeometry(0.08, 0.05, 0.05))],
   shepherd,
   shepherdWithFleece: [
@@ -304,7 +307,7 @@ export function createWalkerLayer(): { group: THREE.Group; sync(state: GameState
     sync(state, ticksAhead) {
       sets.settler.show(state.settlers, ticksAhead);
       sets.artisan.show(state.artisans, ticksAhead);
-      for (const kind of ['waterCarrier', 'taxCollector', 'peddler', 'fleecePeddler', 'oilPeddler', 'philosopher', 'athlete', 'actor', 'superintendent'] as const) {
+      for (const kind of Object.keys(ROAMER_SPECS) as RoamerKind[]) {
         sets[kind].show(state.roamers.filter((r) => r.kind === kind), ticksAhead);
       }
       for (const kind of Object.keys(CARRIER_SPECS) as CarrierKind[]) {

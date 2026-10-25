@@ -24,6 +24,7 @@ export type BuildingType =
   | 'growersLodge'
   | 'olivePress'
   | 'oilVendor'
+  | 'clothVendor'
   | 'weaver'
   | 'timberMill'
   | 'masonryShop'
@@ -34,6 +35,7 @@ export type BuildingType =
   | 'demeterSanctuary'
   | 'athenaSanctuary'
   | 'hephaestusSanctuary'
+  | 'tradersGuild'
   | 'ruins';
 
 export interface BuildingSpec {
@@ -72,6 +74,7 @@ export const BUILDING_SPECS: Record<BuildingType, BuildingSpec> = {
   growersLodge: { name: "Growers' Lodge", width: 2, height: 2, cost: 25, workers: 12, appeal: [-3, -2], needsRoad: true },
   olivePress: { name: 'Olive Press', width: 2, height: 2, cost: 45, workers: 12, appeal: [-4, -4, -2, -2], needsRoad: true },
   oilVendor: { name: 'Oil Vendor', width: 2, height: 2, cost: 10, workers: 4, appeal: [], needsRoad: true },
+  clothVendor: { name: 'Cloth Vendor', width: 2, height: 2, cost: 10, workers: 4, appeal: [], needsRoad: true },
   weaver: { name: 'Weaver', width: 2, height: 2, cost: 40, workers: 12, appeal: [-3, -2, -1], needsRoad: true },
   timberMill: { name: 'Timber Mill', width: 2, height: 2, cost: 35, workers: 12, appeal: [-5, -4, -3, -2], needsRoad: true },
   masonryShop: { name: 'Masonry Shop', width: 2, height: 2, cost: 75, workers: 15, appeal: [-6, -5, -4, -3], needsRoad: true },
@@ -82,6 +85,7 @@ export const BUILDING_SPECS: Record<BuildingType, BuildingSpec> = {
   demeterSanctuary: { name: 'Garden of Demeter', width: 18, height: 12, cost: 840, workers: 60, appeal: SANCTUARY_APPEAL, needsRoad: true },
   athenaSanctuary: { name: 'Arbor of Athena', width: 16, height: 12, cost: 2160, workers: 60, appeal: SANCTUARY_APPEAL, needsRoad: true },
   hephaestusSanctuary: { name: 'Forge of Hephaestus', width: 13, height: 8, cost: 760, workers: 60, appeal: SANCTUARY_APPEAL, needsRoad: true },
+  tradersGuild: { name: "Traders' Guild", width: 4, height: 4, cost: 100, workers: 0, appeal: [], needsRoad: true },
   ruins: { name: 'Ruins', width: 1, height: 1, cost: 0, workers: 0, appeal: [], needsRoad: false },
 };
 
@@ -129,7 +133,7 @@ export function worldToLocal(building: Placement, p: Point): Point {
   ][building.rotation];
 }
 
-export const AGORA_VENDORS: ReadonlySet<BuildingType> = new Set<BuildingType>(['foodVendor', 'fleeceVendor', 'oilVendor']);
+export const AGORA_VENDORS: ReadonlySet<BuildingType> = new Set<BuildingType>(['foodVendor', 'fleeceVendor', 'oilVendor', 'clothVendor']);
 
 export function isAgoraVendor(type: BuildingType): boolean {
   return AGORA_VENDORS.has(type);

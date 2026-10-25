@@ -1,5 +1,5 @@
 import { monthlyUse } from './food';
-import { houseName } from './housing';
+import { buildingName, isResidence } from './housing';
 import { postNotice } from './notices';
 import type { Building, GameState } from './state';
 
@@ -12,11 +12,11 @@ export interface WellFed {
 }
 
 export function tallyWellFed(state: GameState): void {
-  const eaters = state.buildings.filter((b) => b.type === 'house' && monthlyUse(b, 'food') > 0);
+  const eaters = state.buildings.filter((b) => isResidence(b) && monthlyUse(b, 'food') > 0);
   if (eaters.length === 0) return;
   const hungry = eaters.find(mealEmptiesStock);
   if (hungry) {
-    state.wellFed = { months: 0, reset: { tick: state.tick, house: `${houseName(hungry)} at ${hungry.x},${hungry.y}` } };
+    state.wellFed = { months: 0, reset: { tick: state.tick, house: `${buildingName(hungry)} at ${hungry.x},${hungry.y}` } };
     return;
   }
   state.wellFed.months++;

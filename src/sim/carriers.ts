@@ -39,6 +39,7 @@ export const CARRIER_SPECS: Record<CarrierKind, CarrierSpec> = {
   bronzeBuyer: { name: 'Buyer', home: 'sculptureStudio', good: 'bronze', stores: ['storehouse'], delivers: false, capacity: STUDIO_BRONZE_CAPACITY },
   weaverBuyer: { name: 'Buyer', home: 'weaver', good: 'fleece', stores: ['storehouse'], delivers: false, capacity: WEAVER_FLEECE_CAPACITY },
   clothCart: { name: 'Cart Pusher', home: 'weaver', good: 'cloth', stores: ['storehouse'], delivers: true, capacity: 0 },
+  clothBuyer: { name: 'Buyer', home: 'clothVendor', good: 'cloth', stores: ['storehouse'], delivers: false, capacity: VENDOR_CAPACITY },
   marbleSupply: { name: 'Cart Pusher', home: 'storehouse', good: 'marble', stores: SANCTUARIES, delivers: true, capacity: 0 },
   woodSupply: { name: 'Cart Pusher', home: 'storehouse', good: 'wood', stores: SANCTUARIES, delivers: true, capacity: 0 },
   sculptureSupply: { name: 'Cart Pusher', home: 'storehouse', good: 'sculptures', stores: SANCTUARIES, delivers: true, capacity: 0 },

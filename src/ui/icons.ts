@@ -72,4 +72,12 @@ export const GROUP_ICONS: Record<GroupName, string> = {
       '<circle cx="19" cy="17" r="4.2"/><circle cx="13" cy="17" r="4.2"/><circle cx="11" cy="11.2" r="4.2"/></g>' +
       `<circle cx="16" cy="12.8" r="2.8" fill="#f2c94c" stroke="${INK}"/>`,
   ),
+  Elite: svg(
+    `<path d="M3 12 16 4 29 12z" fill="#2f6fb3" stroke="${INK}" stroke-width="1.2" stroke-linejoin="round"/>` +
+      `<rect x="4" y="12" width="24" height="3" fill="#f6f3ec" stroke="${INK}" stroke-width="1"/>` +
+      `<g fill="#f6f3ec" stroke="${INK}" stroke-width="1"><rect x="6" y="15" width="3" height="10"/><rect x="11.5" y="15" width="3" height="10"/>` +
+      '<rect x="17.5" y="15" width="3" height="10"/><rect x="23" y="15" width="3" height="10"/></g>' +
+      `<rect x="3" y="25" width="26" height="3" fill="#f6f3ec" stroke="${INK}" stroke-width="1"/>` +
+      '<circle cx="16" cy="9" r="1.6" fill="#e0b13f"/>',
+  ),
 };

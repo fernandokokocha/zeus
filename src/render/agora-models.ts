@@ -42,7 +42,7 @@ export function emblemStall(good: Good, staffed: boolean, loads: number): THREE.
   return staffed ? withSeller(shell, 0, seller()) : shell;
 }
 
-export const VENDOR_GOODS: Record<string, Good> = { foodVendor: 'food', fleeceVendor: 'fleece', oilVendor: 'oil' };
+export const VENDOR_GOODS: Record<string, Good> = { foodVendor: 'food', fleeceVendor: 'fleece', oilVendor: 'oil', clothVendor: 'cloth' };
 const shells = new Map<string, () => THREE.Object3D>();
 const bakedSeller = bakedFigure(seller);
 

@@ -36,7 +36,7 @@ async function place(page: Page, group: string, tool: RegExp, at: [number, numbe
   await drag(page, at, at);
 }
 
-test('boots, builds a street with services, food, culture, fleece, oil, cloth, materials, sanctuaries and decorations and maintenance, and settlers move in', async ({ page }) => {
+test('boots, builds a street with services, food, culture, fleece, oil, cloth, a cloth vendor, materials, sanctuaries and decorations and maintenance, and settlers move in', async ({ page }) => {
   test.setTimeout(180_000);
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
@@ -48,7 +48,7 @@ test('boots, builds a street with services, food, culture, fleece, oil, cloth, m
   await expect(page.locator('#date')).toHaveText('January, Year 1');
   await expect(page.locator('#population')).toHaveText('Population 0');
   await expect(page.locator('#treasury')).toHaveText('5,000 dr');
-  await expect(page.locator('#toolbar button')).toHaveCount(12);
+  await expect(page.locator('#toolbar button')).toHaveCount(13);
   const noticeLog = page.locator('#notice-log');
   await page.getByRole('button', { name: 'Notices' }).click();
   await expect(noticeLog).toContainText('No notices yet');
@@ -105,6 +105,12 @@ test('boots, builds a street with services, food, culture, fleece, oil, cloth, m
   await place(page, 'Mythology', /^Artisans' Guild/, [36, 48]);
   await place(page, 'Mythology', /^Forge of Hephaestus/, [50, 53]);
   await expect(page.locator('#status')).toHaveText('Needs 13 loads of marble in storehouses (has 0)');
+  await page.getByRole('button', { name: /^Road \(/ }).click();
+  await drag(page, [37, 50], [44, 50]);
+  await place(page, 'Distribution', /^Agora/, [40, 46]);
+  await place(page, 'Distribution', /^Cloth Vendor/, [40, 44]);
+  await place(page, 'Elite', /^Traders' Guild/, [46, 53]);
+  await expect(page.locator('#status')).toHaveText("A Traders' Guild goes over four Townhouses forming a 4×4 block");
   await page.keyboard.press('r');
   await expect(page.locator('#status')).toHaveText('Rotated 90° counterclockwise');
   await page.keyboard.press('Escape');
@@ -131,6 +137,8 @@ test('boots, builds a street with services, food, culture, fleece, oil, cloth, m
   await inspect([17, 51]);
   await expect(inspector.locator('.meter')).toHaveCount(1);
   await inspector.screenshot({ path: 'test-results/inspector-vendor.png' });
+  await inspect([40, 44]);
+  await expect(inspector).toContainText('Cloth Vendor');
   await page.locator('#inspector-close').click();
   const centre = await tileOnScreen(page, START_VIEW_CENTER.x, START_VIEW_CENTER.y);
   await page.mouse.move(centre.x, centre.y);

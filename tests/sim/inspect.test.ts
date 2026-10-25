@@ -11,7 +11,8 @@ import { describeTile, inspectTile, type Meter } from '../../src/sim/inspect';
 import { FIRE_BURN_TICKS, RISK_LIMIT, catchFire } from '../../src/sim/safety';
 import { SETTLER_SPAWN_INTERVAL_TICKS } from '../../src/sim/settlers';
 import { walkerTile } from '../../src/sim/walking';
-import { grassGame, mainRoadGame, placeHouse, runTicks, setMeadow, setTerrain } from './helpers';
+import { tick } from '../../src/sim/tick';
+import { grassGame, mainRoadGame, placeHouse, placedGuild, runTicks, setMeadow, setTerrain, supplyGuild } from './helpers';
 
 function meter(game: GameState, x: number, y: number, label: string): Meter {
   const found = describeTile(game, x, y).meters.find((m) => m.label === label);
@@ -793,6 +794,18 @@ it('describes olives in a storehouse and a press buyer fetching them', () => {
       lines: ['Tile 10, 16', 'Workers 4/4', 'Oil Peddler waits for oil', 'Buyer waits for a storehouse with oil'],
     });
   });
+
+  it('describes a cloth vendor', () => {
+    const { game } = street();
+    placeBuilding(game, 'agora', 10, 16);
+    placeBuilding(game, 'clothVendor', 10, 16);
+    runTicks(game, 1);
+    expect(describeTile(game, 10, 17)).toEqual({
+      title: 'Cloth Vendor',
+      meters: [{ label: 'Cloth', fill: 0, value: '0 of 8 loads', need: null }],
+      lines: ['Tile 10, 16', 'Workers 4/4', 'Cloth Peddler waits for cloth', 'Buyer waits for a storehouse with cloth'],
+    });
+  });
 });
 
 describe('the inspector on safety', () => {
@@ -983,5 +996,44 @@ describe('inspectTile', () => {
     const look = inspectTile(game, 3, 9);
     demolish(game, { x: 2, y: 8 }, { x: 2, y: 8 });
     expect(look().tiles).toEqual([{ x: 3, y: 9 }]);
+  });
+});
+
+describe("the inspector on a Traders' Guild", () => {
+  const needs = (game: GameState) => describeTile(game, 4, 13).meters.map((m) => [m.label, m.need]);
+
+  it('shows its merchants, appeal, trade and that it is fully supplied', () => {
+    const { game, guild } = placedGuild();
+    supplyGuild(guild);
+    tick(game);
+    expect(describeTile(game, 4, 13)).toMatchObject({
+      title: "Traders' Guild",
+      lines: [
+        'Tile 3, 12',
+        'Merchants 20/20',
+        'Appeal 27',
+        'Pays no tax: earns through trade',
+        'Trade route: not yet available',
+        'Fully supplied',
+        'Fire risk 0%',
+      ],
+    });
+    expect(needs(game)).toEqual([['Food', 'met'], ['Water', 'met'], ['Fleece', 'met'], ['Oil', 'met'], ['Culture', 'met'], ['Cloth', 'met']]);
+  });
+
+  it('shows what is missing and when it breaks up', () => {
+    const { game, guild } = placedGuild();
+    supplyGuild(guild);
+    guild.cloth = 0;
+    guild.coveredUntil.athletics = 0;
+    runTicks(game, TICKS_PER_MONTH / 2);
+    expect(describeTile(game, 4, 13).lines.at(-2)).toBe('Missing cloth, culture 45 (has 25): breaks up in 0.5 months');
+    expect(needs(game)).toEqual([['Food', 'met'], ['Water', 'met'], ['Fleece', 'met'], ['Oil', 'met'], ['Culture', 'missing'], ['Cloth', 'missing']]);
+  });
+
+  it('shows its cloth stock in months', () => {
+    const { game, guild } = placedGuild();
+    supplyGuild(guild);
+    expect(meter(game, 4, 13, 'Cloth')).toEqual({ label: 'Cloth', fill: 1, value: '24 units (3 months)', need: 'met' });
   });
 });

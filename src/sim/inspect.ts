@@ -7,7 +7,8 @@ import { WEAVER_FLEECE_CAPACITY, WEAVING_TICKS, canWeave } from './cloth';
 import { adjacentRoadTiles, agoraAt, footprint } from './commands';
 import { hasWorkingPalace, houseTax } from './economy';
 import { GRANARY_CAPACITY, HARVEST_MONTH, UNITS_PER_LOAD, VENDOR_CAPACITY, houseStockTarget, monthlyUse } from './food';
-import { type HouseLevel, type HouseNeed, HOUSE_LEVELS, LEVEL_CHANGE_TICKS, NEXT_LEVEL, PREVIOUS_LEVEL, houseCapacity, houseLevel, houseName, lacksCulture, missingNeeds } from './housing';
+import { guildShortfalls } from './guild';
+import { type HouseLevel, type HouseNeed, type ResidentNeed, HOUSE_LEVELS, LEVEL_CHANGE_TICKS, TRADERS_GUILD, NEXT_LEVEL, PREVIOUS_LEVEL, houseCapacity, houseLevel, houseName, lacksCulture, missingNeeds } from './housing';
 import { ROAMER_SPECS, hasService, isGood, type RoamerSpec, roamerKindSentBy, serviceLeft } from './roamers';
 import { TRAINEE_SPECS, isPerforming, staffedVenues, traineeKindFor, traineeKindSentBy } from './schools';
 import {
@@ -53,7 +54,7 @@ import {
   type GameState,
   type Good,
   type Grower,
-  type HouseGood,
+  type PeddledGood,
   type Roamer,
   type Settler,
   type Sheep,
@@ -124,9 +125,15 @@ export function inspectTile(state: GameState, x: number, y: number): Look {
 function describeBuilding(state: GameState, building: Building): Description {
   if (building.type === 'ruins') return describeRuins(state, building);
   if (isUnderConstruction(building)) return describeSite(state, building);
-  const description = building.type === 'house' ? describeHouse(state, building) : describeWorkplace(state, building);
+  const description = describeBuildingKind(state, building);
   description.lines.push(...riskLines(building));
   return description;
+}
+
+function describeBuildingKind(state: GameState, building: Building): Description {
+  if (building.type === 'house') return describeHouse(state, building);
+  if (building.type === 'tradersGuild') return describeGuild(state, building);
+  return describeWorkplace(state, building);
 }
 
 function describeGround(state: GameState, x: number, y: number): Description {
@@ -182,6 +189,7 @@ const CARRIER_HOMES: Record<Carrier['kind'], string> = {
   bronzeBuyer: 'studio',
   weaverBuyer: 'weaver',
   clothCart: 'weaver',
+  clothBuyer: 'stall',
   marbleSupply: 'storehouse',
   woodSupply: 'storehouse',
   sculptureSupply: 'storehouse',
@@ -202,6 +210,28 @@ function describeHouse(state: GameState, house: Building): Description {
   return { title: houseName(house), meters: supplyMeters(state, house, next ?? level), lines };
 }
 
+function describeGuild(state: GameState, guild: Building): Description {
+  const missing = guildShortfalls(state, guild);
+  const lines = [
+    `Tile ${guild.x}, ${guild.y}`,
+    `Merchants ${guild.residents}/${TRADERS_GUILD.merchants}`,
+    `Appeal ${houseAppeal(state, guild)}`,
+    'Pays no tax: earns through trade',
+    'Trade route: not yet available',
+    missing.length === 0 ? 'Fully supplied' : `Missing ${missing.join(', ')}: breaks up in ${amount((LEVEL_CHANGE_TICKS - guild.pendingTicks) / TICKS_PER_MONTH)} months`,
+  ];
+  const needFor = (need: ResidentNeed): Need => (missing.includes(need) ? 'missing' : 'met');
+  const meters = [
+    stockMeter(guild, 'food', needFor('food')),
+    waterMeter(state, guild, needFor('water')),
+    stockMeter(guild, 'fleece', needFor('fleece')),
+    stockMeter(guild, 'oil', needFor('oil')),
+    cultureMeter(state, guild, culturePoints(state, guild) < TRADERS_GUILD.culture ? 'missing' : 'met'),
+    stockMeter(guild, 'cloth', needFor('cloth')),
+  ];
+  return { title: BUILDING_SPECS.tradersGuild.name, meters, lines };
+}
+
 function supplyMeters(state: GameState, house: Building, target: HouseLevel): Meter[] {
   const { needs, culture } = HOUSE_LEVELS[target];
   const missing = missingNeeds(state, house, target);
@@ -215,7 +245,7 @@ function supplyMeters(state: GameState, house: Building, target: HouseLevel): Me
   ];
 }
 
-function stockMeter(house: Building, good: HouseGood, need: Need | null): Meter {
+function stockMeter(house: Building, good: PeddledGood, need: Need | null): Meter {
   const label = capitalized(good);
   const stock = house[good];
   if (stock <= 0) return { label, fill: 0, value: 'None', need };
@@ -296,6 +326,7 @@ function storageMeters(state: GameState, building: Building): Meter[] {
     case 'foodVendor':
     case 'fleeceVendor':
     case 'oilVendor':
+    case 'clothVendor':
       return [vendorMeter(building, capitalized(vendorGood(building)))];
     case 'agora':
       return agoraVendors(state, building).map((vendor) => vendorMeter(vendor, BUILDING_SPECS[vendor.type].name));
@@ -311,9 +342,9 @@ function storageMeters(state: GameState, building: Building): Meter[] {
   }
 }
 
-function vendorGood(vendor: Building): HouseGood {
+function vendorGood(vendor: Building): PeddledGood {
   const [kind] = carrierKindsSentBy(vendor.type);
-  return CARRIER_SPECS[kind].good as HouseGood;
+  return CARRIER_SPECS[kind].good as PeddledGood;
 }
 
 function vendorMeter(vendor: Building, label: string): Meter {
@@ -376,6 +407,7 @@ function stockLines(state: GameState, building: Building): string[] {
     case 'foodVendor':
     case 'fleeceVendor':
     case 'oilVendor':
+    case 'clothVendor':
       return [];
     case 'agora':
       return agoraVendors(state, building).length > 0 ? [] : ['No vendors yet: place one on a free spot'];

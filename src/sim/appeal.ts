@@ -1,4 +1,4 @@
-import { BUILDING_SPECS, buildingSize, footprintDistance } from './buildings';
+import { BUILDING_SPECS, buildingSize, footprintDistance, type Placement } from './buildings';
 import { footprint } from './commands';
 import { isUnderConstruction } from './sanctuaries';
 import { tileIndex, type Building, type GameState } from './state';
@@ -20,7 +20,7 @@ export function appealMap(state: GameState): number[] {
   return map;
 }
 
-export function houseAppeal(state: GameState, house: Building, map = appealMap(state)): number {
+export function houseAppeal(state: GameState, house: Placement, map = appealMap(state)): number {
   const tiles = footprint(house);
   const total = tiles.reduce((sum, p) => sum + map[tileIndex(state, p.x, p.y)], 0);
   return Math.floor(total / tiles.length);

@@ -3,7 +3,7 @@ import { BUILDING_SPECS } from './buildings';
 import { footprint } from './commands';
 import { culturePoints } from './culture';
 import { monthlyUse } from './food';
-import { HOUSE_LEVELS, houseLevel, type HouseLevel } from './housing';
+import { HOUSE_LEVELS, houseLevel, isResidence, type HouseLevel } from './housing';
 import { isUnderConstruction } from './sanctuaries';
 import { serviceLeft } from './roamers';
 import { canBurn, canCollapse, riskShare } from './safety';
@@ -24,17 +24,21 @@ function occupiedHouse(read: (state: GameState, house: Building, level: HouseLev
   };
 }
 
+function occupiedResidence(read: (state: GameState, residence: Building) => number): BuildingReader {
+  return (state, building) => (isResidence(building) && building.residents > 0 ? read(state, building) : null);
+}
+
 function monthsOfFood(house: Building): number {
   const use = monthlyUse(house, 'food');
   return use > 0 ? house.food / use : 0;
 }
 
 const BUILDING_READERS: Record<Exclude<Overlay, 'appeal'>, BuildingReader> = {
-  water: occupiedHouse((state, house) => serviceLeft(state, house, 'water')),
+  water: occupiedResidence((state, residence) => serviceLeft(state, residence, 'water')),
   tax: occupiedHouse((state, house) => serviceLeft(state, house, 'tax')),
-  food: occupiedHouse((_, house) => monthsOfFood(house)),
-  supply: occupiedHouse((_, house) => Number(house.fleece > 0) + Number(house.oil > 0)),
-  culture: occupiedHouse((state, house) => culturePoints(state, house)),
+  food: occupiedResidence((_, residence) => monthsOfFood(residence)),
+  supply: occupiedResidence((_, residence) => Number(residence.fleece > 0) + Number(residence.oil > 0)),
+  culture: occupiedResidence((state, residence) => culturePoints(state, residence)),
   houseLevel: occupiedHouse((_, __, level) => LEVEL_ORDER.indexOf(level)),
   fireRisk: (_, building) => (canBurn(building) ? riskShare(building.fireRisk) : null),
   collapseRisk: (_, building) => (canCollapse(building) ? riskShare(building.collapseRisk) : null),

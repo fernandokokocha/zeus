@@ -11,10 +11,11 @@ export type PlayingSpeed = Exclude<Speed, 0>;
 
 export type HouseGood = 'food' | 'fleece' | 'oil';
 export type Material = 'wood' | 'marble' | 'bronze';
+export type PeddledGood = HouseGood | 'cloth';
 export type Good = HouseGood | 'olives' | Material | 'sculptures' | 'cloth';
 export type Culture = 'philosophy' | 'athletics' | 'drama';
-export type Service = 'water' | 'tax' | HouseGood | Culture | 'maintenance';
-export type Coverage = Exclude<Service, HouseGood | 'maintenance'>;
+export type Service = 'water' | 'tax' | PeddledGood | Culture | 'maintenance';
+export type Coverage = Exclude<Service, PeddledGood | 'maintenance'>;
 
 export interface Building {
   id: number;
@@ -58,7 +59,7 @@ export interface Settler extends Walk {
   people: number;
 }
 
-export type RoamerKind = 'waterCarrier' | 'taxCollector' | 'peddler' | 'fleecePeddler' | 'oilPeddler' | 'philosopher' | 'athlete' | 'actor' | 'superintendent';
+export type RoamerKind = 'waterCarrier' | 'taxCollector' | 'peddler' | 'fleecePeddler' | 'oilPeddler' | 'clothPeddler' | 'philosopher' | 'athlete' | 'actor' | 'superintendent';
 
 export interface Roamer extends Walk {
   id: number;
@@ -130,6 +131,7 @@ export type CarrierKind =
   | 'bronzeBuyer'
   | 'weaverBuyer'
   | 'clothCart'
+  | 'clothBuyer'
   | 'marbleSupply'
   | 'woodSupply'
   | 'sculptureSupply';

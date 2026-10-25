@@ -1,7 +1,7 @@
 import { TICKS_PER_MONTH } from './clock';
-import { BUILDING_SPECS, type BuildingType } from './buildings';
+import type { BuildingType } from './buildings';
 import { build, footprint, removeBuildings } from './commands';
-import { houseName } from './housing';
+import { buildingName } from './housing';
 import { postNotice } from './notices';
 import { NEIGHBOUR_STEPS } from './pathfinding';
 import { nextRandom } from './rng';
@@ -9,6 +9,7 @@ import { NO_BUILDING, inBounds, tileIndex, type Building, type GameState } from 
 
 export const FIRE_RISK_INCREMENTS: Partial<Record<BuildingType, number>> = {
   house: 8,
+  tradersGuild: 8,
   taxOffice: 5,
   wheatFarm: 5,
   granary: 8,
@@ -113,18 +114,15 @@ function buildingsAround(state: GameState, tile: Building): Building[] {
 }
 
 export function catchFire(state: GameState, building: Building): void {
-  postNotice(state, `Fire! The ${placeName(building)} at ${building.x},${building.y} is burning`, building);
+  postNotice(state, `Fire! The ${buildingName(building)} at ${building.x},${building.y} is burning`, building);
   ruin(state, building, true);
 }
 
 function collapse(state: GameState, building: Building): void {
-  postNotice(state, `The ${placeName(building)} at ${building.x},${building.y} collapsed`, building);
+  postNotice(state, `The ${buildingName(building)} at ${building.x},${building.y} collapsed`, building);
   ruin(state, building, false);
 }
 
-function placeName(building: Building): string {
-  return building.type === 'house' ? houseName(building) : BUILDING_SPECS[building.type].name;
-}
 
 function ruin(state: GameState, building: Building, burning: boolean): void {
   const tiles = footprint(building);

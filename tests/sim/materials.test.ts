@@ -196,9 +196,11 @@ describe('a timber mill', () => {
   ])('makes about the Zeus output from forest starting %i tiles east', (fromX, least, most) => {
     const { game, shop } = workshop('timberMill');
     fill(game, 'forest', fromX, 5, 8, ROAD_Y - 5);
+    const house = game.buildings[0];
     let loads = 0;
     for (let i = 0; i < TICKS_PER_YEAR + TICKS_PER_MONTH; i++) {
-      game.buildings[0].residents = 100;
+      house.residents = 100;
+      house.fireRisk = 0;
       shop.fireRisk = 0;
       tick(game);
       if (i >= TICKS_PER_MONTH) loads += shop.wood / UNITS_PER_LOAD;

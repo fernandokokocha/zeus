@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { TICKS_PER_MONTH } from '../../src/sim/clock';
+import { placeBuilding } from '../../src/sim/commands';
 import { permitsText, wellFedText } from '../../src/ui/charters';
+import { GUILD_BLOCK, guildBlock } from '../sim/helpers';
 
 const month = (count: number) => count * TICKS_PER_MONTH;
 
@@ -26,5 +28,12 @@ describe('wellFedText', () => {
 describe('permitsText', () => {
   it("counts the Traders' Guild permits", () => {
     expect(permitsText(1)).toBe("Traders' Guild permits: 1");
+  });
+
+  it('counts only the unspent ones once a guild is placed', () => {
+    const { game } = guildBlock();
+    game.guildPermits = 2;
+    placeBuilding(game, 'tradersGuild', GUILD_BLOCK.x, GUILD_BLOCK.y);
+    expect(permitsText(game.guildPermits)).toBe("Traders' Guild permits: 1");
   });
 });

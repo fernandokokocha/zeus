@@ -1,5 +1,6 @@
 import type { BuildingType } from '../sim/buildings';
 import { cropStage, UNITS_PER_LOAD } from '../sim/food';
+import { isMissingNeed } from '../sim/guild';
 import { houseLevel } from '../sim/housing';
 import { isRipe } from '../sim/olives';
 import { isBurning } from '../sim/safety';
@@ -42,6 +43,7 @@ const LOOKS: Record<BuildingType, Look> = {
   growersLodge: (b) => [b.olives > 0],
   olivePress: (b) => [b.olives > 0, loads(b.oil)],
   oilVendor: vendor,
+  clothVendor: vendor,
   weaver: (b) => [b.workers > 0, b.fleece > 0, loads(b.cloth)],
   timberMill: (b) => [b.workers > 0, loads(b.wood)],
   masonryShop: (b) => [b.workers > 0, loads(b.marble)],
@@ -52,6 +54,7 @@ const LOOKS: Record<BuildingType, Look> = {
   demeterSanctuary: sanctuary,
   athenaSanctuary: sanctuary,
   hephaestusSanctuary: sanctuary,
+  tradersGuild: (b) => [b.residents > 0, isMissingNeed(b)],
   ruins: (b, state) => [isBurning(state, b)],
 };
 

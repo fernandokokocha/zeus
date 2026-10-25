@@ -11,6 +11,7 @@ import {
   type Rotation,
 } from './buildings';
 import { rectBetween, tilesIn, type Point } from './point';
+import { guildObstacle, raiseGuild } from './guild';
 import { RIPE_CROP } from './olives';
 import { isSanctuary, sanctuaryObstacle, takeInitialMarble } from './sanctuaries';
 import { GRAZE_PAUSE_TICKS, isPasture } from './sheep';
@@ -169,6 +170,7 @@ function placementObstacle(state: GameState, placement: Placement): string | nul
   const { type, x, y } = placement;
   if (type === 'palace' && state.buildings.some((b) => b.type === 'palace')) return 'Only one palace is allowed';
   if (isAgoraVendor(type)) return vendorObstacle(state, x, y);
+  if (type === 'tradersGuild') return guildObstacle(state, placement);
   if (isSanctuary(type)) return footprintObstacle(state, placement) ?? sanctuaryObstacle(state, type);
   const obstacle = footprintObstacle(state, placement);
   const meadowReason = MEADOW_REASONS[type];
@@ -189,13 +191,18 @@ export function placeBuilding(state: GameState, type: BuildingType, x: number, y
   const obstacle = placementObstacle(state, placement);
   if (obstacle) return fail(obstacle);
   const agora = isAgoraVendor(type) ? agoraAt(state, placement) : null;
-  const building = build(state, agora ? { ...placement, rotation: agora.rotation } : placement);
+  const building = type === 'tradersGuild' ? raiseGuild(state, placement) : build(state, agora ? { ...placement, rotation: agora.rotation } : placement);
   if (isSanctuary(type)) takeInitialMarble(state, building);
   state.version++;
   return OK;
 }
 
 export function build(state: GameState, placement: Placement): Building {
+  state.treasury -= BUILDING_SPECS[placement.type].cost;
+  return addBuilding(state, placement);
+}
+
+export function addBuilding(state: GameState, placement: Placement): Building {
   const building = {
     id: state.nextBuildingId++,
     ...placement,
@@ -224,7 +231,6 @@ export function build(state: GameState, placement: Placement): Building {
   };
   state.buildings.push(building);
   for (const p of footprint(placement)) state.buildingIdAt[tileIndex(state, p.x, p.y)] = building.id;
-  state.treasury -= BUILDING_SPECS[placement.type].cost;
   return building;
 }
 

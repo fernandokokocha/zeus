@@ -3,7 +3,7 @@ import { BUILDING_SPECS } from '../../src/sim/buildings';
 import { TICKS_PER_MONTH, TICKS_PER_YEAR } from '../../src/sim/clock';
 import { demolish, placeBuilding, placeRoad, placeSheep } from '../../src/sim/commands';
 import { FLEECE_KEPT_FOR_VENDORS, WEAVER_CLOTH_CAPACITY, WEAVER_FLEECE_CAPACITY, WEAVING_TICKS } from '../../src/sim/cloth';
-import { BUYER_LOAD, UNITS_PER_LOAD } from '../../src/sim/food';
+import { BUYER_LOAD, UNITS_PER_LOAD, VENDOR_CAPACITY } from '../../src/sim/food';
 import type { Building, GameState } from '../../src/sim/state';
 import { STOREHOUSE_CAPACITY, slotsUsed } from '../../src/sim/storehouse';
 import { tick } from '../../src/sim/tick';
@@ -240,5 +240,55 @@ describe('fleece wanted by a weaver and a fleece vendor', () => {
     }
     expect(stallStocked).toBe(true);
     expect(storehouse.cloth).toBeGreaterThan(0);
+  });
+});
+
+describe('a cloth vendor', () => {
+  function market(): { game: GameState; storehouse: Building; vendor: Building } {
+    const { game, storehouse } = clothTown();
+    placeBuilding(game, 'agora', 0, 16);
+    placeBuilding(game, 'clothVendor', 0, 18);
+    return { game, storehouse, vendor: game.buildings[game.buildings.length - 1] };
+  }
+
+  it('takes a free spot on an agora for 10 dr', () => {
+    const { game } = clothTown();
+    placeBuilding(game, 'agora', 0, 16);
+    const before = game.treasury;
+    expect(placeBuilding(game, 'clothVendor', 0, 20)).toEqual({ ok: true });
+    expect(game.treasury).toBe(before - 10);
+    expect(BUILDING_SPECS.clothVendor).toMatchObject({ width: 2, height: 2, workers: 4 });
+    expect(placeBuilding(game, 'clothVendor', 0, 20)).toEqual({ ok: false, reason: 'A vendor goes on a free spot of an agora' });
+  });
+
+  it('sends a buyer to fetch 4 loads of cloth from the storehouse', () => {
+    const { game, storehouse, vendor } = market();
+    storehouse.cloth = 1000;
+    tick(game);
+    expect(game.carriers.find((c) => c.kind === 'clothBuyer')).toMatchObject({ homeId: vendor.id, destinationId: storehouse.id, cloth: 0 });
+    for (let i = 0; i < 300 && vendor.cloth === 0; i++) tick(game);
+    expect(vendor.cloth).toBe(BUYER_LOAD);
+    expect(storehouse.cloth).toBe(1000 - BUYER_LOAD);
+  });
+
+  it('stops buying once the stall holds 8 loads', () => {
+    const { game, storehouse, vendor } = market();
+    storehouse.cloth = 1000;
+    vendor.cloth = VENDOR_CAPACITY;
+    runTicks(game, 10);
+    expect(game.carriers.filter((c) => c.kind === 'clothBuyer')).toEqual([]);
+  });
+
+  it('sends out a peddler, who gives no cloth to ordinary houses', () => {
+    const { game, vendor } = market();
+    placeHouse(game, 4, 13);
+    const townhouse = game.buildings[game.buildings.length - 1];
+    Object.assign(townhouse, { level: 'townhouse', residents: 60 });
+    vendor.cloth = 400;
+    for (let i = 0; i < 200 && !game.roamers.some((r) => r.kind === 'clothPeddler'); i++) tick(game);
+    runTicks(game, 100);
+    expect(game.roamers.map((r) => r.kind)).toContain('clothPeddler');
+    expect(townhouse.cloth).toBe(0);
+    expect(vendor.cloth).toBe(400);
   });
 });

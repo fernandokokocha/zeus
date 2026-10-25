@@ -1,4 +1,5 @@
 import { appealMap, houseAppeal } from './appeal';
+import { BUILDING_SPECS } from './buildings';
 import { culturePoints } from './culture';
 import { hasService } from './roamers';
 import { TICKS_PER_MONTH } from './clock';
@@ -8,6 +9,7 @@ import type { Building, GameState } from './state';
 export type HouseLevel = 'hut' | 'shack' | 'hovel' | 'homestead' | 'tenement' | 'apartment' | 'townhouse';
 
 export type HouseNeed = 'food' | 'water' | 'fleece' | 'oil';
+export type ResidentNeed = HouseNeed | 'cloth';
 
 export interface HouseLevelSpec {
   name: string;
@@ -56,6 +58,14 @@ export const HOUSE_LEVELS: Record<HouseLevel, HouseLevelSpec> = {
   },
 };
 
+export const TRADERS_GUILD = {
+  merchants: 20,
+  mainRoadRange: 4,
+  needs: [...HOUSE_LEVELS.townhouse.needs, 'cloth'] as ResidentNeed[],
+  culture: HOUSE_LEVELS.townhouse.culture,
+  appeal: HOUSE_LEVELS.townhouse.appeal.devolve,
+};
+
 export const NEXT_LEVEL: Record<HouseLevel, HouseLevel | null> = {
   hut: 'shack',
   shack: 'hovel',
@@ -92,7 +102,21 @@ export function houseName(house: Building): string {
   return level ? HOUSE_LEVELS[level].name : VACANT_LOT_NAME;
 }
 
-function hasNeed(state: GameState, house: Building, need: HouseNeed): boolean {
+export function isResidence(building: Building): boolean {
+  return building.type === 'house' || building.type === 'tradersGuild';
+}
+
+export function residentNeeds(residence: Building): ResidentNeed[] {
+  if (residence.type === 'tradersGuild') return TRADERS_GUILD.needs;
+  const level = houseLevel(residence);
+  return level ? HOUSE_LEVELS[level].needs : [];
+}
+
+export function buildingName(building: Building): string {
+  return building.type === 'house' ? houseName(building) : BUILDING_SPECS[building.type].name;
+}
+
+export function hasNeed(state: GameState, house: Building, need: ResidentNeed): boolean {
   return need === 'water' ? hasService(state, house, need) : house[need] > 0;
 }
 
@@ -110,7 +134,7 @@ function meetsNeeds(state: GameState, house: Building, level: HouseLevel): boole
 
 export function evolveHouses(state: GameState): void {
   const map = appealMap(state);
-  for (const house of state.buildings) {
+  for (const house of state.buildings.filter((b) => b.type === 'house')) {
     const level = houseLevel(house);
     if (!level) continue;
     const target = levelWanted(state, house, level, houseAppeal(state, house, map));

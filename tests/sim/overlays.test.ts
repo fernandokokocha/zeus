@@ -7,7 +7,7 @@ import { overlayReadings } from '../../src/sim/overlays';
 import { COVERAGE_MONTHS } from '../../src/sim/roamers';
 import { RISK_LIMIT } from '../../src/sim/safety';
 import type { Building, GameState } from '../../src/sim/state';
-import { grassGame, placeHouse } from './helpers';
+import { grassGame, placeHouse, placedGuild, supplyGuild } from './helpers';
 
 function lastBuilding(game: GameState): Building {
   return game.buildings[game.buildings.length - 1];
@@ -124,5 +124,25 @@ describe('map overlays', () => {
     expect(readingAt(game, 'staffing', 4, 4)).toBe(0.25);
     expect(readingAt(game, 'staffing', 8, 8)).toBeNull();
     expect(readingAt(game, 'staffing', 10, 10)).toBeNull();
+  });
+});
+
+describe("map overlays on a Traders' Guild", () => {
+  it('read its water, food, supply and culture across all 16 tiles', () => {
+    const { game, guild } = placedGuild();
+    supplyGuild(guild);
+    guild.coveredUntil.water = COVERAGE_MONTHS.water * TICKS_PER_MONTH;
+    game.tick = (COVERAGE_MONTHS.water * TICKS_PER_MONTH) / 4;
+    for (const [x, y] of [[3, 12], [6, 12], [3, 15], [6, 15]]) expect(readingAt(game, 'water', x, y)).toBe(0.75);
+    expect(readingAt(game, 'food', 4, 13)).toBe(3);
+    expect(readingAt(game, 'supply', 4, 13)).toBe(2);
+    expect(readingAt(game, 'culture', 4, 13)).toBe(45);
+  });
+
+  it('leave out tax and house level: it pays none and has no level', () => {
+    const { game, guild } = placedGuild();
+    guild.coveredUntil.tax = game.tick + TICKS_PER_MONTH;
+    expect(readingAt(game, 'tax', 4, 13)).toBeNull();
+    expect(readingAt(game, 'houseLevel', 4, 13)).toBeNull();
   });
 });

@@ -91,6 +91,8 @@ export const PALETTE = {
   cloth: 0x24509a,
   clothBand: 0xd8b45a,
   weaverBuyerTunic: 0x2f8a7a,
+  clothPeddlerTunic: 0xe8e2d0,
+  clothBuyerTunic: 0x4a6aa0,
   char: 0x3b342e,
   ash: 0x7a7168,
   ember: 0xd9481f,

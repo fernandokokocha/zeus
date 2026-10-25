@@ -1,7 +1,7 @@
 import { BUILDING_SPECS } from './buildings';
 import { TICKS_PER_YEAR, monthOfYear } from './clock';
-import { HOUSE_LEVELS, houseLevel } from './housing';
-import type { Building, GameState, HouseGood } from './state';
+import { residentNeeds, isResidence } from './housing';
+import type { Building, GameState, PeddledGood } from './state';
 
 export const UNITS_PER_LOAD = 100;
 export const WHEAT_LOADS_PER_YEAR = 8;
@@ -14,6 +14,7 @@ export const VENDOR_CAPACITY = 8 * UNITS_PER_LOAD;
 export const FOOD_PER_RESIDENT_PER_MONTH = 0.25;
 export const FLEECE_PER_HOUSE_PER_MONTH = 2;
 export const OIL_PER_HOUSE_PER_MONTH = 2;
+export const CLOTH_PER_GUILD_PER_MONTH = 8;
 export const HOUSE_STOCK_MONTHS = 3;
 
 export function wholeLoads(units: number): number {
@@ -41,30 +42,30 @@ export function harvestIfDue(state: GameState): void {
   state.version++;
 }
 
-const MONTHLY_NEED: Record<HouseGood, (house: Building) => number> = {
+const MONTHLY_NEED: Record<PeddledGood, (residence: Building) => number> = {
   food: (house) => house.residents * FOOD_PER_RESIDENT_PER_MONTH,
   fleece: () => FLEECE_PER_HOUSE_PER_MONTH,
   oil: () => OIL_PER_HOUSE_PER_MONTH,
+  cloth: (residence) => (residence.type === 'tradersGuild' ? CLOTH_PER_GUILD_PER_MONTH : 0),
 };
 
-const HOUSE_GOODS = Object.keys(MONTHLY_NEED) as HouseGood[];
+const PEDDLED_GOODS = Object.keys(MONTHLY_NEED) as PeddledGood[];
 
-export function monthlyUse(house: Building, good: HouseGood): number {
-  const level = houseLevel(house);
-  return level && HOUSE_LEVELS[level].needs.includes(good) ? MONTHLY_NEED[good](house) : 0;
+export function monthlyUse(residence: Building, good: PeddledGood): number {
+  return residentNeeds(residence).includes(good) ? MONTHLY_NEED[good](residence) : 0;
 }
 
 export function eat(state: GameState): void {
-  for (const house of state.buildings.filter((b) => b.type === 'house')) {
-    for (const good of HOUSE_GOODS) house[good] = Math.max(0, house[good] - monthlyUse(house, good));
+  for (const house of state.buildings.filter(isResidence)) {
+    for (const good of PEDDLED_GOODS) house[good] = Math.max(0, house[good] - monthlyUse(house, good));
   }
 }
 
-export function houseStockTarget(house: Building, good: HouseGood): number {
+export function houseStockTarget(house: Building, good: PeddledGood): number {
   return MONTHLY_NEED[good](house) * HOUSE_STOCK_MONTHS;
 }
 
-export function stockHouse(stall: Building, house: Building, good: HouseGood): void {
+export function stockHouse(stall: Building, house: Building, good: PeddledGood): void {
   const given = Math.min(Math.max(0, houseStockTarget(house, good) - house[good]), stall[good]);
   house[good] += given;
   stall[good] -= given;

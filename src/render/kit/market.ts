@@ -1,14 +1,15 @@
 import * as THREE from 'three';
 import { type FigureParts, at, head, legs, torso } from './figure';
+import { CLOTH, clothBolt } from './cloth';
 import { FOOD, loaf, sack } from './food';
 import { COLORS, box, cylinder, flat, scaled, sphere } from './kit';
 import { amphora } from './oil';
 import { polishedGold, sparkle } from './palace';
 
-export type Good = 'food' | 'fleece' | 'oil';
+export type Good = 'food' | 'fleece' | 'oil' | 'cloth';
 
 export const MARKET = {
-  trim: { food: 0xc0643b, fleece: COLORS.aegean, oil: 0x7f8f2e } as Record<Good, number>,
+  trim: { food: 0xc0643b, fleece: COLORS.aegean, oil: 0x7f8f2e, cloth: CLOTH.dyed } as Record<Good, number>,
   linen: 0xe6d6ae,
   tunic: COLORS.deepAegean,
   plank: 0xa07a4a,
@@ -42,6 +43,7 @@ function storedLoad(good: Good, x: number, z: number, i: number): THREE.Object3D
   const turn = (i % 3) * 0.4 - 0.3;
   if (good === 'food') return sack(x, z, turn);
   if (good === 'fleece') return fleeceBundle(x, z, turn);
+  if (good === 'cloth') return clothBolt(x, BASE, z, turn);
   return amphora(x, z);
 }
 
@@ -68,6 +70,8 @@ function heap(x: number, y: number, z: number, w: number, d: number, color: numb
   }
   return group;
 }
+
+const FOLDED_CLOTH = [CLOTH.dyed, COLORS.aegean, CLOTH.band, 0xf2efe6];
 
 const TIERS = [0.3, 0.22, 0.14];
 const TIER_DEPTH = 0.13;
@@ -98,6 +102,8 @@ export function standGoods(good: Good, x: number, z0: number, z1: number): THREE
         else group.add(heap(tx, top + 0.01, z, 0.12, 0.17, colors[k % colors.length]));
       } else if (good === 'fleece') {
         for (let layer = 0; layer < 2; layer++) group.add(scaled(sphere(0.5, flat(MARKET.fleece), tx, top + 0.025 + layer * 0.04, z), 0.11, 0.06, 0.15));
+      } else if (good === 'cloth') {
+        for (let layer = 0; layer < 3; layer++) group.add(box(0.11, 0.022, 0.15, flat(FOLDED_CLOTH[(k + layer) % FOLDED_CLOTH.length]), tx, top + layer * 0.022, z));
       } else if (tier === 0) {
         group.add(scaled(amphora(0, 0), 0.6, 0.6, 0.6).translateX(tx).translateY(top - BASE).translateZ(z));
       } else {
@@ -115,6 +121,7 @@ export function frontBaskets(good: Good, x: number, zs: number[]): THREE.Object3
     food: [MARKET.produce.orange, MARKET.produce.greens, MARKET.produce.grain, MARKET.produce.pomegranate],
     fleece: [MARKET.fleece],
     oil: [MARKET.olive, 0x6a7a3a, MARKET.olive],
+    cloth: [CLOTH.dyed, CLOTH.band],
   };
   zs.forEach((z, i) => group.add(wickerBasket(x, z, fillings[good][i % fillings[good].length])));
   return group;
@@ -222,6 +229,13 @@ function emblemSymbol(good: Good, x: number, y: number, z: number, r: number): T
   } else if (good === 'fleece') {
     for (const [dy, dz] of [[0, 0], [0.22, -0.22], [0.22, 0.22], [-0.22, -0.2], [-0.22, 0.2], [0.05, -0.38], [0.05, 0.38]]) {
       group.add(sphere(r * 0.2, flat(MARKET.fleece), x, y + dy * r, z + dz * r));
+    }
+  } else if (good === 'cloth') {
+    for (const dy of [-0.32, 0, 0.32]) {
+      const bolt = cylinder(r * 0.15, r * 0.15, r * 1.1, flat(CLOTH.dyed), 0, 0, 0, 12);
+      bolt.rotation.x = Math.PI / 2;
+      bolt.position.set(x, y + dy * r, z);
+      group.add(bolt);
     }
   } else {
     const jarShape = amphora(0, 0, 0);
