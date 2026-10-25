@@ -1,9 +1,7 @@
 import * as THREE from 'three';
 import { BUILDING_SPECS, type BuildingType } from '../sim/buildings';
 import { UNITS_PER_LOAD } from '../sim/food';
-import { SLOT_SIZE, STOREHOUSE_GOODS, STOREHOUSE_SLOTS, slotsOf, type StoredGood } from '../sim/storehouse';
 import { houseLevel, type HouseLevel } from '../sim/housing';
-import { BRONZE_PER_SCULPTURE } from '../sim/materials';
 import { SANCTUARY_STAGES, builtStages, isFinished, materialNeeded, type Sanctuary, type SanctuaryMaterial } from '../sim/sanctuaries';
 import { isPerforming } from '../sim/schools';
 import { isBurning } from '../sim/safety';
@@ -20,6 +18,10 @@ import { gymnasiumModel } from './gymnasium-models';
 import { oliveTreeModel } from './olive-models';
 import { parkModel } from './park-models';
 import { timberMillModel } from './timber-models';
+import { storehouseModel } from './storehouse-models';
+import { foundryModel } from './foundry-models';
+import { sculptureStudioModel } from './sculpture-models';
+import { artisansGuildModel } from './guild-models';
 import { collegeModel } from './college-models';
 import { dramaSchoolModel } from './drama-school-models';
 import { theaterModel } from './theater-models';
@@ -57,7 +59,6 @@ const charred = lambert(PALETTE.char);
 const ash = lambert(PALETTE.ash);
 const ember = new THREE.MeshBasicMaterial({ color: PALETTE.ember });
 const flame = new THREE.MeshBasicMaterial({ color: PALETTE.flame });
-const ore = lambert(PALETTE.ore);
 const logWood = lambert(PALETTE.log);
 const steel = lambert(PALETTE.axeHead);
 const glow = new THREE.MeshBasicMaterial({ color: PALETTE.glow });
@@ -257,64 +258,6 @@ function cardingShedModel(shed: Building): THREE.Object3D {
   return group;
 }
 
-function bale(x: number, y: number, z: number, turn: number): THREE.Object3D {
-  const group = new THREE.Group();
-  group.add(box(0.26, 0.18, 0.2, wool, 0, 0, 0));
-  for (const dx of [-0.07, 0.07]) group.add(box(0.025, 0.185, 0.21, twine, dx, 0, 0));
-  group.position.set(x, y, z);
-  group.rotation.y = turn;
-  return group;
-}
-
-const STOREHOUSE_SLOT_WIDTH = 0.68;
-const STOREHOUSE_SLOT_DEPTH = 0.86;
-const STOREHOUSE_SLOT_SPOTS = [1.55, 2.47].flatMap((z) => [0.42, 1.14, 1.86, 2.58].map((x) => [x, z]));
-const LOADS_PER_SLOT = SLOT_SIZE / UNITS_PER_LOAD;
-
-const STORED_LOAD: Record<StoredGood, (x: number, z: number, turn: number) => THREE.Object3D> = {
-  fleece: (x, z, turn) => bale(x, 0.04, z, turn),
-  olives: (x, z) => basket(x, z, true),
-  oil: (x, z) => oilJar(x, 0.04, z),
-  wood: (x, z, turn) => logPile(x, 0.04, z, turn),
-  marble: (x, z, turn) => marbleBlock(x, 0.04, z, turn),
-  bronze: (x, z) => ingots(x, 0.04, z),
-  sculptures: (x, z) => statue(x, 0.04, z, 0.5),
-};
-
-function storehouseModel(storehouse: Building): THREE.Object3D {
-  const group = new THREE.Group();
-  const { width: W } = BUILDING_SPECS.storehouse;
-  group.add(box(W - 0.1, 0.04, W - 0.1, paving, W / 2, 0, W / 2));
-  group.add(box(2.8, 0.08, 0.95, fieldstone, W / 2, 0.04, 0.58));
-  group.add(box(2.7, 0.6, 0.85, plaster, W / 2, 0.12, 0.58));
-  const roof = gableRoof(1.05, 0.32, 2.86, plaster);
-  roof.rotation.y = Math.PI / 2;
-  roof.position.set(W / 2, 0.72, 0.58);
-  group.add(roof);
-  for (const x of [0.75, W / 2, W - 0.75]) group.add(box(0.36, 0.44, 0.02, doorway, x, 0.12, 1.01));
-  STOREHOUSE_SLOT_SPOTS.slice(0, STOREHOUSE_SLOTS).forEach(([sx, sz]) => {
-    for (const [w, d, x, z] of [
-      [STOREHOUSE_SLOT_WIDTH, 0.04, 0, STOREHOUSE_SLOT_DEPTH / 2],
-      [0.04, STOREHOUSE_SLOT_DEPTH, -STOREHOUSE_SLOT_WIDTH / 2, 0],
-      [0.04, STOREHOUSE_SLOT_DEPTH, STOREHOUSE_SLOT_WIDTH / 2, 0],
-    ]) {
-      group.add(box(w, 0.1, d, timber, sx + x, 0.04, sz + z));
-    }
-  });
-  let firstSlot = 0;
-  for (const good of STOREHOUSE_GOODS) {
-    const loads = Math.floor(storehouse[good] / UNITS_PER_LOAD);
-    for (let load = 0; load < loads; load++) {
-      const [sx, sz] = STOREHOUSE_SLOT_SPOTS[firstSlot + Math.floor(load / LOADS_PER_SLOT)];
-      const spot = load % LOADS_PER_SLOT;
-      const x = sx + (spot % 2 ? 0.14 : -0.14);
-      const z = sz + (spot < 2 ? -0.2 : 0.2);
-      group.add(STORED_LOAD[good](x, z, tileHash(load, storehouse.id) * 0.4 - 0.2));
-    }
-    firstSlot += slotsOf(storehouse, good);
-  }
-  return group;
-}
 
 const oliveBerry = new THREE.SphereGeometry(0.025, 6, 4);
 
@@ -431,12 +374,6 @@ function marbleBlock(x: number, y: number, z: number, turn: number): THREE.Objec
   return block;
 }
 
-function ingots(x: number, y: number, z: number): THREE.Object3D {
-  const group = new THREE.Group();
-  for (const [dx, dy, dz] of [[-0.05, 0, -0.04], [0.05, 0, 0.04], [0, 0.04, 0]]) group.add(box(0.12, 0.04, 0.06, bronze, x + dx, y + dy, z + dz));
-  return group;
-}
-
 function statue(x: number, y: number, z: number, size: number): THREE.Object3D {
   const group = new THREE.Group();
   group.add(box(0.2, 0.1, 0.2, marble, 0, 0, 0));
@@ -450,10 +387,6 @@ function statue(x: number, y: number, z: number, size: number): THREE.Object3D {
   return group;
 }
 
-function workshopBase(material: THREE.Material): THREE.Mesh {
-  return box(1.9, 0.04, 1.9, material, 1, 0, 1);
-}
-
 function smokePlume(x: number, y: number, z: number): THREE.Object3D {
   const group = new THREE.Group();
   for (let n = 0; n < 3; n++) {
@@ -464,69 +397,9 @@ function smokePlume(x: number, y: number, z: number): THREE.Object3D {
   return group;
 }
 
-function addStock(
-  group: THREE.Group,
-  units: number,
-  spots: [number, number][],
-  piece: (x: number, z: number, turn: number) => THREE.Object3D,
-): void {
-  spots.slice(0, Math.floor(units / UNITS_PER_LOAD)).forEach(([x, z], i) => group.add(piece(x, z, tileHash(i, x * 9) * 0.6 - 0.3)));
-}
 
 
-function foundryModel(foundry: Building): THREE.Object3D {
-  const group = new THREE.Group();
-  group.add(workshopBase(earth));
-  group.add(box(1.3, 0.55, 0.8, mudBrick, 0.8, 0.04, 0.55));
-  const roof = gableRoof(0.9, 0.24, 1.4, mudBrick);
-  roof.rotation.y = Math.PI / 2;
-  roof.position.set(0.8, 0.59, 0.55);
-  group.add(roof);
-  group.add(box(0.28, 1.2, 0.28, fieldstone, 1.6, 0.04, 0.45));
-  const working = foundry.workers > 0;
-  group.add(box(0.36, 0.26, 0.02, working ? glow : doorway, 0.8, 0.04, 0.955));
-  if (working) group.add(smokePlume(1.6, 1.42, 0.45));
-  for (const [x, z] of [[1.55, 1.35], [1.7, 1.55], [1.4, 1.55]]) {
-    const lump = placed(stone, ore, x, 0.08, z);
-    lump.scale.setScalar(2.4);
-    group.add(lump);
-  }
-  addStock(group, foundry.bronze, [[0.35, 1.3], [0.65, 1.4], [0.95, 1.3], [0.5, 1.65]], (x, z) => ingots(x, 0.04, z));
-  return group;
-}
 
-function sculptureStudioModel(studio: Building): THREE.Object3D {
-  const group = new THREE.Group();
-  group.add(workshopBase(paving));
-  group.add(box(1.5, 0.55, 0.75, plaster, 1, 0.04, 0.5));
-  group.add(box(1.56, 0.06, 0.8, marble, 1, 0.59, 0.5));
-  const roof = gableRoof(0.85, 0.26, 1.6, marble);
-  roof.rotation.y = Math.PI / 2;
-  roof.position.set(1, 0.65, 0.5);
-  group.add(roof);
-  group.add(box(0.34, 0.38, 0.02, doorway, 1, 0.04, 0.88));
-  group.add(statue(0.45, 0.04, 1.35, 1.7));
-  if (studio.bronze >= BRONZE_PER_SCULPTURE) group.add(ingots(1.0, 0.04, 1.2));
-  addStock(group, studio.sculptures, [[1.3, 1.45], [1.6, 1.45], [1.3, 1.75], [1.6, 1.75]], (x, z) => statue(x, 0.04, z, 0.55));
-  return group;
-}
-
-function artisansGuildModel(): THREE.Object3D {
-  const group = new THREE.Group();
-  group.add(workshopBase(paving));
-  group.add(box(1.7, 0.08, 1.2, marble, 1, 0.04, 0.75));
-  group.add(box(1.5, 0.6, 0.7, plaster, 1, 0.12, 0.6));
-  for (const x of [0.35, 0.78, 1.22, 1.65]) group.add(columnAt(0.6, marble, x, 0.12, 1.22));
-  const roof = gableRoof(1.2, 0.3, 1.74, marble);
-  roof.rotation.y = Math.PI / 2;
-  roof.position.set(1, 0.72, 0.75);
-  group.add(roof);
-  group.add(box(0.3, 0.4, 0.02, doorway, 1, 0.12, 0.955));
-  for (let i = 0; i < 3; i++) group.add(box(0.5, 0.04, 0.12, timber, 0.4, 0.04 + i * 0.045, 1.7));
-  group.add(marbleBlock(1.6, 0.04, 1.65, 0.3));
-  group.add(marbleBlock(1.35, 0.04, 1.72, -0.2));
-  return group;
-}
 
 const SANCTUARY_COLUMN_SPACING = 1.0;
 const SANCTUARY_COLUMN_HEIGHT = 1.5;

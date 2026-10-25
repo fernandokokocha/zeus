@@ -26,6 +26,10 @@ import { TIMBER_MILL_OPTIONS } from './timber-mill-options';
 import { COLLEGE_OPTIONS } from './college-options';
 import { DRAMA_SCHOOL_OPTIONS } from './drama-school-options';
 import { THEATER_OPTIONS } from './theater-options';
+import { ARTISANS_GUILD_OPTIONS } from './artisans-guild-options';
+import { SCULPTURE_STUDIO_OPTIONS } from './sculpture-studio-options';
+import { FOUNDRY_OPTIONS } from './foundry-options';
+import { STOREHOUSE_OPTIONS } from './storehouse-options';
 import { bake } from '../render/bake';
 import type { Animate } from '../render/kit/figure';
 import type { DesignSet } from './options';
@@ -57,6 +61,10 @@ const SETS: Record<string, DesignSet> = {
   college: { title: 'College', needs: '3×3 · 12 workers · each option without and with workers', options: COLLEGE_OPTIONS, footprint: [3, 3] },
   dramaSchool: { title: 'Drama School', needs: '3×3 · 10 workers · each option without and with workers', options: DRAMA_SCHOOL_OPTIONS, footprint: [3, 3] },
   theater: { title: 'Theater', needs: '5×5 · 18 workers · idle and performing', options: THEATER_OPTIONS, footprint: [5, 5] },
+  artisansGuild: { title: "Artisans' Guild", needs: '2×2 · 25 workers · without and with workers', options: ARTISANS_GUILD_OPTIONS, chosen: 0 },
+  sculptureStudio: { title: 'Sculpture Studio', needs: '2×2 · 12 workers · without and with workers, marble and bronze in, statues out', options: SCULPTURE_STUDIO_OPTIONS, chosen: 0 },
+  foundry: { title: 'Foundry', needs: '2×2 · 15 workers · without and with workers, ore and bronze stock', options: FOUNDRY_OPTIONS, chosen: 0 },
+  storehouse: { title: 'Storehouse', needs: '3×3 · 12 workers · without and with workers, empty and holding every good', options: STOREHOUSE_OPTIONS, chosen: 0, footprint: [3, 3] },
 };
 
 const footprint = (set: DesignSet): [number, number] => set.footprint ?? [2, 2];
