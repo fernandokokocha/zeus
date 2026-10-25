@@ -7,7 +7,7 @@ the PR that delivers it.
 - [x] 12 · Main Road
 - [x] 13 · Fine cloth
 - [x] 14 · Notices
-- [ ] 15 · Charters
+- [x] 15 · Charters
 - [ ] 16 · Traders' Guild
 - [ ] 17 · Guild sites
 - [ ] 18 · Trade: exports

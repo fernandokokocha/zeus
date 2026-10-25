@@ -23,6 +23,7 @@ body {
 #toolbar,
 #inspector,
 #notice-log,
+#charters-panel,
 #map-modes,
 #overlay-legend {
   position: fixed;
@@ -325,6 +326,42 @@ button.active {
   padding: 4px 2px;
 }
 
-#notice-log .notice:hover {
+#notice-log button.notice:hover {
   background: #f2d3bf;
+}
+
+#charters-panel {
+  top: 60px;
+  left: 238px;
+  width: 280px;
+}
+
+#charters-close {
+  float: right;
+}
+
+#charters-panel h2 {
+  margin: 0 0 6px;
+  font-size: 18px;
+}
+
+#charters-panel ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+#charters-panel li {
+  border-bottom: 1px solid #e2d5ba;
+  padding: 4px 0;
+}
+
+#charters-panel li p {
+  margin: 2px 0 0;
+  font-size: 13px;
+}
+
+#charter-permits {
+  margin: 6px 0 0;
+  font-weight: bold;
 }

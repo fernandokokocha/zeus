@@ -12,6 +12,7 @@ import { TICKS_PER_SECOND } from './sim/clock';
 import { tick } from './sim/tick';
 import { createGame } from './sim/state';
 import { byId } from './ui/dom';
+import { createCharters } from './ui/charters';
 import { createInspector } from './ui/inspector';
 import { createMapModes } from './ui/map-modes';
 import { createNotices } from './ui/notices';
@@ -46,6 +47,7 @@ const controls = attachCameraControls(view, state.size);
 const topbar = createTopbar(state);
 const inspector = createInspector(state, highlight);
 const mapModes = createMapModes();
+const charters = createCharters(state);
 const notices = createNotices(state, (at) => controls.focus(at));
 const input = attachToolInput({
   view,
@@ -81,6 +83,7 @@ function frame(now: number): void {
   overlay.sync(state, mapModes.shown());
   topbar.update();
   notices.update(now / 1000);
+  charters.update();
   inspector.refresh();
   view.renderer.render(view.scene, view.camera);
   requestAnimationFrame(frame);

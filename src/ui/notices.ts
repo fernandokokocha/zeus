@@ -47,13 +47,16 @@ export function createNotices(state: GameState, focus: (at: Point) => void): { u
     loggedUpTo = -1;
   }
 
-  function noticeButton(notice: Notice, text: string): HTMLButtonElement {
-    const button = document.createElement('button');
-    button.className = 'notice';
-    button.textContent = text;
-    button.title = 'Show on the map';
-    button.addEventListener('click', () => focus(notice.at));
-    return button;
+  function noticeLine(notice: Notice, text: string): HTMLElement {
+    const { at } = notice;
+    const line = document.createElement(at === null ? 'div' : 'button');
+    line.className = 'notice';
+    line.textContent = text;
+    if (at !== null) {
+      line.title = 'Show on the map';
+      line.addEventListener('click', () => focus(at));
+    }
+    return line;
   }
 
   function updateFeed(now: number): void {
@@ -67,7 +70,7 @@ export function createNotices(state: GameState, focus: (at: Point) => void): { u
     for (const { notice, fading } of lines) {
       let element = shownInFeed.get(notice.id);
       if (!element) {
-        element = noticeButton(notice, notice.text);
+        element = noticeLine(notice, notice.text);
         shownInFeed.set(notice.id, element);
         feed.append(element);
       }
@@ -91,7 +94,7 @@ export function createNotices(state: GameState, focus: (at: Point) => void): { u
   function logItem(notice: Notice): HTMLLIElement {
     const { month, year } = gameDate(notice.tick);
     const item = document.createElement('li');
-    item.append(noticeButton(notice, `${month}, Year ${year}: ${notice.text}`));
+    item.append(noticeLine(notice, `${month}, Year ${year}: ${notice.text}`));
     return item;
   }
 

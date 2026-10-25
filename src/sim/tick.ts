@@ -1,3 +1,4 @@
+import { tallyWellFed } from './charters';
 import { TICKS_PER_MONTH } from './clock';
 import { tickCarriers } from './carriers';
 import { tickCloth } from './cloth';
@@ -22,6 +23,7 @@ export function tick(state: GameState): void {
   if (state.tick % TICKS_PER_MONTH === 0) {
     settleMonth(state);
     harvestIfDue(state);
+    tallyWellFed(state);
     eat(state);
   }
   tickSettlers(state);

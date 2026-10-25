@@ -1,4 +1,5 @@
 import type { BuildingType, Rotation } from './buildings';
+import type { WellFed } from './charters';
 import type { HouseLevel } from './housing';
 import { DEFAULT_SEED, MAP_SIZE, generateTerrain } from './map';
 import { clampPoint, type Point } from './point';
@@ -154,7 +155,7 @@ export interface Notice {
   id: number;
   tick: number;
   text: string;
-  at: Point;
+  at: Point | null;
 }
 
 export interface GameState {
@@ -187,6 +188,8 @@ export interface GameState {
   nextArtisanId: number;
   notices: Notice[];
   nextNoticeId: number;
+  wellFed: WellFed;
+  guildPermits: number;
   rngState: number;
   entry: Point;
   treasury: number;
@@ -233,6 +236,8 @@ export function newGameState(size: number, terrain: Terrain[], mainRoad: Point[]
     nextArtisanId: 1,
     notices: [],
     nextNoticeId: 1,
+    wellFed: { months: 0, reset: null },
+    guildPermits: 0,
     rngState: DEFAULT_SEED,
     entry: mainRoad[0],
     treasury: STARTING_TREASURY,

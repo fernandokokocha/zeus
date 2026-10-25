@@ -214,3 +214,5 @@ https://zeus.heavengames.com/gameinfo/gods/
   staff. A site hires nobody and radiates no appeal until finished.
 - Notices: the log keeps the **50** most recent. A new one shows under the top bar for
   **8 s** of real time and fades over **1 s**, at most **4** at once.
+- Well fed charter (spec): **24** months in a row with no house that eats going hungry
+  grants **1** Traders' Guild permit, then the count restarts.

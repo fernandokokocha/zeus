@@ -54,6 +54,12 @@ test('boots, builds a street with services, food, culture, fleece, oil, cloth, m
   await expect(noticeLog).toContainText('No notices yet');
   await page.keyboard.press('n');
   await expect(noticeLog).toBeHidden();
+  const charters = page.locator('#charters-panel');
+  await page.getByRole('button', { name: 'Charters' }).click();
+  await expect(charters).toContainText('Well fed: 0 / 24 months');
+  await expect(charters).toContainText("Traders' Guild permits: 0");
+  await page.keyboard.press('c');
+  await expect(charters).toBeHidden();
 
   await page.getByRole('button', { name: 'Demolish' }).click();
   await drag(page, [8, 38], [30, 57]);
@@ -158,6 +164,10 @@ test('boots, builds a street with services, food, culture, fleece, oil, cloth, m
   await expect(legend).toContainText('Staffing');
   await page.keyboard.press('o');
   await expect(legend).toBeHidden();
+  await page.keyboard.press('c');
+  await expect(charters).toContainText(/Well fed: \d+ \/ 24 months/);
+  await page.screenshot({ path: 'test-results/charters.png' });
+  await page.keyboard.press('c');
 
   await page.keyboard.press('Space');
   await expect(page.getByRole('button', { name: '❚❚' })).toHaveClass(/active/);
