@@ -5,6 +5,7 @@ import { findRoadPath, nearestByRoad } from './pathfinding';
 import type { Point } from './point';
 import { exitTile } from './roamers';
 import { STUDIO_BRONZE_CAPACITY } from './materials';
+import { FLEECE_KEPT_FOR_VENDORS, WEAVER_FLEECE_CAPACITY } from './cloth';
 import { PRESS_OLIVE_CAPACITY } from './olives';
 import { SANCTUARIES, isSanctuary, stillNeeded, type Sanctuary } from './sanctuaries';
 import { storehouseSpace } from './storehouse';
@@ -36,10 +37,22 @@ export const CARRIER_SPECS: Record<CarrierKind, CarrierSpec> = {
   bronzeCart: { name: 'Cart Pusher', home: 'foundry', good: 'bronze', stores: ['sculptureStudio', 'storehouse'], delivers: true, capacity: 0 },
   sculptureCart: { name: 'Cart Pusher', home: 'sculptureStudio', good: 'sculptures', stores: ['storehouse'], delivers: true, capacity: 0 },
   bronzeBuyer: { name: 'Buyer', home: 'sculptureStudio', good: 'bronze', stores: ['storehouse'], delivers: false, capacity: STUDIO_BRONZE_CAPACITY },
+  weaverBuyer: { name: 'Buyer', home: 'weaver', good: 'fleece', stores: ['storehouse'], delivers: false, capacity: WEAVER_FLEECE_CAPACITY },
+  clothCart: { name: 'Cart Pusher', home: 'weaver', good: 'cloth', stores: ['storehouse'], delivers: true, capacity: 0 },
   marbleSupply: { name: 'Cart Pusher', home: 'storehouse', good: 'marble', stores: SANCTUARIES, delivers: true, capacity: 0 },
   woodSupply: { name: 'Cart Pusher', home: 'storehouse', good: 'wood', stores: SANCTUARIES, delivers: true, capacity: 0 },
   sculptureSupply: { name: 'Cart Pusher', home: 'storehouse', good: 'sculptures', stores: SANCTUARIES, delivers: true, capacity: 0 },
 };
+
+const KEPT_BACK: Partial<Record<CarrierKind, number>> = { weaverBuyer: FLEECE_KEPT_FOR_VENDORS };
+
+export function keptBack(kind: CarrierKind): number {
+  return KEPT_BACK[kind] ?? 0;
+}
+
+function spareStock(kind: CarrierKind, store: Building): number {
+  return Math.max(0, store[CARRIER_SPECS[kind].good] - keptBack(kind));
+}
 
 const STORE_SPACE: Record<Store, (stock: Record<Good, number>, good: Good) => number> = {
   granary: (stock) => GRANARY_CAPACITY - stock.food,
@@ -51,7 +64,7 @@ const STORE_SPACE: Record<Store, (stock: Record<Good, number>, good: Good) => nu
   hephaestusSanctuary: (stock, good) => stillNeeded('hephaestusSanctuary', stock, good),
 };
 
-const GOODS: Good[] = ['food', 'fleece', 'olives', 'oil', 'wood', 'marble', 'bronze', 'sculptures'];
+const GOODS: Good[] = ['food', 'fleece', 'olives', 'oil', 'wood', 'marble', 'bronze', 'sculptures', 'cloth'];
 
 export function carrierKindsSentBy(type: BuildingType): CarrierKind[] {
   return (Object.keys(CARRIER_SPECS) as CarrierKind[]).filter((kind) => CARRIER_SPECS[kind].home === type);
@@ -76,7 +89,7 @@ export function carrierDestinations(state: GameState, kind: CarrierKind): Buildi
   const { stores, good, delivers } = CARRIER_SPECS[kind];
   for (const store of stores) {
     const open = state.buildings.filter((b) => b.type === store && (b.workers > 0 || isSanctuary(b.type)));
-    const usable = delivers ? open.filter((s) => storeRoom(state, s, good) > 0) : open.filter((s) => s[good] >= UNITS_PER_LOAD);
+    const usable = delivers ? open.filter((s) => storeRoom(state, s, good) > 0) : open.filter((s) => spareStock(kind, s) >= UNITS_PER_LOAD);
     if (usable.length > 0) return usable;
   }
   return [];
@@ -123,6 +136,7 @@ function sendCarrier(state: GameState, building: Building, kind: CarrierKind): v
     marble: 0,
     bronze: 0,
     sculptures: 0,
+    cloth: 0,
     [good]: load,
     returning: false,
     path: target.path,
@@ -180,7 +194,7 @@ function arrive(state: GameState, carrier: Carrier, home: Building): void {
   if (!store) throw new Error(`Carrier ${carrier.id} reached missing building ${carrier.destinationId}`);
   const moved = delivers
     ? Math.min(carrier[good], storeSpace(store, store, good))
-    : -wholeLoads(Math.min(BUYER_LOAD, store[good], fetchRoom(state, carrier.kind, home)));
+    : -wholeLoads(Math.min(BUYER_LOAD, spareStock(carrier.kind, store), fetchRoom(state, carrier.kind, home)));
   store[good] += moved;
   carrier[good] -= moved;
   state.version++;

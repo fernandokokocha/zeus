@@ -2,7 +2,8 @@ import { houseAppeal } from './appeal';
 import { BUILDING_SPECS, isAgoraVendor } from './buildings';
 import { MONTH_NAMES, TICKS_PER_MONTH } from './clock';
 import { MAX_CULTURE_POINTS, culturePoints, culturesPassed } from './culture';
-import { CARRIER_SPECS, carrierDestinations, carrierKindsSentBy } from './carriers';
+import { CARRIER_SPECS, carrierDestinations, carrierKindsSentBy, keptBack } from './carriers';
+import { WEAVER_FLEECE_CAPACITY, WEAVING_TICKS, canWeave } from './cloth';
 import { adjacentRoadTiles, agoraAt, footprint } from './commands';
 import { hasWorkingPalace, houseTax } from './economy';
 import { GRANARY_CAPACITY, HARVEST_MONTH, UNITS_PER_LOAD, VENDOR_CAPACITY, houseStockTarget, monthlyUse } from './food';
@@ -162,6 +163,7 @@ const GOOD_NAMES: Record<Good, string> = {
   marble: 'marble',
   bronze: 'bronze',
   sculptures: 'sculptures',
+  cloth: 'cloth',
 };
 
 const CARRIER_HOMES: Record<Carrier['kind'], string> = {
@@ -178,6 +180,8 @@ const CARRIER_HOMES: Record<Carrier['kind'], string> = {
   bronzeCart: 'foundry',
   sculptureCart: 'studio',
   bronzeBuyer: 'studio',
+  weaverBuyer: 'weaver',
+  clothCart: 'weaver',
   marbleSupply: 'storehouse',
   woodSupply: 'storehouse',
   sculptureSupply: 'storehouse',
@@ -338,17 +342,23 @@ function stockLines(state: GameState, building: Building): string[] {
     case 'granary':
     case 'storehouse':
       return [];
-case 'oliveTree':
-  if (!isRipe(building)) return [`Olives ${Math.round(building.growth * 100)}% grown`];
-  return growerAfter(state, building) ? ['Ripe: ready to pick', 'A grower is on the way'] : ['Ripe: ready to pick'];
-case 'growersLodge':
-  return building.olives > 0 ? [`Olives waiting: ${loads(building.olives)}`] : [];
-case 'olivePress':
-  return [
-    `Olives: ${amount(building.olives / UNITS_PER_LOAD)} of ${PRESS_OLIVE_CAPACITY / UNITS_PER_LOAD} loads`,
-    ...(building.oil > 0 ? [`Oil waiting: ${loads(building.oil)}`] : []),
-    pressStatus(building),
-  ];
+    case 'oliveTree':
+      if (!isRipe(building)) return [`Olives ${Math.round(building.growth * 100)}% grown`];
+      return growerAfter(state, building) ? ['Ripe: ready to pick', 'A grower is on the way'] : ['Ripe: ready to pick'];
+    case 'growersLodge':
+      return building.olives > 0 ? [`Olives waiting: ${loads(building.olives)}`] : [];
+    case 'olivePress':
+      return [
+        `Olives: ${amount(building.olives / UNITS_PER_LOAD)} of ${PRESS_OLIVE_CAPACITY / UNITS_PER_LOAD} loads`,
+        ...(building.oil > 0 ? [`Oil waiting: ${loads(building.oil)}`] : []),
+        pressStatus(building),
+      ];
+    case 'weaver':
+      return [
+        `Fleece: ${amount(building.fleece / UNITS_PER_LOAD)} of ${WEAVER_FLEECE_CAPACITY / UNITS_PER_LOAD} loads`,
+        ...(building.cloth > 0 ? [`Cloth waiting: ${loads(building.cloth)}`] : []),
+        weavingStatus(building),
+      ];
     case 'cardingShed':
       return building.fleece > 0 ? [`Fleece waiting: ${loads(building.fleece)}`] : [];
     case 'timberMill':
@@ -391,6 +401,11 @@ function castingStatus(studio: Building): string {
 function pressStatus(press: Building): string {
   if (canPress(press)) return `Pressing: ${Math.round((press.production / PRESSING_TICKS) * 100)}% of a load`;
   return press.olives < UNITS_PER_LOAD ? 'Waits for olives' : 'Full of oil: waits for its cart';
+}
+
+function weavingStatus(weaver: Building): string {
+  if (canWeave(weaver)) return `Weaving: ${Math.round((weaver.production / WEAVING_TICKS) * 100)}% of a load`;
+  return weaver.fleece < UNITS_PER_LOAD ? 'Waits for fleece' : 'Full of cloth: waits for its cart';
 }
 
 function venueLines(state: GameState, venue: Building): string[] {
@@ -500,7 +515,9 @@ function carrierStatus(state: GameState, building: Building, kind: Carrier['kind
     return atHome;
   }
   if (carrier) return `${name} ${carrier.returning ? `bringing ${goodName} home` : `out fetching ${goodName}`}`;
-  if (carrierDestinations(state, kind).length === 0) return `${name} waits for ${storeName} with ${goodName}`;
+  const kept = keptBack(kind);
+  const enough = kept > 0 ? `more than ${loads(kept)} of ${goodName}` : goodName;
+  if (carrierDestinations(state, kind).length === 0) return `${name} waits for ${storeName} with ${enough}`;
   return atHome;
 }
 

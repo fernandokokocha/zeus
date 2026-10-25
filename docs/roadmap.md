@@ -5,7 +5,7 @@ below are in `docs/superpowers/specs/2026-10-25-elite-housing-design.md`. Tick a
 the PR that delivers it.
 
 - [x] 12 · Main Road
-- [ ] 13 · Fine cloth
+- [x] 13 · Fine cloth
 - [ ] 14 · Notices
 - [ ] 15 · Charters
 - [ ] 16 · Traders' Guild

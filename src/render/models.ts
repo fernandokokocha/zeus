@@ -22,6 +22,7 @@ import { storehouseModel } from './storehouse-models';
 import { foundryModel } from './foundry-models';
 import { sculptureStudioModel } from './sculpture-models';
 import { artisansGuildModel } from './guild-models';
+import { weaverModel } from './weaver-models';
 import { collegeModel } from './college-models';
 import { dramaSchoolModel } from './drama-school-models';
 import { theaterModel } from './theater-models';
@@ -626,6 +627,7 @@ const MODELS: Record<Exclude<BuildingType, 'house'>, (building: Building, state:
   growersLodge: growersLodgeModel,
   olivePress: olivePressModel,
   oilVendor: vendorModel,
+  weaver: weaverModel,
   timberMill: timberMillModel,
   masonryShop: masonryShopModel,
   foundry: foundryModel,

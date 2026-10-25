@@ -4,6 +4,7 @@ import type { Building, Good } from '../sim/state';
 import { SLOT_SIZE, STOREHOUSE_GOODS, type StoredGood, slotsOf } from '../sim/storehouse';
 import { bakedOnce } from './bake';
 import { handcart } from './kit/camp';
+import { clothBolts } from './kit/cloth';
 import { blueDoor, cube, frontWindow } from './kit/cottage';
 import { type FigureParts, posedFigure } from './kit/figure';
 import { sack } from './kit/food';
@@ -36,6 +37,7 @@ const LOADS: Record<StoredGood, () => THREE.Object3D> = {
   marble: bakedOnce(marbleBlocks),
   bronze: bakedOnce(bronzeIngots),
   sculptures: bakedOnce(crated),
+  cloth: bakedOnce(clothBolts),
 };
 
 const LOAD_SPACING = 0.15;

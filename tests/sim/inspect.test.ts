@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { demolish, placeBuilding, placeOliveTrees, placeRoad, placeRoadblock, placeSheep } from '../../src/sim/commands';
+import { WEAVING_TICKS } from '../../src/sim/cloth';
 import { gatheringRestTicks } from '../../src/sim/materials';
 import { PICKING_REST_TICKS } from '../../src/sim/olives';
 import { SHEARING_REST_TICKS, sheepTile } from '../../src/sim/sheep';
@@ -484,6 +485,7 @@ describe('describeTile for fleece', () => {
       { label: 'Marble', fill: 0, value: 'None', need: null },
       { label: 'Bronze', fill: 0, value: 'None', need: null },
       { label: 'Sculptures', fill: 0, value: 'None', need: null },
+      { label: 'Cloth', fill: 0, value: 'None', need: null },
     ]);
     storehouse.fleece = 600;
     expect(meter(game, 11, 13, 'Slots')).toMatchObject({ fill: 2 / 8, value: '2 of 8 slots of 4 loads' });
@@ -660,6 +662,50 @@ it('describes olives in a storehouse and a press buyer fetching them', () => {
   expect(meter(game, 11, 13, 'Olives').value).toBe('8 loads in 2 slots');
   expect(describeTile(game, 20, 13).lines).toContain('Buyer out fetching olives');
 });
+
+  it('describes a weaver by its fleece, cloth and weaving', () => {
+    const { game } = street();
+    placeBuilding(game, 'weaver', 6, 13);
+    const weaver = lastBuilding(game);
+    runTicks(game, 1);
+    expect(describeTile(game, 6, 13)).toEqual({
+      title: 'Weaver',
+      meters: [],
+      lines: [
+        'Tile 6, 13',
+        'Workers 12/12',
+        'Fleece: 0 of 4 loads',
+        'Waits for fleece',
+        'Buyer waits for a storehouse with more than 4 loads of fleece',
+        'Cart Pusher at the weaver',
+        'Fire risk 0%',
+      ],
+    });
+    Object.assign(weaver, { fleece: 200, production: WEAVING_TICKS / 2 });
+    expect(describeTile(game, 6, 13).lines).toEqual(expect.arrayContaining(['Fleece: 2 of 4 loads', 'Weaving: 50% of a load']));
+    weaver.cloth = 400;
+    expect(describeTile(game, 6, 13).lines).toEqual(
+      expect.arrayContaining(['Cloth waiting: 4 loads', 'Full of cloth: waits for its cart', 'Cart Pusher waits for a storehouse with room']),
+    );
+  });
+
+  it('describes cloth in a storehouse and the cart bringing it', () => {
+    const { game } = street();
+    placeBuilding(game, 'storehouse', 10, 12);
+    lastBuilding(game).cloth = 500;
+    placeBuilding(game, 'weaver', 20, 13);
+    lastBuilding(game).cloth = 400;
+    runTicks(game, 1);
+    expect(meter(game, 11, 13, 'Cloth').value).toBe('5 loads in 2 slots');
+    expect(describeTile(game, 20, 13).lines).toContain('Cart Pusher out with a load');
+    const cart = game.carriers.find((c) => c.kind === 'clothCart')!;
+    const { x, y } = walkerTile(cart);
+    expect(describeTile(game, x, y)).toEqual({
+      title: 'Cart Pusher',
+      meters: [],
+      lines: ['From the Weaver at 20, 13', 'Carrying 4 loads to the Storehouse at 10, 12'],
+    });
+  });
 
   it('describes a timber mill, its lumberjack and the tree he fells', () => {
     const { game } = street();

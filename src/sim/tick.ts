@@ -1,5 +1,6 @@
 import { TICKS_PER_MONTH } from './clock';
 import { tickCarriers } from './carriers';
+import { tickCloth } from './cloth';
 import { settleMonth } from './economy';
 import { eat, growCrops, harvestIfDue } from './food';
 import { evolveHouses } from './housing';
@@ -29,6 +30,7 @@ export function tick(state: GameState): void {
   tickSchools(state);
   tickSheep(state);
   tickOlives(state);
+  tickCloth(state);
   tickMaterials(state);
   tickSanctuaries(state);
   evolveHouses(state);

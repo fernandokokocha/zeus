@@ -214,6 +214,7 @@ export function build(state: GameState, placement: Placement): Building {
     marble: 0,
     bronze: 0,
     sculptures: 0,
+    cloth: 0,
     growth: placement.type === 'oliveTree' ? RIPE_CROP : 0,
     production: 0,
     performingUntil: 0,

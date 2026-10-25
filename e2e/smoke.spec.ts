@@ -36,7 +36,7 @@ async function place(page: Page, group: string, tool: RegExp, at: [number, numbe
   await drag(page, at, at);
 }
 
-test('boots, builds a street with services, food, culture, fleece, oil, materials, sanctuaries and decorations and maintenance, and settlers move in', async ({ page }) => {
+test('boots, builds a street with services, food, culture, fleece, oil, cloth, materials, sanctuaries and decorations and maintenance, and settlers move in', async ({ page }) => {
   test.setTimeout(180_000);
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
@@ -90,6 +90,7 @@ test('boots, builds a street with services, food, culture, fleece, oil, material
   await place(page, 'Industry', /^Masonry Shop/, [31, 51]);
   await place(page, 'Industry', /^Foundry/, [32, 48]);
   await place(page, 'Industry', /^Sculpture Studio/, [34, 48]);
+  await place(page, 'Industry', /^Weaver/, [35, 51]);
   await place(page, 'Mythology', /^Artisans' Guild/, [36, 48]);
   await place(page, 'Mythology', /^Forge of Hephaestus/, [50, 53]);
   await expect(page.locator('#status')).toHaveText('Needs 13 loads of marble in storehouses (has 0)');
@@ -113,7 +114,7 @@ test('boots, builds a street with services, food, culture, fleece, oil, material
   await expect(inspector).not.toHaveText(paused, { timeout: 20_000 });
   await inspector.screenshot({ path: 'test-results/inspector-house.png' });
   await inspect([27, 47]);
-  await expect(inspector.locator('.meter')).toHaveCount(8);
+  await expect(inspector.locator('.meter')).toHaveCount(9);
   await inspector.screenshot({ path: 'test-results/inspector-storehouse.png' });
   await page.screenshot({ path: 'test-results/inspected-storehouse.png' });
   await inspect([17, 51]);

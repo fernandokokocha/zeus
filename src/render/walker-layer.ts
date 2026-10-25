@@ -147,6 +147,11 @@ const woodCart = cart([
 const marbleCart = cart([marbleChunk(0, 0.19, 0.22, 1.3)]);
 const sculptureCart = cart(statuette);
 
+const clothBoltPart = (y: number, z: number): Part => ({
+  geometry: new THREE.CylinderGeometry(0.04, 0.04, 0.2, 10).rotateZ(Math.PI / 2).translate(0, y, z),
+  color: PALETTE.cloth,
+});
+
 const smallAmphora = (x: number, y: number, z: number): Part => ({ geometry: jar.clone().translate(x, y, z), color: PALETTE.terracotta });
 
 const FIGURES: Record<Figure, Part[]> = {
@@ -181,6 +186,12 @@ const FIGURES: Record<Figure, Part[]> = {
   marbleCart,
   bronzeCart: cart([ingot(-0.04, 0.155, 0.2), ingot(0.04, 0.155, 0.26), oreLump(0, 0.2, 0.23, 0.6)]),
   sculptureCart,
+  clothCart: cart([clothBoltPart(0.18, 0.18), clothBoltPart(0.18, 0.26), { geometry: new THREE.CylinderGeometry(0.043, 0.043, 0.03, 10).rotateZ(Math.PI / 2).translate(0, 0.18, 0.18), color: PALETTE.clothBand }]),
+  weaverBuyer: [
+    ...body(PALETTE.weaverBuyerTunic),
+    { geometry: new THREE.CylinderGeometry(0.09, 0.07, 0.06, 10).translate(0, 0.41, 0), color: PALETTE.reed },
+    { geometry: new THREE.SphereGeometry(0.075, 8, 6).scale(1.2, 0.7, 1.2).translate(0, 0.46, 0), color: PALETTE.wool },
+  ],
   woodSupply: woodCart,
   marbleSupply: marbleCart,
   sculptureSupply: sculptureCart,
