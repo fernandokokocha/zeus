@@ -5,7 +5,8 @@ import { ROAMER_SPECS } from '../sim/roamers';
 import { FULL_FLEECE } from '../sim/sheep';
 import { WALKER_TILES_PER_TICK, walkerPosition } from '../sim/walking';
 import { PALETTE } from './palette';
-import { FIGURE_SCALE, body, cart, jar, type Part } from './kit/walker';
+import { awningCartPeddler } from './peddler-models';
+import { FIGURE_SCALE, body, cart, jar, mergedByColour, type Part } from './kit/walker';
 
 const BOB_HEIGHT = 0.06;
 const BOB_STEPS_PER_TILE = 2;
@@ -189,11 +190,7 @@ const FIGURES: Record<Figure, Part[]> = {
     { geometry: new THREE.BoxGeometry(0.12, 0.09, 0.02).rotateX(-0.6).translate(0, 0.2, 0.09), color: PALETTE.tablet },
     { geometry: new THREE.SphereGeometry(0.04, 8, 6).translate(0.09, 0.1, 0), color: PALETTE.coins },
   ],
-  peddler: [
-    ...body(PALETTE.peddlerTunic),
-    { geometry: new THREE.CylinderGeometry(0.09, 0.07, 0.06, 10).translate(0, 0.41, 0), color: PALETTE.reed },
-    { geometry: new THREE.SphereGeometry(0.045, 8, 6).scale(1.3, 0.8, 1).translate(0.02, 0.45, 0), color: PALETTE.bread },
-  ],
+  peddler: awningCartPeddler(),
   buyer: [
     ...body(PALETTE.buyerTunic),
     { geometry: new THREE.CylinderGeometry(0.07, 0.05, 0.08, 10).translate(0.1, 0.12, 0.02), color: PALETTE.reed },
@@ -216,7 +213,8 @@ const FIGURES: Record<Figure, Part[]> = {
   cartPusher: cart([{ geometry: new THREE.BoxGeometry(0.15, 0.08, 0.16).translate(0, 0.18, 0.22), color: PALETTE.sack }]),
 };
 
-function createFigureSet(parts: Part[], group: THREE.Group): { show(walks: Walk[], ticksAhead: number): void } {
+function createFigureSet(figure: Part[], group: THREE.Group): { show(walks: Walk[], ticksAhead: number): void } {
+  const parts = mergedByColour(figure);
   let capacity = 0;
   let meshes: THREE.InstancedMesh[] = [];
   const matrix = new THREE.Matrix4();

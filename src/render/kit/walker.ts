@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { PALETTE } from '../palette';
 
 export const FIGURE_SCALE = 1.7;
@@ -27,4 +28,20 @@ export function cart(load: Part[]): Part[] {
     { geometry: new THREE.CylinderGeometry(0.06, 0.06, 0.26, 10).rotateZ(Math.PI / 2).translate(0, 0.06, 0.24), color: PALETTE.doorway },
     ...load,
   ];
+}
+
+export function figureModel(parts: Part[]): THREE.Group {
+  const group = new THREE.Group();
+  for (const { geometry, color } of parts) group.add(new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({ color })));
+  group.scale.setScalar(FIGURE_SCALE);
+  return group;
+}
+
+export function mergedByColour(parts: Part[]): Part[] {
+  const colours = [...new Set(parts.map((p) => p.color))];
+  return colours.map((color) => {
+    const geometry = mergeGeometries(parts.filter((p) => p.color === color).map((p) => p.geometry));
+    if (!geometry) throw new Error(`Cannot merge the figure parts coloured ${color.toString(16)}`);
+    return { geometry, color };
+  });
 }

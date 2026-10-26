@@ -31,6 +31,7 @@ import { SCULPTURE_STUDIO_OPTIONS } from './sculpture-studio-options';
 import { FOUNDRY_OPTIONS } from './foundry-options';
 import { STOREHOUSE_OPTIONS } from './storehouse-options';
 import { TRADERS_GUILD_OPTIONS } from './traders-guild-options';
+import { PEDDLER_OPTIONS } from './peddler-options';
 import { bake } from '../render/bake';
 import type { Animate } from '../render/kit/figure';
 import type { DesignSet } from './options';
@@ -66,6 +67,7 @@ const SETS: Record<string, DesignSet> = {
   sculptureStudio: { title: 'Sculpture Studio', needs: '2×2 · 12 workers · without and with workers, marble and bronze in, statues out', options: SCULPTURE_STUDIO_OPTIONS, chosen: 0 },
   foundry: { title: 'Foundry', needs: '2×2 · 15 workers · without and with workers, ore and bronze stock', options: FOUNDRY_OPTIONS, chosen: 0 },
   storehouse: { title: 'Storehouse', needs: '3×3 · 12 workers · without and with workers, empty and holding every good', options: STOREHOUSE_OPTIONS, chosen: 0, footprint: [3, 3] },
+  peddler: { title: 'Peddler', needs: 'Walker · one per agora, carrying fresh goods from every vendor · on the road beside a Shack, a cart pusher behind him for contrast', options: PEDDLER_OPTIONS, chosen: 0, footprint: [3, 2] },
   tradersGuild: { title: "Traders' Guild", needs: '4×4 · 20 merchants · fully supplied and missing a need (burning turns its tiles into ruins)', options: TRADERS_GUILD_OPTIONS, chosen: 0, footprint: [4, 4] },
 };
 
