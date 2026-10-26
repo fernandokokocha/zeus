@@ -1,10 +1,10 @@
 import { appealMap } from './appeal';
 import { BUILDING_SPECS, type BuildingType } from './buildings';
-import { CULTURE_POINTS, culturesPassed } from './culture';
+import { CULTURES, CULTURE_POINTS, culturePoints } from './culture';
 import { taxPaidLastYear } from './economy';
 import { houseStockTarget } from './food';
 import { guildSiteTiles, placeableGuildSites, siteSurroundings } from './guild';
-import { HOUSE_LEVELS, buildingName, houseLevel, isResidence } from './housing';
+import { buildingName, houseLevel, isResidence } from './housing';
 import { amount, drachmas } from './inspect';
 import { isUnderConstruction } from './sanctuaries';
 import { COVERAGE_MONTHS, serviceLeft } from './roamers';
@@ -39,8 +39,6 @@ export interface Report {
 
 export type Look = 'reported' | 'serving' | 'faded';
 
-const CULTURE_FULL_HEIGHT = HOUSE_LEVELS.townhouse.culture;
-
 const DISTRIBUTION: BuildingType[] = ['granary', 'storehouse', 'agora', 'foodVendor', 'fleeceVendor', 'oilVendor', 'clothVendor'];
 
 const SERVERS: Record<Overlay, BuildingType[]> = {
@@ -72,14 +70,16 @@ function percent(share: number): string {
   return `${Math.round(share * 100)}%`;
 }
 
+function cultureLine(state: GameState, residence: Building, culture: Culture): string {
+  const share = serviceLeft(state, residence, culture);
+  if (share === 0) return `${capitalized(culture)}: none`;
+  return `${capitalized(culture)} ${CULTURE_POINTS[culture]}: ${months(share * COVERAGE_MONTHS[culture])} months left`;
+}
+
 function cultureColumn(state: GameState, residence: Building): Omit<Column, 'building'> {
-  const passed = culturesPassed(state, residence);
-  const points = (culture: Culture) => (passed.includes(culture) ? CULTURE_POINTS[culture] : 0);
-  const cultures = Object.keys(CULTURE_POINTS) as Culture[];
-  const total = cultures.reduce((sum, culture) => sum + points(culture), 0);
   return {
-    bars: [passed.map((culture) => ({ kind: culture, share: CULTURE_POINTS[culture] / CULTURE_FULL_HEIGHT }))],
-    details: [`Culture: ${total} points`, cultures.map((culture) => `${capitalized(culture)} ${points(culture)}`).join(' · ')],
+    bars: CULTURES.map((culture) => [{ kind: culture, share: serviceLeft(state, residence, culture) }]),
+    details: [`Culture: ${culturePoints(state, residence)} points`, ...CULTURES.map((culture) => cultureLine(state, residence, culture))],
   };
 }
 

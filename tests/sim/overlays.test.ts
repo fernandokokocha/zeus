@@ -79,17 +79,23 @@ describe('columns', () => {
     expect(columnOf(game, 'water', lastBuilding(game))).toBeNull();
   });
 
-  it('culture stacks the cultures a house has, scaled so the Townhouse need is full height', () => {
+  it('culture stands a bar per culture, each the share of its memory left', () => {
     const game = grassGame();
     const house = occupiedHouse(game, 4, 4);
-    house.coveredUntil.philosophy = 1;
-    house.coveredUntil.drama = 1;
+    house.coveredUntil.philosophy = COVERAGE_MONTHS.philosophy * TICKS_PER_MONTH;
+    house.coveredUntil.drama = (COVERAGE_MONTHS.drama * TICKS_PER_MONTH) / 4;
     const column = columnOf(game, 'culture', house)!;
-    expect(column.bars).toEqual([[
-      { kind: 'philosophy', share: 15 / 45 },
-      { kind: 'drama', share: 25 / 45 },
-    ]]);
-    expect(column.details).toEqual(['Culture: 40 points', 'Philosophy 15 · Athletics 0 · Drama 25']);
+    expect(column.bars).toEqual([
+      [{ kind: 'philosophy', share: 1 }],
+      [{ kind: 'athletics', share: 0 }],
+      [{ kind: 'drama', share: 0.25 }],
+    ]);
+    expect(column.details).toEqual([
+      'Culture: 40 points',
+      'Philosophy 15: 2.0 months left',
+      'Athletics: none',
+      'Drama 25: 0.5 months left',
+    ]);
   });
 
   it('risk stands the higher of fire and collapse risk, and names both', () => {
@@ -214,7 +220,7 @@ describe("map overlays on a Traders' Guild", () => {
     game.tick = (COVERAGE_MONTHS.water * TICKS_PER_MONTH) / 4;
     expect(columnOf(game, 'supplies', guild)!.bars.map(([part]) => part.kind)).toEqual(['food', 'fleece', 'oil', 'cloth']);
     expect(columnOf(game, 'water', guild)!.bars).toEqual([[{ kind: 'water', share: 0.75 }]]);
-    expect(columnOf(game, 'culture', guild)!.bars[0].reduce((sum, part) => sum + part.share, 0)).toBe(1);
+    expect(columnOf(game, 'culture', guild)!.bars.map(([part]) => part.kind)).toEqual(['philosophy', 'athletics', 'drama']);
   });
 
   it('leave out tax: it pays none', () => {
