@@ -3,7 +3,7 @@ import { appealMap } from '../../src/sim/appeal';
 import { TICKS_PER_MONTH } from '../../src/sim/clock';
 import { placeBuilding, placeRoad } from '../../src/sim/commands';
 import { VENDOR_CAPACITY, houseStockTarget } from '../../src/sim/food';
-import { OVERLAYS, buildingLook, overlayColumns, overlayReadings, overlayReport, type ColumnOverlay } from '../../src/sim/overlays';
+import { OVERLAYS, buildingLook, overlayColumns, overlayReadings, overlayReport, overlayReportAt, type ColumnOverlay } from '../../src/sim/overlays';
 import { COVERAGE_MONTHS } from '../../src/sim/roamers';
 import { RISK_LIMIT } from '../../src/sim/safety';
 import type { Building, GameState } from '../../src/sim/state';
@@ -45,11 +45,33 @@ describe('map overlays', () => {
     for (const overlay of ['water', 'supplies', 'culture', 'risk', 'tax'] as const) expect(columnOf(game, overlay, lastBuilding(game))).toBeNull();
   });
 
-  it('says nothing on hover in a tile mode', () => {
+  it('says nothing about a building in a tile mode', () => {
     const game = grassGame();
     const house = occupiedHouse(game, 4, 4);
     expect(overlayReport(game, 'appeal', house)).toBeNull();
     expect(overlayReport(game, 'guildSites', house)).toBeNull();
+  });
+});
+
+describe('hovering a tile', () => {
+  it('in Appeal names the exact appeal of any tile, signed', () => {
+    const game = grassGame();
+    placeBuilding(game, 'park', 5, 5);
+    const appeal = appealMap(game)[7 * game.size + 7];
+    expect(appeal).toBeGreaterThan(0);
+    expect(overlayReportAt(game, 'appeal', { x: 7, y: 7 })).toEqual({ name: `Appeal +${appeal}`, details: [] });
+    expect(overlayReportAt(game, 'appeal', { x: 15, y: 15 })).toEqual({ name: 'Appeal 0', details: [] });
+    placeBuilding(game, 'granary', 15, 4);
+    expect(overlayReportAt(game, 'appeal', { x: 14, y: 5 })!.name).toMatch(/^Appeal −\d+$/);
+  });
+
+  it('in a building mode reports the building on it, and nothing off the map', () => {
+    const game = grassGame();
+    const house = occupiedHouse(game, 4, 4);
+    expect(overlayReportAt(game, 'water', { x: 5, y: 5 })).toEqual(overlayReport(game, 'water', house));
+    expect(overlayReportAt(game, 'water', { x: 9, y: 9 })).toBeNull();
+    expect(overlayReportAt(game, 'appeal', { x: -1, y: 0 })).toBeNull();
+    expect(overlayReportAt(game, 'guildSites', { x: 5, y: 5 })).toBeNull();
   });
 });
 

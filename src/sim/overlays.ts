@@ -9,7 +9,8 @@ import { amount, drachmas } from './inspect';
 import { isUnderConstruction } from './sanctuaries';
 import { COVERAGE_MONTHS, serviceLeft } from './roamers';
 import { canBurn, canCollapse, riskShare } from './safety';
-import { tileIndex, type Building, type Culture, type GameState, type PeddledGood } from './state';
+import type { Point } from './point';
+import { NO_BUILDING, buildingById, inBounds, tileIndex, type Building, type Culture, type GameState, type PeddledGood } from './state';
 
 export const OVERLAYS = ['water', 'supplies', 'culture', 'appeal', 'risk', 'tax', 'staffing', 'guildSites'] as const;
 
@@ -166,6 +167,22 @@ export function overlayReport(state: GameState, overlay: Overlay, building: Buil
   if (!isColumnOverlay(overlay)) return null;
   const reported = COLUMN_READERS[overlay](state, building);
   return reported ? { name: buildingName(building), details: reported.details } : null;
+}
+
+function signed(value: number): string {
+  if (value > 0) return `+${value}`;
+  return value < 0 ? `−${-value}` : '0';
+}
+
+export function overlayReportAt(state: GameState, overlay: Overlay, tile: Point): Report | null {
+  if (!inBounds(state, tile.x, tile.y)) return null;
+  const i = tileIndex(state, tile.x, tile.y);
+  if (overlay === 'appeal') return { name: `Appeal ${signed(appealMap(state)[i])}`, details: [] };
+  const id = state.buildingIdAt[i];
+  if (id === NO_BUILDING) return null;
+  const building = buildingById(state, id);
+  if (!building) throw new Error(`Tile ${tile.x}, ${tile.y} names building ${id}, which does not exist`);
+  return overlayReport(state, overlay, building);
 }
 
 export function buildingLook(state: GameState, overlay: Overlay, building: Building): Look {

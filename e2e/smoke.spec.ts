@@ -158,7 +158,7 @@ await expect(fleeceOrder.getByRole('button', { name: 'Accept', exact: true })).t
   const topbarBox = await page.locator('#topbar').boundingBox();
   await page.keyboard.press('o');
   await expect(mapButton).toHaveText('Map: Appeal ▾');
-  await expect(ramp).toContainText('+20');
+  await expect(ramp).toBeHidden();
   await page.screenshot({ path: 'test-results/appeal.png' });
   await mapButton.click();
   await expect(mapMenu.getByRole('button')).toHaveText(['Off', 'Water', 'Supplies', 'Culture', 'Appeal', 'Risk', 'Tax', 'Staff', 'Guilds']);

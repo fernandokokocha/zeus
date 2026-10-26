@@ -1,9 +1,10 @@
 import type { View } from '../render/view';
-import { TINT_SCALES, overlayColor } from '../render/overlay-layer';
+import { overlayColor } from '../render/overlay-layer';
+import { TRADERS_GUILD } from '../sim/housing';
 import { tileUnderPointer } from '../render/picking';
-import { OVERLAYS, isColumnOverlay, overlayReport, type Overlay, type Report } from '../sim/overlays';
+import { GUILD_SITE_READINGS, OVERLAYS, overlayReportAt, type Overlay } from '../sim/overlays';
 import type { Point } from '../sim/point';
-import { NO_BUILDING, buildingById, inBounds, tileIndex, type GameState } from '../sim/state';
+import type { GameState } from '../sim/state';
 import { byId } from './dom';
 
 export const OVERLAY_NAMES: Record<Overlay, string> = {
@@ -18,6 +19,11 @@ export const OVERLAY_NAMES: Record<Overlay, string> = {
 };
 
 const TOOLTIP_OFFSET = 16;
+
+const GUILD_SITES_KEY = [
+  { at: GUILD_SITE_READINGS.inRange, label: `Within ${TRADERS_GUILD.mainRoadRange} tiles of the Main Road` },
+  { at: GUILD_SITE_READINGS.placeable, label: "A Traders' Guild can be placed now" },
+];
 
 function mapLabel(overlay: Overlay | null): string {
   return `Map: ${overlay ? OVERLAY_NAMES[overlay] : 'Off'} ▾`;
@@ -63,20 +69,20 @@ export function createMapModes(state: GameState, view: View): { shown(): Overlay
 
   function showRamp(overlay: Overlay | null): void {
     ramp.replaceChildren();
-    ramp.hidden = overlay === null || isColumnOverlay(overlay);
-    if (overlay === null || isColumnOverlay(overlay)) return;
-    for (const stop of TINT_SCALES[overlay]) {
+    ramp.hidden = overlay !== 'guildSites';
+    if (ramp.hidden) return;
+    for (const { at, label: text } of GUILD_SITES_KEY) {
       const swatch = document.createElement('span');
       swatch.className = 'ramp-swatch';
-      swatch.style.background = overlayColor(overlay, stop.at).getStyle();
+      swatch.style.background = overlayColor('guildSites', at).getStyle();
       const label = document.createElement('span');
-      label.textContent = stop.label;
+      label.textContent = text;
       ramp.append(swatch, label);
     }
   }
 
   function updateTooltip(): void {
-    const report = shown && pointer && reportAt(shown, pointer.tile);
+    const report = shown && pointer && overlayReportAt(state, shown, pointer.tile);
     tooltip.hidden = !report;
     if (!report || !pointer) return;
     const name = document.createElement('strong');
@@ -89,15 +95,6 @@ export function createMapModes(state: GameState, view: View): { shown(): Overlay
     tooltip.replaceChildren(name, ...lines);
     tooltip.style.left = `${pointer.client.x + TOOLTIP_OFFSET}px`;
     tooltip.style.top = `${pointer.client.y + TOOLTIP_OFFSET}px`;
-  }
-
-  function reportAt(overlay: Overlay, tile: Point): Report | null {
-    if (!inBounds(state, tile.x, tile.y)) return null;
-    const id = state.buildingIdAt[tileIndex(state, tile.x, tile.y)];
-    if (id === NO_BUILDING) return null;
-    const building = buildingById(state, id);
-    if (!building) throw new Error(`Tile ${tile.x}, ${tile.y} names building ${id}, which does not exist`);
-    return overlayReport(state, overlay, building);
   }
 
   button.addEventListener('click', () => (menu.hidden = !menu.hidden));

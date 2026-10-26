@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { TRADERS_GUILD } from '../sim/housing';
 import { GUILD_SITE_READINGS, isColumnOverlay, overlayReadings, type Overlay, type TintOverlay } from '../sim/overlays';
 import type { GameState } from '../sim/state';
 import { PALETTE } from './palette';
@@ -8,23 +7,22 @@ const OVERLAY_HEIGHT = 0.06;
 const OVERLAY_OPACITY = 0.6;
 const REPAINT_TICKS = 8;
 
-export interface ColorStop {
+interface ColorStop {
   at: number;
   color: number;
-  label: string;
 }
 
 const { overlayGood: good, overlayBad: bad } = PALETTE;
 
-export const TINT_SCALES: Record<TintOverlay, ColorStop[]> = {
+const TINT_SCALES: Record<TintOverlay, ColorStop[]> = {
   appeal: [
-    { at: -20, color: bad, label: '−20' },
-    { at: 0, color: PALETTE.plaster, label: '0' },
-    { at: 20, color: good, label: '+20' },
+    { at: -20, color: bad },
+    { at: 0, color: PALETTE.plaster },
+    { at: 20, color: good },
   ],
   guildSites: [
-    { at: GUILD_SITE_READINGS.inRange, color: PALETTE.overlayGuildRange, label: `Within ${TRADERS_GUILD.mainRoadRange} tiles of the Main Road` },
-    { at: GUILD_SITE_READINGS.placeable, color: good, label: "A Traders' Guild can be placed now" },
+    { at: GUILD_SITE_READINGS.inRange, color: PALETTE.overlayGuildRange },
+    { at: GUILD_SITE_READINGS.placeable, color: good },
   ],
 };
 
