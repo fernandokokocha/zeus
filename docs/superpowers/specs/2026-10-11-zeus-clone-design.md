@@ -34,8 +34,8 @@ the roadmap as the budget allows **without lowering the quality of earlier slice
 - **Plain DOM + CSS** for UI panels. No UI framework.
 - **Vitest** for simulation tests. **Playwright** for one smoke test that the page boots
   and renders a frame.
-- **GitHub Actions** runs typecheck, tests and build on every PR, and deploys every
-  build, PRs included, to **GitHub Pages**.
+- **GitHub Actions** runs typecheck, tests, build and the smoke test on every push to
+  `main`, and deploys the build to **GitHub Pages**.
 
 ## Architecture
 
@@ -82,45 +82,29 @@ expected to deliver it, finished and deployed, without anyone watching.
 - **Never stop to ask.** No clarifying questions, no "should I proceed?", no waiting for
   approval of a plan. The design decisions were made in this spec. For anything the spec
   does not cover, choose the option closest to the original Zeus, record it under
-  "Decisions I made" in the PR, and keep going.
+  "Decisions I made" in the slice commit, and keep going.
 - **One slice per session.** Finish the current slice completely before starting the
   next one. Never start the next slice in the same session.
-- **The owner's only input is playtest feedback:** PR comments, or the session prompt.
-  Act on it first. If there is none, the slice was fine.
-- **The PR is the report.** The owner reads the PR and plays the deployed link, nothing
-  else. The playtest checklist must let them verify the slice without reading code.
-- **The owner approves, a session merges.** Every PR build deploys to Pages, so the open
-  slice PR is what the owner playtests. Only one slice PR is open at a time. When the
-  owner approves it, the next session squash-merges it, so `main` gets one commit per
-  PR.
-- **Done means deployed for review.** CI is green, Pages shows the PR's build, and the
-  roadmap box is ticked in the PR.
+- **The owner's only input is playtest feedback,** in the session prompt. Act on it first.
+  If there is none, the slice was fine.
+- **Trunk-based development.** A finished slice is squashed into one commit on `main` and
+  pushed, with no pull request and no wait for approval. Pushing to `main` is expected and
+  good: the owner playtests as soon as the slice is done. Feedback is fixed on `main` in a
+  later session.
+- **The slice commit is the report,** together with the session's final reply. The owner
+  reads it and plays the deployed link, nothing else. Its playtest checklist must let
+  them verify the slice without reading code.
+- **Done means deployed.** The slice is on `main` with its roadmap box ticked, CI is
+  green, and Pages serves it.
 - **If truly blocked** (CI cannot go green, or a deploy fails for reasons outside the
-  repo), leave the PR open and unmerged, explain the blocker at the top of its
-  description, and stop. This is the only case in which the owner is needed before the
-  playtest.
+  repo), leave the work on its pushed branch rather than break `main`, put the blocker
+  at the top of the final report, and stop. This is the only case in which the owner is
+  needed before the playtest.
 
-## How a cloud session runs a slice
+## How a session runs a slice
 
-1. **Orient.** Read `CLAUDE.md`, the roadmap, this spec and the zeus-numbers reference.
-   If a slice PR is still open and approved, squash-merge it and carry on. If it is open
-   and not approved, this session is a feedback session: fix its comments on that
-   branch, push, reply to each comment with what changed, and stop. Otherwise find the
-   first unchecked slice and read any feedback left on the last merged PR or in the
-   session prompt.
-2. **Fix feedback first**, in its own commits.
-3. **Plan.** Write `docs/slices/NN-name.md`, a detailed plan for this slice only.
-4. **Build test-first** on a branch `slice-NN-name`.
-5. **Open a PR** containing:
-   - a **playtest checklist** of concrete things to try and what should happen;
-   - **"Decisions I made"**: every choice not covered by this spec, with the option
-     closest to Zeus preferred;
-   - **"Left out"**: anything cut to protect quality.
-6. **Stop** when CI is green and Pages shows the PR's build. Tick the slice in the
-   roadmap in the same PR. The owner playtests, comments, and approves when satisfied.
-
-Sessions cannot ask the owner questions mid-run. They decide, then record the decision
-under "Decisions I made".
+The steps are the "Session routine" in `CLAUDE.md`. Sessions cannot ask the owner
+questions mid-run. They decide, then record the decision under "Decisions I made".
 
 ## Core rules (all slices)
 

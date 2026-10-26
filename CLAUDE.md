@@ -21,38 +21,36 @@ The owner is hands-off until the playtest. The spec's "Working agreement" sectio
 binding. In short:
 
 - **Never stop to ask.** Decide, using the option closest to the original Zeus, record
-  the decision in the PR, and keep going.
+  the decision in the slice commit, and keep going.
 - **One slice per session**, finished completely.
-- **The owner approves, a session merges.** Done means CI green, Pages showing the PR's
-  build, roadmap ticked in the PR. After the playtest the owner approves the PR; a
-  session then squash-merges it. Never merge a PR the owner hasn't approved.
-- **If truly blocked,** leave the PR open with the blocker at the top of its description.
+- **Trunk-based development.** A finished slice is squashed into one commit on `main` and
+  pushed. No pull requests and no waiting for approval: pushing to `main` is expected,
+  and it is the point. The owner playtests as soon as the slice is done instead of
+  waiting on a PR. Feedback arrives in a later session prompt and is fixed on `main`.
+- **Done means deployed.** The slice commit is on `main`, its CI run is green, and Pages
+  serves it.
+- **If truly blocked,** don't push a broken `main`. Leave the work on its branch, push the
+  branch, and put the blocker at the top of the session's final report.
 
 ## Session routine
 
-1. **Check for an open slice PR.** If one exists:
-   - **Approved** (an approving review, a comment from the owner saying "approved", or
-     the session prompt saying so): squash-merge it, delete its branch, pull `main`,
-     and continue with step 2.
-   - **Not approved:** fix its comments on that branch in their own commits, push,
-     reply to each comment with what changed, and stop. That is the whole session.
-2. **Find the slice.** Read the spec and the roadmap. The slice is the first unchecked
-   one. Fix any feedback left on the last merged PR or in the session prompt first, in
-   its own commits.
-3. **Get a plan.** If `docs/slices/NN-*.md` exists, execute it task by task and tick its
+1. **Find the slice.** Pull `main`. Read the spec and the roadmap. The slice is the first
+   unchecked one. Fix any feedback in the session prompt first, in its own commits on
+   `main`.
+2. **Get a plan.** If `docs/slices/NN-*.md` exists, execute it task by task and tick its
    boxes. Otherwise, write it first, in the same format as `docs/slices/01-foundation.md`.
-4. **Build test-first** on branch `slice-NN-name`.
-5. **Look at the game.** `npm run test:e2e` saves `test-results/screenshot.png`. Open it
-   and check that the slice looks right before opening the PR.
-6. **Open the PR,** titled `Slice NN: Name`. Its body has these sections:
+3. **Build test-first** on a local branch `slice-NN-name`, in small commits.
+4. **Look at the game.** `npm run test:e2e` saves `test-results/screenshot.png`. Open it
+   and check that the slice looks right.
+5. **Ship it.** Tick the slice in `docs/roadmap.md`, squash the branch onto `main` as one
+   commit titled `Slice NN: Name`, and push. The commit body and the session's final
+   report both carry:
    - **Playtest checklist:** concrete things to try and what should happen. The owner
      verifies the slice from this alone.
    - **Decisions I made:** every choice the spec didn't cover.
    - **Left out:** anything cut to protect quality.
-
-   Tick the slice in `docs/roadmap.md` in the same PR.
-7. **Wait for CI** to go green and deploy the PR's build to Pages, then stop. The PR
-   waits for the owner's approval.
+6. **Wait for CI** on `main` to go green and deploy to Pages
+   (https://fernandokokocha.github.io/zeus/), then stop.
 
 ## Commands
 
@@ -64,24 +62,14 @@ npm run build
 npm run test:e2e    # Playwright smoke test + screenshot
 ```
 
-## GitHub from a cloud session
+## CI status
 
-The session proxy blocks GitHub GraphQL, so `gh pr ...` commands fail with HTTP 403 and
-`gh auth status` reports an invalid token. `gh api` (REST) works. If `git remote` is
-empty, run `git remote add origin https://github.com/fernandokokocha/zeus` first.
+The repo is public, so the REST API needs no login (`gh api` works too, where `gh` is
+authenticated). If `git remote` is empty, run
+`git remote add origin https://github.com/fernandokokocha/zeus` first.
 
 ```
-R=repos/fernandokokocha/zeus
-gh api "$R/pulls?state=open"                                  # open slice PR, if any
-gh api "$R/pulls?state=closed&per_page=1"                    # last merged PR
-gh api $R/issues/<n>/comments                                 # PR conversation
-gh api $R/pulls/<n>/comments                                  # inline review comments
-gh api $R/pulls -f title=... -f head=<branch> -f base=main -F body=@body.md
-gh api "$R/actions/runs?branch=<branch>&per_page=1"           # CI status
-gh api -X POST $R/issues/<n>/comments -f body=...             # reply on the PR
-gh api $R/pulls/<n>/reviews                                   # approval, if any
-gh api -X PUT $R/pulls/<n>/merge -f merge_method=squash       # merge once approved
-gh api -X DELETE $R/git/refs/heads/<branch>                   # delete merged branch
+curl -s "https://api.github.com/repos/fernandokokocha/zeus/actions/runs?branch=main&per_page=1"
 ```
 
 If the preinstalled Chromium does not match the Playwright version, run the e2e test
