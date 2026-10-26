@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { appealMap } from '../../src/sim/appeal';
 import { TICKS_PER_MONTH } from '../../src/sim/clock';
-import { placeBuilding } from '../../src/sim/commands';
-import { houseStockTarget } from '../../src/sim/food';
+import { placeBuilding, placeRoad } from '../../src/sim/commands';
+import { VENDOR_CAPACITY, houseStockTarget } from '../../src/sim/food';
 import { OVERLAYS, buildingLook, overlayColumns, overlayReadings, overlayReport, type ColumnOverlay } from '../../src/sim/overlays';
 import { COVERAGE_MONTHS } from '../../src/sim/roamers';
 import { RISK_LIMIT } from '../../src/sim/safety';
@@ -148,6 +148,23 @@ describe('the supplies column', () => {
     const house = occupiedHouse(game, 4, 4);
     house.fleece = 2 * houseStockTarget(house, 'fleece');
     expect(columnOf(game, 'supplies', house)!.bars[1]).toEqual([{ kind: 'fleece', share: 1 }]);
+  });
+});
+
+describe('the supplies column on an agora', () => {
+  it('stands a bar on each vendor, its stock against what a vendor holds, and keeps the agora floor', () => {
+    const game = grassGame(30);
+    placeRoad(game, { x: 0, y: 15 }, { x: 29, y: 15 });
+    placeBuilding(game, 'agora', 10, 16);
+    const agora = lastBuilding(game);
+    placeBuilding(game, 'foodVendor', 10, 16);
+    const food = lastBuilding(game);
+    placeBuilding(game, 'clothVendor', 10, 18);
+    const cloth = lastBuilding(game);
+    food.food = VENDOR_CAPACITY / 4;
+    expect(columnOf(game, 'supplies', food)).toEqual({ building: food, bars: [[{ kind: 'food', share: 0.25 }]], details: ['Food 2 / 8 loads'] });
+    expect(columnOf(game, 'supplies', cloth)!.bars).toEqual([[{ kind: 'cloth', share: 0 }]]);
+    expect(buildingLook(game, 'supplies', agora)).toBe('serving');
   });
 });
 

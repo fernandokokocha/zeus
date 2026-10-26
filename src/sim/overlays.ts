@@ -1,8 +1,8 @@
 import { appealMap } from './appeal';
-import { BUILDING_SPECS, type BuildingType } from './buildings';
+import { BUILDING_SPECS, isAgoraVendor, vendorGood, type BuildingType } from './buildings';
 import { CULTURES, CULTURE_POINTS, culturePoints } from './culture';
 import { taxPaidLastYear } from './economy';
-import { houseStockTarget } from './food';
+import { UNITS_PER_LOAD, VENDOR_CAPACITY, houseStockTarget } from './food';
 import { guildSiteTiles, placeableGuildSites, siteSurroundings } from './guild';
 import { buildingName, houseLevel, isResidence } from './housing';
 import { amount, drachmas } from './inspect';
@@ -39,11 +39,9 @@ export interface Report {
 
 export type Look = 'reported' | 'serving' | 'faded';
 
-const DISTRIBUTION: BuildingType[] = ['granary', 'storehouse', 'agora', 'foodVendor', 'fleeceVendor', 'oilVendor', 'clothVendor'];
-
 const SERVERS: Record<Overlay, BuildingType[]> = {
   water: ['fountain'],
-  supplies: DISTRIBUTION,
+  supplies: ['granary', 'storehouse', 'agora'],
   culture: ['college', 'podium', 'gymnasium', 'dramaSchool', 'theater'],
   appeal: [],
   risk: ['maintenanceOffice'],
@@ -114,6 +112,14 @@ function suppliesColumn(residence: Building): Omit<Column, 'building'> {
   };
 }
 
+function vendorColumn(vendor: Building): Omit<Column, 'building'> {
+  const good = vendorGood(vendor);
+  return {
+    bars: [[{ kind: good, share: vendor[good] / VENDOR_CAPACITY }]],
+    details: [`${capitalized(good)} ${amount(vendor[good] / UNITS_PER_LOAD)} / ${VENDOR_CAPACITY / UNITS_PER_LOAD} loads`],
+  };
+}
+
 function biggestTaxPaid(state: GameState): number {
   return Math.max(0, ...state.buildings.filter((b) => b.type === 'house' && houseLevel(b)).map(taxPaidLastYear));
 }
@@ -127,6 +133,8 @@ function taxColumn(state: GameState, house: Building): Omit<Column, 'building'> 
   };
 }
 
+const residenceSupplies = occupiedResidence((_, residence) => suppliesColumn(residence));
+
 const COLUMN_READERS: Record<ColumnOverlay, ColumnReader> = {
   water: occupiedResidence((state, residence) => {
     const share = serviceLeft(state, residence, 'water');
@@ -135,7 +143,7 @@ const COLUMN_READERS: Record<ColumnOverlay, ColumnReader> = {
       details: [share > 0 ? `Water: ${months(share * COVERAGE_MONTHS.water)} months left` : 'No water'],
     };
   }),
-  supplies: occupiedResidence((_, residence) => suppliesColumn(residence)),
+  supplies: (state, building) => (isAgoraVendor(building.type) ? vendorColumn(building) : residenceSupplies(state, building)),
   culture: occupiedResidence(cultureColumn),
   risk: (_, building) => riskColumn(building),
   tax: occupiedHouse(taxColumn),
