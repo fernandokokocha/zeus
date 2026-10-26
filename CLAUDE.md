@@ -17,6 +17,11 @@ build it one slice at a time, and the owner playtests the deployed build between
 
 ## Working agreement
 
+**Interactive sessions never push.** When the owner is in the session and gives a task
+(feedback, a feature, a redesign), it ends with a local commit on `main`: no push and no
+waiting for CI. The owner tests locally and stacks changes, so push only when explicitly
+asked. Everything below is for unattended slice sessions.
+
 The owner is hands-off until the playtest. The spec's "Working agreement" section is
 binding. In short:
 
