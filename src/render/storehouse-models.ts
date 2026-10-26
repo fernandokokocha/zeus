@@ -1,7 +1,6 @@
 import * as THREE from 'three';
-import { UNITS_PER_LOAD } from '../sim/food';
-import type { Building, Good } from '../sim/state';
-import { SLOT_SIZE, STOREHOUSE_GOODS, type StoredGood, slotsOf } from '../sim/storehouse';
+import type { Building } from '../sim/state';
+import { type Bay, type StoredGood, baysOf } from '../sim/storehouse';
 import { bakedOnce } from './bake';
 import { handcart } from './kit/camp';
 import { clothBolts } from './kit/cloth';
@@ -14,20 +13,6 @@ import { tiledRoof } from './kit/roofs';
 import { bayKerb, bronzeIngots, crated, fleeceBales, marbleBlocks, oilAmphorae, oliveBaskets, stackedLogs, storeGround, storekeeper } from './kit/storehouse';
 import { tileHash } from './palette';
 import { bakedFigure, staffPhase } from './staff';
-
-export const LOADS_PER_BAY = SLOT_SIZE / UNITS_PER_LOAD;
-
-export interface Bay {
-  good: StoredGood;
-  loads: number;
-}
-
-export function baysOf(stock: Record<Good, number>): Bay[] {
-  return STOREHOUSE_GOODS.flatMap((good) => {
-    const loads = Math.floor(stock[good] / UNITS_PER_LOAD);
-    return Array.from({ length: slotsOf(stock, good) }, (_, slot) => ({ good, loads: Math.min(LOADS_PER_BAY, loads - slot * LOADS_PER_BAY) }));
-  });
-}
 
 const LOADS: Record<StoredGood, () => THREE.Object3D> = {
   fleece: bakedOnce(fleeceBales),

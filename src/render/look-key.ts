@@ -8,7 +8,7 @@ import { builtStages, isFinished } from '../sim/sanctuaries';
 import { isPerforming } from '../sim/schools';
 import type { Building, GameState } from '../sim/state';
 import { VENDOR_GOODS } from './agora-models';
-import { baysOf } from './storehouse-models';
+import { baysOf } from '../sim/storehouse';
 
 type Look = (building: Building, state: GameState) => unknown[];
 

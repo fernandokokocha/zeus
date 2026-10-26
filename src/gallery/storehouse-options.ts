@@ -1,10 +1,11 @@
 import type * as THREE from 'three';
-import { type Bay, LOADS_PER_BAY, storeYard } from '../render/storehouse-models';
+import { storeYard } from '../render/storehouse-models';
+import { type Bay, LOADS_PER_SLOT } from '../sim/storehouse';
 import type { DesignOption } from './options';
 
 type Build = (staffed: boolean, bays: Bay[]) => THREE.Object3D;
 
-const full = (good: Bay['good']): Bay => ({ good, loads: LOADS_PER_BAY });
+const full = (good: Bay['good']): Bay => ({ good, loads: LOADS_PER_SLOT });
 
 const MIXED: Bay[] = [
   { good: 'fleece', loads: 3 },
