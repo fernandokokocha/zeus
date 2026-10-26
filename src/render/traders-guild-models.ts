@@ -1,107 +1,89 @@
 import * as THREE from 'three';
 import { BUILDING_SPECS } from '../sim/buildings';
 import { bakedOnce } from './bake';
-import { steps, volume, windowsFront, windowsSide } from './kit/blocks';
 import { CLOTH, clothBolt } from './kit/cloth';
-import { blueDoor } from './kit/cottage';
-import { posedFigure } from './kit/figure';
-import { BLOOM, flowerPot, paving } from './kit/garden';
-import { COLORS, box, cylinder, flat, surface } from './kit/kit';
-import { cypress, fountain } from './kit/luxury';
-import { seller } from './kit/market';
-import { amphoraRow } from './kit/oil';
+import { blueDoor, terraceBlock } from './kit/cottage';
+import { type FigureParts, posedFigure } from './kit/figure';
+import { paving } from './kit/garden';
+import { placed } from './kit/gymnasium';
+import { COLORS, box, flat } from './kit/kit';
+import { cypress } from './kit/luxury';
+import { clothTent, emblem, seller } from './kit/market';
+import { ENTABLATURE_HEIGHT, entablature, evenly, marbleColumn, marbleStairs, marbleTerrace, pedimentRoof } from './kit/palace';
+import { TAX, clerk, countingTable, strongbox, taxStele } from './kit/tax';
+import { hangingCloth } from './kit/theater';
 import { bakedFigure } from './staff';
 
 const { width: W, height: D } = BUILDING_SPECS.tradersGuild;
-const BACK = { x0: 0.3, z0: 0.25, w: 3.4, d: 1.05, top: 1.9 };
-const WING = { z0: 1.3, w: 0.85, d: 1.45, top: 1.25 };
-const WINGS_X = [0.3, W - 0.3 - WING.w];
-const COLONNADE = { z: 3.35, height: 0.95, depth: 0.42, columns: 8 };
-const AWNING = { height: 0.78, depth: 0.38, tilt: 0.3 };
-const DISPLAY = { z: 3.25, xs: [0.85, 1.55, 2.45, 3.15] };
-const MERCHANT = { x: 2.0, z: 3.0 };
 const FACING_ROAD = 0;
+const TOWARD_ROAD = -Math.PI / 2;
+const DOOR = { open: 0.9, shut: 0 };
+const HALL = { x0: 0.55, z0: 0.2, w: 2.9, d: 1.5, floor: 0.22, columns: 0.95 };
+const CHEST = { w: 0.42, h: 0.18, d: 0.22 };
+const TENT = { w: 1.1, d: 1.0, eaves: 0.82, ridge: 1.12, z: 2.75, xs: [0.95, 3.05] };
+const MERCHANT = { x: 1.5, z: 3.5 };
+const BANKER = { x: 1.6, z: 2.9, phase: 0.7 };
 
-function colonnade(): THREE.Object3D {
+function clothChest(x: number, z: number, stocked: boolean): THREE.Object3D {
   const group = new THREE.Group();
-  const { z, height, depth, columns } = COLONNADE;
-  const x0 = 0.3;
-  const x1 = W - 0.3;
-  for (let i = 0; i < columns; i++) {
-    const x = x0 + 0.08 + (i * (x1 - x0 - 0.16)) / (columns - 1);
-    group.add(cylinder(0.05, 0.055, height, surface('whitewash'), x, 0.04, z + depth / 2, 12));
-    group.add(box(0.12, 0.04, 0.12, surface('whitewash'), x, 0.04 + height - 0.04, z + depth / 2));
-  }
-  group.add(box(x1 - x0, 0.08, depth + 0.1, surface('whitewash'), (x0 + x1) / 2, 0.04 + height, z + depth / 2));
-  group.add(box(x1 - x0, 0.06, 0.03, flat(COLORS.aegean), (x0 + x1) / 2, 0.04 + height + 0.01, z + depth + 0.065));
-  return group;
-}
-
-function awnings(spread: boolean): THREE.Object3D {
-  const group = new THREE.Group();
-  for (const x0 of WINGS_X) {
-    const x = x0 + WING.w / 2;
-    const front = WING.z0 + WING.d;
-    if (spread) {
-      const cloth = box(WING.w - 0.06, 0.015, AWNING.depth, flat(CLOTH.dyed), x, AWNING.height, front + AWNING.depth / 2);
-      cloth.rotation.x = AWNING.tilt;
-      group.add(cloth);
-      group.add(box(WING.w - 0.06, 0.05, 0.012, flat(CLOTH.band), x, AWNING.height - 0.1, front + AWNING.depth));
-    } else {
-      const rolled = cylinder(0.035, 0.035, WING.w - 0.06, flat(CLOTH.dyed), 0, 0, 0, 10);
-      rolled.rotation.z = Math.PI / 2;
-      rolled.position.set(x, AWNING.height + 0.04, front + 0.04);
-      group.add(rolled);
-    }
+  group.add(box(CHEST.w, CHEST.h, CHEST.d, flat(COLORS.timber), x, 0.04, z));
+  const top = 0.04 + CHEST.h;
+  if (stocked) group.add(clothBolt(x, top, z - 0.05, 0), clothBolt(x, top, z + 0.05, 0), clothBolt(x, top + 0.08, z, 0));
+  else {
+    group.add(box(CHEST.w + 0.02, 0.04, CHEST.d + 0.02, flat(TAX.chest), x, top, z));
+    group.add(box(0.05, 0.05, 0.01, flat(TAX.iron), x, top - 0.04, z + CHEST.d / 2 + 0.006));
   }
   return group;
 }
 
-function clothDisplay(stocked: boolean): THREE.Object3D {
+function stall(x: number, supplied: boolean): THREE.Object3D {
   const group = new THREE.Group();
-  for (const x of DISPLAY.xs) {
-    group.add(box(0.42, 0.18, 0.2, flat(COLORS.timber), x, 0.04, DISPLAY.z));
-    if (stocked) group.add(clothBolt(x, 0.22, DISPLAY.z - 0.05, 0), clothBolt(x, 0.22, DISPLAY.z + 0.05, 0), clothBolt(x, 0.3, DISPLAY.z, 0));
-  }
+  group.add(placed(clothTent(-TENT.d / 2, -TENT.w / 2, TENT.d / 2, TENT.w / 2, TENT.eaves, TENT.ridge, CLOTH.dyed), x, TENT.z, Math.PI / 2));
+  group.add(placed(emblem('cloth', 0, TENT.ridge + 0.3, 0, 0.2), x, TENT.z, TOWARD_ROAD));
+  for (const dx of [-0.25, 0.25]) for (const dz of [-0.15, 0.2]) group.add(clothChest(x + dx, TENT.z + dz, supplied));
   return group;
 }
 
-function crates(): THREE.Object3D {
-  const group = new THREE.Group();
-  for (const [x, z, y] of [[3.35, 0.05, 0.04], [3.6, 0.05, 0.04], [3.47, 0.05, 0.24]]) {
-    group.add(box(0.22, 0.2, 0.2, flat(COLORS.timber), x, y, 1.45 + z));
-  }
-  return group;
+function hall(group: THREE.Group, supplied: boolean): void {
+  const { x0, z0, w, d, floor, columns } = HALL;
+  const front = z0 + d;
+  group.add(marbleTerrace(x0, z0, w, d, floor));
+  group.add(terraceBlock(x0 + 0.15, z0 + 0.08, w - 0.3, d - 0.5, floor + columns));
+  for (const x of [1.4, 2.6]) group.add(blueDoor(x, front - 0.42, floor, supplied ? DOOR.open : DOOR.shut));
+  for (const x of evenly(x0 + 0.15, x0 + w - 0.15, 6)) group.add(marbleColumn(x, front - 0.12, columns, floor));
+  group.add(entablature(x0, z0, w, d, floor + columns));
+  pedimentRoof(group, x0, z0, w, d, floor + columns + ENTABLATURE_HEIGHT, 0.55, 'blueTiles');
+  group.add(marbleStairs(W / 2, front, 1.6, 3, floor / 3, 0.09));
+  if (supplied) for (const x of [0.95, 3.05]) group.add(hangingCloth(x, floor + columns - 0.02, front - 0.06, 0.36, 0.5, 0, CLOTH.dyed));
 }
 
 function guildShell(supplied: boolean): THREE.Object3D {
   const group = new THREE.Group();
   group.add(paving(0.08, 0.08, W - 0.16, D - 0.16));
-  volume(group, BACK.x0, BACK.z0, BACK.w, BACK.d, BACK.top);
-  windowsFront(group, [0.7, 1.3, 2.7, 3.3], BACK.z0 + BACK.d, [0.55, 1.25]);
-  for (const x0 of WINGS_X) {
-    volume(group, x0, WING.z0, WING.w, WING.d, WING.top);
-    windowsFront(group, [x0 + 0.25, x0 + 0.6], WING.z0 + WING.d, [0.4]);
-    windowsSide(group, x0 + WING.w, [WING.z0 + 0.4, WING.z0 + 1.05], [0.5]);
-  }
-  group.add(blueDoor(W / 2, BACK.z0 + BACK.d, 0.1, 0.5));
-  steps(group, W / 2, BACK.z0 + BACK.d, 0.4);
-  group.add(fountain(W / 2, 2.2, 0.32));
-  group.add(flowerPot(1.4, 0.04, 1.6, BLOOM.red), flowerPot(2.6, 0.04, 1.6, BLOOM.pink));
-  group.add(cypress(1.35, 2.75, 0.5), cypress(2.65, 2.75, 0.5));
-  group.add(colonnade());
-  group.add(awnings(supplied));
-  group.add(clothDisplay(supplied));
-  group.add(amphoraRow(0.2, 1.45, 0.2, 2.6, 5));
-  group.add(crates());
+  hall(group, supplied);
+  for (const x of TENT.xs) group.add(stall(x, supplied));
+  group.add(countingTable(1.8, 2.55, 0.6, supplied));
+  group.add(strongbox(2.3, 2.6, supplied, -0.3, 1.2));
+  group.add(taxStele(W / 2, 3.75));
+  group.add(cypress(0.2, 0.3, 0.6), cypress(3.8, 0.3, 0.6), cypress(0.2, 3.8, 0.5), cypress(3.8, 3.8, 0.5));
   return group;
+}
+
+function withStaff(shell: THREE.Object3D, merchant: FigureParts, banker: FigureParts): THREE.Object3D {
+  shell.add(posedFigure(MERCHANT.x, MERCHANT.z, FACING_ROAD, 0, merchant, 'rest'));
+  shell.add(posedFigure(BANKER.x, BANKER.z, FACING_ROAD, BANKER.phase, banker, 'rest'));
+  return shell;
+}
+
+export function exchangeHall(supplied: boolean): THREE.Object3D {
+  return withStaff(guildShell(supplied), seller(), clerk());
 }
 
 const shells = { supplied: bakedOnce(() => guildShell(true)), wanting: bakedOnce(() => guildShell(false)) };
 const bakedMerchant = bakedFigure(seller);
+const bakedBanker = bakedFigure(clerk);
 
 export function tradersGuildModel(occupied: boolean, missingNeed: boolean): THREE.Object3D {
   const shell = missingNeed ? shells.wanting() : shells.supplied();
-  if (occupied) shell.add(posedFigure(MERCHANT.x, MERCHANT.z, FACING_ROAD, 0, bakedMerchant(), 'rest'));
-  return shell;
+  return occupied ? withStaff(shell, bakedMerchant(), bakedBanker()) : shell;
 }

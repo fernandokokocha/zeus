@@ -1,7 +1,7 @@
 import { BUILDING_SPECS, buildingSize, footprintDistance, type Placement } from './buildings';
 import { footprint } from './commands';
 import { isUnderConstruction } from './sanctuaries';
-import { tileIndex, type Building, type GameState } from './state';
+import { tileIndex, type GameState } from './state';
 
 export function appealMap(state: GameState): number[] {
   const map = new Array<number>(state.size * state.size).fill(0);

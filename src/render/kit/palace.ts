@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { COLORS, box, cone, cylinder, flat, scaled, sphere, surface } from './kit';
+import { COLORS, type Surface, box, cone, cylinder, flat, scaled, sphere, surface } from './kit';
 import { tiledRoofAlongZ } from './roofs';
 
 export const PALACE = {
@@ -115,8 +115,8 @@ export function marbleTerrace(x0: number, z0: number, w: number, d: number, top:
   return group;
 }
 
-export function pedimentRoof(group: THREE.Group, x0: number, z0: number, w: number, d: number, eaves: number, rise: number): void {
-  group.add(tiledRoofAlongZ(x0, z0, w, d, eaves, rise));
+export function pedimentRoof(group: THREE.Group, x0: number, z0: number, w: number, d: number, eaves: number, rise: number, roofing: Surface = 'tiles'): void {
+  group.add(tiledRoofAlongZ(x0, z0, w, d, eaves, rise, roofing));
   group.add(tympanum(x0 + w / 2, z0 + d + 0.005, w, rise, eaves));
   for (const z of [z0, z0 + d]) group.add(acroterion(x0 + w / 2, eaves + rise, z));
   for (const x of [x0 + 0.05, x0 + w - 0.05]) group.add(acroterion(x, eaves, z0 + d));

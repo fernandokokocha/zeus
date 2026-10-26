@@ -30,6 +30,7 @@ import { ARTISANS_GUILD_OPTIONS } from './artisans-guild-options';
 import { SCULPTURE_STUDIO_OPTIONS } from './sculpture-studio-options';
 import { FOUNDRY_OPTIONS } from './foundry-options';
 import { STOREHOUSE_OPTIONS } from './storehouse-options';
+import { TRADERS_GUILD_OPTIONS } from './traders-guild-options';
 import { bake } from '../render/bake';
 import type { Animate } from '../render/kit/figure';
 import type { DesignSet } from './options';
@@ -65,6 +66,7 @@ const SETS: Record<string, DesignSet> = {
   sculptureStudio: { title: 'Sculpture Studio', needs: '2×2 · 12 workers · without and with workers, marble and bronze in, statues out', options: SCULPTURE_STUDIO_OPTIONS, chosen: 0 },
   foundry: { title: 'Foundry', needs: '2×2 · 15 workers · without and with workers, ore and bronze stock', options: FOUNDRY_OPTIONS, chosen: 0 },
   storehouse: { title: 'Storehouse', needs: '3×3 · 12 workers · without and with workers, empty and holding every good', options: STOREHOUSE_OPTIONS, chosen: 0, footprint: [3, 3] },
+  tradersGuild: { title: "Traders' Guild", needs: '4×4 · 20 merchants · fully supplied and missing a need (burning turns its tiles into ruins)', options: TRADERS_GUILD_OPTIONS, chosen: 0, footprint: [4, 4] },
 };
 
 const footprint = (set: DesignSet): [number, number] => set.footprint ?? [2, 2];
@@ -106,9 +108,10 @@ function camera(width: number, height: number, target: THREE.Vector3, pixelsPerU
   return cam;
 }
 
-function closeUpPixelsPerTile(canvas: HTMLCanvasElement, [w, d]: [number, number]): number {
+function closeUpPixelsPerTile(canvas: HTMLCanvasElement, [w, d]: [number, number], modelHeight: number): number {
   const isoWidth = (w + d) * Math.SQRT1_2;
-  return Math.min(GAME_PIXELS_PER_TILE * MAX_ZOOM, (canvas.clientWidth * 0.95) / isoWidth);
+  const isoHeight = isoWidth * Math.sin(ELEVATION) + modelHeight * Math.cos(ELEVATION);
+  return Math.min(GAME_PIXELS_PER_TILE * MAX_ZOOM, (canvas.clientWidth * 0.95) / isoWidth, (canvas.clientHeight * 0.95) / isoHeight);
 }
 
 function closeUp(canvas: HTMLCanvasElement, build: () => THREE.Object3D, [w, d]: [number, number]): void {
@@ -122,7 +125,8 @@ function closeUp(canvas: HTMLCanvasElement, build: () => THREE.Object3D, [w, d]:
   model.position.set(-w / 2, 0, -d / 2);
   pivot.add(model);
   s.add(pivot);
-  const cam = camera(canvas.clientWidth, canvas.clientHeight, new THREE.Vector3(w / 2, new THREE.Box3().setFromObject(model).getCenter(new THREE.Vector3()).y, d / 2), closeUpPixelsPerTile(canvas, [w, d]));
+  const bounds = new THREE.Box3().setFromObject(model);
+  const cam = camera(canvas.clientWidth, canvas.clientHeight, new THREE.Vector3(w / 2, bounds.getCenter(new THREE.Vector3()).y, d / 2), closeUpPixelsPerTile(canvas, [w, d], bounds.max.y));
   const draw = () => r.render(s, cam);
   const animations: Animate[] = [];
   model.traverse((node) => node.userData.animate && animations.push(node.userData.animate));
