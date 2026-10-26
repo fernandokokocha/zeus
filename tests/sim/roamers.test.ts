@@ -9,6 +9,7 @@ import {
   hasService,
   nextRoamTile,
 } from '../../src/sim/roamers';
+import type { BuildingType } from '../../src/sim/buildings';
 import type { Building, GameState } from '../../src/sim/state';
 import { tick } from '../../src/sim/tick';
 import { WALKER_TILES_PER_TICK } from '../../src/sim/walking';
@@ -234,109 +235,69 @@ describe('a water carrier', () => {
   });
 });
 
-describe('a peddler', () => {
-  function market(): { game: GameState; vendor: Building } {
-    const game = cityOf(20);
+describe("an agora's peddler", () => {
+  function market(...vendors: BuildingType[]): { game: GameState; agora: Building; stalls: Building[] } {
+    const game = cityOf(60);
     placeBuilding(game, 'agora', 0, 11);
-    placeBuilding(game, 'foodVendor', 0, 11);
-    return { game, vendor: game.buildings[2] };
+    vendors.forEach((type, i) => placeBuilding(game, type, 0, 11 + 2 * i));
+    const agora = game.buildings[1];
+    return { game, agora, stalls: game.buildings.slice(2) };
   }
 
-  it('only sets out when his stall has food', () => {
-    const { game, vendor } = market();
+  it('is one walker for the whole agora, sent once any stall has goods', () => {
+    const { game, agora, stalls } = market('foodVendor', 'fleeceVendor', 'oilVendor');
+    const [, fleece] = stalls;
     runTicks(game, 2 * ROAMER_REST_TICKS);
     expect(game.roamers).toEqual([]);
-    vendor.food = 100;
+    fleece.fleece = 100;
     runTicks(game, ROAMER_REST_TICKS);
-    expect(game.roamers.map((r) => r.kind)).toEqual(['peddler']);
+    expect(game.roamers.map((r) => ({ kind: r.kind, homeId: r.homeId }))).toEqual([{ kind: 'peddler', homeId: agora.id }]);
+    expect(ROAMER_SPECS.peddler.range).toBe(44);
   });
 
-  it('fills the houses he passes with 5 months of food from his stall', () => {
-    const { game, vendor } = market();
+  it('stays home while the vendors have no workers', () => {
+    const { game, stalls } = market('foodVendor');
+    stalls[0].food = 100;
+    game.buildings[0].residents = 0;
+    runTicks(game, 2 * ROAMER_REST_TICKS);
+    expect(game.roamers).toEqual([]);
+  });
+
+  it('fills the houses he passes from every stall: 5 months of food, 3 of fleece and oil', () => {
+    const { game, stalls } = market('foodVendor', 'fleeceVendor', 'oilVendor');
+    const [food, fleece, oil] = stalls;
     const hut = fullHouse(game, 4, 8);
     const shack = fullHouse(game, 8, 8);
-    shack.level = 'shack';
-    shack.residents = 16;
-    shack.food = 2;
-    vendor.food = 100;
+    Object.assign(shack, { level: 'shack', residents: 16, food: 2 });
+    Object.assign(food, { food: 100 });
+    Object.assign(fleece, { fleece: 100 });
+    Object.assign(oil, { oil: 100 });
     runTicks(game, ROAMER_REST_TICKS + ticksToWalk(10));
-    expect(hut.food).toBe(hut.residents * 0.25 * 5);
-    expect(shack.food).toBe(16 * 0.25 * 5);
-    expect(vendor.food).toBe(100 - hut.food - (shack.food - 2));
+    expect(hut).toMatchObject({ food: 8 * 0.25 * 5, fleece: 6, oil: 6 });
+    expect(shack).toMatchObject({ food: 16 * 0.25 * 5, fleece: 6, oil: 6 });
+    expect(food.food).toBe(100 - hut.food - (shack.food - 2));
+    expect(fleece.fleece).toBe(100 - 12);
+    expect(oil.oil).toBe(100 - 12);
   });
 
-  it('hands out no more than the stall holds', () => {
-    const { game, vendor } = market();
+  it('hands out no more than the stalls hold', () => {
+    const { game, stalls } = market('foodVendor');
     const hut = fullHouse(game, 4, 8);
-    vendor.food = 1;
+    stalls[0].food = 1;
     runTicks(game, ROAMER_REST_TICKS + ticksToWalk(10));
     expect(hut.food).toBe(1);
-    expect(vendor.food).toBe(0);
+    expect(stalls[0].food).toBe(0);
   });
-});
 
-describe('a fleece peddler', () => {
-  function market(): { game: GameState; vendor: Building } {
-    const game = cityOf(20);
-    placeBuilding(game, 'agora', 0, 11);
-    placeBuilding(game, 'fleeceVendor', 0, 11);
-    return { game, vendor: game.buildings[2] };
-  }
-
-  it('only sets out when his stall has fleece, and roams 44 tiles', () => {
-    const { game, vendor } = market();
-    vendor.food = 100;
-    runTicks(game, 2 * ROAMER_REST_TICKS);
-    expect(game.roamers).toEqual([]);
-    vendor.fleece = 100;
+  it('sells what reaches the agora after he set out', () => {
+    const { game, stalls } = market('foodVendor', 'oilVendor');
+    const [food, oil] = stalls;
+    const hut = fullHouse(game, 8, 8);
+    food.food = 100;
     runTicks(game, ROAMER_REST_TICKS);
-    expect(game.roamers.map((r) => r.kind)).toEqual(['fleecePeddler']);
-    expect(ROAMER_SPECS.fleecePeddler.range).toBe(44);
-  });
-
-  it('fills the houses he passes with 3 months of fleece, 6 units, from his stall', () => {
-    const { game, vendor } = market();
-    const hut = fullHouse(game, 4, 8);
-    const hovel = fullHouse(game, 8, 8);
-    Object.assign(hovel, { level: 'hovel', residents: 24, fleece: 2 });
-    vendor.fleece = 100;
-    runTicks(game, ROAMER_REST_TICKS + ticksToWalk(10));
-    expect(hut.fleece).toBe(6);
-    expect(hovel.fleece).toBe(6);
-    expect(vendor.fleece).toBe(100 - 6 - 4);
-    expect(hut.food).toBe(0);
-  });
-});
-
-describe('an oil peddler', () => {
-  function market(): { game: GameState; vendor: Building } {
-    const game = cityOf(20);
-    placeBuilding(game, 'agora', 0, 11);
-    placeBuilding(game, 'oilVendor', 0, 11);
-    return { game, vendor: game.buildings[2] };
-  }
-
-  it('only sets out when his stall has oil, and roams 44 tiles', () => {
-    const { game, vendor } = market();
-    vendor.fleece = 100;
-    runTicks(game, 2 * ROAMER_REST_TICKS);
-    expect(game.roamers).toEqual([]);
-    vendor.oil = 100;
-    runTicks(game, ROAMER_REST_TICKS);
-    expect(game.roamers.map((r) => r.kind)).toEqual(['oilPeddler']);
-    expect(ROAMER_SPECS.oilPeddler.range).toBe(44);
-  });
-
-  it('fills the houses he passes with 3 months of oil, 6 units, from his stall', () => {
-    const { game, vendor } = market();
-    const hut = fullHouse(game, 4, 8);
-    const tenement = fullHouse(game, 8, 8);
-    Object.assign(tenement, { level: 'tenement', residents: 40, oil: 2 });
-    vendor.oil = 100;
-    runTicks(game, ROAMER_REST_TICKS + ticksToWalk(10));
+    expect(game.roamers.map((r) => r.kind)).toEqual(['peddler']);
+    oil.oil = 100;
+    runTicks(game, ticksToWalk(10));
     expect(hut.oil).toBe(6);
-    expect(tenement.oil).toBe(6);
-    expect(vendor.oil).toBe(100 - 6 - 4);
-    expect(hut.fleece).toBe(0);
   });
 });

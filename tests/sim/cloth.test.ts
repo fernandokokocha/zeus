@@ -285,9 +285,9 @@ describe('a cloth vendor', () => {
     const townhouse = game.buildings[game.buildings.length - 1];
     Object.assign(townhouse, { level: 'townhouse', residents: 60 });
     vendor.cloth = 400;
-    for (let i = 0; i < 200 && !game.roamers.some((r) => r.kind === 'clothPeddler'); i++) tick(game);
+    for (let i = 0; i < 200 && !game.roamers.some((r) => r.kind === 'peddler'); i++) tick(game);
     runTicks(game, 100);
-    expect(game.roamers.map((r) => r.kind)).toContain('clothPeddler');
+    expect(game.roamers.map((r) => r.kind)).toContain('peddler');
     expect(townhouse.cloth).toBe(0);
     expect(vendor.cloth).toBe(400);
   });

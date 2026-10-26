@@ -14,8 +14,8 @@ export type Material = 'wood' | 'marble' | 'bronze';
 export type PeddledGood = HouseGood | 'cloth';
 export type Good = HouseGood | 'olives' | Material | 'sculptures' | 'cloth';
 export type Culture = 'philosophy' | 'athletics' | 'drama';
-export type Service = 'water' | 'tax' | PeddledGood | Culture | 'maintenance';
-export type Coverage = Exclude<Service, PeddledGood | 'maintenance'>;
+export type Service = 'water' | 'tax' | 'goods' | Culture | 'maintenance';
+export type Coverage = Exclude<Service, 'goods' | 'maintenance'>;
 
 export interface Building {
   id: number;
@@ -59,7 +59,7 @@ export interface Settler extends Walk {
   people: number;
 }
 
-export type RoamerKind = 'waterCarrier' | 'taxCollector' | 'peddler' | 'fleecePeddler' | 'oilPeddler' | 'clothPeddler' | 'philosopher' | 'athlete' | 'actor' | 'superintendent';
+export type RoamerKind = 'waterCarrier' | 'taxCollector' | 'peddler' | 'philosopher' | 'athlete' | 'actor' | 'superintendent';
 
 export interface Roamer extends Walk {
   id: number;

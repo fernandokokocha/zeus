@@ -51,7 +51,7 @@ Roaming range (tiles walked before turning home by the shortest route):
 | Water carrier | Fountain | 27 |
 | Tax clerk | Tax Office | 35 |
 | Philosopher, athlete, actor | Podium, Gymnasium, Theater | 35 |
-| Peddler | Agora vendor | 44 |
+| Peddler | Agora | 44 |
 | Superintendent | Maintenance Office | 44 |
 
 - Speed: 54.4 tiles per month for ordinary walkers. Sheep 54.4. Gods 68.
@@ -157,6 +157,11 @@ https://zeus.heavengames.com/gameinfo/gods/
   **month** without a break.
 - Roamer rest: a service building sends its next walker **a quarter month** after the
   last one returns, at full staff.
+- Agora peddler: **one per agora**, carrying every good its vendors hold. He sells from the
+  stalls as he passes each house, so goods that reach a stall after he left still go out.
+  The agora sends him at the staffing of all its vendors together (half the vendor posts
+  filled, twice the rest). Changed from one peddler per vendor after a playtest: separate
+  random routes let a house get food but miss oil.
 - Roadblock cost: **6 dr**.
 - Cart pusher load: **4 loads** (one granary slot). Buyer load: **4 loads**. Agora vendor stock: **8 loads**.
 - House food stock: a peddler fills a house to **5 months** of eating (Huts are filled as if they ate).

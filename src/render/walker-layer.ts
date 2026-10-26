@@ -172,11 +172,6 @@ const FIGURES: Record<Figure, Part[]> = {
     oliveHeap(0.1, 0.17, 0.02, 0.9),
   ],
   oilBuyer: [...body(PALETTE.oilBuyerTunic), smallAmphora(0.1, 0.06, 0.02)],
-  oilPeddler: [
-    ...body(PALETTE.oilPeddlerTunic),
-    smallAmphora(0, 0.37, 0),
-    { geometry: new THREE.CylinderGeometry(0.03, 0.03, 0.01, 8).translate(0, 0.545, 0), color: PALETTE.oil },
-  ],
   lumberjack,
   lumberjackWithLog: [...body(PALETTE.lumberjackTunic), logOnShoulder],
   quarryman,
@@ -198,7 +193,6 @@ const FIGURES: Record<Figure, Part[]> = {
   sculptureSupply: sculptureCart,
   bronzeBuyer: [...body(PALETTE.bronzeBuyerTunic), ingot(0.1, 0.12, 0.02)],
   clothBuyer: [...body(PALETTE.clothBuyerTunic), clothBoltPart(0.2, -0.09)],
-  clothPeddler: [...body(PALETTE.clothPeddlerTunic), clothBoltPart(0.41, 0), clothBoltPart(0.49, 0)],
   artisan: [...body(PALETTE.artisanTunic), ...tool(new THREE.BoxGeometry(0.08, 0.05, 0.05))],
   shepherd,
   shepherdWithFleece: [
@@ -240,11 +234,6 @@ const FIGURES: Record<Figure, Part[]> = {
   ],
   actor,
   actorTrainee: actor,
-  fleecePeddler: [
-    ...body(PALETTE.fleeceAwning),
-    { geometry: new THREE.CylinderGeometry(0.09, 0.07, 0.06, 10).translate(0, 0.41, 0), color: PALETTE.reed },
-    { geometry: new THREE.SphereGeometry(0.07, 8, 6).scale(1.2, 0.6, 1.2).translate(0, 0.45, 0), color: PALETTE.wool },
-  ],
   fleeceCart: cart([{ geometry: new THREE.BoxGeometry(0.16, 0.1, 0.18).translate(0, 0.19, 0.22), color: PALETTE.wool }]),
   fleeceBuyer: [
     ...body(PALETTE.fleeceBuyerTunic),

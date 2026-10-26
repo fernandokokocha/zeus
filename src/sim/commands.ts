@@ -122,6 +122,10 @@ export function agoraAt(state: GameState, p: Point): Building | null {
   return state.buildings.find((b) => b.type === 'agora' && footprintDistance(b, p) === 0) ?? null;
 }
 
+export function agoraVendors(state: GameState, agora: Building): Building[] {
+  return state.buildings.filter((b) => isAgoraVendor(b.type) && agoraAt(state, b) === agora);
+}
+
 export function vendorSpotAt(state: GameState, p: Point): Point | null {
   const agora = agoraAt(state, p);
   if (!agora) return null;

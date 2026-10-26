@@ -300,19 +300,19 @@ describe('describeTile for food and appeal', () => {
     const { game } = street();
     game.buildings[0].residents = 100;
     placeBuilding(game, 'agora', 10, 16);
-    expect(describeTile(game, 11, 18).lines).toEqual(['Tile 10, 16', 'No vendors yet: place one on a free spot', 'Collapse risk 0%']);
+    expect(describeTile(game, 11, 18).lines).toEqual(['Tile 10, 16', 'No vendors yet: place one on a free spot', 'Peddler waits for goods', 'Collapse risk 0%']);
     placeBuilding(game, 'foodVendor', 10, 16);
     placeBuilding(game, 'granary', 20, 11);
     expect(describeTile(game, 11, 18)).toEqual({
       title: 'Agora',
       meters: [{ label: 'Food Vendor', fill: 0, value: '0 of 8 loads', need: null }],
-      lines: ['Tile 10, 16', 'Collapse risk 0%'],
+      lines: ['Tile 10, 16', 'Peddler waits for goods', 'Collapse risk 0%'],
     });
     runTicks(game, 1);
     expect(describeTile(game, 10, 17)).toEqual({
       title: 'Food Vendor',
       meters: [{ label: 'Food', fill: 0, value: '0 of 8 loads', need: null }],
-      lines: ['Tile 10, 16', 'Workers 4/4', 'Peddler waits for food', 'Buyer waits for a granary with wheat'],
+      lines: ['Tile 10, 16', 'Workers 4/4', 'Buyer waits for a granary with wheat'],
     });
     game.buildings[3].food = 1000;
     runTicks(game, 1);
@@ -544,7 +544,7 @@ describe('describeTile for fleece', () => {
     expect(describeTile(game, 10, 17)).toEqual({
       title: 'Fleece Vendor',
       meters: [{ label: 'Fleece', fill: 0, value: '0 of 8 loads', need: null }],
-      lines: ['Tile 10, 16', 'Workers 4/4', 'Fleece Peddler waits for fleece', 'Buyer waits for a storehouse with fleece'],
+      lines: ['Tile 10, 16', 'Workers 4/4', 'Buyer waits for a storehouse with fleece'],
     });
     lastBuilding(game).fleece = 1000;
     runTicks(game, 1);
@@ -791,7 +791,7 @@ it('describes olives in a storehouse and a press buyer fetching them', () => {
     expect(describeTile(game, 10, 17)).toEqual({
       title: 'Oil Vendor',
       meters: [{ label: 'Oil', fill: 0, value: '0 of 8 loads', need: null }],
-      lines: ['Tile 10, 16', 'Workers 4/4', 'Oil Peddler waits for oil', 'Buyer waits for a storehouse with oil'],
+      lines: ['Tile 10, 16', 'Workers 4/4', 'Buyer waits for a storehouse with oil'],
     });
   });
 
@@ -803,7 +803,7 @@ it('describes olives in a storehouse and a press buyer fetching them', () => {
     expect(describeTile(game, 10, 17)).toEqual({
       title: 'Cloth Vendor',
       meters: [{ label: 'Cloth', fill: 0, value: '0 of 8 loads', need: null }],
-      lines: ['Tile 10, 16', 'Workers 4/4', 'Cloth Peddler waits for cloth', 'Buyer waits for a storehouse with cloth'],
+      lines: ['Tile 10, 16', 'Workers 4/4', 'Buyer waits for a storehouse with cloth'],
     });
   });
 });

@@ -133,7 +133,7 @@ spine of the city and the future route of traders.
 
 - **Why cloth:** traders have to look classy to sell.
 - **Cloth vendor:** a new agora vendor, placed on an agora like the food, fleece and oil
-  vendors. Its buyer fetches cloth from a storehouse and its peddler roams. Only elite
+  vendors. Its buyer fetches cloth from a storehouse, and the agora's peddler sells it. Only elite
   houses take cloth from it.
   - An agora still has three vendor slots, so a cloth vendor takes the place of one of the
     others. An agora serving a guild gives up something else. That is a trade-off the

@@ -1,4 +1,5 @@
 import type { Point } from './point';
+import type { Building, PeddledGood } from './state';
 
 export type BuildingType =
   | 'house'
@@ -133,10 +134,16 @@ export function worldToLocal(building: Placement, p: Point): Point {
   ][building.rotation];
 }
 
-export const AGORA_VENDORS: ReadonlySet<BuildingType> = new Set<BuildingType>(['foodVendor', 'fleeceVendor', 'oilVendor', 'clothVendor']);
+const VENDOR_GOODS: Partial<Record<BuildingType, PeddledGood>> = { foodVendor: 'food', fleeceVendor: 'fleece', oilVendor: 'oil', clothVendor: 'cloth' };
 
 export function isAgoraVendor(type: BuildingType): boolean {
-  return AGORA_VENDORS.has(type);
+  return type in VENDOR_GOODS;
+}
+
+export function vendorGood(vendor: Building): PeddledGood {
+  const good = VENDOR_GOODS[vendor.type];
+  if (!good) throw new Error(`${vendor.type} ${vendor.id} is not an agora vendor`);
+  return good;
 }
 
 export const AGORA_VENDOR_SPOTS = [{ x: 0, y: 0 }, { x: 0, y: 2 }, { x: 0, y: 4 }];

@@ -175,7 +175,8 @@ Each slice lists its content and the houses it makes reachable.
 ### 4 · Food & appeal
 - **Food chain:** Wheat Farm (on meadow, harvest in July) → cart pusher → Granary.
 - **Agora:** an Agora with a food vendor. A buyer fetches food from the granary, and a
-  peddler roams and stocks houses.
+  peddler roams and stocks houses. (Since a later playtest, one peddler per agora carries
+  every vendor's goods.)
 - **Eating:** houses eat monthly.
 - **Appeal:**
   - Every building radiates appeal by distance, using the zeus-numbers values.

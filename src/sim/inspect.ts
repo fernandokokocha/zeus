@@ -1,15 +1,15 @@
 import { houseAppeal } from './appeal';
-import { BUILDING_SPECS, isAgoraVendor } from './buildings';
+import { BUILDING_SPECS, vendorGood } from './buildings';
 import { MONTH_NAMES, TICKS_PER_MONTH } from './clock';
 import { MAX_CULTURE_POINTS, culturePoints, culturesPassed } from './culture';
 import { CARRIER_SPECS, carrierDestinations, carrierKindsSentBy, keptBack } from './carriers';
 import { WEAVER_FLEECE_CAPACITY, WEAVING_TICKS, canWeave } from './cloth';
-import { adjacentRoadTiles, agoraAt, footprint } from './commands';
+import { adjacentRoadTiles, agoraVendors, footprint } from './commands';
 import { hasWorkingPalace, houseTax } from './economy';
 import { GRANARY_CAPACITY, HARVEST_MONTH, UNITS_PER_LOAD, VENDOR_CAPACITY, houseStockTarget, monthlyUse } from './food';
 import { guildShortfalls, guildSiteOf, siteShortfalls, type GuildSite } from './guild';
 import { type HouseLevel, type HouseNeed, type ResidentNeed, HOUSE_LEVELS, LEVEL_CHANGE_TICKS, TRADERS_GUILD, NEXT_LEVEL, PREVIOUS_LEVEL, houseCapacity, houseLevel, houseName, lacksCulture, missingNeeds } from './housing';
-import { ROAMER_SPECS, hasService, isGood, type RoamerSpec, roamerKindSentBy, serviceLeft } from './roamers';
+import { ROAMER_SPECS, hasGoodsToSell, hasService, type RoamerSpec, roamerKindSentBy, serviceLeft } from './roamers';
 import { TRAINEE_SPECS, isPerforming, staffedVenues, traineeKindFor, traineeKindSentBy } from './schools';
 import {
   BRONZE_PER_SCULPTURE,
@@ -358,18 +358,9 @@ function storageMeters(state: GameState, building: Building): Meter[] {
   }
 }
 
-function vendorGood(vendor: Building): PeddledGood {
-  const [kind] = carrierKindsSentBy(vendor.type);
-  return CARRIER_SPECS[kind].good as PeddledGood;
-}
-
 function vendorMeter(vendor: Building, label: string): Meter {
   const stock = vendor[vendorGood(vendor)];
   return { label, fill: stock / VENDOR_CAPACITY, value: `${amount(stock / UNITS_PER_LOAD)} of ${VENDOR_CAPACITY / UNITS_PER_LOAD} loads`, need: null };
-}
-
-function agoraVendors(state: GameState, agora: Building): Building[] {
-  return state.buildings.filter((b) => isAgoraVendor(b.type) && agoraAt(state, b) === agora);
 }
 
 function storedGoodMeter(storehouse: Building, good: Good): Meter {
@@ -500,7 +491,7 @@ function artisanStatus(state: GameState, guild: Building): string {
 }
 
 function roamerWaitsFor(state: GameState, building: Building, spec: RoamerSpec): string | null {
-  if (isGood(spec.service) && building[spec.service] === 0) return `waits for ${spec.service}`;
+  if (spec.service === 'goods' && !hasGoodsToSell(state, building)) return 'waits for goods';
   if (traineeKindFor(building.type) && !isPerforming(state, building)) return 'waits for one to arrive';
   return null;
 }

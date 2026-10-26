@@ -1,6 +1,6 @@
-import { BUILDING_SPECS, buildingSize, footprintDistance, type BuildingType } from './buildings';
+import { BUILDING_SPECS, buildingSize, footprintDistance, vendorGood, type BuildingType } from './buildings';
 import { TICKS_PER_MONTH } from './clock';
-import { adjacentRoadTiles, roadSite } from './commands';
+import { adjacentRoadTiles, agoraVendors, roadSite } from './commands';
 import { stockHouse } from './food';
 import { isResidence } from './housing';
 import { NEIGHBOUR_STEPS, findRoadPath } from './pathfinding';
@@ -8,7 +8,7 @@ import { samePoint, type Point } from './point';
 import { nextRandom } from './rng';
 import { isPerforming, traineeKindFor } from './schools';
 import { maintain } from './safety';
-import { buildingById, inBounds, tileIndex, type Building, type GameState, type Roamer, type Coverage, type PeddledGood, type RoamerKind, type Service } from './state';
+import { buildingById, inBounds, tileIndex, type Building, type GameState, type Roamer, type Coverage, type RoamerKind, type Service } from './state';
 import { WALKER_TILES_PER_TICK, isRoad } from './walking';
 
 export interface RoamerSpec {
@@ -21,10 +21,7 @@ export interface RoamerSpec {
 export const ROAMER_SPECS: Record<RoamerKind, RoamerSpec> = {
   waterCarrier: { name: 'Water Carrier', home: 'fountain', range: 27, service: 'water' },
   taxCollector: { name: 'Tax Collector', home: 'taxOffice', range: 35, service: 'tax' },
-  peddler: { name: 'Peddler', home: 'foodVendor', range: 44, service: 'food' },
-  fleecePeddler: { name: 'Fleece Peddler', home: 'fleeceVendor', range: 44, service: 'fleece' },
-  oilPeddler: { name: 'Oil Peddler', home: 'oilVendor', range: 44, service: 'oil' },
-  clothPeddler: { name: 'Cloth Peddler', home: 'clothVendor', range: 44, service: 'cloth' },
+  peddler: { name: 'Peddler', home: 'agora', range: 44, service: 'goods' },
   philosopher: { name: 'Philosopher', home: 'podium', range: 35, service: 'philosophy' },
   athlete: { name: 'Athlete', home: 'gymnasium', range: 35, service: 'athletics' },
   actor: { name: 'Actor', home: 'theater', range: 35, service: 'drama' },
@@ -35,10 +32,15 @@ export const SERVICE_REACH = 2;
 export const COVERAGE_MONTHS: Record<Coverage, number> = { water: 4, tax: 2, philosophy: 2, athletics: 2, drama: 2 };
 export const ROAMER_REST_TICKS = TICKS_PER_MONTH / 4;
 
-const GOODS: ReadonlySet<Service> = new Set<Service>(['food', 'fleece', 'oil', 'cloth']);
+export function hasGoodsToSell(state: GameState, agora: Building): boolean {
+  return agoraVendors(state, agora).some((stall) => stall[vendorGood(stall)] > 0);
+}
 
-export function isGood(service: Service): service is PeddledGood {
-  return GOODS.has(service);
+function staffing(state: GameState, building: Building): number {
+  const staff = building.type === 'agora' ? agoraVendors(state, building) : [building];
+  const workers = staff.reduce((sum, b) => sum + b.workers, 0);
+  const posts = staff.reduce((sum, b) => sum + BUILDING_SPECS[b.type].workers, 0);
+  return posts === 0 ? 0 : workers / posts;
 }
 
 export function roamerKindSentBy(type: BuildingType): RoamerKind | null {
@@ -88,11 +90,12 @@ export function tickRoamers(state: GameState): void {
 
 function sendRoamer(state: GameState, building: Building): void {
   const kind = roamerKindSentBy(building.type);
-  if (!kind || building.workers === 0 || state.roamers.some((r) => r.homeId === building.id)) return;
-  const { service } = ROAMER_SPECS[kind];
-  if (isGood(service) && building[service] === 0) return;
+  if (!kind || state.roamers.some((r) => r.homeId === building.id)) return;
+  const staffed = staffing(state, building);
+  if (staffed === 0) return;
+  if (ROAMER_SPECS[kind].service === 'goods' && !hasGoodsToSell(state, building)) return;
   if (traineeKindFor(building.type) && !isPerforming(state, building)) return;
-  building.walkerRest += building.workers / BUILDING_SPECS[building.type].workers;
+  building.walkerRest += staffed;
   if (building.walkerRest < ROAMER_REST_TICKS) return;
 
   const exit = exitTile(state, building);
@@ -166,10 +169,11 @@ function serveAround(state: GameState, roamer: Roamer): void {
     return;
   }
   const houses = state.buildings.filter((b) => isResidence(b) && footprintDistance(b, tile) <= SERVICE_REACH);
-  if (isGood(service)) {
-    const stall = buildingById(state, roamer.homeId);
-    if (!stall) throw new Error(`Peddler ${roamer.id} serves from missing stall ${roamer.homeId}`);
-    for (const house of houses) stockHouse(stall, house, service);
+  if (service === 'goods') {
+    const agora = buildingById(state, roamer.homeId);
+    if (!agora) throw new Error(`Peddler ${roamer.id} sells for missing agora ${roamer.homeId}`);
+    const stalls = agoraVendors(state, agora);
+    for (const house of houses) for (const stall of stalls) stockHouse(stall, house, vendorGood(stall));
     return;
   }
   const until = state.tick + COVERAGE_MONTHS[service] * TICKS_PER_MONTH;
