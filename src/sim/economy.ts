@@ -6,6 +6,8 @@ import { hasService } from './roamers';
 import type { Building, GameState } from './state';
 import { TAX_RATE, WAGE_PER_WORKER_PER_YEAR } from './treasury';
 
+export const TAX_PAID_MONTHS = MONTHS_PER_YEAR;
+
 export function houseTax(house: Building): number {
   const level = houseLevel(house);
   return level ? HOUSE_LEVELS[level].taxMultiplier * house.residents * TAX_RATE : 0;
@@ -15,13 +17,24 @@ export function hasWorkingPalace(state: GameState): boolean {
   return state.buildings.some((b) => b.type === 'palace' && adjacentRoadTiles(state, b).length > 0);
 }
 
+export function taxPaidLastYear(house: Building): number {
+  return house.taxPaid.reduce((sum, paid) => sum + paid, 0);
+}
+
+function collectTaxes(state: GameState): number {
+  const collecting = hasWorkingPalace(state);
+  let taxes = 0;
+  for (const house of state.buildings.filter((b) => b.type === 'house')) {
+    const paid = collecting && hasService(state, house, 'tax') ? houseTax(house) : 0;
+    house.taxPaid = [...house.taxPaid, paid].slice(-TAX_PAID_MONTHS);
+    taxes += paid;
+  }
+  return taxes;
+}
+
 export function settleMonth(state: GameState): void {
   const wages = (laborSummary(state).employed * WAGE_PER_WORKER_PER_YEAR) / MONTHS_PER_YEAR;
-  const taxes = hasWorkingPalace(state)
-    ? state.buildings
-        .filter((b) => b.type === 'house' && hasService(state, b, 'tax'))
-        .reduce((sum, house) => sum + houseTax(house), 0)
-    : 0;
+  const taxes = collectTaxes(state);
   state.treasury += taxes - wages;
   state.lastMonth = { taxes, wages };
 }

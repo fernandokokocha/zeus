@@ -46,6 +46,7 @@ export interface Building {
   fireRisk: number;
   collapseRisk: number;
   burningUntil: number;
+  taxPaid: number[];
 }
 
 export interface Walk {

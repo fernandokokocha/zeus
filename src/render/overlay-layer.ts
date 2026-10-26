@@ -14,57 +14,22 @@ export interface ColorStop {
   label: string;
 }
 
-export interface TintScale {
-  title: string;
-  stops: ColorStop[];
-}
+const { overlayGood: good, overlayBad: bad } = PALETTE;
 
-const { overlayGood: good, overlayMid: mid, overlayBad: bad } = PALETTE;
-
-export const TINT_SCALES: Record<TintOverlay, TintScale> = {
-  food: {
-    title: 'Food in houses',
-    stops: [
-      { at: 0, color: bad, label: 'None' },
-      { at: 1, color: mid, label: '1 month' },
-      { at: 3, color: good, label: '3 months' },
-    ],
-  },
-  supply: {
-    title: 'Fleece and oil in houses',
-    stops: [
-      { at: 0, color: bad, label: 'Neither' },
-      { at: 1, color: mid, label: 'Fleece or oil' },
-      { at: 2, color: good, label: 'Fleece and oil' },
-    ],
-  },
-  appeal: {
-    title: 'Appeal',
-    stops: [
-      { at: -20, color: bad, label: '−20' },
-      { at: 0, color: PALETTE.plaster, label: '0' },
-      { at: 20, color: good, label: '+20' },
-    ],
-  },
-  tax: {
-    title: 'Tax collection',
-    stops: [
-      { at: 0, color: bad, label: 'Not collected' },
-      { at: 0.25, color: mid, label: 'Due soon' },
-      { at: 1, color: good, label: 'Just collected' },
-    ],
-  },
-  guildSites: {
-    title: "Traders' Guild sites",
-    stops: [
-      { at: GUILD_SITE_READINGS.inRange, color: PALETTE.overlayGuildRange, label: `Within ${TRADERS_GUILD.mainRoadRange} tiles of the Main Road` },
-      { at: GUILD_SITE_READINGS.placeable, color: good, label: "A Traders' Guild can be placed now" },
-    ],
-  },
+export const TINT_SCALES: Record<TintOverlay, ColorStop[]> = {
+  appeal: [
+    { at: -20, color: bad, label: '−20' },
+    { at: 0, color: PALETTE.plaster, label: '0' },
+    { at: 20, color: good, label: '+20' },
+  ],
+  guildSites: [
+    { at: GUILD_SITE_READINGS.inRange, color: PALETTE.overlayGuildRange, label: `Within ${TRADERS_GUILD.mainRoadRange} tiles of the Main Road` },
+    { at: GUILD_SITE_READINGS.placeable, color: good, label: "A Traders' Guild can be placed now" },
+  ],
 };
 
 export function overlayColor(overlay: TintOverlay, reading: number): THREE.Color {
-  const { stops } = TINT_SCALES[overlay];
+  const stops = TINT_SCALES[overlay];
   const upper = stops.findIndex((stop) => stop.at >= reading);
   if (upper === -1) return new THREE.Color(stops[stops.length - 1].color);
   if (upper === 0) return new THREE.Color(stops[0].color);

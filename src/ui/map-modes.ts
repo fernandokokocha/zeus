@@ -8,8 +8,7 @@ import { byId } from './dom';
 
 export const OVERLAY_NAMES: Record<Overlay, string> = {
   water: 'Water',
-  food: 'Food',
-  supply: 'Supply',
+  supplies: 'Supplies',
   culture: 'Culture',
   appeal: 'Appeal',
   risk: 'Risk',
@@ -66,7 +65,7 @@ export function createMapModes(state: GameState, view: View): { shown(): Overlay
     ramp.replaceChildren();
     ramp.hidden = overlay === null || isColumnOverlay(overlay);
     if (overlay === null || isColumnOverlay(overlay)) return;
-    for (const stop of TINT_SCALES[overlay].stops) {
+    for (const stop of TINT_SCALES[overlay]) {
       const swatch = document.createElement('span');
       swatch.className = 'ramp-swatch';
       swatch.style.background = overlayColor(overlay, stop.at).getStyle();

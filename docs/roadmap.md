@@ -12,7 +12,7 @@ the PR that delivers it.
 - [x] 16 · Traders' Guild
 - [x] 17 · Guild sites
 - [x] 18 · Map button and columns
-- [ ] 19 · Supplies and tax paid
+- [x] 19 · Supplies and tax paid
 - [ ] 20 · Ledger
 - [ ] 21 · Ledger: Treasury
 - [ ] 22 · Ledger: Population

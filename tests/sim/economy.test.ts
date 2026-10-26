@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { TICKS_PER_MONTH } from '../../src/sim/clock';
 import { demolish, placeBuilding, placeRoad } from '../../src/sim/commands';
-import { houseTax } from '../../src/sim/economy';
+import { houseTax, settleMonth } from '../../src/sim/economy';
 import type { Building, GameState } from '../../src/sim/state';
 import { tick } from '../../src/sim/tick';
 import { grassGame, placeHouse, runTicks } from './helpers';
@@ -79,6 +79,27 @@ describe('taxes', () => {
     runToMonthStart(game);
     demolish(game, { x: 6, y: 4 }, { x: 6, y: 4 });
     expect(runToMonthStart(game)).toBe(0);
+  });
+});
+
+describe('tax paid', () => {
+  it('is recorded on the house each month, 0 when it paid nothing', () => {
+    const { game, house } = town();
+    placeBuilding(game, 'palace', 6, 4);
+    runToMonthStart(game);
+    house.coveredUntil.tax = game.tick + 2 * TICKS_PER_MONTH;
+    runToMonthStart(game);
+    expect(house.taxPaid).toEqual([0, houseTax(house)]);
+  });
+
+  it('keeps only the last 12 months', () => {
+    const { game, house } = town();
+    placeBuilding(game, 'palace', 6, 4);
+    house.coveredUntil.tax = 20 * TICKS_PER_MONTH;
+    for (let month = 0; month < 13; month++) settleMonth(game);
+    house.coveredUntil.tax = 0;
+    settleMonth(game);
+    expect(house.taxPaid).toEqual([...new Array(11).fill(houseTax(house)), 0]);
   });
 });
 

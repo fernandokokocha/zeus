@@ -6,9 +6,10 @@ import { PALETTE } from './palette';
 
 const FLAT_BASE_HEIGHT = 0.05;
 const FLAT_BASE_GAP = 0.12;
-const STUB_SIZE = 0.5;
 const STUB_HEIGHT = 0.14;
-const SHAFT_SIZE = 0.32;
+const SINGLE_BAR = { stub: 0.5, shaft: 0.32 };
+const SIDE_BY_SIDE_BAR = { stub: 0.32, shaft: 0.22, spacing: 0.4 };
+const ACROSS_THE_SCREEN = new THREE.Vector3(1, 0, -1).normalize();
 const FULL_HEIGHT = 2.4;
 const RISK_WARNING_SHARE = 0.8;
 const REPAINT_TICKS = 8;
@@ -21,6 +22,11 @@ const PART_COLORS: Record<ColumnKind, number> = {
   fire: PALETTE.columnFire,
   collapse: PALETTE.columnCollapse,
   staff: PALETTE.columnStaff,
+  food: PALETTE.columnFood,
+  fleece: PALETTE.columnFleece,
+  oil: PALETTE.columnOil,
+  cloth: PALETTE.columnCloth,
+  tax: PALETTE.columnTax,
 };
 
 function partColor({ kind, share }: ColumnPart): number {
@@ -67,6 +73,17 @@ export function createColumnLayer(mapSize: number): { group: THREE.Group; sync(s
     return new THREE.Vector3(building.x + width / 2, 0, building.y + height / 2);
   }
 
+  function addBar(at: THREE.Vector3, parts: ColumnPart[], size: { stub: number; shaft: number }): void {
+    add(stubs, at, new THREE.Vector3(size.stub, STUB_HEIGHT, size.stub), PALETTE.columnStub);
+    let y = FLAT_BASE_HEIGHT + STUB_HEIGHT;
+    for (const part of parts) {
+      const length = part.share * FULL_HEIGHT;
+      if (length <= 0) continue;
+      add(shafts, at.clone().setY(y), new THREE.Vector3(size.shaft, length, size.shaft), partColor(part));
+      y += length;
+    }
+  }
+
   function paint(state: GameState, overlay: Overlay): void {
     for (const { mesh } of all) mesh.count = 0;
     for (const building of state.buildings) {
@@ -75,16 +92,13 @@ export function createColumnLayer(mapSize: number): { group: THREE.Group; sync(s
       add(bases, centre(building), new THREE.Vector3(width - FLAT_BASE_GAP, FLAT_BASE_HEIGHT, height - FLAT_BASE_GAP), PALETTE.flatBase);
     }
     if (isColumnOverlay(overlay)) {
-      for (const { building, parts } of overlayColumns(state, overlay)) {
-        const at = centre(building).setY(FLAT_BASE_HEIGHT);
-        add(stubs, at, new THREE.Vector3(STUB_SIZE, STUB_HEIGHT, STUB_SIZE), PALETTE.columnStub);
-        let y = FLAT_BASE_HEIGHT + STUB_HEIGHT;
-        for (const part of parts) {
-          const length = part.share * FULL_HEIGHT;
-          if (length <= 0) continue;
-          add(shafts, at.clone().setY(y), new THREE.Vector3(SHAFT_SIZE, length, SHAFT_SIZE), partColor(part));
-          y += length;
-        }
+      for (const { building, bars } of overlayColumns(state, overlay)) {
+        const size = bars.length === 1 ? SINGLE_BAR : SIDE_BY_SIDE_BAR;
+        bars.forEach((parts, i) => {
+          const offset = (i - (bars.length - 1) / 2) * SIDE_BY_SIDE_BAR.spacing;
+          const at = centre(building).addScaledVector(ACROSS_THE_SCREEN, offset).setY(FLAT_BASE_HEIGHT);
+          addBar(at, parts, size);
+        });
       }
     }
     for (const { mesh, colors } of all) {

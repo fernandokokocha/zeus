@@ -169,11 +169,11 @@ function describeGround(state: GameState, x: number, y: number): Description {
   return { title: TERRAIN_NAMES[terrain], meters: [], lines };
 }
 
-function amount(value: number): string {
+export function amount(value: number): string {
   return value.toLocaleString('en-US', { maximumFractionDigits: 1 });
 }
 
-function drachmas(value: number): string {
+export function drachmas(value: number): string {
   return `${value.toLocaleString('en-US', { maximumFractionDigits: 2 })} dr`;
 }
 

@@ -233,6 +233,7 @@ export function addBuilding(state: GameState, placement: Placement): Building {
     fireRisk: 0,
     collapseRisk: 0,
     burningUntil: 0,
+    taxPaid: [],
   };
   state.buildings.push(building);
   for (const p of footprint(placement)) state.buildingIdAt[tileIndex(state, p.x, p.y)] = building.id;

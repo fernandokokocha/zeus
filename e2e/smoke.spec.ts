@@ -155,22 +155,24 @@ await expect(fleeceOrder.getByRole('button', { name: 'Accept', exact: true })).t
   const ramp = page.locator('#map-ramp');
   await expect(mapButton).toHaveText('Map: Off ▾');
   const offWidth = (await mapButton.boundingBox())!.width;
+  const topbarBox = await page.locator('#topbar').boundingBox();
   await page.keyboard.press('o');
   await expect(mapButton).toHaveText('Map: Appeal ▾');
   await expect(ramp).toContainText('+20');
   await page.screenshot({ path: 'test-results/appeal.png' });
   await mapButton.click();
-  await expect(mapMenu.getByRole('button')).toHaveText(['Off', 'Water', 'Food', 'Supply', 'Culture', 'Appeal', 'Risk', 'Tax', 'Staff', 'Guilds']);
+  await expect(mapMenu.getByRole('button')).toHaveText(['Off', 'Water', 'Supplies', 'Culture', 'Appeal', 'Risk', 'Tax', 'Staff', 'Guilds']);
   await mapMenu.getByRole('button', { name: 'Guilds', exact: true }).click();
   await expect(mapMenu).toBeHidden();
   await expect(ramp).toContainText('Within 4 tiles of the Main Road');
   await page.screenshot({ path: 'test-results/guild-sites.png' });
-  for (const mode of ['Water', 'Culture', 'Risk', 'Staff']) {
+  for (const mode of ['Water', 'Supplies', 'Culture', 'Risk', 'Tax', 'Staff']) {
     await mapButton.click();
     await mapMenu.getByRole('button', { name: mode, exact: true }).click();
     await expect(mapButton).toHaveText(`Map: ${mode} ▾`);
     await expect(ramp).toBeHidden();
     expect((await mapButton.boundingBox())!.width).toBe(offWidth);
+    expect(await page.locator('#topbar').boundingBox()).toEqual(topbarBox);
     await page.screenshot({ path: `test-results/map-${mode.toLowerCase()}.png` });
   }
   await page.mouse.move(centre.x, centre.y);
@@ -184,6 +186,12 @@ await expect(fleeceOrder.getByRole('button', { name: 'Accept', exact: true })).t
   const housePosition = await tileOnScreen(page, 9, 51);
   await page.mouse.move(housePosition.x, housePosition.y);
   await expect(page.locator('#map-tooltip')).toContainText(/water/i);
+  await mapButton.click();
+  await mapMenu.getByRole('button', { name: 'Supplies', exact: true }).click();
+  await page.mouse.move(housePosition.x, housePosition.y + 1);
+  await expect(page.locator('#map-tooltip')).toContainText('Fleece');
+  await mapButton.click();
+  await mapMenu.getByRole('button', { name: 'Water', exact: true }).click();
   await page.keyboard.press('o');
   await expect(mapButton).toHaveText('Map: Off ▾');
   await expect(page.locator('#map-tooltip')).toBeHidden();

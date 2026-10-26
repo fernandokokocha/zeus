@@ -1,26 +1,25 @@
 import { appealMap } from './appeal';
 import { BUILDING_SPECS, type BuildingType } from './buildings';
-import { footprint } from './commands';
 import { CULTURE_POINTS, culturesPassed } from './culture';
-import { monthlyUse } from './food';
+import { taxPaidLastYear } from './economy';
+import { houseStockTarget } from './food';
 import { guildSiteTiles, placeableGuildSites, siteSurroundings } from './guild';
 import { HOUSE_LEVELS, buildingName, houseLevel, isResidence } from './housing';
+import { amount, drachmas } from './inspect';
 import { isUnderConstruction } from './sanctuaries';
 import { COVERAGE_MONTHS, serviceLeft } from './roamers';
 import { canBurn, canCollapse, riskShare } from './safety';
-import { tileIndex, type Building, type Culture, type GameState } from './state';
+import { tileIndex, type Building, type Culture, type GameState, type PeddledGood } from './state';
 
-export const OVERLAYS = ['water', 'food', 'supply', 'culture', 'appeal', 'risk', 'tax', 'staffing', 'guildSites'] as const;
+export const OVERLAYS = ['water', 'supplies', 'culture', 'appeal', 'risk', 'tax', 'staffing', 'guildSites'] as const;
 
 export type Overlay = (typeof OVERLAYS)[number];
-export type ColumnOverlay = 'water' | 'culture' | 'risk' | 'staffing';
-type BuildingTintOverlay = 'food' | 'supply' | 'tax';
-type TileOverlay = 'appeal' | 'guildSites';
-export type TintOverlay = BuildingTintOverlay | TileOverlay;
+export type TintOverlay = 'appeal' | 'guildSites';
+export type ColumnOverlay = Exclude<Overlay, TintOverlay>;
 
 export type Reading = number | null;
 
-export type ColumnKind = 'water' | Culture | 'fire' | 'collapse' | 'staff';
+export type ColumnKind = 'water' | PeddledGood | Culture | 'fire' | 'collapse' | 'tax' | 'staff';
 
 export interface ColumnPart {
   kind: ColumnKind;
@@ -29,7 +28,7 @@ export interface ColumnPart {
 
 export interface Column {
   building: Building;
-  parts: ColumnPart[];
+  bars: ColumnPart[][];
   details: string[];
 }
 
@@ -46,8 +45,7 @@ const DISTRIBUTION: BuildingType[] = ['granary', 'storehouse', 'agora', 'foodVen
 
 const SERVERS: Record<Overlay, BuildingType[]> = {
   water: ['fountain'],
-  food: DISTRIBUTION,
-  supply: DISTRIBUTION,
+  supplies: DISTRIBUTION,
   culture: ['college', 'podium', 'gymnasium', 'dramaSchool', 'theater'],
   appeal: [],
   risk: ['maintenanceOffice'],
@@ -56,13 +54,7 @@ const SERVERS: Record<Overlay, BuildingType[]> = {
   guildSites: [],
 };
 
-interface Tint {
-  reading: number;
-  details: string[];
-}
-
 type ColumnReader = (state: GameState, building: Building) => Omit<Column, 'building'> | null;
-type TintReader = (state: GameState, building: Building) => Tint | null;
 
 function occupiedResidence<T>(read: (state: GameState, residence: Building) => T): (state: GameState, building: Building) => T | null {
   return (state, building) => (isResidence(building) && building.residents > 0 ? read(state, building) : null);
@@ -86,7 +78,7 @@ function cultureColumn(state: GameState, residence: Building): Omit<Column, 'bui
   const cultures = Object.keys(CULTURE_POINTS) as Culture[];
   const total = cultures.reduce((sum, culture) => sum + points(culture), 0);
   return {
-    parts: passed.map((culture) => ({ kind: culture, share: CULTURE_POINTS[culture] / CULTURE_FULL_HEIGHT })),
+    bars: [passed.map((culture) => ({ kind: culture, share: CULTURE_POINTS[culture] / CULTURE_FULL_HEIGHT }))],
     details: [`Culture: ${total} points`, cultures.map((culture) => `${capitalized(culture)} ${points(culture)}`).join(' · ')],
   };
 }
@@ -102,58 +94,56 @@ function riskColumn(building: Building): Omit<Column, 'building'> | null {
   ].filter((risk) => risk.present);
   if (risks.length === 0) return null;
   const higher = risks.reduce((high, risk) => (risk.share > high.share ? risk : high));
-  return { parts: [{ kind: higher.kind, share: higher.share }], details: risks.map((risk) => `${risk.name} ${percent(risk.share)}`) };
+  return { bars: [[{ kind: higher.kind, share: higher.share }]], details: risks.map((risk) => `${risk.name} ${percent(risk.share)}`) };
 }
 
 function staffColumn(building: Building): Omit<Column, 'building'> | null {
   const { workers } = BUILDING_SPECS[building.type];
   if (workers === 0 || isUnderConstruction(building)) return null;
-  return { parts: [{ kind: 'staff', share: building.workers / workers }], details: [`Workers ${building.workers} / ${workers}`] };
+  return { bars: [[{ kind: 'staff', share: building.workers / workers }]], details: [`Workers ${building.workers} / ${workers}`] };
+}
+
+const HOUSE_SUPPLIES: PeddledGood[] = ['food', 'fleece', 'oil'];
+const GUILD_SUPPLIES: PeddledGood[] = [...HOUSE_SUPPLIES, 'cloth'];
+
+function suppliesColumn(residence: Building): Omit<Column, 'building'> {
+  const goods = residence.type === 'tradersGuild' ? GUILD_SUPPLIES : HOUSE_SUPPLIES;
+  return {
+    bars: goods.map((good) => [{ kind: good, share: Math.min(1, residence[good] / houseStockTarget(residence, good)) }]),
+    details: goods.map((good) => `${capitalized(good)} ${amount(residence[good])} / ${amount(houseStockTarget(residence, good))}`),
+  };
+}
+
+function biggestTaxPaid(state: GameState): number {
+  return Math.max(0, ...state.buildings.filter((b) => b.type === 'house' && houseLevel(b)).map(taxPaidLastYear));
+}
+
+function taxColumn(state: GameState, house: Building): Omit<Column, 'building'> {
+  const paid = taxPaidLastYear(house);
+  const biggest = biggestTaxPaid(state);
+  return {
+    bars: [[{ kind: 'tax', share: biggest > 0 ? paid / biggest : 0 }]],
+    details: [`Tax paid, last 12 months: ${drachmas(paid)}`],
+  };
 }
 
 const COLUMN_READERS: Record<ColumnOverlay, ColumnReader> = {
   water: occupiedResidence((state, residence) => {
     const share = serviceLeft(state, residence, 'water');
     return {
-      parts: [{ kind: 'water', share }],
+      bars: [[{ kind: 'water', share }]],
       details: [share > 0 ? `Water: ${months(share * COVERAGE_MONTHS.water)} months left` : 'No water'],
     };
   }),
+  supplies: occupiedResidence((_, residence) => suppliesColumn(residence)),
   culture: occupiedResidence(cultureColumn),
   risk: (_, building) => riskColumn(building),
+  tax: occupiedHouse(taxColumn),
   staffing: (_, building) => staffColumn(building),
-};
-
-function monthsOfFood(house: Building): number {
-  const use = monthlyUse(house, 'food');
-  return use > 0 ? house.food / use : 0;
-}
-
-function held(amount: number): string {
-  return amount > 0 ? 'some' : 'none';
-}
-
-const TINT_READERS: Record<BuildingTintOverlay, TintReader> = {
-  food: occupiedResidence((_, residence) => {
-    const reading = monthsOfFood(residence);
-    return { reading, details: [`Food: ${months(reading)} months`] };
-  }),
-  supply: occupiedResidence((_, residence) => ({
-    reading: Number(residence.fleece > 0) + Number(residence.oil > 0),
-    details: [`Fleece: ${held(residence.fleece)} · Oil: ${held(residence.oil)}`],
-  })),
-  tax: occupiedHouse((state, house) => {
-    const reading = serviceLeft(state, house, 'tax');
-    return { reading, details: [reading > 0 ? `Tax: collected, due again in ${months(reading * COVERAGE_MONTHS.tax)} months` : 'Tax: not collected'] };
-  }),
 };
 
 export function isColumnOverlay(overlay: Overlay): overlay is ColumnOverlay {
   return overlay in COLUMN_READERS;
-}
-
-function isTileOverlay(overlay: Overlay): overlay is TileOverlay {
-  return overlay === 'appeal' || overlay === 'guildSites';
 }
 
 export function overlayColumns(state: GameState, overlay: ColumnOverlay): Column[] {
@@ -165,9 +155,8 @@ export function overlayColumns(state: GameState, overlay: ColumnOverlay): Column
 }
 
 export function overlayReport(state: GameState, overlay: Overlay, building: Building): Report | null {
-  if (isTileOverlay(overlay)) return null;
-  const read = isColumnOverlay(overlay) ? COLUMN_READERS[overlay] : TINT_READERS[overlay];
-  const reported = read(state, building);
+  if (!isColumnOverlay(overlay)) return null;
+  const reported = COLUMN_READERS[overlay](state, building);
   return reported ? { name: buildingName(building), details: reported.details } : null;
 }
 
@@ -178,15 +167,7 @@ export function buildingLook(state: GameState, overlay: Overlay, building: Build
 
 export function overlayReadings(state: GameState, overlay: TintOverlay): Reading[] {
   if (overlay === 'appeal') return appealMap(state).map((appeal) => (appeal === 0 ? null : appeal));
-  if (overlay === 'guildSites') return guildSiteReadings(state);
-  const readings = new Array<Reading>(state.size * state.size).fill(null);
-  const read = TINT_READERS[overlay];
-  for (const building of state.buildings) {
-    const tint = read(state, building);
-    if (tint === null) continue;
-    for (const tile of footprint(building)) readings[tileIndex(state, tile.x, tile.y)] = tint.reading;
-  }
-  return readings;
+  return guildSiteReadings(state);
 }
 
 export const GUILD_SITE_READINGS = { inRange: 0, placeable: 1 };
