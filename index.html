@@ -19,6 +19,11 @@
       <span id="status"></span>
       <button id="charters-button" title="Charters (C)">Charters</button>
       <button id="notices-button" title="Recent notices (N)">Notices</button>
+      <div id="map-mode">
+        <button id="map-button" title="Map modes (O toggles the last one)"></button>
+        <div id="map-menu" hidden></div>
+        <div id="map-ramp" hidden></div>
+      </div>
       <div id="speed"></div>
     </header>
     <div id="notice-feed"></div>
@@ -39,8 +44,7 @@
       <p id="charter-permits"></p>
     </aside>
     <nav id="toolbar"></nav>
-    <nav id="map-modes" title="Map modes (O toggles the last one)"></nav>
-    <aside id="overlay-legend" hidden></aside>
+    <div id="map-tooltip" hidden></div>
     <aside id="inspector" hidden>
       <button id="inspector-close" aria-label="Close">×</button>
       <h2 id="inspector-title"></h2>

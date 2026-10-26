@@ -23,9 +23,7 @@ body {
 #toolbar,
 #inspector,
 #notice-log,
-#charters-panel,
-#map-modes,
-#overlay-legend {
+#charters-panel {
   position: fixed;
   background: var(--parchment);
   border: 2px solid var(--terracotta);
@@ -236,33 +234,68 @@ button.active {
   white-space: nowrap;
 }
 
-#map-modes {
-  bottom: 8px;
-  left: 50%;
-  transform: translateX(-50%);
+#map-mode {
+  position: relative;
+}
+
+#map-button {
+  white-space: nowrap;
+}
+
+#map-menu,
+#map-ramp,
+#map-tooltip {
+  background: var(--parchment);
+  border: 2px solid var(--terracotta);
+  border-radius: 4px;
+}
+
+#map-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
   display: flex;
-  gap: 4px;
-  padding: 4px 6px;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px;
+  z-index: 2;
 }
 
-#overlay-legend {
-  bottom: 56px;
-  left: 8px;
-  min-width: 160px;
+#map-menu button {
+  text-align: left;
 }
 
-.legend-row {
+#map-ramp {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-top: 4px;
+  gap: 4px 6px;
+  padding: 4px 8px;
   font-size: 13px;
+  white-space: nowrap;
 }
 
-.legend-swatch {
+#map-menu[hidden],
+#map-ramp[hidden],
+#map-menu:not([hidden]) + #map-ramp {
+  display: none;
+}
+
+.ramp-swatch {
   width: 18px;
   height: 12px;
   border: 1px solid var(--ink);
+  margin-left: 4px;
+}
+
+#map-tooltip {
+  position: fixed;
+  padding: 4px 8px;
+  font-size: 13px;
+  pointer-events: none;
+  white-space: nowrap;
 }
 
 #notice-feed {

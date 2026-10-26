@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { BUILDING_SPECS, buildingSize } from '../sim/buildings';
+import { buildingLook, type Look, type Overlay } from '../sim/overlays';
 import type { Building, GameState } from '../sim/state';
 import type { Animate } from './kit/figure';
 import { lookKey } from './look-key';
@@ -17,14 +18,46 @@ const pavingSlabSize = 1 / PAVING_SLABS_PER_SIDE - PAVING_GAP;
 const jointMaterial = new THREE.MeshLambertMaterial({ color: PALETTE.pavingJoint });
 const slabGeometry = new THREE.BoxGeometry(pavingSlabSize, PAVING_SLAB_HEIGHT, pavingSlabSize);
 const slabMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff });
+const FADED_OPACITY = 0.25;
+const RESTYLE_TICKS = 8;
+const fadedMaterials = new Map<THREE.Material, THREE.Material>();
+
+function faded(material: THREE.Material): THREE.Material {
+  let copy = fadedMaterials.get(material);
+  if (!copy) {
+    copy = material.clone();
+    copy.transparent = true;
+    copy.opacity = material.opacity * FADED_OPACITY;
+    copy.depthWrite = false;
+    fadedMaterials.set(material, copy);
+  }
+  return copy;
+}
+
+function applyLook(object: THREE.Object3D, look: Look | null): void {
+  object.visible = look !== 'reported';
+  const fade = look === 'faded';
+  object.traverse((node) => {
+    if (!(node instanceof THREE.Mesh)) return;
+    if (node.userData.solid === undefined) node.userData.solid = node.material;
+    const solid: THREE.Material | THREE.Material[] = node.userData.solid;
+    node.material = !fade ? solid : Array.isArray(solid) ? solid.map(faded) : faded(solid);
+  });
+}
 
 interface Placed {
   key: string;
+  look: Look | null;
   object: THREE.Object3D;
   animations: Animate[];
 }
 
-export function createWorldLayer(): { group: THREE.Group; sync(state: GameState): void; animate(seconds: number): void } {
+export function createWorldLayer(): {
+  group: THREE.Group;
+  sync(state: GameState): void;
+  style(state: GameState, overlay: Overlay | null): void;
+  animate(seconds: number): void;
+} {
   const group = new THREE.Group();
   const streets = new THREE.Group();
   group.add(streets);
@@ -32,6 +65,7 @@ export function createWorldLayer(): { group: THREE.Group; sync(state: GameState)
   const placed = new Map<number, Placed>();
   let renderedVersion = -1;
   let renderedStreets = '';
+  let styled: { version: number; tick: number; overlay: Overlay | null } | null = null;
 
   function syncStreets(state: GameState): void {
     const key = streetsKey(state);
@@ -59,7 +93,7 @@ export function createWorldLayer(): { group: THREE.Group; sync(state: GameState)
       object.traverse((node) => node.userData.animate && animations.push(node.userData.animate));
       geometries.retain(object);
       group.add(object);
-      placed.set(building.id, { key, object, animations });
+      placed.set(building.id, { key, look: null, object, animations });
       if (old) remove(old);
     }
     for (const [id, old] of placed) {
@@ -81,6 +115,18 @@ export function createWorldLayer(): { group: THREE.Group; sync(state: GameState)
       renderedVersion = state.version;
       syncStreets(state);
       syncBuildings(state);
+    },
+    style(state, overlay) {
+      const tick = state.tick - (state.tick % RESTYLE_TICKS);
+      if (styled && styled.overlay === overlay && styled.version === state.version && styled.tick === tick) return;
+      styled = { version: state.version, tick, overlay };
+      for (const building of state.buildings) {
+        const shown = placed.get(building.id)!;
+        const look = overlay ? buildingLook(state, overlay, building) : null;
+        if (look === shown.look) continue;
+        shown.look = look;
+        applyLook(shown.object, look);
+      }
     },
     animate(seconds) {
       for (const { animations } of placed.values()) for (const animate of animations) animate(seconds);

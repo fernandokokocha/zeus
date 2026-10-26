@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { HOUSE_LEVELS, TRADERS_GUILD } from '../sim/housing';
-import { GUILD_SITE_READINGS, overlayReadings, type Overlay } from '../sim/overlays';
+import { TRADERS_GUILD } from '../sim/housing';
+import { GUILD_SITE_READINGS, isColumnOverlay, overlayReadings, type Overlay, type TintOverlay } from '../sim/overlays';
 import type { GameState } from '../sim/state';
 import { PALETTE } from './palette';
 
@@ -14,41 +14,15 @@ export interface ColorStop {
   label: string;
 }
 
-export interface OverlayScale {
-  name: string;
+export interface TintScale {
   title: string;
   stops: ColorStop[];
 }
 
-const { overlayGood: good, overlayFair: fair, overlayMid: mid, overlayBad: bad } = PALETTE;
+const { overlayGood: good, overlayMid: mid, overlayBad: bad } = PALETTE;
 
-function coverageStops(none: string, soon: string, fresh: string): ColorStop[] {
-  return [
-    { at: 0, color: bad, label: none },
-    { at: 0.25, color: mid, label: soon },
-    { at: 1, color: good, label: fresh },
-  ];
-}
-
-function riskStops(full: string): ColorStop[] {
-  return [
-    { at: 0, color: good, label: 'Just maintained' },
-    { at: 0.5, color: mid, label: 'Half way' },
-    { at: 1, color: bad, label: full },
-  ];
-}
-
-const levelNames = Object.values(HOUSE_LEVELS).map((level) => level.name);
-const levelStops = levelNames.map((label, i) => ({
-  at: i,
-  color: new THREE.Color(PALETTE.overlayLevelLow).lerp(new THREE.Color(PALETTE.overlayLevelHigh), i / (levelNames.length - 1)).getHex(),
-  label,
-}));
-
-export const OVERLAY_SCALES: Record<Overlay, OverlayScale> = {
-  water: { name: 'Water', title: 'Water access', stops: coverageStops('No water', 'Running out', 'Just served') },
+export const TINT_SCALES: Record<TintOverlay, TintScale> = {
   food: {
-    name: 'Food',
     title: 'Food in houses',
     stops: [
       { at: 0, color: bad, label: 'None' },
@@ -57,7 +31,6 @@ export const OVERLAY_SCALES: Record<Overlay, OverlayScale> = {
     ],
   },
   supply: {
-    name: 'Supply',
     title: 'Fleece and oil in houses',
     stops: [
       { at: 0, color: bad, label: 'Neither' },
@@ -65,18 +38,7 @@ export const OVERLAY_SCALES: Record<Overlay, OverlayScale> = {
       { at: 2, color: good, label: 'Fleece and oil' },
     ],
   },
-  culture: {
-    name: 'Culture',
-    title: 'Culture points',
-    stops: [
-      { at: 0, color: bad, label: '0' },
-      { at: HOUSE_LEVELS.hovel.culture, color: mid, label: `${HOUSE_LEVELS.hovel.culture} · Hovel` },
-      { at: HOUSE_LEVELS.tenement.culture, color: fair, label: `${HOUSE_LEVELS.tenement.culture} · Tenement` },
-      { at: HOUSE_LEVELS.townhouse.culture, color: good, label: `${HOUSE_LEVELS.townhouse.culture} · Townhouse` },
-    ],
-  },
   appeal: {
-    name: 'Appeal',
     title: 'Appeal',
     stops: [
       { at: -20, color: bad, label: '−20' },
@@ -84,21 +46,15 @@ export const OVERLAY_SCALES: Record<Overlay, OverlayScale> = {
       { at: 20, color: good, label: '+20' },
     ],
   },
-  fireRisk: { name: 'Fire', title: 'Fire risk', stops: riskStops('About to burn') },
-  collapseRisk: { name: 'Collapse', title: 'Collapse risk', stops: riskStops('About to collapse') },
-  tax: { name: 'Tax', title: 'Tax collection', stops: coverageStops('Not collected', 'Due soon', 'Just collected') },
-  houseLevel: { name: 'Houses', title: 'House level', stops: levelStops },
-  staffing: {
-    name: 'Staff',
-    title: 'Staffing',
+  tax: {
+    title: 'Tax collection',
     stops: [
-      { at: 0, color: bad, label: 'No workers' },
-      { at: 0.5, color: mid, label: 'Half staffed' },
-      { at: 1, color: good, label: 'Fully staffed' },
+      { at: 0, color: bad, label: 'Not collected' },
+      { at: 0.25, color: mid, label: 'Due soon' },
+      { at: 1, color: good, label: 'Just collected' },
     ],
   },
   guildSites: {
-    name: 'Guilds',
     title: "Traders' Guild sites",
     stops: [
       { at: GUILD_SITE_READINGS.inRange, color: PALETTE.overlayGuildRange, label: `Within ${TRADERS_GUILD.mainRoadRange} tiles of the Main Road` },
@@ -107,8 +63,8 @@ export const OVERLAY_SCALES: Record<Overlay, OverlayScale> = {
   },
 };
 
-export function overlayColor(overlay: Overlay, reading: number): THREE.Color {
-  const { stops } = OVERLAY_SCALES[overlay];
+export function overlayColor(overlay: TintOverlay, reading: number): THREE.Color {
+  const { stops } = TINT_SCALES[overlay];
   const upper = stops.findIndex((stop) => stop.at >= reading);
   if (upper === -1) return new THREE.Color(stops[stops.length - 1].color);
   if (upper === 0) return new THREE.Color(stops[0].color);
@@ -128,9 +84,9 @@ export function createOverlayLayer(mapSize: number): { mesh: THREE.InstancedMesh
   mesh.renderOrder = 1;
   mesh.frustumCulled = false;
   const matrix = new THREE.Matrix4();
-  let rendered: { version: number; tick: number; overlay: Overlay } | null = null;
+  let rendered: { version: number; tick: number; overlay: TintOverlay } | null = null;
 
-  function paint(state: GameState, overlay: Overlay): void {
+  function paint(state: GameState, overlay: TintOverlay): void {
     let count = 0;
     overlayReadings(state, overlay).forEach((reading, i) => {
       if (reading === null) return;
@@ -147,8 +103,8 @@ export function createOverlayLayer(mapSize: number): { mesh: THREE.InstancedMesh
   return {
     mesh,
     sync(state, overlay) {
-      mesh.visible = overlay !== null;
-      if (!overlay) return;
+      mesh.visible = overlay !== null && !isColumnOverlay(overlay);
+      if (!overlay || isColumnOverlay(overlay)) return;
       const tick = overlay === 'appeal' ? 0 : state.tick - (state.tick % REPAINT_TICKS);
       if (rendered && rendered.overlay === overlay && rendered.version === state.version && rendered.tick === tick) return;
       rendered = { version: state.version, tick, overlay };

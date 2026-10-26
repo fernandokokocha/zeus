@@ -11,7 +11,7 @@ the PR that delivers it.
 - [x] 15 · Charters
 - [x] 16 · Traders' Guild
 - [x] 17 · Guild sites
-- [ ] 18 · Map button and columns
+- [x] 18 · Map button and columns
 - [ ] 19 · Supplies and tax paid
 - [ ] 20 · Ledger
 - [ ] 21 · Ledger: Treasury

@@ -150,38 +150,44 @@ await expect(fleeceOrder.getByRole('button', { name: 'Accept', exact: true })).t
   await page.mouse.wheel(0, -800);
   await page.waitForTimeout(6000);
   await page.screenshot({ path: 'test-results/screenshot.png' });
-  const legend = page.locator('#overlay-legend');
+  const mapButton = page.locator('#map-button');
+  const mapMenu = page.locator('#map-menu');
+  const ramp = page.locator('#map-ramp');
+  await expect(mapButton).toHaveText('Map: Off ▾');
   await page.keyboard.press('o');
-  await expect(legend).toContainText('Appeal');
+  await expect(mapButton).toHaveText('Map: Appeal ▾');
+  await expect(ramp).toContainText('+20');
   await page.screenshot({ path: 'test-results/appeal.png' });
-  const mapModes = page.locator('#map-modes');
-  await expect(mapModes.getByRole('button')).toHaveCount(11);
-  for (const [mode, title] of [
-    ['Water', 'Water access'],
-    ['Food', 'Food in houses'],
-    ['Supply', 'Fleece and oil in houses'],
-    ['Culture', 'Culture points'],
-    ['Fire', 'Fire risk'],
-    ['Collapse', 'Collapse risk'],
-    ['Tax', 'Tax collection'],
-    ['Houses', 'House level'],
-    ['Guilds', "Traders' Guild sites"],
-    ['Staff', 'Staffing'],
-  ]) {
-    await mapModes.getByRole('button', { name: mode, exact: true }).click();
-    await expect(legend).toContainText(title);
-  }
-  await mapModes.getByRole('button', { name: 'Guilds', exact: true }).click();
-  await expect(legend).toContainText('Within 4 tiles of the Main Road');
+  await mapButton.click();
+  await expect(mapMenu.getByRole('button')).toHaveText(['Off', 'Water', 'Food', 'Supply', 'Culture', 'Appeal', 'Risk', 'Tax', 'Staff', 'Guilds']);
+  await mapMenu.getByRole('button', { name: 'Guilds', exact: true }).click();
+  await expect(mapMenu).toBeHidden();
+  await expect(ramp).toContainText('Within 4 tiles of the Main Road');
   await page.screenshot({ path: 'test-results/guild-sites.png' });
-  await mapModes.getByRole('button', { name: 'Staff', exact: true }).click();
-  await page.screenshot({ path: 'test-results/staffing.png' });
-  await mapModes.getByRole('button', { name: 'Staff', exact: true }).click();
-  await expect(legend).toBeHidden();
+  for (const mode of ['Water', 'Culture', 'Risk', 'Staff']) {
+    await mapButton.click();
+    await mapMenu.getByRole('button', { name: mode, exact: true }).click();
+    await expect(mapButton).toHaveText(`Map: ${mode} ▾`);
+    await expect(ramp).toBeHidden();
+    await page.screenshot({ path: `test-results/map-${mode.toLowerCase()}.png` });
+  }
+  await page.mouse.move(centre.x, centre.y);
+  await page.mouse.wheel(0, 800);
+  await page.waitForTimeout(500);
+  const fountain = await tileOnScreen(page, 18, 48);
+  await page.mouse.move(fountain.x, fountain.y);
+  await expect(page.locator('#map-tooltip')).toContainText('Workers');
+  await mapButton.click();
+  await mapMenu.getByRole('button', { name: 'Water', exact: true }).click();
+  const housePosition = await tileOnScreen(page, 9, 51);
+  await page.mouse.move(housePosition.x, housePosition.y);
+  await expect(page.locator('#map-tooltip')).toContainText(/water/i);
   await page.keyboard.press('o');
-  await expect(legend).toContainText('Staffing');
+  await expect(mapButton).toHaveText('Map: Off ▾');
+  await expect(page.locator('#map-tooltip')).toBeHidden();
   await page.keyboard.press('o');
-  await expect(legend).toBeHidden();
+  await expect(mapButton).toHaveText('Map: Water ▾');
+  await page.keyboard.press('o');
   await page.keyboard.press('c');
   await expect(charters).toContainText(/Well fed: \d+ \/ 24 months/);
   await page.screenshot({ path: 'test-results/charters.png' });

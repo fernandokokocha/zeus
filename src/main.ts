@@ -3,6 +3,7 @@ import './style.css';
 import { attachCameraControls } from './render/camera-controls';
 import { createGhostLayer } from './render/ghost-layer';
 import { createHighlightLayer } from './render/highlight-layer';
+import { createColumnLayer } from './render/column-layer';
 import { createOverlayLayer } from './render/overlay-layer';
 import { createTerrainLayer } from './render/terrain-layer';
 import { createView, resizeView } from './render/view';
@@ -38,6 +39,8 @@ const walkers = createWalkerLayer();
 view.scene.add(walkers.group);
 const overlay = createOverlayLayer(state.size);
 view.scene.add(overlay.mesh);
+const columns = createColumnLayer(state.size);
+view.scene.add(columns.group);
 const ghost = createGhostLayer(state.size);
 view.scene.add(ghost.mesh);
 const highlight = createHighlightLayer(state.size);
@@ -46,7 +49,7 @@ view.scene.add(highlight.mesh);
 const controls = attachCameraControls(view, state.size);
 const topbar = createTopbar(state);
 const inspector = createInspector(state, highlight);
-const mapModes = createMapModes();
+const mapModes = createMapModes(state, view);
 const charters = createCharters(state);
 const notices = createNotices(state, (at) => controls.focus(at));
 const input = attachToolInput({
@@ -78,9 +81,12 @@ function frame(now: number): void {
 
   terrain.sync(state);
   world.sync(state);
+  world.style(state, mapModes.shown());
   world.animate(now / 1000);
   walkers.sync(state, state.speed > 0 ? pendingTicks : 0);
   overlay.sync(state, mapModes.shown());
+  columns.sync(state, mapModes.shown());
+  mapModes.update();
   topbar.update();
   notices.update(now / 1000);
   charters.update();
