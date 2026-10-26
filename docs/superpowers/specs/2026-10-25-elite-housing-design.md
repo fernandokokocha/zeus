@@ -53,24 +53,27 @@ first version.
 The pre-built entry road becomes the **Main Road**, a long, generated road that is the
 spine of the city and the future route of traders.
 
-- It enters at the middle of the west edge, where settlers arrive now, and runs east until
-  it reaches the coast. The map's east side is sea, so the road ends at the shore. That
-  shore is where a later harbour would go.
-- **Shape:** long straight runs joined by right-angle turns, never a staircase. A staircase
-  leaves no straight edge for a 4×4 to sit along. A straight line is boring. Specifically:
-  - It alternates horizontal and vertical runs. There are 3–5 horizontal runs, and the
-    vertical runs between them wander up and down.
+- It enters at the middle of the west edge, where settlers arrive now, and runs east. How
+  far is up to the seed, on a spectrum: some maps end it inland after about 25 tiles,
+  some far east, and about a third reach the coast. Its length sets how many guild sites
+  the map has. Only a road that reaches the shore leaves room for a later harbour.
+- **Shape:** long straight runs joined by right-angle turns. A tight staircase leaves no
+  straight edge for a 4×4 to sit along, and a straight line is boring. Specifically:
+  - It alternates horizontal and vertical runs: 2–3 horizontal runs, eastward.
+  - The vertical runs all go the same way, up or down, chosen per map. It never doubles
+    back, so it doesn't snake like a river.
   - **Every run is at least 12 tiles long**, room for two 4×4 blocks side by side.
   - The whole road stays within the middle half of the map's height.
 - **Robust on every seed.** The road is laid out first, and its tiles are then forced to
   grass over whatever terrain was generated (the entry road works this way now). Turns
-  happen far enough west that the final run still reaches the coast at 12 or more tiles.
-  A test generates 100 seeds and checks that the road:
+  happen far enough west that the final run is 12 or more tiles, whether it ends inland or
+  at the coast. A test generates 100 seeds and checks that the road:
   - starts at the west edge;
-  - reaches the water;
-  - never crosses itself;
+  - reaches the water or ends inland short of it;
+  - never crosses itself and never doubles back;
   - has every run at 12 tiles or longer;
-  - leaves room for at least 8 placements of a 4×4 within guild range.
+  - leaves room for at least 8 placements of a 4×4 within guild range;
+  - reaches the coast on some seeds and ends inland at varied lengths on others.
 - **It can't be demolished,** and it is drawn differently from ordinary roads (paved
   stone).
 - Ordinary roads connect to it as usual. Settlers still walk in along it.
@@ -216,13 +219,16 @@ These guide how the elites are built so they stay alike. None of them is schedul
   hosting games or contests.
 - **Priests' House.** Needs high appeal and a sanctuary nearby. Its bonus works through
   the gods.
-- **Sailors' Harbour.** Builds on the Main Road ending at the shore: sea trade.
+- **Sailors' Harbour.** Builds where the Main Road reaches the shore: sea trade, only on
+  maps whose road gets there.
 
 ## Decisions taken without the owner
 
 These are calls made while writing this down. Slice sessions treat them as decided:
 
-- The Main Road ends at the coast rather than the east edge, because the east edge is sea.
+- The Main Road never runs past the coast, because the east edge is sea.
+- At most 3 horizontal runs: with every vertical run going the same way and the road
+  inside the middle half of the map, there is room for only two 12-tile vertical runs.
 - Every completed Well fed streak grants a permit, and the counter restarts. A permit is
   lost when its guild demotes.
 - "Within 4 tiles" means the guild's nearest tile.
