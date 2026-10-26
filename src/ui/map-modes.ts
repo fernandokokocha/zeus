@@ -20,6 +20,19 @@ export const OVERLAY_NAMES: Record<Overlay, string> = {
 
 const TOOLTIP_OFFSET = 16;
 
+function mapLabel(overlay: Overlay | null): string {
+  return `Map: ${overlay ? OVERLAY_NAMES[overlay] : 'Off'} ▾`;
+}
+
+function widestLabel(button: HTMLElement, overlays: (Overlay | null)[]): number {
+  return Math.max(
+    ...overlays.map((overlay) => {
+      button.textContent = mapLabel(overlay);
+      return button.getBoundingClientRect().width;
+    }),
+  );
+}
+
 export function createMapModes(state: GameState, view: View): { shown(): Overlay | null; update(): void } {
   const button = byId('map-button');
   const menu = byId('map-menu');
@@ -43,7 +56,7 @@ export function createMapModes(state: GameState, view: View): { shown(): Overlay
   function show(overlay: Overlay | null): void {
     shown = overlay;
     if (overlay) lastShown = overlay;
-    button.textContent = `Map: ${overlay ? OVERLAY_NAMES[overlay] : 'Off'} ▾`;
+    button.textContent = mapLabel(overlay);
     for (const { choice, overlay: own } of choices) choice.classList.toggle('active', own === overlay);
     showRamp(overlay);
     updateTooltip();
@@ -101,6 +114,7 @@ export function createMapModes(state: GameState, view: View): { shown(): Overlay
     if (e.key === 'Escape') menu.hidden = true;
     if (e.key.toLowerCase() === 'o' && !e.repeat) show(shown ? null : lastShown);
   });
+  button.style.width = `${widestLabel(button, choices.map(({ overlay }) => overlay))}px`;
   show(null);
   return { shown: () => shown, update: updateTooltip };
 }

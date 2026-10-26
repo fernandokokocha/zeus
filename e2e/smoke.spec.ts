@@ -154,6 +154,7 @@ await expect(fleeceOrder.getByRole('button', { name: 'Accept', exact: true })).t
   const mapMenu = page.locator('#map-menu');
   const ramp = page.locator('#map-ramp');
   await expect(mapButton).toHaveText('Map: Off ▾');
+  const offWidth = (await mapButton.boundingBox())!.width;
   await page.keyboard.press('o');
   await expect(mapButton).toHaveText('Map: Appeal ▾');
   await expect(ramp).toContainText('+20');
@@ -169,6 +170,7 @@ await expect(fleeceOrder.getByRole('button', { name: 'Accept', exact: true })).t
     await mapMenu.getByRole('button', { name: mode, exact: true }).click();
     await expect(mapButton).toHaveText(`Map: ${mode} ▾`);
     await expect(ramp).toBeHidden();
+    expect((await mapButton.boundingBox())!.width).toBe(offWidth);
     await page.screenshot({ path: `test-results/map-${mode.toLowerCase()}.png` });
   }
   await page.mouse.move(centre.x, centre.y);
