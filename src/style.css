@@ -365,3 +365,131 @@ button.active {
   margin: 6px 0 0;
   font-weight: bold;
 }
+
+#inspector-storehouse {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+}
+
+#inspector-storehouse[hidden] {
+  display: none;
+}
+
+.good-icon {
+  display: inline-flex;
+  width: 20px;
+  height: 20px;
+}
+
+.good-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.shelf-bays,
+.shelf-icons {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.shelf-bay {
+  height: 52px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 2px;
+  padding: 2px;
+  border: 1.5px solid #b9a88a;
+  border-bottom: 0;
+  border-radius: 2px 2px 0 0;
+}
+
+.shelf-bay-empty {
+  border-style: dashed;
+  border-color: #8a7a62;
+}
+
+.shelf-bay-refused {
+  border-style: dashed;
+  border-color: #b8382a;
+}
+
+.shelf-crate {
+  height: 10px;
+  border: 1px solid var(--ink);
+  border-radius: 1px;
+}
+
+.shelf-plank {
+  height: 6px;
+  background: #8a5a32;
+  border: 1px solid var(--ink);
+  border-radius: 1px;
+}
+
+.shelf-icons {
+  justify-items: center;
+  padding-top: 4px;
+  min-height: 20px;
+}
+
+.store-summary {
+  display: flex;
+  justify-content: space-between;
+}
+
+.orders-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-top: 1px solid #c9b48f;
+  padding-top: 6px;
+}
+
+.orders-head b {
+  flex-grow: 1;
+}
+
+.orders-head button {
+  font-size: 12px;
+  padding: 2px 8px;
+}
+
+.order {
+  display: grid;
+  grid-template-columns: 22px 1fr auto;
+  column-gap: 8px;
+  align-items: center;
+}
+
+.order-switch {
+  display: flex;
+  border: 1px solid var(--ink);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.order-switch button {
+  font-size: 11px;
+  padding: 2px 8px;
+  border: 0;
+  border-radius: 0;
+}
+
+.order-switch button + button {
+  border-left: 1px solid var(--ink);
+}
+
+.order-switch .order-accepted {
+  background: #4f6f2f;
+  color: #ffffff;
+}
+
+.order-switch .order-refused {
+  background: #a3301f;
+  color: #ffffff;
+}

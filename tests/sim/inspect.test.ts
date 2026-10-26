@@ -7,7 +7,8 @@ import { SHEARING_REST_TICKS, sheepTile } from '../../src/sim/sheep';
 import { TICKS_PER_MONTH } from '../../src/sim/clock';
 import { ROAMER_REST_TICKS } from '../../src/sim/roamers';
 import { tileIndex, type Building, type GameState } from '../../src/sim/state';
-import { describeTile, inspectTile, type Meter } from '../../src/sim/inspect';
+import { describeTile, inspectTile, type Meter, type StorehouseView } from '../../src/sim/inspect';
+import { setGoodAccepted, STOREHOUSE_CAPACITY } from '../../src/sim/storehouse';
 import { FIRE_BURN_TICKS, RISK_LIMIT, catchFire } from '../../src/sim/safety';
 import { SETTLER_SPAWN_INTERVAL_TICKS } from '../../src/sim/settlers';
 import { walkerTile } from '../../src/sim/walking';
@@ -19,6 +20,14 @@ function meter(game: GameState, x: number, y: number, label: string): Meter {
   if (!found) throw new Error(`No ${label} meter at ${x}, ${y}`);
   return found;
 }
+
+function storehouseAt(game: GameState, x: number, y: number): StorehouseView {
+  const found = describeTile(game, x, y).storehouse;
+  if (!found) throw new Error(`No storehouse at ${x}, ${y}`);
+  return found;
+}
+
+const EMPTY_BAY = { good: null, loads: 0, refused: false };
 
 describe('describeTile', () => {
   it('describes buildable terrain', () => {
@@ -471,27 +480,37 @@ describe('describeTile for fleece', () => {
     expect(meter(game, 2, 13, 'Fleece')).toEqual({ label: 'Fleece', fill: 0, value: 'None', need: null });
   });
 
-  it('describes a storehouse by its fleece and slots', () => {
-    const { game } = street();
-    placeBuilding(game, 'storehouse', 10, 12);
-    const storehouse = lastBuilding(game);
-    runTicks(game, 1);
-    expect(describeTile(game, 11, 13).lines).toEqual(['Tile 10, 12', 'Workers 12/12', 'Fire risk 0%']);
-    expect(describeTile(game, 11, 13).meters).toEqual([
-      { label: 'Slots', fill: 0, value: '0 of 8 slots of 4 loads', need: null },
-      { label: 'Fleece', fill: 0, value: 'None', need: null },
-      { label: 'Olives', fill: 0, value: 'None', need: null },
-      { label: 'Oil', fill: 0, value: 'None', need: null },
-      { label: 'Wood', fill: 0, value: 'None', need: null },
-      { label: 'Marble', fill: 0, value: 'None', need: null },
-      { label: 'Bronze', fill: 0, value: 'None', need: null },
-      { label: 'Sculptures', fill: 0, value: 'None', need: null },
-      { label: 'Cloth', fill: 0, value: 'None', need: null },
-    ]);
-    storehouse.fleece = 600;
-    expect(meter(game, 11, 13, 'Slots')).toMatchObject({ fill: 2 / 8, value: '2 of 8 slots of 4 loads' });
-    expect(meter(game, 11, 13, 'Fleece')).toEqual({ label: 'Fleece', fill: 600 / 3200, value: '6 loads in 2 slots', need: null });
+it('describes a storehouse by its shelf of 8 bays and its orders', () => {
+  const { game } = street();
+  placeBuilding(game, 'storehouse', 10, 12);
+  const storehouse = lastBuilding(game);
+  runTicks(game, 1);
+  const empty = describeTile(game, 11, 13);
+  expect(empty.lines).toEqual(['Tile 10, 12', 'Workers 12/12', 'Fire risk 0%']);
+  expect(empty.meters).toEqual([]);
+  expect(empty.storehouse).toEqual({
+    id: storehouse.id,
+    bays: Array(8).fill(EMPTY_BAY),
+    loads: '0 of 32 loads',
+    free: '8 slots free',
+    orders: [
+      { good: 'fleece', name: 'Fleece', accepted: true },
+      { good: 'olives', name: 'Olives', accepted: true },
+      { good: 'oil', name: 'Oil', accepted: true },
+      { good: 'wood', name: 'Wood', accepted: true },
+      { good: 'marble', name: 'Marble', accepted: true },
+      { good: 'bronze', name: 'Bronze', accepted: true },
+      { good: 'sculptures', name: 'Sculptures', accepted: true },
+      { good: 'cloth', name: 'Cloth', accepted: true },
+    ],
   });
+  storehouse.fleece = 600;
+  expect(storehouseAt(game, 11, 13)).toMatchObject({
+    bays: [{ good: 'fleece', loads: 4, refused: false }, { good: 'fleece', loads: 2, refused: false }, ...Array(6).fill(EMPTY_BAY)],
+    loads: '6 of 32 loads',
+    free: '6 slots free',
+  });
+});
 
   it('describes a carding shed, its shepherd and its cart', () => {
     const { game } = street();
@@ -644,15 +663,35 @@ describe('describeTile for olive oil', () => {
     );
   });
 
-  it('describes a storehouse by each good it holds', () => {
-    const { game } = street();
-    placeBuilding(game, 'storehouse', 10, 12);
-    Object.assign(lastBuilding(game), { fleece: 600, oil: 100 });
-    runTicks(game, 1);
-    expect(meter(game, 11, 13, 'Slots').value).toBe('3 of 8 slots of 4 loads');
-    expect(meter(game, 11, 13, 'Fleece').value).toBe('6 loads in 2 slots');
-    expect(meter(game, 11, 13, 'Oil').value).toBe('1 load in 1 slot');
-  });
+it('describes a storehouse by each good it holds and the goods it refuses', () => {
+  const { game } = street();
+  placeBuilding(game, 'storehouse', 10, 12);
+  const storehouse = lastBuilding(game);
+  Object.assign(storehouse, { fleece: 600, oil: 150 });
+  setGoodAccepted(storehouse, 'fleece', false);
+  setGoodAccepted(storehouse, 'sculptures', false);
+  runTicks(game, 1);
+  const view = storehouseAt(game, 11, 13);
+  expect(view.bays.slice(0, 4)).toEqual([
+    { good: 'fleece', loads: 4, refused: true },
+    { good: 'fleece', loads: 2, refused: true },
+    { good: 'oil', loads: 1, refused: false },
+    EMPTY_BAY,
+  ]);
+  expect(view.loads).toBe('7.5 of 32 loads');
+  expect(view.free).toBe('5 slots free');
+  expect(view.orders.filter((o) => !o.accepted).map((o) => o.good)).toEqual(['fleece', 'sculptures']);
+});
+
+it('counts down the free slots of a storehouse to full', () => {
+  const { game } = street();
+  placeBuilding(game, 'storehouse', 10, 12);
+  const storehouse = lastBuilding(game);
+  storehouse.wood = STOREHOUSE_CAPACITY - 400;
+  expect(storehouseAt(game, 11, 13).free).toBe('1 slot free');
+  storehouse.wood = STOREHOUSE_CAPACITY;
+  expect(storehouseAt(game, 11, 13).free).toBe('Full');
+});
 
 it('describes olives in a storehouse and a press buyer fetching them', () => {
   const { game } = street();
@@ -660,7 +699,7 @@ it('describes olives in a storehouse and a press buyer fetching them', () => {
   lastBuilding(game).olives = 800;
   placeBuilding(game, 'olivePress', 20, 13);
   runTicks(game, 1);
-  expect(meter(game, 11, 13, 'Olives').value).toBe('8 loads in 2 slots');
+  expect(storehouseAt(game, 11, 13).bays.slice(0, 2)).toEqual([{ good: 'olives', loads: 4, refused: false }, { good: 'olives', loads: 4, refused: false }]);
   expect(describeTile(game, 20, 13).lines).toContain('Buyer out fetching olives');
 });
 
@@ -697,7 +736,7 @@ it('describes olives in a storehouse and a press buyer fetching them', () => {
     placeBuilding(game, 'weaver', 20, 13);
     lastBuilding(game).cloth = 400;
     runTicks(game, 1);
-    expect(meter(game, 11, 13, 'Cloth').value).toBe('5 loads in 2 slots');
+    expect(storehouseAt(game, 11, 13).bays.slice(0, 2)).toEqual([{ good: 'cloth', loads: 4, refused: false }, { good: 'cloth', loads: 1, refused: false }]);
     expect(describeTile(game, 20, 13).lines).toContain('Cart Pusher out with a load');
     const cart = game.carriers.find((c) => c.kind === 'clothCart')!;
     const { x, y } = walkerTile(cart);

@@ -8,7 +8,7 @@ import { STUDIO_BRONZE_CAPACITY } from './materials';
 import { FLEECE_KEPT_FOR_VENDORS, WEAVER_FLEECE_CAPACITY } from './cloth';
 import { PRESS_OLIVE_CAPACITY } from './olives';
 import { SANCTUARIES, isSanctuary, stillNeeded, type Sanctuary } from './sanctuaries';
-import { storehouseSpace } from './storehouse';
+import { acceptsGood, storehouseSpace } from './storehouse';
 import { NO_BUILDING, buildingById, type Building, type Carrier, type CarrierKind, type GameState, type Good } from './state';
 import { isRoad, walkPath } from './walking';
 
@@ -72,6 +72,7 @@ export function carrierKindsSentBy(type: BuildingType): CarrierKind[] {
 }
 
 function storeSpace(store: Building, stock: Record<Good, number>, good: Good): number {
+  if (!acceptsGood(store, good)) return 0;
   return STORE_SPACE[store.type as Store](stock, good);
 }
 

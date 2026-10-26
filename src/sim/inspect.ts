@@ -42,7 +42,7 @@ import type { Point } from './point';
 import { canBurn, canCollapse, isBurning, riskShare } from './safety';
 import { canSettlersReach } from './settlers';
 import { SHEARING_RANGE, SHED_CAPACITY, hasFullFleece, sheepTile, sheepToShear, shepherdAfter } from './sheep';
-import { STOREHOUSE_CAPACITY, STOREHOUSE_GOODS, STOREHOUSE_SLOTS, SLOT_SIZE, slotsOf, slotsUsed } from './storehouse';
+import { STOREHOUSE_CAPACITY, STOREHOUSE_GOODS, STOREHOUSE_SLOTS, acceptsGood, baysOf, slotsUsed, type StoredGood } from './storehouse';
 import {
   NO_BUILDING,
   buildingById,
@@ -74,10 +74,31 @@ export interface Meter {
   need: Need | null;
 }
 
+export interface StorehouseBay {
+  good: StoredGood | null;
+  loads: number;
+  refused: boolean;
+}
+
+export interface StorehouseOrder {
+  good: StoredGood;
+  name: string;
+  accepted: boolean;
+}
+
+export interface StorehouseView {
+  id: number;
+  bays: StorehouseBay[];
+  loads: string;
+  free: string;
+  orders: StorehouseOrder[];
+}
+
 export interface Description {
   title: string;
   meters: Meter[];
   lines: string[];
+  storehouse?: StorehouseView;
 }
 
 export interface Inspection {
@@ -314,7 +335,8 @@ function settlementStatus(state: GameState, lot: Building): string {
 function describeWorkplace(state: GameState, building: Building): Description {
   const spec = BUILDING_SPECS[building.type];
   const lines = [`Tile ${building.x}, ${building.y}`];
-  const description = { title: spec.name, meters: storageMeters(state, building), lines };
+  const description: Description = { title: spec.name, meters: storageMeters(state, building), lines };
+  if (building.type === 'storehouse') description.storehouse = storehouseView(building);
   if (!spec.needsRoad) {
     lines.push(`Appeal ${spec.appeal.join(', ')} by distance`, ...stockLines(state, building));
     return description;
@@ -348,11 +370,6 @@ function storageMeters(state: GameState, building: Building): Meter[] {
       return agoraVendors(state, building).map((vendor) => vendorMeter(vendor, BUILDING_SPECS[vendor.type].name));
     case 'granary':
       return [{ label: 'Wheat', fill: building.food / GRANARY_CAPACITY, value: `${amount(building.food / UNITS_PER_LOAD)} of ${GRANARY_CAPACITY / UNITS_PER_LOAD} loads`, need: null }];
-    case 'storehouse': {
-      const used = slotsUsed(building);
-      const slots: Meter = { label: 'Slots', fill: used / STOREHOUSE_SLOTS, value: `${used} of ${STOREHOUSE_SLOTS} slots of ${loads(SLOT_SIZE)}`, need: null };
-      return [slots, ...STOREHOUSE_GOODS.map((good) => storedGoodMeter(building, good))];
-    }
     default:
       return [];
   }
@@ -363,12 +380,23 @@ function vendorMeter(vendor: Building, label: string): Meter {
   return { label, fill: stock / VENDOR_CAPACITY, value: `${amount(stock / UNITS_PER_LOAD)} of ${VENDOR_CAPACITY / UNITS_PER_LOAD} loads`, need: null };
 }
 
-function storedGoodMeter(storehouse: Building, good: Good): Meter {
-  const label = capitalized(GOOD_NAMES[good]);
-  const stock = storehouse[good];
-  if (stock <= 0) return { label, fill: 0, value: 'None', need: null };
-  const slots = slotsOf(storehouse, good);
-  return { label, fill: stock / STOREHOUSE_CAPACITY, value: `${loads(stock)} in ${slots} ${slots === 1 ? 'slot' : 'slots'}`, need: null };
+const EMPTY_BAY: StorehouseBay = { good: null, loads: 0, refused: false };
+
+function storehouseView(storehouse: Building): StorehouseView {
+  const filled = baysOf(storehouse).map(({ good, loads }) => ({ good, loads, refused: !acceptsGood(storehouse, good) }));
+  const stored = STOREHOUSE_GOODS.reduce((sum, good) => sum + storehouse[good], 0);
+  return {
+    id: storehouse.id,
+    bays: [...filled, ...Array<StorehouseBay>(STOREHOUSE_SLOTS - filled.length).fill(EMPTY_BAY)],
+    loads: `${amount(stored / UNITS_PER_LOAD)} of ${STOREHOUSE_CAPACITY / UNITS_PER_LOAD} loads`,
+    free: freeSlots(STOREHOUSE_SLOTS - slotsUsed(storehouse)),
+    orders: STOREHOUSE_GOODS.map((good) => ({ good, name: capitalized(GOOD_NAMES[good]), accepted: acceptsGood(storehouse, good) })),
+  };
+}
+
+function freeSlots(count: number): string {
+  if (count === 0) return 'Full';
+  return `${count} ${count === 1 ? 'slot' : 'slots'} free`;
 }
 
 function stockLines(state: GameState, building: Building): string[] {

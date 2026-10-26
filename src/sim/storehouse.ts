@@ -1,5 +1,5 @@
 import { UNITS_PER_LOAD } from './food';
-import type { Good } from './state';
+import type { Building, Good } from './state';
 
 export const STOREHOUSE_SLOTS = 8;
 export const LOADS_PER_SLOT = 4;
@@ -31,4 +31,17 @@ export function baysOf(stock: Record<Good, number>): Bay[] {
 export function storehouseSpace(stock: Record<Good, number>, good: Good): number {
   const freeSlots = STOREHOUSE_SLOTS - slotsUsed(stock);
   return freeSlots * SLOT_SIZE + slotsOf(stock, good) * SLOT_SIZE - stock[good];
+}
+
+export function acceptsGood(store: Building, good: Good): boolean {
+  return !store.refused.includes(good);
+}
+
+export function setGoodAccepted(storehouse: Building, good: StoredGood, accepted: boolean): void {
+  const others = storehouse.refused.filter((g) => g !== good);
+  storehouse.refused = accepted ? others : [...others, good];
+}
+
+export function setAllAccepted(storehouse: Building, accepted: boolean): void {
+  storehouse.refused = accepted ? [] : [...STOREHOUSE_GOODS];
 }

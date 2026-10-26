@@ -2,7 +2,16 @@ import { describe, expect, it } from 'vitest';
 import { demolish, placeBuilding, placeRoad } from '../../src/sim/commands';
 import { BUYER_LOAD, VENDOR_CAPACITY } from '../../src/sim/food';
 import type { Building, GameState } from '../../src/sim/state';
-import { STOREHOUSE_CAPACITY, STOREHOUSE_SLOTS, SLOT_SIZE, slotsUsed } from '../../src/sim/storehouse';
+import {
+  STOREHOUSE_CAPACITY,
+  STOREHOUSE_GOODS,
+  STOREHOUSE_SLOTS,
+  SLOT_SIZE,
+  acceptsGood,
+  setAllAccepted,
+  setGoodAccepted,
+  slotsUsed,
+} from '../../src/sim/storehouse';
 import { tick } from '../../src/sim/tick';
 import { WALKER_TILES_PER_TICK } from '../../src/sim/walking';
 import { grassGame, placeHouse, runTicks } from './helpers';
@@ -318,5 +327,65 @@ describe('materials in the storehouse', () => {
     expect(game.carriers[0]).toMatchObject({ kind: 'sculptureCart', destinationId: storehouse.id, sculptures: 100 });
     for (let i = 0; i < 900 && storehouse.sculptures === 0; i++) tick(game);
     expect(storehouse.sculptures).toBe(100);
+  });
+});
+
+describe("a storehouse's orders", () => {
+  it('accept every good when it is built', () => {
+    const { storehouse } = woolTown();
+    expect(STOREHOUSE_GOODS.filter((good) => !acceptsGood(storehouse, good))).toEqual([]);
+  });
+
+  it('send a refused good on to the next storehouse', () => {
+    const { game, shed, storehouse } = woolTown();
+    placeBuilding(game, 'storehouse', 20, 12);
+    const farther = game.buildings[game.buildings.length - 1];
+    setGoodAccepted(storehouse, 'fleece', false);
+    shed.fleece = 100;
+    tick(game);
+    expect(game.carriers[0]).toMatchObject({ kind: 'fleeceCart', destinationId: farther.id });
+  });
+
+  it('keep a cart home while no storehouse accepts its good', () => {
+    const { game, shed, storehouse } = woolTown();
+    setGoodAccepted(storehouse, 'fleece', false);
+    shed.fleece = 100;
+    runTicks(game, 10);
+    expect(game.carriers).toEqual([]);
+    setGoodAccepted(storehouse, 'fleece', true);
+    tick(game);
+    expect(game.carriers[0]).toMatchObject({ kind: 'fleeceCart', destinationId: storehouse.id });
+  });
+
+  it('take nothing from a cart already on its way when the good is refused', () => {
+    const { game, shed, storehouse } = woolTown();
+    shed.fleece = 100;
+    tick(game);
+    setGoodAccepted(storehouse, 'fleece', false);
+    runTicks(game, ticksToWalk(8));
+    expect(storehouse.fleece).toBe(0);
+    expect(game.carriers[0]).toMatchObject({ returning: true, fleece: 100 });
+  });
+
+  it('keep a refused good inside until buyers take it', () => {
+    const { game, storehouse } = woolTown();
+    placeBuilding(game, 'agora', 0, 16);
+    placeBuilding(game, 'fleeceVendor', 0, 18);
+    const vendor = game.buildings[game.buildings.length - 1];
+    storehouse.fleece = 1000;
+    setGoodAccepted(storehouse, 'fleece', false);
+    for (let i = 0; i < 300 && vendor.fleece === 0; i++) tick(game);
+    expect(vendor.fleece).toBe(BUYER_LOAD);
+    expect(storehouse.fleece).toBe(1000 - BUYER_LOAD);
+  });
+
+  it('refuse every good at once, then accept them all again', () => {
+    const { storehouse } = woolTown();
+    setAllAccepted(storehouse, false);
+    expect(STOREHOUSE_GOODS.filter((good) => acceptsGood(storehouse, good))).toEqual([]);
+    setGoodAccepted(storehouse, 'fleece', true);
+    expect(STOREHOUSE_GOODS.filter((good) => acceptsGood(storehouse, good))).toEqual(['fleece']);
+    setAllAccepted(storehouse, true);
+    expect(STOREHOUSE_GOODS.filter((good) => !acceptsGood(storehouse, good))).toEqual([]);
   });
 });

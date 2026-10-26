@@ -39,6 +39,7 @@ export interface Building {
   bronze: number;
   sculptures: number;
   cloth: number;
+  refused: Good[];
   growth: number;
   production: number;
   performingUntil: number;

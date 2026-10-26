@@ -131,8 +131,13 @@ test('boots, builds a street with services, food, culture, fleece, oil, cloth, a
   await expect(inspector).not.toHaveText(paused, { timeout: 20_000 });
   await inspector.screenshot({ path: 'test-results/inspector-house.png' });
   await inspect([27, 47]);
-  await expect(inspector.locator('.meter')).toHaveCount(9);
-  await inspector.screenshot({ path: 'test-results/inspector-storehouse.png' });
+await expect(inspector.locator('.shelf-bay')).toHaveCount(8);
+const fleeceOrder = inspector.locator('.order', { hasText: 'Fleece' });
+await fleeceOrder.getByRole('button', { name: 'Refuse' }).click();
+await expect(fleeceOrder.getByRole('button', { name: 'Refuse' })).toHaveAttribute('aria-pressed', 'true');
+await inspector.screenshot({ path: 'test-results/inspector-storehouse.png' });
+await inspector.getByRole('button', { name: 'Accept all' }).click();
+await expect(fleeceOrder.getByRole('button', { name: 'Accept', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await page.screenshot({ path: 'test-results/inspected-storehouse.png' });
   await inspect([17, 51]);
   await expect(inspector.locator('.meter')).toHaveCount(1);

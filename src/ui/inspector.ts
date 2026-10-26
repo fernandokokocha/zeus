@@ -1,8 +1,10 @@
 import { pauseForInspection, resumeAfterInspection } from '../sim/clock';
 import type { Description, Inspection, Meter } from '../sim/inspect';
 import type { Point } from '../sim/point';
-import type { GameState } from '../sim/state';
+import { buildingById, type GameState } from '../sim/state';
+import { setAllAccepted, setGoodAccepted } from '../sim/storehouse';
 import { byId } from './dom';
+import { storehousePanel, type StorehouseOrders } from './storehouse-panel';
 
 export interface Inspector {
   open(look: () => Inspection): void;
@@ -16,6 +18,7 @@ export function createInspector(state: GameState, highlight: { show(tiles: Point
   const title = byId('inspector-title');
   const lines = byId('inspector-lines');
   const meters = byId('inspector-meters');
+  const storehouse = byId('inspector-storehouse');
   let look: (() => Inspection) | null = null;
   let shown = '';
 
@@ -32,6 +35,8 @@ export function createInspector(state: GameState, highlight: { show(tiles: Point
     lines.replaceChildren(...description.lines.map(lineItem));
     meters.replaceChildren(...description.meters.map(meterRow));
     meters.hidden = description.meters.length === 0;
+    storehouse.replaceChildren(...(description.storehouse ? storehousePanel(description.storehouse, ordersOf(state, description.storehouse.id)) : []));
+    storehouse.hidden = !description.storehouse;
   }
 
   function close(): void {
@@ -59,7 +64,20 @@ export function createInspector(state: GameState, highlight: { show(tiles: Point
   };
 }
 
-function lineItem(line: string): HTMLLIElement {
+function ordersOf(state: GameState, id: number): StorehouseOrders {
+  const storehouse = () => {
+    const found = buildingById(state, id);
+    if (!found) throw new Error(`Storehouse ${id} is gone`);
+    return found;
+  };
+  return {
+    accept: (good, accepted) => setGoodAccepted(storehouse(), good, accepted),
+    acceptAll: (accepted) => setAllAccepted(storehouse(), accepted),
+  };
+}
+
+function lineItem(
+line: string): HTMLLIElement {
   const item = document.createElement('li');
   item.textContent = line;
   return item;
