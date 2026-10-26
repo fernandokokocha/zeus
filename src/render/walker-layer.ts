@@ -5,16 +5,11 @@ import { ROAMER_SPECS } from '../sim/roamers';
 import { FULL_FLEECE } from '../sim/sheep';
 import { WALKER_TILES_PER_TICK, walkerPosition } from '../sim/walking';
 import { PALETTE } from './palette';
+import { FIGURE_SCALE, body, cart, jar, type Part } from './kit/walker';
 
 const BOB_HEIGHT = 0.06;
-const FIGURE_SCALE = 1.7;
 const BOB_STEPS_PER_TILE = 2;
 const START_CAPACITY = 64;
-
-interface Part {
-  geometry: THREE.BufferGeometry;
-  color: number;
-}
 
 type Figure =
   | 'settler'
@@ -40,18 +35,6 @@ const GATHERER_FIGURES: Record<Material, { empty: GathererFigure; laden: Gathere
 type SheepCoat = 'shornSheep' | 'halfGrownSheep' | 'woollySheep';
 
 const HALF_GROWN = 0.5;
-
-function body(tunic: number): Part[] {
-  return [
-    { geometry: new THREE.CylinderGeometry(0.06, 0.09, 0.26, 8).translate(0, 0.13, 0), color: tunic },
-    { geometry: new THREE.SphereGeometry(0.06, 10, 8).translate(0, 0.32, 0), color: PALETTE.skin },
-  ];
-}
-
-const jar = new THREE.LatheGeometry(
-  [[0, 0], [0.04, 0.01], [0.065, 0.06], [0.06, 0.11], [0.03, 0.15], [0.04, 0.17]].map(([r, y]) => new THREE.Vector2(r, y)),
-  10,
-);
 
 const philosopher: Part[] = [
   { geometry: new THREE.CylinderGeometry(0.06, 0.1, 0.28, 8).translate(0, 0.14, 0), color: PALETTE.philosopherRobe },
@@ -95,15 +78,6 @@ const oliveHeap = (x: number, y: number, z: number, size: number): Part => ({
   geometry: new THREE.SphereGeometry(0.06 * size, 8, 6).scale(1.2, 0.6, 1.2).translate(x, y, z),
   color: PALETTE.olive,
 });
-
-function cart(load: Part[]): Part[] {
-  return [
-    ...body(PALETTE.cartTunic),
-    { geometry: new THREE.BoxGeometry(0.2, 0.08, 0.24).translate(0, 0.1, 0.22), color: PALETTE.trunk },
-    { geometry: new THREE.CylinderGeometry(0.06, 0.06, 0.26, 10).rotateZ(Math.PI / 2).translate(0, 0.06, 0.24), color: PALETTE.doorway },
-    ...load,
-  ];
-}
 
 const logOnShoulder: Part = {
   geometry: new THREE.CylinderGeometry(0.035, 0.035, 0.34, 8).rotateX(Math.PI / 2).translate(0.07, 0.3, 0),
