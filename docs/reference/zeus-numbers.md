@@ -159,7 +159,10 @@ https://zeus.heavengames.com/gameinfo/gods/
   last one returns, at full staff.
 - Roadblock cost: **6 dr**.
 - Cart pusher load: **4 loads** (one granary slot). Buyer load: **4 loads**. Agora vendor stock: **8 loads**.
-- House food stock: a peddler fills a house to **3 months** of eating (Huts are filled as if they ate).
+- House food stock: a peddler fills a house to **5 months** of eating (Huts are filled as if they ate).
+  Raised from 3 after a playtest: the Well fed charter counts a house as hungry once its stock
+  is down to one meal, so 3 months left only 2 between peddler visits, and a peddler round on a
+  60-tile loop already takes up to 2.1.
 - Wheat grows all year in proportion to staffing; a full year at full staff gives the 8-load harvest.
 - Performance: a trainee (philosopher from a College, actor from a Drama School) keeps
   his Podium or Theater performing for **2 months**. Schools train one every **quarter

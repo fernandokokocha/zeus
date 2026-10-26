@@ -262,7 +262,7 @@ describe('describeTile for food and appeal', () => {
   it("shows how long a Shack's food lasts", () => {
     const { game, house } = street();
     Object.assign(house, { level: 'shack', residents: 16, food: 6 });
-    expect(meter(game, 2, 13, 'Food')).toEqual({ label: 'Food', fill: 6 / 12, value: '6 units (1.5 months)', need: 'met' });
+    expect(meter(game, 2, 13, 'Food')).toEqual({ label: 'Food', fill: 6 / 20, value: '6 units (1.5 months)', need: 'met' });
   });
 
   it('describes a farm, its crop and its cart', () => {

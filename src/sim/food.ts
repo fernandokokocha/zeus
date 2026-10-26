@@ -15,7 +15,6 @@ export const FOOD_PER_RESIDENT_PER_MONTH = 0.25;
 export const FLEECE_PER_HOUSE_PER_MONTH = 2;
 export const OIL_PER_HOUSE_PER_MONTH = 2;
 export const CLOTH_PER_GUILD_PER_MONTH = 8;
-export const HOUSE_STOCK_MONTHS = 3;
 
 export function wholeLoads(units: number): number {
   return Math.floor(units / UNITS_PER_LOAD) * UNITS_PER_LOAD;
@@ -49,6 +48,8 @@ const MONTHLY_NEED: Record<PeddledGood, (residence: Building) => number> = {
   cloth: (residence) => (residence.type === 'tradersGuild' ? CLOTH_PER_GUILD_PER_MONTH : 0),
 };
 
+const HOUSE_STOCK_MONTHS: Record<PeddledGood, number> = { food: 5, fleece: 3, oil: 3, cloth: 3 };
+
 const PEDDLED_GOODS = Object.keys(MONTHLY_NEED) as PeddledGood[];
 
 export function monthlyUse(residence: Building, good: PeddledGood): number {
@@ -62,7 +63,7 @@ export function eat(state: GameState): void {
 }
 
 export function houseStockTarget(house: Building, good: PeddledGood): number {
-  return MONTHLY_NEED[good](house) * HOUSE_STOCK_MONTHS;
+  return MONTHLY_NEED[good](house) * HOUSE_STOCK_MONTHS[good];
 }
 
 export function stockHouse(stall: Building, house: Building, good: PeddledGood): void {

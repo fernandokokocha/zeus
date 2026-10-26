@@ -251,7 +251,7 @@ describe('a peddler', () => {
     expect(game.roamers.map((r) => r.kind)).toEqual(['peddler']);
   });
 
-  it('fills the houses he passes with 3 months of food from his stall', () => {
+  it('fills the houses he passes with 5 months of food from his stall', () => {
     const { game, vendor } = market();
     const hut = fullHouse(game, 4, 8);
     const shack = fullHouse(game, 8, 8);
@@ -260,9 +260,9 @@ describe('a peddler', () => {
     shack.food = 2;
     vendor.food = 100;
     runTicks(game, ROAMER_REST_TICKS + ticksToWalk(10));
-    expect(hut.food).toBe(hut.residents * 0.25 * 3);
-    expect(shack.food).toBe(16 * 0.25 * 3);
-    expect(vendor.food).toBe(100 - hut.food - 10);
+    expect(hut.food).toBe(hut.residents * 0.25 * 5);
+    expect(shack.food).toBe(16 * 0.25 * 5);
+    expect(vendor.food).toBe(100 - hut.food - (shack.food - 2));
   });
 
   it('hands out no more than the stall holds', () => {
