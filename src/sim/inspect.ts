@@ -7,7 +7,7 @@ import { WEAVER_FLEECE_CAPACITY, WEAVING_TICKS, canWeave } from './cloth';
 import { adjacentRoadTiles, agoraAt, footprint } from './commands';
 import { hasWorkingPalace, houseTax } from './economy';
 import { GRANARY_CAPACITY, HARVEST_MONTH, UNITS_PER_LOAD, VENDOR_CAPACITY, houseStockTarget, monthlyUse } from './food';
-import { guildShortfalls } from './guild';
+import { guildShortfalls, guildSiteOf, siteShortfalls, type GuildSite } from './guild';
 import { type HouseLevel, type HouseNeed, type ResidentNeed, HOUSE_LEVELS, LEVEL_CHANGE_TICKS, TRADERS_GUILD, NEXT_LEVEL, PREVIOUS_LEVEL, houseCapacity, houseLevel, houseName, lacksCulture, missingNeeds } from './housing';
 import { ROAMER_SPECS, hasService, isGood, type RoamerSpec, roamerKindSentBy, serviceLeft } from './roamers';
 import { TRAINEE_SPECS, isPerforming, staffedVenues, traineeKindFor, traineeKindSentBy } from './schools';
@@ -197,9 +197,11 @@ const CARRIER_HOMES: Record<Carrier['kind'], string> = {
 
 function describeHouse(state: GameState, house: Building): Description {
   const lines = [`Tile ${house.x}, ${house.y}`, `Residents ${house.residents}/${houseCapacity(house)}`];
+  const site = guildSiteOf(state, house);
   const level = houseLevel(house);
   if (!level) {
     lines.push(settlementStatus(state, house));
+    if (site) lines.push(guildSiteStatus(site, house));
     return { title: houseName(house), meters: [], lines };
   }
   const appeal = houseAppeal(state, house);
@@ -207,7 +209,21 @@ function describeHouse(state: GameState, house: Building): Description {
   lines.push(`Appeal ${appeal}`, taxStatus(state, house));
   if (next) lines.push(nextLevelStatus(state, house, level, next, appeal));
   if (house.pendingLevel) lines.push(levelChangeStatus(house, level, house.pendingLevel));
+  if (site) lines.push(guildSiteStatus(site, house));
   return { title: houseName(house), meters: supplyMeters(state, house, next ?? level), lines };
+}
+
+function guildSiteStatus(site: GuildSite, house: Building): string {
+  const at = `${site.origin.x}, ${site.origin.y}`;
+  const shortfalls = siteShortfalls(site);
+  if (shortfalls.length === 0) return `Guild site at ${at}: a Traders' Guild can be placed now`;
+  const others = site.quarters.filter((q) => !(q.at.x === house.x && q.at.y === house.y) && !q.townhouse).length;
+  const missing: string[] = [];
+  if (houseLevel(house) !== 'townhouse') missing.push('not a Townhouse yet');
+  if (others > 0) missing.push(`${others === 3 ? 'the other' : `${others} of the other`} 3 houses not Townhouses`);
+  if (shortfalls.includes('permit')) missing.push('no permit');
+  if (shortfalls.includes('appeal')) missing.push(`appeal ${TRADERS_GUILD.appeal} (has ${site.appeal})`);
+  return `Possible guild site at ${at}: ${missing.join(', ')}`;
 }
 
 function describeGuild(state: GameState, guild: Building): Description {

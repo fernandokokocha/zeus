@@ -1,39 +1,155 @@
 import { appealMap, houseAppeal } from './appeal';
-import { BUILDING_SPECS, footprintDistance, type Placement } from './buildings';
+import { BUILDING_SPECS, type Placement } from './buildings';
 import { addBuilding, build, footprint, lotOrigins, removeBuildings } from './commands';
 import { culturePoints } from './culture';
 import { LEVEL_CHANGE_TICKS, TRADERS_GUILD, hasNeed, houseLevel } from './housing';
 import { postNotice } from './notices';
-import { NO_BUILDING, inBounds, tileIndex, type Building, type Coverage, type GameState, type PeddledGood } from './state';
+import type { Point } from './point';
+import { buildingById, inBounds, tileIndex, type Building, type Coverage, type GameState, type PeddledGood } from './state';
 
 const CARRIED_GOODS: PeddledGood[] = ['food', 'fleece', 'oil', 'cloth'];
 
+export interface GuildSite {
+  origin: Point;
+  quarters: { at: Point; house: boolean; townhouse: boolean }[];
+  nearMainRoad: boolean;
+  permit: boolean;
+  appeal: number;
+}
+
+export interface SiteSurroundings {
+  appeal: number[];
+  inRange: boolean[];
+}
+
+const BLOCK_QUARTERS: Point[] = [
+  { x: 0, y: 0 },
+  { x: 2, y: 0 },
+  { x: 0, y: 2 },
+  { x: 2, y: 2 },
+];
+
 export function guildObstacle(state: GameState, placement: Placement): string | null {
-  const tiles = footprint(placement);
-  if (tiles.some((p) => !inBounds(state, p.x, p.y))) return 'Outside the map';
-  if (!townhouseBlockUnder(state, placement)) return "A Traders' Guild goes over four Townhouses forming a 4×4 block";
-  if (!nearMainRoad(state, placement)) return `A Traders' Guild must be within ${TRADERS_GUILD.mainRoadRange} tiles of the Main Road`;
-  if (state.guildPermits === 0) return "No Traders' Guild permit: complete the Well fed charter";
-  const appeal = houseAppeal(state, placement);
-  if (appeal < TRADERS_GUILD.appeal) return `Needs appeal ${TRADERS_GUILD.appeal} here (has ${appeal})`;
-  return null;
+  if (!blockInMap(state, placement)) return 'Outside the map';
+  return siteObstacle(surveyGuildSite(state, placement));
+}
+
+export type SiteShortfall = 'townhouses' | 'mainRoad' | 'permit' | 'appeal';
+
+const SHORTFALL_REASONS: Record<SiteShortfall, (site: GuildSite) => string> = {
+  townhouses: () => "A Traders' Guild goes over four Townhouses forming a 4×4 block",
+  mainRoad: () => `A Traders' Guild must be within ${TRADERS_GUILD.mainRoadRange} tiles of the Main Road`,
+  permit: () => "No Traders' Guild permit: complete the Well fed charter",
+  appeal: (site) => `Needs appeal ${TRADERS_GUILD.appeal} here (has ${site.appeal})`,
+};
+
+export function siteShortfalls(site: GuildSite): SiteShortfall[] {
+  const shortfalls: SiteShortfall[] = [];
+  if (!site.quarters.every((q) => q.townhouse)) shortfalls.push('townhouses');
+  if (!site.nearMainRoad) shortfalls.push('mainRoad');
+  if (!site.permit) shortfalls.push('permit');
+  if (site.appeal < TRADERS_GUILD.appeal) shortfalls.push('appeal');
+  return shortfalls;
+}
+
+export function siteObstacle(site: GuildSite): string | null {
+  const [first] = siteShortfalls(site);
+  return first ? SHORTFALL_REASONS[first](site) : null;
+}
+
+export function guildSiteOf(state: GameState, house: Building): GuildSite | null {
+  const around = siteSurroundings(state);
+  const sites = BLOCK_QUARTERS.map((q) => ({ x: house.x - q.x, y: house.y - q.y }))
+    .filter((origin) => blockInMap(state, origin))
+    .map((origin) => surveyGuildSite(state, origin, around))
+    .filter((site) => site.nearMainRoad);
+  return sites.reduce<GuildSite | null>((best, site) => (best === null || closerToPlaceable(site, best) ? site : best), null);
+}
+
+export function placeableGuildSites(state: GameState, around = siteSurroundings(state)): Point[] {
+  return state.buildings
+    .filter((b) => b.type === 'house' && houseLevel(b) === 'townhouse')
+    .map(({ x, y }) => ({ x, y }))
+    .filter((origin) => blockInMap(state, origin) && siteObstacle(surveyGuildSite(state, origin, around)) === null);
+}
+
+export function announceGuildSites(state: GameState): void {
+  if (state.guildPermits === 0) return;
+  for (const site of placeableGuildSites(state)) {
+    const corner = tileIndex(state, site.x, site.y);
+    if (state.announcedGuildSites.includes(corner)) continue;
+    state.announcedGuildSites.push(corner);
+    postNotice(state, `A Traders' Guild can now be placed at ${site.x},${site.y}`, site);
+  }
+}
+
+export function guildSiteTiles(origin: Point): Point[] {
+  return footprint(guildAt(origin));
+}
+
+function closerToPlaceable(site: GuildSite, than: GuildSite): boolean {
+  const distance = distanceFromPlaceable(site) - distanceFromPlaceable(than);
+  return distance < 0 || (distance === 0 && quartersWithoutHouse(site) < quartersWithoutHouse(than));
+}
+
+function quartersWithoutHouse(site: GuildSite): number {
+  return site.quarters.filter((q) => !q.house).length;
+}
+
+function distanceFromPlaceable(site: GuildSite): number {
+  const missingTownhouses = site.quarters.filter((q) => !q.townhouse).length;
+  return siteShortfalls(site).filter((s) => s !== 'townhouses').length + missingTownhouses;
+}
+
+function blockInMap(state: GameState, origin: Point): boolean {
+  return guildSiteTiles(origin).every((p) => inBounds(state, p.x, p.y));
+}
+
+function guildAt(origin: Point): Placement {
+  return { type: 'tradersGuild', x: origin.x, y: origin.y, rotation: 0 };
+}
+
+export function siteSurroundings(state: GameState): SiteSurroundings {
+  return { appeal: appealMap(state), inRange: guildRange(state) };
+}
+
+export function guildRange(state: GameState): boolean[] {
+  const range = new Array<boolean>(state.size * state.size).fill(false);
+  const reach = TRADERS_GUILD.mainRoadRange;
+  state.mainRoad.forEach((paved, i) => {
+    if (!paved) return;
+    const x = i % state.size;
+    const y = Math.floor(i / state.size);
+    for (let ny = y - reach; ny <= y + reach; ny++) {
+      for (let nx = x - reach; nx <= x + reach; nx++) if (inBounds(state, nx, ny)) range[tileIndex(state, nx, ny)] = true;
+    }
+  });
+  return range;
+}
+
+export function surveyGuildSite(state: GameState, origin: Point, around = siteSurroundings(state)): GuildSite {
+  const placement = guildAt(origin);
+  return {
+    origin: { x: origin.x, y: origin.y },
+    quarters: BLOCK_QUARTERS.map((q) => {
+      const at = { x: origin.x + q.x, y: origin.y + q.y };
+      const house = houseAt(state, at);
+return { at, house: house !== null, townhouse: house !== null && houseLevel(house) === 'townhouse' };
+    }),
+    nearMainRoad: footprint(placement).some((p) => around.inRange[tileIndex(state, p.x, p.y)]),
+    permit: state.guildPermits > 0,
+    appeal: houseAppeal(state, placement, around.appeal),
+  };
+}
+
+function houseAt(state: GameState, at: Point): Building | null {
+  const building = buildingById(state, state.buildingIdAt[tileIndex(state, at.x, at.y)]);
+  return building !== undefined && building.type === 'house' && building.x === at.x && building.y === at.y ? building : null;
 }
 
 function buildingsUnder(state: GameState, placement: Placement): Building[] {
   const ids = new Set(footprint(placement).map((p) => state.buildingIdAt[tileIndex(state, p.x, p.y)]));
   return state.buildings.filter((b) => ids.has(b.id));
-}
-
-function townhouseBlockUnder(state: GameState, placement: Placement): boolean {
-  const covered = footprint(placement).every((p) => state.buildingIdAt[tileIndex(state, p.x, p.y)] !== NO_BUILDING);
-  const under = buildingsUnder(state, placement);
-  return covered && under.length === 4 && under.every((b) => b.type === 'house' && houseLevel(b) === 'townhouse');
-}
-
-function nearMainRoad(state: GameState, placement: Placement): boolean {
-  return state.mainRoad.some(
-    (paved, i) => paved && footprintDistance(placement, { x: i % state.size, y: Math.floor(i / state.size) }) <= TRADERS_GUILD.mainRoadRange,
-  );
 }
 
 export function raiseGuild(state: GameState, placement: Placement): Building {

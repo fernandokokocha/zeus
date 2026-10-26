@@ -3,13 +3,14 @@ import { BUILDING_SPECS } from './buildings';
 import { footprint } from './commands';
 import { culturePoints } from './culture';
 import { monthlyUse } from './food';
+import { guildSiteTiles, placeableGuildSites, siteSurroundings } from './guild';
 import { HOUSE_LEVELS, houseLevel, isResidence, type HouseLevel } from './housing';
 import { isUnderConstruction } from './sanctuaries';
 import { serviceLeft } from './roamers';
 import { canBurn, canCollapse, riskShare } from './safety';
 import { tileIndex, type Building, type GameState } from './state';
 
-export type Overlay = 'water' | 'food' | 'supply' | 'culture' | 'appeal' | 'fireRisk' | 'collapseRisk' | 'tax' | 'houseLevel' | 'staffing';
+export type Overlay = 'water' | 'food' | 'supply' | 'culture' | 'appeal' | 'fireRisk' | 'collapseRisk' | 'tax' | 'houseLevel' | 'staffing' | 'guildSites';
 
 export type Reading = number | null;
 
@@ -33,7 +34,7 @@ function monthsOfFood(house: Building): number {
   return use > 0 ? house.food / use : 0;
 }
 
-const BUILDING_READERS: Record<Exclude<Overlay, 'appeal'>, BuildingReader> = {
+const BUILDING_READERS: Record<Exclude<Overlay, 'appeal' | 'guildSites'>, BuildingReader> = {
   water: occupiedResidence((state, residence) => serviceLeft(state, residence, 'water')),
   tax: occupiedHouse((state, house) => serviceLeft(state, house, 'tax')),
   food: occupiedResidence((_, residence) => monthsOfFood(residence)),
@@ -50,12 +51,24 @@ const BUILDING_READERS: Record<Exclude<Overlay, 'appeal'>, BuildingReader> = {
 
 export function overlayReadings(state: GameState, overlay: Overlay): Reading[] {
   if (overlay === 'appeal') return appealMap(state).map((appeal) => (appeal === 0 ? null : appeal));
+  if (overlay === 'guildSites') return guildSiteReadings(state);
   const readings = new Array<Reading>(state.size * state.size).fill(null);
   const read = BUILDING_READERS[overlay];
   for (const building of state.buildings) {
     const reading = read(state, building);
     if (reading === null) continue;
     for (const tile of footprint(building)) readings[tileIndex(state, tile.x, tile.y)] = reading;
+  }
+  return readings;
+}
+
+export const GUILD_SITE_READINGS = { inRange: 0, placeable: 1 };
+
+function guildSiteReadings(state: GameState): Reading[] {
+  const around = siteSurroundings(state);
+  const readings = around.inRange.map((inRange, i) => (inRange && !state.mainRoad[i] ? GUILD_SITE_READINGS.inRange : null));
+  for (const site of placeableGuildSites(state, around)) {
+    for (const tile of guildSiteTiles(site)) readings[tileIndex(state, tile.x, tile.y)] = GUILD_SITE_READINGS.placeable;
   }
   return readings;
 }

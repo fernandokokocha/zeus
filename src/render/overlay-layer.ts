@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { HOUSE_LEVELS } from '../sim/housing';
-import { overlayReadings, type Overlay } from '../sim/overlays';
+import { HOUSE_LEVELS, TRADERS_GUILD } from '../sim/housing';
+import { GUILD_SITE_READINGS, overlayReadings, type Overlay } from '../sim/overlays';
 import type { GameState } from '../sim/state';
 import { PALETTE } from './palette';
 
@@ -95,6 +95,14 @@ export const OVERLAY_SCALES: Record<Overlay, OverlayScale> = {
       { at: 0, color: bad, label: 'No workers' },
       { at: 0.5, color: mid, label: 'Half staffed' },
       { at: 1, color: good, label: 'Fully staffed' },
+    ],
+  },
+  guildSites: {
+    name: 'Guilds',
+    title: "Traders' Guild sites",
+    stops: [
+      { at: GUILD_SITE_READINGS.inRange, color: PALETTE.overlayGuildRange, label: `Within ${TRADERS_GUILD.mainRoadRange} tiles of the Main Road` },
+      { at: GUILD_SITE_READINGS.placeable, color: good, label: "A Traders' Guild can be placed now" },
     ],
   },
 };

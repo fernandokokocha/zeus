@@ -8,7 +8,7 @@ import { RISK_LIMIT, catchFire } from '../../src/sim/safety';
 import { SANCTUARY_WORK } from '../../src/sim/sanctuaries';
 import type { GameState } from '../../src/sim/state';
 import { tick } from '../../src/sim/tick';
-import { grassGame, placeHouse, runTicks } from './helpers';
+import { guildBlock, grassGame, placeHouse, runTicks } from './helpers';
 
 const loads = (count: number) => count * UNITS_PER_LOAD;
 
@@ -102,5 +102,35 @@ describe('notices', () => {
     expect(game.notices).toHaveLength(NOTICE_LOG_LIMIT);
     expect(game.notices[0]).toMatchObject({ id: 3, text: 'Notice 3' });
     expect(game.notices.at(-1)).toMatchObject({ id: NOTICE_LOG_LIMIT + 2 });
+  });
+});
+
+describe('the guild site notice', () => {
+  const siteNotices = (game: GameState) => game.notices.filter((n) => n.text.startsWith("A Traders' Guild can now be placed"));
+
+  it('is posted at the block the first time a guild can be placed there', () => {
+    const { game } = guildBlock();
+    tick(game);
+    expect(siteNotices(game)).toMatchObject([{ text: "A Traders' Guild can now be placed at 3,12", at: { x: 3, y: 12 } }]);
+  });
+
+  it('is posted once per block, even when the block stops and starts qualifying', () => {
+    const { game } = guildBlock();
+    runTicks(game, 3);
+    game.guildPermits = 0;
+    tick(game);
+    game.guildPermits = 1;
+    runTicks(game, 3);
+    expect(siteNotices(game)).toHaveLength(1);
+  });
+
+  it('waits for a permit', () => {
+    const { game } = guildBlock();
+    game.guildPermits = 0;
+    runTicks(game, 3);
+    expect(siteNotices(game)).toEqual([]);
+    game.guildPermits = 1;
+    tick(game);
+    expect(siteNotices(game)).toHaveLength(1);
   });
 });

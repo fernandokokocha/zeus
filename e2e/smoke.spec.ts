@@ -150,7 +150,7 @@ test('boots, builds a street with services, food, culture, fleece, oil, cloth, a
   await expect(legend).toContainText('Appeal');
   await page.screenshot({ path: 'test-results/appeal.png' });
   const mapModes = page.locator('#map-modes');
-  await expect(mapModes.getByRole('button')).toHaveCount(10);
+  await expect(mapModes.getByRole('button')).toHaveCount(11);
   for (const [mode, title] of [
     ['Water', 'Water access'],
     ['Food', 'Food in houses'],
@@ -160,11 +160,16 @@ test('boots, builds a street with services, food, culture, fleece, oil, cloth, a
     ['Collapse', 'Collapse risk'],
     ['Tax', 'Tax collection'],
     ['Houses', 'House level'],
+    ['Guilds', "Traders' Guild sites"],
     ['Staff', 'Staffing'],
   ]) {
     await mapModes.getByRole('button', { name: mode, exact: true }).click();
     await expect(legend).toContainText(title);
   }
+  await mapModes.getByRole('button', { name: 'Guilds', exact: true }).click();
+  await expect(legend).toContainText('Within 4 tiles of the Main Road');
+  await page.screenshot({ path: 'test-results/guild-sites.png' });
+  await mapModes.getByRole('button', { name: 'Staff', exact: true }).click();
   await page.screenshot({ path: 'test-results/staffing.png' });
   await mapModes.getByRole('button', { name: 'Staff', exact: true }).click();
   await expect(legend).toBeHidden();

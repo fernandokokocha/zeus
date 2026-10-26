@@ -9,6 +9,6 @@ the PR that delivers it.
 - [x] 14 · Notices
 - [x] 15 · Charters
 - [x] 16 · Traders' Guild
-- [ ] 17 · Guild sites
+- [x] 17 · Guild sites
 - [ ] 18 · Trade: exports
 - [ ] 19 · Trade: imports

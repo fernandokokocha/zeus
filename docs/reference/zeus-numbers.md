@@ -226,3 +226,6 @@ https://zeus.heavengames.com/gameinfo/gods/
   (24 units), like other goods. Ordinary houses take no cloth.
 - Placing a guild keeps the four houses' food, fleece and oil, summed, and their latest water and
   culture coverage; residents beyond 20 leave.
+- Guild sites (spec): a house shows the site of the 4×4 block it belongs to that is within guild
+  range and closest to qualifying. "A Traders' Guild can now be placed at …" is posted **once per
+  block**, named by its corner, the first time the block qualifies.

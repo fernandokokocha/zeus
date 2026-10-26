@@ -7,7 +7,7 @@ import { overlayReadings } from '../../src/sim/overlays';
 import { COVERAGE_MONTHS } from '../../src/sim/roamers';
 import { RISK_LIMIT } from '../../src/sim/safety';
 import type { Building, GameState } from '../../src/sim/state';
-import { grassGame, placeHouse, placedGuild, supplyGuild } from './helpers';
+import { guildBlock, grassGame, placeHouse, placedGuild, supplyGuild } from './helpers';
 
 function lastBuilding(game: GameState): Building {
   return game.buildings[game.buildings.length - 1];
@@ -144,5 +144,29 @@ describe("map overlays on a Traders' Guild", () => {
     guild.coveredUntil.tax = game.tick + TICKS_PER_MONTH;
     expect(readingAt(game, 'tax', 4, 13)).toBeNull();
     expect(readingAt(game, 'houseLevel', 4, 13)).toBeNull();
+  });
+});
+
+describe('the guild sites overlay', () => {
+  it('shades tiles within 4 of the Main Road, but not the road itself', () => {
+    const { game } = guildBlock();
+    expect(readingAt(game, 'guildSites', 10, 13)).toBe(0);
+    expect(readingAt(game, 'guildSites', 10, 21)).toBe(0);
+    expect(readingAt(game, 'guildSites', 10, 12)).toBeNull();
+    expect(readingAt(game, 'guildSites', 10, 22)).toBeNull();
+    expect(readingAt(game, 'guildSites', 10, 17)).toBeNull();
+  });
+
+  it('highlights every tile of a block a guild can be placed on now', () => {
+    const { game } = guildBlock();
+    for (const [x, y] of [[3, 12], [6, 12], [3, 15], [6, 15]]) expect(readingAt(game, 'guildSites', x, y)).toBe(1);
+    expect(readingAt(game, 'guildSites', 7, 15)).toBe(0);
+  });
+
+  it('does not highlight a block that lacks a permit', () => {
+    const { game } = guildBlock();
+    game.guildPermits = 0;
+    expect(readingAt(game, 'guildSites', 3, 15)).toBe(0);
+    expect(readingAt(game, 'guildSites', 3, 12)).toBeNull();
   });
 });

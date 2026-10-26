@@ -12,7 +12,7 @@ import { FIRE_BURN_TICKS, RISK_LIMIT, catchFire } from '../../src/sim/safety';
 import { SETTLER_SPAWN_INTERVAL_TICKS } from '../../src/sim/settlers';
 import { walkerTile } from '../../src/sim/walking';
 import { tick } from '../../src/sim/tick';
-import { grassGame, mainRoadGame, placeHouse, placedGuild, runTicks, setMeadow, setTerrain, supplyGuild } from './helpers';
+import { guildBlock, grassGame, mainRoadGame, placeHouse, placedGuild, runTicks, setMeadow, setTerrain, supplyGuild } from './helpers';
 
 function meter(game: GameState, x: number, y: number, label: string): Meter {
   const found = describeTile(game, x, y).meters.find((m) => m.label === label);
@@ -1035,5 +1035,68 @@ describe("the inspector on a Traders' Guild", () => {
     const { game, guild } = placedGuild();
     supplyGuild(guild);
     expect(meter(game, 4, 13, 'Cloth')).toEqual({ label: 'Cloth', fill: 1, value: '24 units (3 months)', need: 'met' });
+  });
+});
+
+describe('the inspector on a possible guild site', () => {
+  const siteLine = (game: GameState, x: number, y: number) => describeTile(game, x, y).lines.find((line) => /guild site/i.test(line));
+
+  it("says a Traders' Guild can be placed on a ready block", () => {
+    const { game } = guildBlock();
+    expect(siteLine(game, 3, 12)).toBe("Guild site at 3, 12: a Traders' Guild can be placed now");
+    expect(siteLine(game, 5, 14)).toBe("Guild site at 3, 12: a Traders' Guild can be placed now");
+  });
+
+  it('names a house that is not a Townhouse yet', () => {
+    const { game, houses } = guildBlock();
+    houses[3].level = 'apartment';
+    expect(siteLine(game, 5, 14)).toBe('Possible guild site at 3, 12: not a Townhouse yet');
+  });
+
+  it('counts the other houses of the block that are not Townhouses', () => {
+    const { game, houses } = guildBlock();
+    houses[3].level = 'apartment';
+    expect(siteLine(game, 3, 12)).toBe('Possible guild site at 3, 12: 1 of the other 3 houses not Townhouses');
+  });
+
+  it('names a missing permit', () => {
+    const { game } = guildBlock();
+    game.guildPermits = 0;
+    expect(siteLine(game, 3, 12)).toBe('Possible guild site at 3, 12: no permit');
+  });
+
+  it('names appeal that is too low', () => {
+    const { game } = guildBlock();
+    demolish(game, { x: 1, y: 13 }, { x: 1, y: 13 });
+    expect(siteLine(game, 3, 12)).toBe('Possible guild site at 3, 12: appeal 25 (has 22)');
+  });
+
+  it('names everything still missing, in order', () => {
+    const { game, houses } = guildBlock();
+    houses[0].level = 'apartment';
+    houses[3].level = 'apartment';
+    game.guildPermits = 0;
+    demolish(game, { x: 1, y: 13 }, { x: 1, y: 13 });
+    expect(siteLine(game, 3, 12)).toBe(
+      'Possible guild site at 3, 12: not a Townhouse yet, 1 of the other 3 houses not Townhouses, no permit, appeal 25 (has 22)',
+    );
+  });
+
+  it("shows on a vacant lot in range, from the lot's own corner", () => {
+    const { game } = guildBlock();
+    placeHouse(game, 12, 14);
+    expect(siteLine(game, 12, 14)).toMatch(/^Possible guild site at 12, 14: not a Townhouse yet, the other 3 houses not Townhouses/);
+  });
+
+it('prefers, among equally short blocks, the one already made of houses', () => {
+    const { game } = guildBlock();
+    for (const [x, y] of [[12, 12], [14, 12], [12, 14], [14, 14]]) placeHouse(game, x, y);
+    expect(siteLine(game, 14, 14)).toMatch(/^Possible guild site at 12, 12: /);
+  });
+
+  it('does not show beyond guild range of the Main Road', () => {
+    const { game } = guildBlock(20);
+    expect(siteLine(game, 3, 12)).toBeUndefined();
+    expect(siteLine(game, 3, 14)).toMatch(/^Possible guild site at 3, 14: 2 of the other 3 houses not Townhouses/);
   });
 });

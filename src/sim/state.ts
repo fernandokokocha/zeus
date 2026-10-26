@@ -192,6 +192,7 @@ export interface GameState {
   nextNoticeId: number;
   wellFed: WellFed;
   guildPermits: number;
+  announcedGuildSites: number[];
   rngState: number;
   entry: Point;
   treasury: number;
@@ -240,6 +241,7 @@ export function newGameState(size: number, terrain: Terrain[], mainRoad: Point[]
     nextNoticeId: 1,
     wellFed: { months: 0, reset: null },
     guildPermits: 0,
+    announcedGuildSites: [],
     rngState: DEFAULT_SEED,
     entry: mainRoad[0],
     treasury: STARTING_TREASURY,

@@ -114,6 +114,7 @@ export const PALETTE = {
   overlayBad: 0xd8402f,
   overlayLevelLow: 0xe6eef2,
   overlayLevelHigh: 0x23407e,
+  overlayGuildRange: 0x7f9fcf,
   ghostValid: 0x4caf50,
   ghostWarning: 0xf28c28,
   ghostInvalid: 0xe0533d,
