@@ -2,7 +2,7 @@
 
 Extends `2026-10-11-zeus-clone-design.md`. Everything there still holds: the working
 agreement, the architecture, the code rules. This document replaces its slice 12 and adds
-slices 12–19.
+slices 12–17 and 25–26.
 
 ## Intent
 
@@ -121,8 +121,8 @@ spine of the city and the future route of traders.
 | Residents | 20 merchants, who are also its staff |
 | Needs | everything a Townhouse needs (food, water, fleece, oil, culture 45) plus **fine cloth** |
 | Appeal | moderate: it needs appeal at or above the Townhouse's devolve value (25) |
-| Taxes | **none**. It earns through trade instead (slice 18). |
-| Bonus | one trade route (slice 18). Until then the inspector shows "trade route: not yet available". |
+| Taxes | **none**. It earns through trade instead (slice 25). |
+| Bonus | one trade route (slice 25). Until then the inspector shows "trade route: not yet available". |
 | Cost | 100 dr (**ours**) plus one permit |
 | Demotion | any need missing for a month → four vacant lots |
 
@@ -166,7 +166,7 @@ much as its rules.
     courtyard, blue cloth awnings and bolts of fine cloth on display. Amphorae and crates
     hint at the trade route to come.
   - Its silhouette must read as different from a Townhouse block at default zoom.
-- Slice 12's paved Main Road, slice 13's Weaver, slice 16's cloth vendor and slice 18's
+- Slice 12's paved Main Road, slice 13's Weaver, slice 16's cloth vendor and slice 25's
   Trading Post also get placeholder models and backlog entries.
 
 ## Guild sites (slice 17)
@@ -184,7 +184,7 @@ Planning help, so the player can build toward a guild deliberately.
 - **Notice** the first time a block becomes placeable: "A Traders' Guild can now be placed
   at …".
 
-## Trade (slices 18–19)
+## Trade (slices 25–26)
 
 Similar to the original game's land trade, except routes are earned instead of bought
 outright.
@@ -197,9 +197,9 @@ outright.
   route closes.
 - **Traders** walk in from the west edge along the Main Road to the Trading Post, and walk
   back out the same way.
-- **Slice 18 · Exports:** set a storehouse good to export. Traders buy it up to the quota,
+- **Slice 25 · Exports:** set a storehouse good to export. Traders buy it up to the quota,
   and the drachmas go to the treasury.
-- **Slice 19 · Imports:** set a good to import, and traders bring it to the Trading Post,
+- **Slice 26 · Imports:** set a good to import, and traders bring it to the Trading Post,
   which sends it to a storehouse. The treasury pays.
 - A trade panel lists routes, partners, quotas used this year and income.
 

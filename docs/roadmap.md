@@ -1,7 +1,8 @@
 # Roadmap
 
-Slices 1–11 are done; their content is in the main spec's "Roadmap" section. The slices
-below are in `docs/superpowers/specs/2026-10-25-elite-housing-design.md`. Tick a slice in
+Slices 1–11 are done; their content is in the main spec's "Roadmap" section. Slices 12–17
+and 25–26 are in `docs/superpowers/specs/2026-10-25-elite-housing-design.md`, slices 18–24
+in `docs/superpowers/specs/2026-10-26-map-modes-ledger-design.md`. Tick a slice in
 the PR that delivers it.
 
 - [x] 12 · Main Road
@@ -10,5 +11,12 @@ the PR that delivers it.
 - [x] 15 · Charters
 - [x] 16 · Traders' Guild
 - [x] 17 · Guild sites
-- [ ] 18 · Trade: exports
-- [ ] 19 · Trade: imports
+- [ ] 18 · Map button and columns
+- [ ] 19 · Supplies and tax paid
+- [ ] 20 · Ledger
+- [ ] 21 · Ledger: Treasury
+- [ ] 22 · Ledger: Population
+- [ ] 23 · Ledger: Production
+- [ ] 24 · Production priorities
+- [ ] 25 · Trade: exports
+- [ ] 26 · Trade: imports
