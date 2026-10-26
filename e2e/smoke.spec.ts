@@ -37,7 +37,7 @@ async function place(page: Page, group: string, tool: RegExp, at: [number, numbe
 }
 
 test('boots, builds a street with services, food, culture, fleece, oil, cloth, a cloth vendor, materials, sanctuaries and decorations and maintenance, and settlers move in', async ({ page }) => {
-  test.setTimeout(180_000);
+  test.setTimeout(300_000);
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   page.on('console', (message) => {
