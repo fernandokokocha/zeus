@@ -1,10 +1,12 @@
 import * as THREE from 'three';
 import type { CarrierKind, GameState, Material, RoamerKind, TraineeKind, Walk } from '../sim/state';
 import { CARRIER_SPECS } from '../sim/carriers';
+import { SERVING_WALKERS, type Overlay } from '../sim/overlays';
 import { ROAMER_SPECS } from '../sim/roamers';
 import { FULL_FLEECE } from '../sim/sheep';
 import { WALKER_TILES_PER_TICK, walkerPosition } from '../sim/walking';
 import { PALETTE } from './palette';
+import { FADED_OPACITY } from './world-layer';
 import { awningCartPeddler } from './peddler-models';
 import { FIGURE_SCALE, body, cart, jar, mergedByColour, type Part } from './kit/walker';
 
@@ -213,9 +215,15 @@ const FIGURES: Record<Figure, Part[]> = {
   cartPusher: cart([{ geometry: new THREE.BoxGeometry(0.15, 0.08, 0.16).translate(0, 0.18, 0.22), color: PALETTE.sack }]),
 };
 
-function createFigureSet(figure: Part[], group: THREE.Group): { show(walks: Walk[], ticksAhead: number): void } {
+interface FigureSet {
+  show(walks: Walk[], ticksAhead: number): void;
+  fade(faded: boolean): void;
+}
+
+function createFigureSet(figure: Part[], group: THREE.Group): FigureSet {
   const parts = mergedByColour(figure);
   let capacity = 0;
+  let isFaded = false;
   let meshes: THREE.InstancedMesh[] = [];
   const matrix = new THREE.Matrix4();
   const rotation = new THREE.Quaternion();
@@ -235,6 +243,16 @@ function createFigureSet(figure: Part[], group: THREE.Group): { show(walks: Walk
       return mesh;
     });
     group.add(...meshes);
+    applyFade();
+  }
+
+  function applyFade(): void {
+    for (const mesh of meshes) {
+      const material = mesh.material as THREE.MeshLambertMaterial;
+      material.transparent = isFaded;
+      material.opacity = isFaded ? FADED_OPACITY : 1;
+      material.depthWrite = !isFaded;
+    }
   }
 
   return {
@@ -254,18 +272,32 @@ function createFigureSet(figure: Part[], group: THREE.Group): { show(walks: Walk
         mesh.instanceMatrix.needsUpdate = true;
       }
     },
+    fade(faded) {
+      if (faded === isFaded) return;
+      isFaded = faded;
+      applyFade();
+    },
   };
 }
 
-export function createWalkerLayer(): { group: THREE.Group; sync(state: GameState, ticksAhead: number): void } {
+export function createWalkerLayer(): { group: THREE.Group; sync(state: GameState, ticksAhead: number, overlay: Overlay | null): void } {
   const group = new THREE.Group();
   const sets = Object.fromEntries(
     (Object.keys(FIGURES) as Figure[]).map((figure) => [figure, createFigureSet(FIGURES[figure], group)]),
-  ) as Record<Figure, ReturnType<typeof createFigureSet>>;
+  ) as Record<Figure, FigureSet>;
+  let fadedFor: Overlay | null = null;
+
+  function fadeFor(overlay: Overlay | null): void {
+    if (overlay === fadedFor) return;
+    fadedFor = overlay;
+    const serving = new Set<string>(overlay ? SERVING_WALKERS[overlay] : Object.keys(FIGURES));
+    for (const figure of Object.keys(FIGURES) as Figure[]) sets[figure].fade(!serving.has(figure));
+  }
 
   return {
     group,
-    sync(state, ticksAhead) {
+    sync(state, ticksAhead, overlay) {
+      fadeFor(overlay);
       sets.settler.show(state.settlers, ticksAhead);
       sets.artisan.show(state.artisans, ticksAhead);
       for (const kind of Object.keys(ROAMER_SPECS) as RoamerKind[]) {

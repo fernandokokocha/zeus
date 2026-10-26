@@ -3,7 +3,7 @@ import { appealMap } from '../../src/sim/appeal';
 import { TICKS_PER_MONTH } from '../../src/sim/clock';
 import { placeBuilding, placeRoad } from '../../src/sim/commands';
 import { VENDOR_CAPACITY, houseStockTarget } from '../../src/sim/food';
-import { OVERLAYS, buildingLook, overlayColumns, overlayReadings, overlayReport, overlayReportAt, type ColumnOverlay } from '../../src/sim/overlays';
+import { OVERLAYS, SERVING_WALKERS, buildingLook, overlayColumns, overlayReadings, overlayReport, overlayReportAt, type ColumnOverlay } from '../../src/sim/overlays';
 import { COVERAGE_MONTHS } from '../../src/sim/roamers';
 import { RISK_LIMIT } from '../../src/sim/safety';
 import type { Building, GameState } from '../../src/sim/state';
@@ -248,6 +248,23 @@ describe('the Zeus view', () => {
     house.level = 'shack';
     house.taxPaid = [0.5, 0.25];
     expect(overlayReport(game, 'tax', house)).toEqual({ name: 'Shack', details: ['Tax paid, last 12 months: 0.75 dr'] });
+  });
+});
+
+describe('walkers in the Zeus view', () => {
+  it('keep the walkers that serve the mode', () => {
+    expect(SERVING_WALKERS.water).toEqual(['waterCarrier']);
+    expect(SERVING_WALKERS.culture).toEqual(['philosopher', 'athlete', 'actor', 'philosopherTrainee', 'actorTrainee']);
+    expect(SERVING_WALKERS.risk).toEqual(['superintendent']);
+    expect(SERVING_WALKERS.tax).toEqual(['taxCollector']);
+  });
+
+  it('keep, for Supplies, the peddler and everyone carrying a good houses use', () => {
+    expect(SERVING_WALKERS.supplies).toEqual(['peddler', 'cartPusher', 'buyer', 'fleeceCart', 'fleeceBuyer', 'oilCart', 'oilBuyer', 'clothCart', 'clothBuyer']);
+  });
+
+  it('fade every walker in Staff and the tile modes', () => {
+    for (const overlay of ['staffing', 'appeal', 'guildSites'] as const) expect(SERVING_WALKERS[overlay]).toEqual([]);
   });
 });
 

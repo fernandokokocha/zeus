@@ -21,8 +21,8 @@ production figures, and no way to steer workers. The Ledger is that place.
   dropdown of the modes. The button's label names the mode that is on ("Map: Water"),
   or "Map: Off". The dropdown also has **Off**.
 - `O` still toggles the last chosen mode.
-- The corner legend goes. A column needs no legend; a tile mode (Appeal, Guilds) shows
-  a one-line colour ramp under the Map button instead.
+- The corner legend goes. A column needs no legend, and Appeal names its value on hover;
+  only Guilds shows a one-line colour key under the Map button.
 
 ### The Zeus view
 
@@ -34,7 +34,10 @@ While a mode is on:
   podiums, gymnasiums, drama schools and theaters for Culture; maintenance offices for
   Risk; tax offices and the palace for Tax; granaries, storehouses, the agora and its
   vendors for Supplies.
-- Every other building is faded. Terrain, roads, trees and walkers are unchanged.
+- Every other building is faded, and so is every walker that does not serve the mode
+  (water carriers for Water; peddlers and carriers of house goods for Supplies;
+  philosophers, athletes, actors and their trainees for Culture; superintendents for
+  Risk; tax collectors for Tax). Terrain, roads and trees are unchanged.
 - **Hover** over a reported building shows a small tooltip with its name and the exact
   values behind its marks.
 
@@ -52,9 +55,9 @@ Supplies. **Fire** and **Collapse** merge into Risk.
 | Mode | Reports on | Marks | Full height |
 |---|---|---|---|
 | Water | occupied residences | column: time left before water runs out | the 4-month service memory |
-| Supplies | occupied residences | one bar per good (food, fleece, oil, cloth), height = stock | the most the house holds of that good |
-| Culture | occupied residences | one column in three coloured parts: philosophy, athletics, drama | the culture points of the highest house level |
-| Appeal | tiles | ground tint, unchanged | n/a |
+| Supplies | occupied residences and agora vendors | one bar per good (food, fleece, oil, cloth), height = stock | the most the house or vendor holds of that good |
+| Culture | occupied residences | one bar per culture: philosophy, athletics, drama, height = time left | the culture's service memory |
+| Appeal | tiles | ground tint, unchanged; hover shows the exact value | n/a |
 | Risk | buildings that can burn or collapse | column: the higher of fire and collapse risk, coloured by which one it is; turns red near the limit; hover shows both | the risk limit |
 | Tax | occupied houses | column: tax the house paid in the last 12 months | the biggest payer currently on the map |
 | Staff | workplaces | column: share of jobs filled | fully staffed |

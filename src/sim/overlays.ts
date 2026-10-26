@@ -10,7 +10,7 @@ import { isUnderConstruction } from './sanctuaries';
 import { COVERAGE_MONTHS, serviceLeft } from './roamers';
 import { canBurn, canCollapse, riskShare } from './safety';
 import type { Point } from './point';
-import { NO_BUILDING, buildingById, inBounds, tileIndex, type Building, type Culture, type GameState, type PeddledGood } from './state';
+import { NO_BUILDING, buildingById, inBounds, tileIndex, type Building, type CarrierKind, type Culture, type GameState, type PeddledGood, type RoamerKind, type TraineeKind } from './state';
 
 export const OVERLAYS = ['water', 'supplies', 'culture', 'appeal', 'risk', 'tax', 'staffing', 'guildSites'] as const;
 
@@ -47,6 +47,19 @@ const SERVERS: Record<Overlay, BuildingType[]> = {
   appeal: [],
   risk: ['maintenanceOffice'],
   tax: ['taxOffice', 'palace'],
+  staffing: [],
+  guildSites: [],
+};
+
+export type WalkerKind = RoamerKind | CarrierKind | TraineeKind;
+
+export const SERVING_WALKERS: Record<Overlay, WalkerKind[]> = {
+  water: ['waterCarrier'],
+  supplies: ['peddler', 'cartPusher', 'buyer', 'fleeceCart', 'fleeceBuyer', 'oilCart', 'oilBuyer', 'clothCart', 'clothBuyer'],
+  culture: ['philosopher', 'athlete', 'actor', 'philosopherTrainee', 'actorTrainee'],
+  appeal: [],
+  risk: ['superintendent'],
+  tax: ['taxCollector'],
   staffing: [],
   guildSites: [],
 };

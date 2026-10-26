@@ -83,7 +83,7 @@ function frame(now: number): void {
   world.sync(state);
   world.style(state, mapModes.shown());
   world.animate(now / 1000);
-  walkers.sync(state, state.speed > 0 ? pendingTicks : 0);
+  walkers.sync(state, state.speed > 0 ? pendingTicks : 0, mapModes.shown());
   overlay.sync(state, mapModes.shown());
   columns.sync(state, mapModes.shown());
   mapModes.update();

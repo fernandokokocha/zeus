@@ -18,7 +18,7 @@ const pavingSlabSize = 1 / PAVING_SLABS_PER_SIDE - PAVING_GAP;
 const jointMaterial = new THREE.MeshLambertMaterial({ color: PALETTE.pavingJoint });
 const slabGeometry = new THREE.BoxGeometry(pavingSlabSize, PAVING_SLAB_HEIGHT, pavingSlabSize);
 const slabMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff });
-const FADED_OPACITY = 0.25;
+export const FADED_OPACITY = 0.25;
 const RESTYLE_TICKS = 8;
 const fadedMaterials = new Map<THREE.Material, THREE.Material>();
 
