@@ -9,6 +9,7 @@ import { evolveHouses } from './housing';
 import { assignWorkers } from './labor';
 import { tickMaterials } from './materials';
 import { tickOlives } from './olives';
+import { recordPopulation } from './population';
 import { tickSanctuaries } from './sanctuaries';
 import { tickSafety } from './safety';
 import { tickRoamers } from './roamers';
@@ -23,6 +24,7 @@ export function tick(state: GameState): void {
   growCrops(state);
   if (state.tick % TICKS_PER_MONTH === 0) {
     settleMonth(state);
+    recordPopulation(state);
     harvestIfDue(state);
     tallyWellFed(state);
     eat(state);

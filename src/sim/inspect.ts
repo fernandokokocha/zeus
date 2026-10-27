@@ -8,7 +8,7 @@ import { adjacentRoadTiles, agoraVendors, footprint } from './commands';
 import { hasWorkingPalace, houseTax } from './economy';
 import { GRANARY_CAPACITY, HARVEST_MONTH, UNITS_PER_LOAD, VENDOR_CAPACITY, houseStockTarget, monthlyUse } from './food';
 import { guildShortfalls, guildSiteOf, siteShortfalls, type GuildSite } from './guild';
-import { type HouseLevel, type HouseNeed, type ResidentNeed, HOUSE_LEVELS, LEVEL_CHANGE_TICKS, TRADERS_GUILD, NEXT_LEVEL, PREVIOUS_LEVEL, houseCapacity, houseLevel, houseName, lacksCulture, missingNeeds } from './housing';
+import { type HouseLevel, type HouseNeed, type ResidentNeed, HOUSE_LEVELS, LEVEL_CHANGE_TICKS, TRADERS_GUILD, NEXT_LEVEL, PREVIOUS_LEVEL, houseCapacity, houseLevel, evolutionBlockers, houseName, lacksCulture, missingNeeds } from './housing';
 import { ROAMER_SPECS, hasGoodsToSell, hasService, type RoamerSpec, roamerKindSentBy, serviceLeft } from './roamers';
 import { TRAINEE_SPECS, isPerforming, staffedVenues, traineeKindFor, traineeKindSentBy } from './schools';
 import {
@@ -293,10 +293,9 @@ function stockMeter(house: Building, good: PeddledGood, need: Need | null): Mete
 
 function nextLevelStatus(state: GameState, house: Building, level: HouseLevel, next: HouseLevel, appeal: number): string {
   const { name } = HOUSE_LEVELS[next];
-  const { evolve } = HOUSE_LEVELS[level].appeal;
-  const blockers: string[] = missingNeeds(state, house, next);
-  if (lacksCulture(state, house, next)) blockers.push(`culture ${HOUSE_LEVELS[next].culture} (has ${culturePoints(state, house)})`);
-  if (appeal < evolve) blockers.push(`appeal ${evolve} (has ${appeal})`);
+  const blockers = evolutionBlockers(state, house, level, next, appeal).map((blocker) =>
+    blocker.kind === 'need' ? blocker.need : `${blocker.kind} ${blocker.needs} (has ${blocker.has})`,
+  );
   return blockers.length > 0 ? `Needs for ${name}: ${blockers.join(', ')}` : `Ready to become a ${name}`;
 }
 

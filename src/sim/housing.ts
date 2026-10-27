@@ -128,6 +128,18 @@ export function lacksCulture(state: GameState, house: Building, level: HouseLeve
   return culturePoints(state, house) < HOUSE_LEVELS[level].culture;
 }
 
+export type EvolutionBlocker =
+  | { kind: 'need'; need: HouseNeed }
+  | { kind: 'culture' | 'appeal'; needs: number; has: number };
+
+export function evolutionBlockers(state: GameState, house: Building, level: HouseLevel, next: HouseLevel, appeal: number): EvolutionBlocker[] {
+  const blockers: EvolutionBlocker[] = missingNeeds(state, house, next).map((need) => ({ kind: 'need', need }));
+  if (lacksCulture(state, house, next)) blockers.push({ kind: 'culture', needs: HOUSE_LEVELS[next].culture, has: culturePoints(state, house) });
+  const { evolve } = HOUSE_LEVELS[level].appeal;
+  if (appeal < evolve) blockers.push({ kind: 'appeal', needs: evolve, has: appeal });
+  return blockers;
+}
+
 function meetsNeeds(state: GameState, house: Building, level: HouseLevel): boolean {
   return missingNeeds(state, house, level).length === 0 && !lacksCulture(state, house, level);
 }

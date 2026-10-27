@@ -1,5 +1,6 @@
 import type { Accounts, TreasuryReport } from '../sim/treasury';
-import type { PopulationReport, PrioritiesReport, Priority, ProductionReport } from './ledger-samples';
+import type { PopulationReport } from '../sim/population';
+import type { PrioritiesReport, Priority, ProductionReport } from './ledger-samples';
 
 const MIN_AXIS_TOP = 10;
 const AXIS_STEPS = [1, 2, 5];

@@ -1,11 +1,5 @@
 import { BUILDING_SPECS, type BuildingType } from '../sim/buildings';
 
-export interface PopulationReport {
-  history: number[];
-  levels: { name: string; houses: number; people: number }[];
-  blockers: { reason: string; houses: number }[];
-}
-
 export type ProductionStatus = 'surplus' | 'enough' | 'short' | 'idle';
 
 export interface ProductionReport {
@@ -19,37 +13,6 @@ export interface PrioritiesReport {
   jobs: number;
   industries: { name: string; buildings: number; workers: number; jobs: number; priority: Priority; open: boolean }[];
 }
-
-const SAMPLE_MONTHS = 40;
-
-function samplePopulationHistory(): number[] {
-  return Array.from({ length: SAMPLE_MONTHS }, (_, month) => {
-    const growth = 1480 / (1 + Math.exp(-(month - 16) / 4.5));
-    const dip = month >= 27 && month <= 30 ? 140 : 0;
-    return Math.round(growth - dip);
-  });
-}
-
-export const SAMPLE_POPULATION: PopulationReport = {
-  history: samplePopulationHistory(),
-  levels: [
-    { name: 'Hut', houses: 2, people: 14 },
-    { name: 'Shack', houses: 3, people: 41 },
-    { name: 'Hovel', houses: 6, people: 132 },
-    { name: 'Homestead', houses: 9, people: 271 },
-    { name: 'Tenement', houses: 8, people: 306 },
-    { name: 'Apartment', houses: 7, people: 322 },
-    { name: 'Townhouse', houses: 6, people: 348 },
-    { name: "Traders' Guild", houses: 1, people: 20 },
-  ],
-  blockers: [
-    { reason: 'needs: oil', houses: 7 },
-    { reason: 'needs: culture 35', houses: 6 },
-    { reason: 'needs: appeal 30', houses: 4 },
-    { reason: 'needs: fleece', houses: 3 },
-    { reason: 'needs: water', houses: 2 },
-  ],
-};
 
 export const SAMPLE_PRODUCTION: ProductionReport = {
   goods: [

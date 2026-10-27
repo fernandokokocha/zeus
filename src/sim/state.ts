@@ -199,6 +199,7 @@ export interface GameState {
   entry: Point;
   treasury: number;
   accounts: Books;
+  populationHistory: number[];
   lastMonth: { taxes: number; wages: number };
   tick: number;
   speed: Speed;
@@ -249,6 +250,7 @@ export function newGameState(size: number, terrain: Terrain[], mainRoad: Point[]
     entry: mainRoad[0],
     treasury: STARTING_TREASURY,
     accounts: { thisYear: emptyAccounts(), lastYear: emptyAccounts() },
+    populationHistory: [0],
     lastMonth: { taxes: 0, wages: 0 },
     tick: 0,
     speed: 1,
