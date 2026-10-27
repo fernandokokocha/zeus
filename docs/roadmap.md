@@ -22,7 +22,7 @@ the PR that delivers it.
 - [x] 24 · Production priorities
 - [x] 25 · Road upgrades
 - [x] 26 · Monument
-- [ ] 27 · Guild yard
+- [x] 27 · Guild yard
 - [ ] 28 · World map and routes
 - [ ] 29 · Trade: exports
 - [ ] 30 · Trade: imports

@@ -1,13 +1,15 @@
 import { describe, expect, it } from 'vitest';
+import { footprint } from '../../src/sim/commands';
+import { guildBlueprint } from '../../src/sim/guild';
 import { MAP_SIZE, generateTerrain } from '../../src/sim/map';
 import type { Point } from '../../src/sim/point';
 import { BUILDABLE, type Terrain } from '../../src/sim/terrain';
 
 const SEEDS = Array.from({ length: 100 }, (_, i) => i + 1);
 const MIN_RUN = 12;
-const GUILD_SIZE = 4;
-const GUILD_RANGE = 4;
-const GUILD_PLACEMENTS = 8;
+const ROTATIONS = [0, 1, 2, 3] as const;
+const GUILD_PLACEMENTS = 7;
+const CLEARABLE: ReadonlySet<Terrain> = new Set<Terrain>([...BUILDABLE, 'forest']);
 const MAX_HORIZONTAL_RUNS = 3;
 const BAND = { minY: MAP_SIZE / 4, maxY: (MAP_SIZE * 3) / 4 - 1 };
 
@@ -39,22 +41,23 @@ function at(terrain: Terrain[], x: number, y: number): Terrain {
   return terrain[y * MAP_SIZE + x];
 }
 
-function guildPlacementsInRange(terrain: Terrain[], road: Point[]): number {
-  const onRoad = new Set(road.map((p) => p.y * MAP_SIZE + p.x));
+function guildBlueprints(terrain: Terrain[], road: Point[]): number {
+  const index = (p: Point) => p.y * MAP_SIZE + p.x;
+  const inMap = (p: Point) => p.x >= 0 && p.y >= 0 && p.x < MAP_SIZE && p.y < MAP_SIZE;
+  const onRoad = new Set(road.map(index));
   const taken = new Set<number>();
   let count = 0;
-  for (let y = 0; y <= MAP_SIZE - GUILD_SIZE; y++) {
-    for (let x = 0; x <= MAP_SIZE - GUILD_SIZE; x++) {
-      const tiles: number[] = [];
-      for (let dy = 0; dy < GUILD_SIZE; dy++) for (let dx = 0; dx < GUILD_SIZE; dx++) tiles.push((y + dy) * MAP_SIZE + x + dx);
-      const fits = tiles.every((i) => BUILDABLE.has(terrain[i]) && !onRoad.has(i) && !taken.has(i));
-      const inRange = road.some((p) => {
-        const dx = Math.max(x - p.x, 0, p.x - (x + GUILD_SIZE - 1));
-        const dy = Math.max(y - p.y, 0, p.y - (y + GUILD_SIZE - 1));
-        return Math.max(dx, dy) <= GUILD_RANGE;
-      });
-      if (fits && inRange) {
-        tiles.forEach((i) => taken.add(i));
+  for (const corner of road) {
+    for (const rotation of ROTATIONS) {
+      const [offset] = guildBlueprint({ type: 'tradersGuild', x: 0, y: 0, rotation }).road;
+      const guild = { type: 'tradersGuild', x: corner.x - offset.x, y: corner.y - offset.y, rotation } as const;
+      const blueprint = guildBlueprint(guild);
+      const ground = [...footprint(guild), ...footprint(blueprint.yard)];
+      const fits =
+        blueprint.road.every((p) => inMap(p) && onRoad.has(index(p))) &&
+        ground.every((p) => inMap(p) && CLEARABLE.has(terrain[index(p)]) && !onRoad.has(index(p)) && !taken.has(index(p)));
+      if (fits) {
+        ground.forEach((p) => taken.add(index(p)));
         count++;
       }
     }
@@ -111,8 +114,8 @@ it('turns only one way vertically, never doubling back', () => {
     }
   });
 
-  it('leaves room for 8 Traders’ Guilds within range', () => {
-    expect(guildPlacementsInRange(terrain, mainRoad)).toBeGreaterThanOrEqual(GUILD_PLACEMENTS);
+  it('leaves room for 7 Traders’ Guilds with their yards, on ground that is buildable or can be cleared', () => {
+    expect(guildBlueprints(terrain, mainRoad)).toBeGreaterThanOrEqual(GUILD_PLACEMENTS);
   });
 });
 

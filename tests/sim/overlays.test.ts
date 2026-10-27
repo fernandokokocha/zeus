@@ -287,25 +287,24 @@ describe("map overlays on a Traders' Guild", () => {
 });
 
 describe('the guild sites overlay', () => {
-  it('shades tiles within 4 of the Main Road, but not the road itself', () => {
+  it('shades the guild band on both sides of a straight stretch of Main Road, but not the road itself', () => {
     const { game } = guildBlock();
-    expect(readingAt(game, 'guildSites', 10, 13)).toBe(0);
-    expect(readingAt(game, 'guildSites', 10, 21)).toBe(0);
-    expect(readingAt(game, 'guildSites', 10, 12)).toBeNull();
-    expect(readingAt(game, 'guildSites', 10, 22)).toBeNull();
-    expect(readingAt(game, 'guildSites', 10, 17)).toBeNull();
+    expect(readingAt(game, 'guildSites', 10, 12)).toBe(0);
+    expect(readingAt(game, 'guildSites', 10, 20)).toBe(0);
+    expect(readingAt(game, 'guildSites', 10, 11)).toBeNull();
+    expect(readingAt(game, 'guildSites', 10, 21)).toBeNull();
+    expect(readingAt(game, 'guildSites', 10, 16)).toBeNull();
   });
 
   it('highlights every tile of a block a guild can be placed on now', () => {
     const { game } = guildBlock();
-    for (const [x, y] of [[3, 12], [6, 12], [3, 15], [6, 15]]) expect(readingAt(game, 'guildSites', x, y)).toBe(1);
+    for (const [x, y] of [[3, 12], [6, 12], [3, 15], [6, 15], [3, 17], [6, 18]]) expect(readingAt(game, 'guildSites', x, y)).toBe(1);
     expect(readingAt(game, 'guildSites', 7, 15)).toBe(0);
   });
 
   it('does not highlight a block that lacks a permit', () => {
     const { game } = guildBlock();
     game.guildPermits = 0;
-    expect(readingAt(game, 'guildSites', 3, 15)).toBe(0);
-    expect(readingAt(game, 'guildSites', 3, 12)).toBeNull();
+    for (const [x, y] of [[3, 12], [3, 15], [3, 17]]) expect(readingAt(game, 'guildSites', x, y)).toBe(0);
   });
 });

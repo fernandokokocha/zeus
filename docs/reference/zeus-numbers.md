@@ -99,6 +99,7 @@ https://zeus.heavengames.com/gameinfo/appeal/. Fire/collapse are risk increments
 | Monument (**ours**, earned: first at **1,000** citizens, once per game) | 3×3 | — | free | 20,20,18,16,14,12 | — | — |
 | Any sanctuary | see below | | | 20,18,16,14,12,10 | — | — |
 | Traders' Guild (**ours**, elite house) | 4×4 | — (20 merchants) | 100 + 1 permit | — | 8 | — |
+| Trade Yard (spec, placed with its guild) | 4×2 | — | part of the guild's 100 | — | — | — |
 
 - Collapse timing: 60 ÷ risk increment = months until collapse without maintenance.
 - Sculpture Studio workers: 12 on the industry page, 18 on the model-data page. Use 12.
@@ -232,14 +233,14 @@ https://zeus.heavengames.com/gameinfo/gods/
 - Well fed charter (spec): **24** months in a row with no house that eats going hungry
   grants **1** Traders' Guild permit, then the count restarts.
 - Traders' Guild (spec): **20** merchants who are its staff and stay out of the labor pool;
-  placed over four Townhouses in an exact 4×4 block whose nearest tile is within **4** tiles of
-  the Main Road, with block appeal at least **25**; needs a Townhouse's needs plus cloth, culture
+  placed over four Townhouses in an exact 4×4 block whose front lines a straight **4**-tile
+  stretch of Main Road, with its **4×2** Trade Yard across the road on clear ground, and block appeal at least **25**; needs a Townhouse's needs plus cloth, culture
   **45** and appeal **25**; pays no tax. Any need missing for **1 month** breaks it into four
   vacant lots and the permit is lost.
 - Cloth (spec, **ours**): a guild uses **8 units** a month; a cloth peddler fills it to **3 months**
   (24 units), like other goods. Ordinary houses take no cloth.
 - Placing a guild keeps the four houses' food, fleece and oil, summed, and their latest water and
   culture coverage; residents beyond 20 leave.
-- Guild sites (spec): a house shows the site of the 4×4 block it belongs to that is within guild
-  range and closest to qualifying. "A Traders' Guild can now be placed at …" is posted **once per
+- Guild sites (spec): a house shows the site of the 4×4 block it belongs to whose front lines the
+  Main Road and that is closest to qualifying. "A Traders' Guild can now be placed at …" is posted **once per
   block**, named by its corner, the first time the block qualifies.

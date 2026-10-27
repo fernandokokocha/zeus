@@ -1,5 +1,6 @@
 import { BUILDING_SPECS, buildingSize, isAgoraVendor, type BuildingType, type Rotation } from '../sim/buildings';
 import { checkBuildingPlacement, footprint, vendorSpotAt, lotOrigins, roadObstacle, roadPath, roadblockObstacle, sheepObstacle } from '../sim/commands';
+import { blueprintTiles } from '../sim/guild';
 import { rectBetween, tilesIn, type Point } from '../sim/point';
 import { upgradePlan } from '../sim/road-upgrades';
 import { clampToMap, inBounds, type GameState } from '../sim/state';
@@ -24,7 +25,8 @@ function buildingPreview(state: GameState, type: BuildingType, origin: Point, ro
   const check = checkBuildingPlacement(state, type, origin.x, origin.y, rotation);
   const lacksRoad = BUILDING_SPECS[type].needsRoad && !check.roadAccess;
   const kind: PreviewKind = check.obstacle ? 'invalid' : lacksRoad ? 'warning' : 'valid';
-  return footprint({ type, ...origin, rotation })
+  const placement = { type, ...origin, rotation };
+  return (type === 'tradersGuild' ? blueprintTiles(placement) : footprint(placement))
     .filter((p) => inBounds(state, p.x, p.y))
     .map((p) => ({ ...p, kind }));
 }

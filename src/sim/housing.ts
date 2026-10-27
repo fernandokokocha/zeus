@@ -60,7 +60,6 @@ export const HOUSE_LEVELS: Record<HouseLevel, HouseLevelSpec> = {
 
 export const TRADERS_GUILD = {
   merchants: 20,
-  mainRoadRange: 4,
   needs: [...HOUSE_LEVELS.townhouse.needs, 'cloth'] as ResidentNeed[],
   culture: HOUSE_LEVELS.townhouse.culture,
   appeal: HOUSE_LEVELS.townhouse.appeal.devolve,

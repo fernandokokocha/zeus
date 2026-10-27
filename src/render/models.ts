@@ -24,6 +24,7 @@ import { foundryModel } from './foundry-models';
 import { sculptureStudioModel } from './sculpture-models';
 import { artisansGuildModel } from './guild-models';
 import { weaverModel } from './weaver-models';
+import { tradeYardModel } from './trade-yard-models';
 import { tradersGuildModel } from './traders-guild-models';
 import { collegeModel } from './college-models';
 import { dramaSchoolModel } from './drama-school-models';
@@ -644,6 +645,7 @@ const MODELS: Record<Exclude<BuildingType, 'house'>, (building: Building, state:
   athenaSanctuary: sanctuaryModel,
   hephaestusSanctuary: sanctuaryModel,
   tradersGuild: (b) => tradersGuildModel(b.residents > 0, isMissingNeed(b)),
+  tradeYard: bakedOnce(tradeYardModel),
   ruins: (b, state) => ruinsModel(b, isBurning(state, b)),
 };
 

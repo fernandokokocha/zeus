@@ -1,18 +1,29 @@
 import { appealMap, houseAppeal } from './appeal';
-import { BUILDING_SPECS, type Placement } from './buildings';
-import { addBuilding, build, footprint, lotOrigins, removeBuildings } from './commands';
+import { BUILDING_SPECS, localToWorld, type Placement, type Rotation } from './buildings';
+import { addBuilding, build, footprint, footprintObstacle, lotOrigins, removeBuildings } from './commands';
 import { culturePoints } from './culture';
 import { LEVEL_CHANGE_TICKS, TRADERS_GUILD, hasNeed, houseLevel } from './housing';
 import { postNotice } from './notices';
-import type { Point } from './point';
+import { rectBetween, tilesIn, type Point } from './point';
 import { buildingById, inBounds, tileIndex, type Building, type Coverage, type GameState, type PeddledGood } from './state';
 
 const CARRIED_GOODS: PeddledGood[] = ['food', 'fleece', 'oil', 'cloth'];
+const ROTATIONS: Rotation[] = [0, 1, 2, 3];
+const BLOCK_SIDE = BUILDING_SPECS.tradersGuild.width;
+const ROAD_ROW = BLOCK_SIDE;
+const YARD_ROWS = { first: ROAD_ROW + 1, last: ROAD_ROW + BUILDING_SPECS.tradeYard.height };
+
+export interface GuildBlueprint {
+  road: Point[];
+  yard: Placement;
+}
 
 export interface GuildSite {
   origin: Point;
+  rotation: Rotation;
   quarters: { at: Point; house: boolean; townhouse: boolean }[];
-  nearMainRoad: boolean;
+  alongMainRoad: boolean;
+  yardClear: boolean;
   permit: boolean;
   appeal: number;
 }
@@ -29,16 +40,31 @@ const BLOCK_QUARTERS: Point[] = [
   { x: 2, y: 2 },
 ];
 
+export function guildBlueprint(guild: Placement): GuildBlueprint {
+  const across = (row: number) => rectBetween(localToWorld(guild, { x: 0, y: row }), localToWorld(guild, { x: BLOCK_SIDE - 1, y: row }));
+  const yard = rectBetween(localToWorld(guild, { x: 0, y: YARD_ROWS.first }), localToWorld(guild, { x: BLOCK_SIDE - 1, y: YARD_ROWS.last }));
+  return {
+    road: tilesIn(across(ROAD_ROW)),
+    yard: { type: 'tradeYard', x: yard.minX, y: yard.minY, rotation: guild.rotation },
+  };
+}
+
+export function blueprintTiles(guild: Placement): Point[] {
+  const { road, yard } = guildBlueprint(guild);
+  return [...footprint(guild), ...road, ...footprint(yard)];
+}
+
 export function guildObstacle(state: GameState, placement: Placement): string | null {
-  if (!blockInMap(state, placement)) return 'Outside the map';
+  if (!blueprintTiles(placement).every((p) => inBounds(state, p.x, p.y))) return 'Outside the map';
   return siteObstacle(surveyGuildSite(state, placement));
 }
 
-export type SiteShortfall = 'townhouses' | 'mainRoad' | 'permit' | 'appeal';
+export type SiteShortfall = 'townhouses' | 'mainRoad' | 'yard' | 'permit' | 'appeal';
 
 const SHORTFALL_REASONS: Record<SiteShortfall, (site: GuildSite) => string> = {
   townhouses: () => "A Traders' Guild goes over four Townhouses forming a 4×4 block",
-  mainRoad: () => `A Traders' Guild must be within ${TRADERS_GUILD.mainRoadRange} tiles of the Main Road`,
+  mainRoad: () => "A Traders' Guild must line a straight 4-tile stretch of Main Road",
+  yard: () => "The yard's ground across the Main Road isn't clear",
   permit: () => "No Traders' Guild permit: complete the Well fed charter",
   appeal: (site) => `Needs appeal ${TRADERS_GUILD.appeal} here (has ${site.appeal})`,
 };
@@ -46,7 +72,8 @@ const SHORTFALL_REASONS: Record<SiteShortfall, (site: GuildSite) => string> = {
 export function siteShortfalls(site: GuildSite): SiteShortfall[] {
   const shortfalls: SiteShortfall[] = [];
   if (!site.quarters.every((q) => q.townhouse)) shortfalls.push('townhouses');
-  if (!site.nearMainRoad) shortfalls.push('mainRoad');
+  if (!site.alongMainRoad) shortfalls.push('mainRoad');
+  else if (!site.yardClear) shortfalls.push('yard');
   if (!site.permit) shortfalls.push('permit');
   if (site.appeal < TRADERS_GUILD.appeal) shortfalls.push('appeal');
   return shortfalls;
@@ -61,16 +88,15 @@ export function guildSiteOf(state: GameState, house: Building): GuildSite | null
   const around = siteSurroundings(state);
   const sites = BLOCK_QUARTERS.map((q) => ({ x: house.x - q.x, y: house.y - q.y }))
     .filter((origin) => blockInMap(state, origin))
-    .map((origin) => surveyGuildSite(state, origin, around))
-    .filter((site) => site.nearMainRoad);
+    .flatMap((origin) => rotationsAlongMainRoad(state, origin).map((rotation) => surveyGuildSite(state, guildAt(origin, rotation), around)));
   return sites.reduce<GuildSite | null>((best, site) => (best === null || closerToPlaceable(site, best) ? site : best), null);
 }
 
-export function placeableGuildSites(state: GameState, around = siteSurroundings(state)): Point[] {
+export function placeableGuildSites(state: GameState, around = siteSurroundings(state)): Placement[] {
   return state.buildings
-    .filter((b) => b.type === 'house' && houseLevel(b) === 'townhouse')
-    .map(({ x, y }) => ({ x, y }))
-    .filter((origin) => blockInMap(state, origin) && siteObstacle(surveyGuildSite(state, origin, around)) === null);
+    .filter((b) => b.type === 'house' && houseLevel(b) === 'townhouse' && blockInMap(state, b))
+    .flatMap((b) => rotationsAlongMainRoad(state, b).map((rotation) => guildAt(b, rotation)))
+    .filter((guild) => siteObstacle(surveyGuildSite(state, guild, around)) === null);
 }
 
 export function announceGuildSites(state: GameState): void {
@@ -83,8 +109,8 @@ export function announceGuildSites(state: GameState): void {
   }
 }
 
-export function guildSiteTiles(origin: Point): Point[] {
-  return footprint(guildAt(origin));
+export function guildSiteTiles(guild: Placement): Point[] {
+  return [...footprint(guild), ...footprint(guildBlueprint(guild).yard)];
 }
 
 function closerToPlaceable(site: GuildSite, than: GuildSite): boolean {
@@ -102,43 +128,64 @@ function distanceFromPlaceable(site: GuildSite): number {
 }
 
 function blockInMap(state: GameState, origin: Point): boolean {
-  return guildSiteTiles(origin).every((p) => inBounds(state, p.x, p.y));
+  return footprint(guildAt(origin, 0)).every((p) => inBounds(state, p.x, p.y));
 }
 
-function guildAt(origin: Point): Placement {
-  return { type: 'tradersGuild', x: origin.x, y: origin.y, rotation: 0 };
+function guildAt(origin: Point, rotation: Rotation): Placement {
+  return { type: 'tradersGuild', x: origin.x, y: origin.y, rotation };
+}
+
+function alongMainRoad(state: GameState, guild: Placement): boolean {
+  return guildBlueprint(guild).road.every((p) => inBounds(state, p.x, p.y) && state.mainRoad[tileIndex(state, p.x, p.y)]);
+}
+
+function rotationsAlongMainRoad(state: GameState, origin: Point): Rotation[] {
+  return ROTATIONS.filter((rotation) => alongMainRoad(state, guildAt(origin, rotation)));
 }
 
 export function siteSurroundings(state: GameState): SiteSurroundings {
   return { appeal: appealMap(state), inRange: guildRange(state) };
 }
 
-export function guildRange(state: GameState): boolean[] {
-  const range = new Array<boolean>(state.size * state.size).fill(false);
-  const reach = TRADERS_GUILD.mainRoadRange;
+function roadCornerOffset(rotation: Rotation): Point {
+  const [first] = guildBlueprint(guildAt({ x: 0, y: 0 }, rotation)).road;
+  return first;
+}
+
+function guildsAlongMainRoad(state: GameState): Placement[] {
+  const guilds: Placement[] = [];
   state.mainRoad.forEach((paved, i) => {
     if (!paved) return;
-    const x = i % state.size;
-    const y = Math.floor(i / state.size);
-    for (let ny = y - reach; ny <= y + reach; ny++) {
-      for (let nx = x - reach; nx <= x + reach; nx++) if (inBounds(state, nx, ny)) range[tileIndex(state, nx, ny)] = true;
+    const corner = { x: i % state.size, y: Math.floor(i / state.size) };
+    for (const rotation of ROTATIONS) {
+      const offset = roadCornerOffset(rotation);
+      const guild = guildAt({ x: corner.x - offset.x, y: corner.y - offset.y }, rotation);
+      if (blockInMap(state, guild) && alongMainRoad(state, guild)) guilds.push(guild);
     }
   });
+  return guilds;
+}
+
+export function guildRange(state: GameState): boolean[] {
+  const range = new Array<boolean>(state.size * state.size).fill(false);
+  for (const guild of guildsAlongMainRoad(state)) for (const p of footprint(guild)) range[tileIndex(state, p.x, p.y)] = true;
   return range;
 }
 
-export function surveyGuildSite(state: GameState, origin: Point, around = siteSurroundings(state)): GuildSite {
-  const placement = guildAt(origin);
+export function surveyGuildSite(state: GameState, guild: Placement, around = siteSurroundings(state)): GuildSite {
+  const along = alongMainRoad(state, guild);
   return {
-    origin: { x: origin.x, y: origin.y },
+    origin: { x: guild.x, y: guild.y },
+    rotation: guild.rotation,
     quarters: BLOCK_QUARTERS.map((q) => {
-      const at = { x: origin.x + q.x, y: origin.y + q.y };
+      const at = { x: guild.x + q.x, y: guild.y + q.y };
       const house = houseAt(state, at);
-return { at, house: house !== null, townhouse: house !== null && houseLevel(house) === 'townhouse' };
+      return { at, house: house !== null, townhouse: house !== null && houseLevel(house) === 'townhouse' };
     }),
-    nearMainRoad: footprint(placement).some((p) => around.inRange[tileIndex(state, p.x, p.y)]),
+    alongMainRoad: along,
+    yardClear: along && footprintObstacle(state, guildBlueprint(guild).yard) === null,
     permit: state.guildPermits > 0,
-    appeal: houseAppeal(state, placement, around.appeal),
+    appeal: houseAppeal(state, guild, around.appeal),
   };
 }
 
@@ -152,10 +199,18 @@ function buildingsUnder(state: GameState, placement: Placement): Building[] {
   return state.buildings.filter((b) => ids.has(b.id));
 }
 
+export function yardOf(state: GameState, guild: Building): Building {
+  const { yard } = guildBlueprint(guild);
+  const found = buildingById(state, state.buildingIdAt[tileIndex(state, yard.x, yard.y)]);
+  if (found === undefined || found.type !== 'tradeYard') throw new Error(`Traders' Guild ${guild.id} has no yard`);
+  return found;
+}
+
 export function raiseGuild(state: GameState, placement: Placement): Building {
   const houses = buildingsUnder(state, placement);
   removeBuildings(state, new Set(houses.map((h) => h.id)));
   const guild = build(state, placement);
+  addBuilding(state, guildBlueprint(placement).yard);
   guild.residents = Math.min(TRADERS_GUILD.merchants, sum(houses, (h) => h.residents));
   for (const good of CARRIED_GOODS) guild[good] = sum(houses, (h) => h[good]);
   for (const service of Object.keys(guild.coveredUntil) as Coverage[]) {

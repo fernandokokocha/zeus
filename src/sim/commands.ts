@@ -12,7 +12,7 @@ import {
   type Rotation,
 } from './buildings';
 import { rectBetween, tilesIn, type Point } from './point';
-import { guildObstacle, raiseGuild } from './guild';
+import { guildObstacle, raiseGuild, yardOf } from './guild';
 import { RIPE_CROP } from './olives';
 import { isSanctuary, sanctuaryObstacle, takeInitialMarble } from './sanctuaries';
 import { GRAZE_PAUSE_TICKS, isPasture } from './sheep';
@@ -100,7 +100,7 @@ export function footprint({ type, x, y, rotation }: Placement): Point[] {
   return tilesIn({ minX: x, minY: y, maxX: x + width - 1, maxY: y + height - 1 });
 }
 
-function footprintObstacle(state: GameState, placement: Placement): string | null {
+export function footprintObstacle(state: GameState, placement: Placement): string | null {
   for (const p of footprint(placement)) {
     if (!inBounds(state, p.x, p.y)) return 'Outside the map';
     if (state.roads[tileIndex(state, p.x, p.y)]) return 'A road is in the way';
@@ -295,11 +295,13 @@ export function demolish(state: GameState, from: Point, to: Point): void {
     if (state.terrain[i] === 'forest') state.terrain[i] = 'grass';
     if (state.buildingIdAt[i] !== NO_BUILDING) doomed.add(state.buildingIdAt[i]);
   }
+  for (const yard of state.buildings.filter((b) => b.type === 'tradeYard')) doomed.delete(yard.id);
   removeBuildings(state, doomed);
   state.version++;
 }
 
 export function removeBuildings(state: GameState, doomed: Set<number>): void {
+  for (const guild of state.buildings.filter((b) => b.type === 'tradersGuild' && doomed.has(b.id))) doomed.add(yardOf(state, guild).id);
   const agoraOfVendor = new Map<number, number>();
   for (const vendor of state.buildings.filter((b) => isAgoraVendor(b.type))) {
     const agoraId = roadSite(state, vendor).id;

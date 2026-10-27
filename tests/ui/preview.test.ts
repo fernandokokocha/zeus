@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { placeBuilding, placeRoad } from '../../src/sim/commands';
 import { UNITS_PER_LOAD } from '../../src/sim/food';
 import { previewTiles } from '../../src/ui/preview';
-import { grassGame, setTerrain } from '../sim/helpers';
+import { GUILD_BLOCK, grassGame, guildBlock, setTerrain } from '../sim/helpers';
 
 describe('previewTiles', () => {
   it('shows nothing without a tool or hover tile', () => {
@@ -166,5 +166,13 @@ describe('previewTiles for a road upgrade', () => {
       { x: 2, y: 1, kind: 'valid' },
       { x: 3, y: 1, kind: 'invalid' },
     ]);
+  });
+  it("draws a Traders' Guild with the Main Road along its front and the yard across it", () => {
+    const { game } = guildBlock();
+    const tiles = previewTiles(game, 'tradersGuild', null, { x: GUILD_BLOCK.x + 1, y: GUILD_BLOCK.y + 1 }, 0);
+    expect(tiles).toHaveLength(16 + 4 + 8);
+    expect(tiles.every((t) => t.kind === 'valid')).toBe(true);
+    expect(tiles).toContainEqual({ x: 3, y: 16, kind: 'valid' });
+    expect(tiles).toContainEqual({ x: 6, y: 18, kind: 'valid' });
   });
 });

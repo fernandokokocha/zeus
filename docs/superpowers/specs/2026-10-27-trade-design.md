@@ -48,7 +48,9 @@ EEEERYY      Y = Trade Yard (2×4)
 - **Main Road generation:** its test that every seed leaves room for at least 8 guild
   placements is rewritten for the blueprint. If seeds now fall short of 8, the slice lowers
   the number to what the generator reliably gives (at least 4) rather than reshaping the
-  road, and records it.
+  road, and records it. **Slice 27:** counting forest as ground the player can clear
+  (demolishing it leaves grass), the worst of 100 seeds leaves room for **7**, so the test
+  asks for 7. Counting only open ground, two seeds fall to 3, all from forest along the road.
 - **The yard has no appeal** (`[]`) and no cost of its own; it is part of the guild's
   100 dr. A yard sits two tiles from its guild, and negative appeal there would demote the
   guild it serves.

@@ -4,7 +4,7 @@ import type { GameState } from '../sim/state';
 import { SANCTUARY_SPECS, type Sanctuary } from '../sim/sanctuaries';
 import { ROADBLOCK_COST, ROAD_TILE_COST, SHEEP_COST } from '../sim/treasury';
 
-export type SingleBuilding = Exclude<BuildingType, 'house' | 'ruins'>;
+export type SingleBuilding = Exclude<BuildingType, 'house' | 'ruins' | 'tradeYard'>;
 export const UPGRADE_TOOLS = { ornateRoad: 'ornate', fastRoad: 'fast' } as const satisfies Record<string, RoadUpgrade>;
 export type UpgradeTool = keyof typeof UPGRADE_TOOLS;
 

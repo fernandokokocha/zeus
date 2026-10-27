@@ -1151,8 +1151,14 @@ describe('the inspector on a possible guild site', () => {
 
   it("shows on a vacant lot in range, from the lot's own corner", () => {
     const { game } = guildBlock();
-    placeHouse(game, 12, 14);
-    expect(siteLine(game, 12, 14)).toMatch(/^Possible guild site at 12, 14: not a Townhouse yet, the other 3 houses not Townhouses/);
+    placeHouse(game, 12, 12);
+    expect(siteLine(game, 12, 12)).toMatch(/^Possible guild site at 12, 12: not a Townhouse yet, the other 3 houses not Townhouses/);
+  });
+
+  it("names a yard whose ground across the Main Road isn't clear", () => {
+    const { game } = guildBlock();
+    placeBuilding(game, 'park', 4, 18);
+    expect(siteLine(game, 3, 12)).toBe("Possible guild site at 3, 12: the yard's ground across the Main Road isn't clear");
   });
 
 it('prefers, among equally short blocks, the one already made of houses', () => {
@@ -1161,8 +1167,8 @@ it('prefers, among equally short blocks, the one already made of houses', () => 
     expect(siteLine(game, 14, 14)).toMatch(/^Possible guild site at 12, 12: /);
   });
 
-  it('does not show beyond guild range of the Main Road', () => {
-    const { game } = guildBlock(20);
+  it('shows only for blocks whose front lines the Main Road', () => {
+    const { game } = guildBlock(18);
     expect(siteLine(game, 3, 12)).toBeUndefined();
     expect(siteLine(game, 3, 14)).toMatch(/^Possible guild site at 3, 14: 2 of the other 3 houses not Townhouses/);
   });

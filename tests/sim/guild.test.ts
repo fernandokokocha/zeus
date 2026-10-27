@@ -5,11 +5,13 @@ import { TICKS_PER_MONTH } from '../../src/sim/clock';
 import { demolish, placeBuilding, placeRoad } from '../../src/sim/commands';
 import { LEVEL_CHANGE_TICKS, TRADERS_GUILD } from '../../src/sim/housing';
 import { laborSummary } from '../../src/sim/labor';
-import { canBurn, catchFire } from '../../src/sim/safety';
+import { guildBlueprint } from '../../src/sim/guild';
+import { describeTile } from '../../src/sim/inspect';
+import { canBurn, canCollapse, catchFire } from '../../src/sim/safety';
 import { population } from '../../src/sim/settlers';
-import type { Building, GameState } from '../../src/sim/state';
+import { NO_BUILDING, tileIndex, type Building, type GameState } from '../../src/sim/state';
 import { tick } from '../../src/sim/tick';
-import { GUILD_BLOCK, GUILD_LOTS, guildBlock, guildOf, placedGuild, runTicks, supplyGuild } from './helpers';
+import { GUILD_BLOCK, GUILD_LOTS, guildBlock, guildOf, placedGuild, runTicks, setTerrain, supplyGuild } from './helpers';
 
 const FAR = 1_000_000;
 
@@ -23,6 +25,74 @@ function untilMonthEnd(game: GameState): void {
 }
 
 const NOT_A_BLOCK = "A Traders' Guild goes over four Townhouses forming a 4×4 block";
+const NOT_ALONG_MAIN_ROAD = "A Traders' Guild must line a straight 4-tile stretch of Main Road";
+const YARD_NOT_CLEAR = "The yard's ground across the Main Road isn't clear";
+
+function hasYard(game: GameState): boolean {
+  return game.buildings.some((b) => b.type === 'tradeYard');
+}
+
+function yardOf(game: GameState): Building {
+  const yard = game.buildings.find((b) => b.type === 'tradeYard');
+  if (!yard) throw new Error('No yard');
+  return yard;
+}
+
+describe("a Traders' Guild's blueprint", () => {
+  const at = { type: 'tradersGuild', x: 10, y: 10 } as const;
+  const along = (xs: number[], ys: number[]) => xs.flatMap((x) => ys.map((y) => ({ x, y })));
+
+  it('lays the Main Road along its front and the yard across it, turning with the rotation', () => {
+    expect(guildBlueprint({ ...at, rotation: 0 })).toEqual({
+      road: along([10, 11, 12, 13], [14]),
+      yard: { type: 'tradeYard', x: 10, y: 15, rotation: 0 },
+    });
+    expect(guildBlueprint({ ...at, rotation: 1 })).toEqual({
+      road: along([9], [10, 11, 12, 13]),
+      yard: { type: 'tradeYard', x: 7, y: 10, rotation: 1 },
+    });
+    expect(guildBlueprint({ ...at, rotation: 2 })).toEqual({
+      road: along([10, 11, 12, 13], [9]),
+      yard: { type: 'tradeYard', x: 10, y: 7, rotation: 2 },
+    });
+    expect(guildBlueprint({ ...at, rotation: 3 })).toEqual({
+      road: along([14], [10, 11, 12, 13]),
+      yard: { type: 'tradeYard', x: 15, y: 10, rotation: 3 },
+    });
+  });
+});
+
+describe("a Traders' Guild's Trade Yard", () => {
+  it('cannot be demolished on its own', () => {
+    const { game } = placedGuild();
+    demolish(game, { x: 3, y: 17 }, { x: 6, y: 18 });
+    expect(hasYard(game)).toBe(true);
+  });
+
+  it('goes with its guild when the guild is demolished', () => {
+    const { game } = placedGuild();
+    demolish(game, GUILD_BLOCK, GUILD_BLOCK);
+    expect(hasYard(game)).toBe(false);
+    expect(game.buildingIdAt[tileIndex(game, 3, 17)]).toBe(NO_BUILDING);
+  });
+
+  it('goes with its guild when the guild burns', () => {
+    const { game, guild } = placedGuild();
+    catchFire(game, guild);
+    expect(hasYard(game)).toBe(false);
+  });
+
+  it('neither burns nor collapses', () => {
+    const { game } = placedGuild();
+    const yard = yardOf(game);
+    expect(canBurn(yard) || canCollapse(yard)).toBe(false);
+  });
+
+  it('says trade opens with a route', () => {
+    const { game } = placedGuild();
+    expect(describeTile(game, 4, 17)).toMatchObject({ title: 'Trade Yard', lines: ['Tile 3, 17', 'Trade Yard: trade opens with a route'] });
+  });
+});
 
 describe("placing a Traders' Guild", () => {
   it('replaces four Townhouses forming a 4×4 block, for 100 dr and a permit', () => {
@@ -83,15 +153,41 @@ describe("placing a Traders' Guild", () => {
     expect(placeBuilding(game, 'tradersGuild', GUILD_BLOCK.x + 1, GUILD_BLOCK.y)).toEqual({ ok: false, reason: NOT_A_BLOCK });
   });
 
-  it('needs its nearest tile within 4 tiles of the Main Road', () => {
-    expect(TRADERS_GUILD.mainRoadRange).toBe(4);
-    const near = guildBlock(19).game;
-    expect(placeBuilding(near, 'tradersGuild', GUILD_BLOCK.x, GUILD_BLOCK.y)).toEqual({ ok: true });
-    const far = guildBlock(20).game;
-    expect(placeBuilding(far, 'tradersGuild', GUILD_BLOCK.x, GUILD_BLOCK.y)).toEqual({
-      ok: false,
-      reason: "A Traders' Guild must be within 4 tiles of the Main Road",
-    });
+  it('places its Trade Yard across the Main Road, at no cost of its own', () => {
+    const { game } = placedGuild();
+    expect(yardOf(game)).toMatchObject({ x: GUILD_BLOCK.x, y: 17, rotation: 0 });
+    expect(BUILDING_SPECS.tradeYard).toMatchObject({ width: 4, height: 2, cost: 0, workers: 0, appeal: [] });
+  });
+
+  it('needs a straight stretch of Main Road all along its front', () => {
+    const offByOne = guildBlock(17).game;
+    expect(placeBuilding(offByOne, 'tradersGuild', GUILD_BLOCK.x, GUILD_BLOCK.y)).toEqual({ ok: false, reason: NOT_ALONG_MAIN_ROAD });
+    const { game } = guildBlock();
+    game.mainRoad[tileIndex(game, 6, 16)] = false;
+    expect(placeBuilding(game, 'tradersGuild', GUILD_BLOCK.x, GUILD_BLOCK.y)).toEqual({ ok: false, reason: NOT_ALONG_MAIN_ROAD });
+  });
+
+  it('needs the Main Road, not a plain road, along its front', () => {
+    const { game } = guildBlock(25);
+    placeRoad(game, { x: 0, y: 16 }, { x: 12, y: 16 });
+    expect(placeBuilding(game, 'tradersGuild', GUILD_BLOCK.x, GUILD_BLOCK.y)).toEqual({ ok: false, reason: NOT_ALONG_MAIN_ROAD });
+  });
+
+  it('turns with the rotation, so the front must face the Main Road', () => {
+    const { game } = guildBlock();
+    expect(placeBuilding(game, 'tradersGuild', GUILD_BLOCK.x, GUILD_BLOCK.y, 2)).toEqual({ ok: false, reason: NOT_ALONG_MAIN_ROAD });
+  });
+
+  it("needs the yard's ground clear: no building, no road, buildable land", () => {
+    const built = guildBlock().game;
+    placeBuilding(built, 'park', 4, 18);
+    const paved = guildBlock().game;
+    placeRoad(paved, { x: 3, y: 17 }, { x: 6, y: 17 });
+    const flooded = guildBlock().game;
+    setTerrain(flooded, 6, 18, 'water');
+    for (const game of [built, paved, flooded]) {
+      expect(placeBuilding(game, 'tradersGuild', GUILD_BLOCK.x, GUILD_BLOCK.y)).toEqual({ ok: false, reason: YARD_NOT_CLEAR });
+    }
   });
 
   it('needs appeal 25 over the block', () => {
@@ -141,8 +237,8 @@ describe("a Traders' Guild's needs", () => {
     const { game, guild } = placedGuild();
     supplyGuild(guild);
     guild.cloth = 0;
-    placeBuilding(game, 'agora', 10, 18);
-    placeBuilding(game, 'clothVendor', 10, 18);
+    placeBuilding(game, 'agora', 10, 17);
+    placeBuilding(game, 'clothVendor', 10, 17);
     const vendor = game.buildings.find((b) => b.type === 'clothVendor')!;
     vendor.cloth = 400;
     for (let i = 0; i < TICKS_PER_MONTH && guild.cloth === 0; i++) tick(game);
@@ -154,7 +250,7 @@ describe("a Traders' Guild's needs", () => {
     const { game, guild } = placedGuild();
     supplyGuild(guild);
     guild.coveredUntil.water = 0;
-    placeBuilding(game, 'fountain', 8, 15);
+    placeBuilding(game, 'fountain', 9, 14);
     for (let i = 0; i < TICKS_PER_MONTH && guild.coveredUntil.water === 0; i++) tick(game);
     expect(guild.coveredUntil.water).toBeGreaterThan(game.tick);
   });
@@ -177,6 +273,7 @@ describe("a Traders' Guild's demotion", () => {
     expect(guildOf(game)).toBe(guild);
     tick(game);
     expect(game.buildings.some((b) => b.type === 'tradersGuild')).toBe(false);
+    expect(hasYard(game)).toBe(false);
     const lots = blockLots(game);
     expect(lots.map(({ x, y, residents }) => ({ x, y, residents }))).toEqual(GUILD_LOTS.map((lot) => ({ ...lot, residents: 0 })));
   });

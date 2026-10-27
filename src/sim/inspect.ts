@@ -156,6 +156,7 @@ function describeBuilding(state: GameState, building: Building): Description {
 function describeBuildingKind(state: GameState, building: Building): Description {
   if (building.type === 'house') return describeHouse(state, building);
   if (building.type === 'tradersGuild') return describeGuild(state, building);
+  if (building.type === 'tradeYard') return { title: BUILDING_SPECS.tradeYard.name, meters: [], lines: [`Tile ${building.x}, ${building.y}`, 'Trade Yard: trade opens with a route'] };
   return describeWorkplace(state, building);
 }
 
@@ -258,6 +259,7 @@ function guildSiteStatus(site: GuildSite, house: Building): string {
   const missing: string[] = [];
   if (houseLevel(house) !== 'townhouse') missing.push('not a Townhouse yet');
   if (others > 0) missing.push(`${others === 3 ? 'the other' : `${others} of the other`} 3 houses not Townhouses`);
+  if (shortfalls.includes('yard')) missing.push("the yard's ground across the Main Road isn't clear");
   if (shortfalls.includes('permit')) missing.push('no permit');
   if (shortfalls.includes('appeal')) missing.push(`appeal ${TRADERS_GUILD.appeal} (has ${site.appeal})`);
   return `Possible guild site at ${at}: ${missing.join(', ')}`;

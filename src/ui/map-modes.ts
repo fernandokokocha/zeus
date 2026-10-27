@@ -1,6 +1,5 @@
 import type { View } from '../render/view';
 import { overlayColor } from '../render/overlay-layer';
-import { TRADERS_GUILD } from '../sim/housing';
 import { tileUnderPointer } from '../render/picking';
 import { GUILD_SITE_READINGS, OVERLAYS, overlayReportAt, type Overlay } from '../sim/overlays';
 import type { Point } from '../sim/point';
@@ -21,7 +20,7 @@ export const OVERLAY_NAMES: Record<Overlay, string> = {
 const TOOLTIP_OFFSET = 16;
 
 const GUILD_SITES_KEY = [
-  { at: GUILD_SITE_READINGS.inRange, label: `Within ${TRADERS_GUILD.mainRoadRange} tiles of the Main Road` },
+  { at: GUILD_SITE_READINGS.inRange, label: 'Along a straight stretch of the Main Road' },
   { at: GUILD_SITE_READINGS.placeable, label: "A Traders' Guild can be placed now" },
 ];
 

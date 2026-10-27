@@ -56,6 +56,7 @@ const LOOKS: Record<BuildingType, Look> = {
   athenaSanctuary: sanctuary,
   hephaestusSanctuary: sanctuary,
   tradersGuild: (b) => [b.residents > 0, isMissingNeed(b)],
+  tradeYard: unchanging,
   ruins: (b, state) => [isBurning(state, b)],
 };
 

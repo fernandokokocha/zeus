@@ -57,7 +57,7 @@ function townhouse(state: GameState, at: Point): Building {
   return house;
 }
 
-export function guildBlock(mainRoadY = 17): { game: GameState; houses: Building[] } {
+export function guildBlock(mainRoadY = 16): { game: GameState; houses: Building[] } {
   const mainRoad = Array.from({ length: GUILD_TOWN_SIZE }, (_, x) => ({ x, y: mainRoadY }));
   const game = newGameState(GUILD_TOWN_SIZE, new Array<Terrain>(GUILD_TOWN_SIZE * GUILD_TOWN_SIZE).fill('grass'), mainRoad);
   placeBuilding(game, 'palace', 1, 6);
