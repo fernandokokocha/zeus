@@ -163,6 +163,11 @@ https://zeus.heavengames.com/gameinfo/gods/
   filled, twice the rest). Changed from one peddler per vendor after a playtest: separate
   random routes let a house get food but miss oil.
 - Roadblock cost: **6 dr**.
+- Road upgrades (spec, **ours**): each costs **1 load of marble** a tile, taken from storehouses,
+  fullest first, when placed. **Pretty** needs the tile's own appeal at **25** or more (the
+  Townhouse devolve value) and radiates appeal **2, 1**. **Fast** has no gate and moves walkers
+  **1.5×** faster while they stand on it. A Pretty tile taken earlier in a drag counts toward the
+  next tile's appeal.
 - Cart pusher load: **4 loads** (one granary slot). Buyer load: **4 loads**. Agora vendor stock: **8 loads**.
 - House food stock: a peddler fills a house to **5 months** of eating (Huts are filled as if they ate).
   Raised from 3 after a playtest: the Well fed charter counts a house as hungry once its stock

@@ -5,6 +5,7 @@ import type { HouseLevel } from './housing';
 import { defaultIndustrySettings, type IndustrySettings } from './industries';
 import { DEFAULT_SEED, MAP_SIZE, generateTerrain } from './map';
 import { clampPoint, type Point } from './point';
+import type { RoadUpgrade } from './road-upgrades';
 import type { Terrain } from './terrain';
 import { STARTING_TREASURY, emptyAccounts, type Books } from './treasury';
 
@@ -169,6 +170,7 @@ export interface GameState {
   terrain: Terrain[];
   roads: boolean[];
   mainRoad: boolean[];
+  roadUpgrades: (RoadUpgrade | null)[];
   roadblocks: boolean[];
   buildings: Building[];
   buildingIdAt: number[];
@@ -222,6 +224,7 @@ export function newGameState(size: number, terrain: Terrain[], mainRoad: Point[]
     terrain,
     roads: [...onMainRoad],
     mainRoad: onMainRoad,
+    roadUpgrades: new Array<RoadUpgrade | null>(size * size).fill(null),
     roadblocks: new Array<boolean>(size * size).fill(false),
     buildings: [],
     buildingIdAt: new Array<number>(size * size).fill(NO_BUILDING),

@@ -1,13 +1,16 @@
 import type { View } from '../render/view';
 import type { Rotation } from '../sim/buildings';
 import { demolish, placeBuilding, placeHouses, placeOliveTrees, placeRoad, placeRoadblock, placeSheep, type Result } from '../sim/commands';
+import { UNITS_PER_LOAD } from '../sim/food';
 import { inspectTile } from '../sim/inspect';
+import { ROAD_UPGRADE_SPECS, upgradePlan, upgradeRoads } from '../sim/road-upgrades';
+import { storedMarble } from '../sim/sanctuaries';
 import type { Point } from '../sim/point';
 import { clampToMap, inBounds, type GameState } from '../sim/state';
 import { tileUnderPointer } from '../render/picking';
 import { placementOrigin, previewTiles, type PreviewTile } from './preview';
 import type { Inspector } from './inspector';
-import type { Tool } from './tools';
+import { UPGRADE_TOOLS, isUpgradeTool, type Tool, type UpgradeTool } from './tools';
 
 const LEFT_BUTTON = 0;
 const RIGHT_BUTTON = 2;
@@ -30,18 +33,26 @@ export function attachToolInput({ view, state, toolbar, ghost, inspector, topbar
   let rotation: Rotation = 0;
 
   function refreshGhost(): void {
-    ghost.show(previewTiles(state, toolbar.current(), dragStart, hover, rotation));
+    const tool = toolbar.current();
+    ghost.show(previewTiles(state, tool, dragStart, hover, rotation));
+    if (hover && tool && isUpgradeTool(tool)) topbar.showStatus(upgradeCost(tool, dragStart ?? hover, hover));
   }
 
-  function apply(tool: Tool, from: Point, to: Point): void {
-    const result = applyTool(tool, from, to);
-    if (!result.ok) topbar.showStatus(result.reason);
+  function upgradeCost(tool: UpgradeTool, from: Point, to: Point): string {
+    const kind = UPGRADE_TOOLS[tool];
+    const { name, marbleLoads } = ROAD_UPGRADE_SPECS[kind];
+    const tiles = upgradePlan(state, kind, from, to).taken.length;
+    const stored = Math.floor(storedMarble(state) / UNITS_PER_LOAD);
+    return `${name}: ${tiles} ${tiles === 1 ? 'tile' : 'tiles'}, ${tiles * marbleLoads} marble (${stored} in storehouses)`;
   }
 
   function applyTool(tool: Tool, from: Point, to: Point): Result {
     switch (tool) {
       case 'road':
         return placeRoad(state, from, to);
+      case 'prettyRoad':
+      case 'fastRoad':
+        return upgradeRoads(state, UPGRADE_TOOLS[tool], from, to);
       case 'roadblock':
         return placeRoadblock(state, to);
       case 'sheep':
@@ -82,9 +93,10 @@ export function attachToolInput({ view, state, toolbar, ghost, inspector, topbar
   window.addEventListener('mouseup', (e) => {
     const tool = toolbar.current();
     if (e.button !== LEFT_BUTTON || !dragStart || !tool || !hover) return;
-    apply(tool, dragStart, hover);
+    const result = applyTool(tool, dragStart, hover);
     dragStart = null;
     refreshGhost();
+    if (!result.ok) topbar.showStatus(result.reason);
   });
 
   window.addEventListener('keydown', (e) => {

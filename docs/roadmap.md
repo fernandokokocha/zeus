@@ -20,7 +20,7 @@ the PR that delivers it.
 - [x] 22 · Ledger: Population
 - [x] 23 · Ledger: Production
 - [x] 24 · Production priorities
-- [ ] 25 · Road upgrades
+- [x] 25 · Road upgrades
 - [ ] 26 · Monument
 - [ ] 27 · Guild yard
 - [ ] 28 · World map and routes

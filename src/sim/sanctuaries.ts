@@ -89,13 +89,17 @@ export function recordConstruction(state: GameState, good: Good, units: number):
   recordFlow(state, 'wanted', good, units);
 }
 
-export function takeInitialMarble(state: GameState, site: Building): void {
-  let left = initialMarble(sanctuaryOf(site));
+export function takeStoredMarble(state: GameState, units: number): void {
+  let left = units;
   for (const storehouse of storehouses(state).sort((a, b) => b.marble - a.marble)) {
     const taken = Math.min(left, storehouse.marble);
     storehouse.marble -= taken;
     left -= taken;
   }
+}
+
+export function takeInitialMarble(state: GameState, site: Building): void {
+  takeStoredMarble(state, initialMarble(sanctuaryOf(site)));
   site.marble = initialMarble(sanctuaryOf(site));
   recordConstruction(state, 'marble', site.marble);
 }

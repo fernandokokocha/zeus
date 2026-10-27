@@ -9,7 +9,7 @@ import { nextRandom } from './rng';
 import { isPerforming, traineeKindFor } from './schools';
 import { maintain } from './safety';
 import { buildingById, inBounds, tileIndex, type Building, type GameState, type Roamer, type Coverage, type RoamerKind, type Service } from './state';
-import { WALKER_TILES_PER_TICK, isRoad } from './walking';
+import { isRoad, walkerSpeed } from './walking';
 
 export interface RoamerSpec {
   name: string;
@@ -120,7 +120,7 @@ function moveRoamer(state: GameState, roamer: Roamer): void {
   if (!home) throw new Error(`Roamer ${roamer.id} outlived its home ${roamer.homeId}`);
   if (!isRoad(state, roamer.path[roamer.step])) return dismiss(state, roamer);
 
-  roamer.progress += WALKER_TILES_PER_TICK;
+  roamer.progress += walkerSpeed(state, roamer);
   while (roamer.progress >= 1) {
     if (!isRoad(state, roamer.path[roamer.step + 1])) {
       roamer.path.splice(roamer.step + 1);

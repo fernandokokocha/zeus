@@ -8,6 +8,16 @@ export const TOOL_ICONS: Record<QuickTool, string> = {
     `<path d="M16 6 30 16 16 26 2 16z" fill="#b9a88a" stroke="${INK}" stroke-width="1.2"/>` +
       '<path d="M9 11 23 21" stroke="#f3ead8" stroke-width="1.6" stroke-dasharray="3 2.5"/>',
   ),
+  prettyRoad: svg(
+    '<path d="M16 6 30 16 16 26 2 16z" fill="#2f6fa8"/>' +
+      `<path d="M16 8.6 26.4 16 16 23.4 5.6 16z" fill="#f8f6f0" stroke="${INK}" stroke-width=".6"/>` +
+      '<path d="M11 12.4 21 19.6M21 12.4 11 19.6" stroke="#c9d3dc" stroke-width=".9"/>' +
+      `<path d="M16 6 30 16 16 26 2 16z" fill="none" stroke="${INK}" stroke-width="1.2"/>`,
+  ),
+  fastRoad: svg(
+    `<path d="M16 6 30 16 16 26 2 16z" fill="#8d8a85" stroke="${INK}" stroke-width="1.2"/>` +
+      '<path d="M7.5 13.5 19.5 22.5M12.5 9.5 24.5 18.5" stroke="#4f4b46" stroke-width="1.8" stroke-linecap="round"/>',
+  ),
   roadblock: svg(
     '<path d="M16 14 30 22 16 30 2 22z" fill="#b9a88a"/>' +
       `<rect x="6" y="9" width="4" height="14" fill="#f6f3ec" stroke="${INK}"/>` +

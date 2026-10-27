@@ -1,17 +1,29 @@
 import { BUILDING_SPECS, type BuildingType } from '../sim/buildings';
+import { ROAD_UPGRADE_SPECS, type RoadUpgrade } from '../sim/road-upgrades';
 import { SANCTUARY_SPECS, type Sanctuary } from '../sim/sanctuaries';
 import { ROADBLOCK_COST, ROAD_TILE_COST, SHEEP_COST } from '../sim/treasury';
 
 export type SingleBuilding = Exclude<BuildingType, 'house' | 'ruins'>;
-export type Tool = 'road' | 'roadblock' | 'house' | SingleBuilding | 'sheep' | 'demolish';
+export const UPGRADE_TOOLS = { prettyRoad: 'pretty', fastRoad: 'fast' } as const satisfies Record<string, RoadUpgrade>;
+export type UpgradeTool = keyof typeof UPGRADE_TOOLS;
+
+export function isUpgradeTool(tool: Tool): tool is UpgradeTool {
+  return tool in UPGRADE_TOOLS;
+}
+
+export type Tool = 'road' | UpgradeTool | 'roadblock' | 'house' | SingleBuilding | 'sheep' | 'demolish';
 
 const priced = (type: BuildingType) => `${BUILDING_SPECS[type].name} (${BUILDING_SPECS[type].cost} dr)`;
 
 const sanctuaryLabel = (type: Sanctuary) =>
   `${BUILDING_SPECS[type].name} (${BUILDING_SPECS[type].cost} dr + ${SANCTUARY_SPECS[type].initialMarbleLoads} marble)`;
 
+const upgradeLabel = (kind: RoadUpgrade) => `${ROAD_UPGRADE_SPECS[kind].name} (${ROAD_UPGRADE_SPECS[kind].marbleLoads} marble)`;
+
 export const TOOL_LABELS: Record<Tool, string> = {
   road: `Road (${ROAD_TILE_COST} dr)`,
+  prettyRoad: upgradeLabel('pretty'),
+  fastRoad: upgradeLabel('fast'),
   roadblock: `Roadblock (${ROADBLOCK_COST} dr)`,
   house: `Housing (${BUILDING_SPECS.house.cost} dr)`,
   fountain: priced('fountain'),
@@ -52,11 +64,13 @@ export const TOOL_LABELS: Record<Tool, string> = {
   demolish: 'Demolish',
 };
 
-export const QUICK_TOOLS = ['road', 'roadblock', 'house', 'demolish'] as const satisfies Tool[];
+export const QUICK_TOOLS = ['road', 'prettyRoad', 'fastRoad', 'roadblock', 'house', 'demolish'] as const satisfies Tool[];
 export type QuickTool = (typeof QUICK_TOOLS)[number];
 
 export const QUICK_TILE_LABELS: Record<QuickTool, string> = {
   road: 'Road',
+  prettyRoad: 'Pretty',
+  fastRoad: 'Fast',
   roadblock: 'Block',
   house: 'Housing',
   demolish: 'Demolish',

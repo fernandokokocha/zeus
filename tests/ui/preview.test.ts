@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { placeBuilding, placeRoad } from '../../src/sim/commands';
+import { UNITS_PER_LOAD } from '../../src/sim/food';
 import { previewTiles } from '../../src/ui/preview';
 import { grassGame, setTerrain } from '../sim/helpers';
 
@@ -150,5 +151,20 @@ describe('previewTiles for a rotated building', () => {
     expect(Math.max(...tiles.map((t) => t.x))).toBe(13);
     expect(Math.min(...tiles.map((t) => t.y))).toBe(0);
     expect(Math.max(...tiles.map((t) => t.y))).toBe(8);
+  });
+});
+
+describe('previewTiles for a road upgrade', () => {
+  it('marks the tiles that take it valid and the rest invalid', () => {
+    const game = grassGame();
+    placeRoad(game, { x: 1, y: 1 }, { x: 3, y: 1 });
+    placeBuilding(game, 'storehouse', 10, 10);
+    game.buildings[0].marble = 2 * UNITS_PER_LOAD;
+    expect(previewTiles(game, 'fastRoad', { x: 0, y: 1 }, { x: 3, y: 1 })).toEqual([
+      { x: 0, y: 1, kind: 'invalid' },
+      { x: 1, y: 1, kind: 'valid' },
+      { x: 2, y: 1, kind: 'valid' },
+      { x: 3, y: 1, kind: 'invalid' },
+    ]);
   });
 });

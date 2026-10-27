@@ -1,4 +1,4 @@
-import { houseAppeal } from './appeal';
+import { appealMap, houseAppeal } from './appeal';
 import { BUILDING_SPECS, vendorGood } from './buildings';
 import { MONTH_NAMES, TICKS_PER_MONTH } from './clock';
 import { MAX_CULTURE_POINTS, culturePoints, culturesPassed } from './culture';
@@ -40,6 +40,7 @@ import {
   type Sanctuary,
 } from './sanctuaries';
 import type { Point } from './point';
+import { ROAD_UPGRADE_SPECS, upgradeObstacle } from './road-upgrades';
 import { canBurn, canCollapse, isBurning, riskShare } from './safety';
 import { canSettlersReach } from './settlers';
 import { SHEARING_RANGE, SHED_CAPACITY, hasFullFleece, sheepTile, sheepToShear, shepherdAfter } from './sheep';
@@ -158,11 +159,25 @@ function describeBuildingKind(state: GameState, building: Building): Description
   return describeWorkplace(state, building);
 }
 
+const UPGRADE_LINES = {
+  pretty: 'Radiates appeal',
+  fast: `Walkers move ${ROAD_UPGRADE_SPECS.fast.speed}× faster`,
+};
+
+function describeRoad(state: GameState, x: number, y: number): Description {
+  const tile = `Tile ${x}, ${y}`;
+  const upgrade = state.roadUpgrades[tileIndex(state, x, y)];
+  if (upgrade) return { title: ROAD_UPGRADE_SPECS[upgrade].name, meters: [], lines: [tile, UPGRADE_LINES[upgrade]] };
+  const appeal = appealMap(state);
+  const obstacle = upgradeObstacle(state, 'pretty', { x, y }, appeal);
+  return { title: 'Road', meters: [], lines: [tile, `Appeal ${appeal[tileIndex(state, x, y)]}`, obstacle ?? 'Can be made Pretty'] };
+}
+
 function describeGround(state: GameState, x: number, y: number): Description {
   const i = tileIndex(state, x, y);
   if (state.roadblocks[i]) return { title: 'Roadblock', meters: [], lines: [`Tile ${x}, ${y}`, 'Stops roaming walkers; settlers pass'] };
   if (state.mainRoad[i]) return { title: 'Main Road', meters: [], lines: [`Tile ${x}, ${y}`, 'Paved; cannot be demolished'] };
-  if (state.roads[i]) return { title: 'Road', meters: [], lines: [`Tile ${x}, ${y}`] };
+  if (state.roads[i]) return describeRoad(state, x, y);
 
   const terrain = state.terrain[i];
   const lines = [`Tile ${x}, ${y}`, BUILDABLE.has(terrain) ? 'Buildable' : 'Not buildable'];

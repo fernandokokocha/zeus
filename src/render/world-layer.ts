@@ -1,11 +1,13 @@
 import * as THREE from 'three';
 import { BUILDING_SPECS, buildingSize } from '../sim/buildings';
 import { buildingLook, type Look, type Overlay } from '../sim/overlays';
+import type { Point } from '../sim/point';
 import type { Building, GameState } from '../sim/state';
 import type { Animate } from './kit/figure';
 import { lookKey } from './look-key';
 import { buildingModel, roadblockModel } from './models';
 import { PALETTE, tileHash } from './palette';
+import { fastRoadMeshes, hintMesh, prettyRoadMeshes, upgradableTiles } from './road-looks';
 
 const ROAD_HEIGHT = 0.02;
 const roadGeometry = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
@@ -68,12 +70,20 @@ export function createWorldLayer(): {
   let styled: { version: number; tick: number; overlay: Overlay | null } | null = null;
 
   function syncStreets(state: GameState): void {
-    const key = streetsKey(state);
+    const upgradable = upgradableTiles(state);
+    const key = streetsKey(state, upgradable);
     if (key === renderedStreets) return;
     renderedStreets = key;
     const old = [...streets.children];
     streets.clear();
-    streets.add(roadMesh(state, (i) => state.roads[i] && !state.mainRoad[i], roadMaterial), ...pavingMeshes(state), ...roadblockModels(state));
+    streets.add(
+      roadMesh(state, (i) => state.roads[i] && !state.mainRoad[i] && !state.roadUpgrades[i], roadMaterial),
+      hintMesh(upgradable),
+      ...prettyRoadMeshes(state),
+      ...fastRoadMeshes(state),
+      ...pavingMeshes(state),
+      ...roadblockModels(state),
+    );
     geometries.retain(streets);
     for (const child of old) {
       if (child instanceof THREE.InstancedMesh) child.dispose();
@@ -153,8 +163,14 @@ function geometryUsers(): { retain(object: THREE.Object3D): void; release(object
   };
 }
 
-function streetsKey(state: GameState): string {
-  return state.roads.map((road, i) => +road + 2 * +state.mainRoad[i] + 4 * +state.roadblocks[i]).join('');
+const UPGRADE_KEYS = { pretty: 'p', fast: 'f' };
+
+function streetsKey(state: GameState, upgradable: Point[]): string {
+  const tiles = state.roads.map((road, i) => {
+    const upgrade = state.roadUpgrades[i];
+    return `${+road + 2 * +state.mainRoad[i] + 4 * +state.roadblocks[i]}${upgrade ? UPGRADE_KEYS[upgrade] : ''}`;
+  });
+  return `${tiles.join('')}|${upgradable.map((p) => `${p.x},${p.y}`).join(';')}`;
 }
 
 function roadMesh(state: GameState, drawn: (tile: number) => boolean, material: THREE.Material): THREE.InstancedMesh {

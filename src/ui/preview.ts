@@ -1,8 +1,9 @@
 import { BUILDING_SPECS, buildingSize, isAgoraVendor, type BuildingType, type Rotation } from '../sim/buildings';
 import { checkBuildingPlacement, footprint, vendorSpotAt, lotOrigins, roadObstacle, roadPath, roadblockObstacle, sheepObstacle } from '../sim/commands';
 import { rectBetween, tilesIn, type Point } from '../sim/point';
+import { upgradePlan } from '../sim/road-upgrades';
 import { clampToMap, inBounds, type GameState } from '../sim/state';
-import type { Tool } from './tools';
+import { UPGRADE_TOOLS, type Tool } from './tools';
 
 export type PreviewKind = 'valid' | 'warning' | 'invalid';
 
@@ -43,6 +44,13 @@ export function previewTiles(
       return roadPath(start, hover)
         .filter((p) => inBounds(state, p.x, p.y))
         .map((p) => ({ ...p, kind: roadObstacle(state, p.x, p.y) ? 'invalid' : 'valid' }));
+    case 'prettyRoad':
+    case 'fastRoad': {
+      const { taken } = upgradePlan(state, UPGRADE_TOOLS[tool], start, hover);
+      return roadPath(start, hover)
+        .filter((p) => inBounds(state, p.x, p.y))
+        .map((p) => ({ ...p, kind: taken.some((t) => t.x === p.x && t.y === p.y) ? 'valid' : 'invalid' }));
+    }
     case 'roadblock':
       return [{ ...hover, kind: roadblockObstacle(state, hover) ? 'invalid' : 'valid' }];
     case 'sheep':

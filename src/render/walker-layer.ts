@@ -4,7 +4,7 @@ import { CARRIER_SPECS } from '../sim/carriers';
 import { SERVING_WALKERS, type Overlay } from '../sim/overlays';
 import { ROAMER_SPECS } from '../sim/roamers';
 import { FULL_FLEECE } from '../sim/sheep';
-import { WALKER_TILES_PER_TICK, walkerPosition } from '../sim/walking';
+import { walkerPosition, walkerSpeed } from '../sim/walking';
 import { PALETTE } from './palette';
 import { FADED_OPACITY } from './world-layer';
 import { awningCartPeddler } from './peddler-models';
@@ -216,7 +216,7 @@ const FIGURES: Record<Figure, Part[]> = {
 };
 
 interface FigureSet {
-  show(walks: Walk[], ticksAhead: number): void;
+  show(walks: Walk[], lookAhead: (walk: Walk) => number): void;
   fade(faded: boolean): void;
 }
 
@@ -256,10 +256,10 @@ function createFigureSet(figure: Part[], group: THREE.Group): FigureSet {
   }
 
   return {
-    show(walks, ticksAhead) {
+    show(walks, lookAhead) {
       if (walks.length > capacity) allocate(Math.max(START_CAPACITY, 2 * walks.length));
       walks.forEach((walk, i) => {
-        const at = walkerPosition(walk, ticksAhead * WALKER_TILES_PER_TICK);
+        const at = walkerPosition(walk, lookAhead(walk));
         const travelled = Math.abs(at.x) + Math.abs(at.y);
         const bob = Math.abs(Math.sin(travelled * Math.PI * BOB_STEPS_PER_TILE)) * BOB_HEIGHT;
         position.set(at.x + 0.5, bob, at.y + 0.5);
@@ -298,30 +298,31 @@ export function createWalkerLayer(): { group: THREE.Group; sync(state: GameState
     group,
     sync(state, ticksAhead, overlay) {
       fadeFor(overlay);
-      sets.settler.show(state.settlers, ticksAhead);
-      sets.artisan.show(state.artisans, ticksAhead);
+      const ahead = (walk: Walk) => ticksAhead * walkerSpeed(state, walk);
+      sets.settler.show(state.settlers, ahead);
+      sets.artisan.show(state.artisans, ahead);
       for (const kind of Object.keys(ROAMER_SPECS) as RoamerKind[]) {
-        sets[kind].show(state.roamers.filter((r) => r.kind === kind), ticksAhead);
+        sets[kind].show(state.roamers.filter((r) => r.kind === kind), ahead);
       }
       for (const kind of Object.keys(CARRIER_SPECS) as CarrierKind[]) {
-        sets[kind].show(state.carriers.filter((c) => c.kind === kind), ticksAhead);
+        sets[kind].show(state.carriers.filter((c) => c.kind === kind), ahead);
       }
       for (const good of Object.keys(GATHERER_FIGURES) as Material[]) {
         const { empty, laden } = GATHERER_FIGURES[good];
         const gatherers = state.gatherers.filter((g) => g.good === good);
-        sets[empty].show(gatherers.filter((g) => g.load === 0), ticksAhead);
-        sets[laden].show(gatherers.filter((g) => g.load > 0), ticksAhead);
+        sets[empty].show(gatherers.filter((g) => g.load === 0), ahead);
+        sets[laden].show(gatherers.filter((g) => g.load > 0), ahead);
       }
       for (const kind of ['philosopherTrainee', 'actorTrainee'] as const) {
-        sets[kind].show(state.trainees.filter((t) => t.kind === kind), ticksAhead);
+        sets[kind].show(state.trainees.filter((t) => t.kind === kind), ahead);
       }
-      sets.shepherd.show(state.shepherds.filter((s) => s.fleece === 0), ticksAhead);
-      sets.shepherdWithFleece.show(state.shepherds.filter((s) => s.fleece > 0), ticksAhead);
-      sets.grower.show(state.growers.filter((g) => g.olives === 0), ticksAhead);
-      sets.growerWithOlives.show(state.growers.filter((g) => g.olives > 0), ticksAhead);
+      sets.shepherd.show(state.shepherds.filter((s) => s.fleece === 0), ahead);
+      sets.shepherdWithFleece.show(state.shepherds.filter((s) => s.fleece > 0), ahead);
+      sets.grower.show(state.growers.filter((g) => g.olives === 0), ahead);
+      sets.growerWithOlives.show(state.growers.filter((g) => g.olives > 0), ahead);
       const coat = (fleece: number): SheepCoat => (fleece >= FULL_FLEECE ? 'woollySheep' : fleece >= HALF_GROWN ? 'halfGrownSheep' : 'shornSheep');
       for (const kind of ['shornSheep', 'halfGrownSheep', 'woollySheep'] as const) {
-        sets[kind].show(state.sheep.filter((s) => coat(s.fleece) === kind), ticksAhead);
+        sets[kind].show(state.sheep.filter((s) => coat(s.fleece) === kind), ahead);
       }
     },
   };

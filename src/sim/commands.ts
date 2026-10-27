@@ -287,6 +287,7 @@ export function demolish(state: GameState, from: Point, to: Point): void {
   for (const p of tilesIn(area)) {
     const i = tileIndex(state, p.x, p.y);
     if (!state.mainRoad[i]) state.roads[i] = false;
+    state.roadUpgrades[i] = null;
     state.roadblocks[i] = false;
     if (state.terrain[i] === 'forest') state.terrain[i] = 'grass';
     if (state.buildingIdAt[i] !== NO_BUILDING) doomed.add(state.buildingIdAt[i]);
