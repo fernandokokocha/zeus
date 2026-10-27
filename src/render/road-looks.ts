@@ -131,20 +131,49 @@ export function ornateRoadMeshes(state: GameState): THREE.InstancedMesh[] {
   ];
 }
 
+type Side = 'north' | 'south' | 'west' | 'east';
+
+const SIDE_STEPS: Record<Side, Point> = { north: { x: 0, y: -1 }, south: { x: 0, y: 1 }, west: { x: -1, y: 0 }, east: { x: 1, y: 0 } };
+const ALONG_X = 0;
+const ALONG_Z = Math.PI / 2;
+const TURNS: { sides: [Side, Side]; rotation: number }[] = [
+  { sides: ['north', 'west'], rotation: 0 },
+  { sides: ['south', 'west'], rotation: Math.PI / 2 },
+  { sides: ['south', 'east'], rotation: Math.PI },
+  { sides: ['north', 'east'], rotation: -Math.PI / 2 },
+];
+const TURN_SEGMENTS = 10;
+const turnGeometries = [0.5 - GROOVE_OFFSET, 0.5 + GROOVE_OFFSET].map((radius) =>
+  new THREE.RingGeometry(radius - GROOVE_WIDTH / 2, radius + GROOVE_WIDTH / 2, TURN_SEGMENTS, 1, -Math.PI / 2, Math.PI / 2)
+    .rotateX(-Math.PI / 2)
+    .translate(-0.5, 0, -0.5),
+);
+
+function wheelRuns(state: GameState, p: Point): { straights: number[]; turns: number[] } {
+  const joins = (side: Side) => isRoadAt(state, p.x + SIDE_STEPS[side].x, p.y + SIDE_STEPS[side].y);
+  const straights = [
+    ...(joins('west') && joins('east') ? [ALONG_X] : []),
+    ...(joins('north') && joins('south') ? [ALONG_Z] : []),
+  ];
+  const turns = TURNS.filter(({ sides }) => sides.every(joins)).map(({ rotation }) => rotation);
+  if (straights.length > 0 || turns.length > 0) return { straights, turns };
+  return { straights: [joins('north') || joins('south') ? ALONG_Z : ALONG_X], turns: [] };
+}
+
 export function fastRoadMeshes(state: GameState): THREE.InstancedMesh[] {
   const tiles = tilesOf(state, 'fast');
   const grooves: Instance[] = [];
+  const turns: Instance[] = [];
   for (const p of tiles) {
-    const alongX = isRoadAt(state, p.x - 1, p.y) || isRoadAt(state, p.x + 1, p.y);
-    const alongZ = isRoadAt(state, p.x, p.y - 1) || isRoadAt(state, p.x, p.y + 1);
-    const directions = alongZ && !alongX ? [Math.PI / 2] : alongZ ? [0, Math.PI / 2] : [0];
-    for (const turn of directions) {
+    const runs = wheelRuns(state, p);
+    for (const direction of runs.straights) {
       for (const side of [-1, 1]) {
         const offset = side * GROOVE_OFFSET;
-        const [dx, dz] = turn === 0 ? [0, offset] : [offset, 0];
-        grooves.push({ matrix: at(p.x + 0.5 + dx, ROAD_HEIGHT + LAYER, p.y + 0.5 + dz, turn) });
+        const [dx, dz] = direction === ALONG_X ? [0, offset] : [offset, 0];
+        grooves.push({ matrix: at(p.x + 0.5 + dx, ROAD_HEIGHT + LAYER, p.y + 0.5 + dz, direction) });
       }
     }
+    for (const rotation of runs.turns) turns.push({ matrix: at(p.x + 0.5, ROAD_HEIGHT + LAYER * 1.5, p.y + 0.5, rotation) });
   }
   return [
     instanced(
@@ -153,5 +182,6 @@ export function fastRoadMeshes(state: GameState): THREE.InstancedMesh[] {
       tiles.map((p) => ({ matrix: at(p.x + 0.5, ROAD_HEIGHT, p.y + 0.5), color: shaded(PALETTE.fastStone, p.x, p.y, FAST_SHADE_SPREAD) })),
     ),
     instanced(grooveGeometry, grooveMaterial, grooves),
+    ...turnGeometries.map((geometry) => instanced(geometry, grooveMaterial, turns)),
   ];
 }
