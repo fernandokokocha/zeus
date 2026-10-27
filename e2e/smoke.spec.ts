@@ -23,21 +23,7 @@ async function drag(page: Page, from: [number, number], to: [number, number]): P
   await page.mouse.up();
 }
 
-async function chooseTool(page: Page, group: string, tool: RegExp): Promise<void> {
-  const drawer = page.locator('#toolbar .tool-drawer');
-  if (!(await drawer.getByRole('heading', { name: group, exact: true }).isVisible())) {
-    await page.locator('#toolbar .tool-groups').getByRole('button', { name: group, exact: true }).click();
-  }
-  await drawer.getByRole('button', { name: tool }).click();
-}
-
-async function place(page: Page, group: string, tool: RegExp, at: [number, number]): Promise<void> {
-  await chooseTool(page, group, tool);
-  await drag(page, at, at);
-}
-
-test('boots, builds a street with services, food, culture, fleece, oil, cloth, a cloth vendor, materials, sanctuaries and decorations and maintenance, and settlers move in', async ({ page }) => {
-  test.setTimeout(300_000);
+test('boots without errors and builds a road while paused', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   page.on('console', (message) => {
@@ -45,176 +31,16 @@ test('boots, builds a street with services, food, culture, fleece, oil, cloth, a
   });
 
   await page.goto('/');
+  await page.getByRole('button', { name: '❚❚' }).click();
   await expect(page.locator('#date')).toHaveText('January, Year 1');
-  await expect(page.locator('#population')).toHaveText('Population 0');
   await expect(page.locator('#treasury')).toHaveText('5,000 dr');
-  await expect(page.locator('#toolbar button')).toHaveCount(13);
-  const noticeLog = page.locator('#notice-log');
-  await page.getByRole('button', { name: 'Notices' }).click();
-  await expect(noticeLog).toContainText('No notices yet');
-  await page.keyboard.press('n');
-  await expect(noticeLog).toBeHidden();
-  const ledger = page.locator('#ledger');
-  await page.getByRole('button', { name: 'Ledger' }).click();
-  await expect(ledger).toContainText('Population by month');
-  await expect(ledger).toContainText('Sample data');
-  await ledger.getByRole('button', { name: 'Charter' }).click();
-  await expect(ledger).toContainText('Well fed: 0 / 24 months');
-  await expect(ledger).toContainText("Traders' Guild permits: 0");
-  await expect(page.locator('#ledger-sample')).toBeHidden();
-  await page.keyboard.press('l');
-  await expect(ledger).toBeHidden();
 
   await page.getByRole('button', { name: 'Demolish' }).click();
-  await drag(page, [8, 38], [30, 57]);
-  await page.getByRole('button', { name: /^Road \(/ }).click();
-  await drag(page, [8, 50], [29, 50]);
-  await drag(page, [8, 50], [8, 45]);
   await drag(page, [8, 45], [29, 45]);
-  await page.getByRole('button', { name: /^Housing/ }).click();
-  await drag(page, [9, 48], [12, 49]);
-  await drag(page, [9, 51], [16, 52]);
-  await place(page, 'Husbandry', /^Wheat Farm/, [15, 48]);
-  await place(page, 'Hygiene & Safety', /^Fountain/, [18, 48]);
-  await place(page, 'Administration', /^Tax Office/, [20, 48]);
-  await place(page, 'Distribution', /^Granary/, [23, 47]);
-  await place(page, 'Distribution', /^Agora/, [17, 53]);
-  await place(page, 'Distribution', /^Food Vendor/, [17, 51]);
-  await place(page, 'Administration', /^Palace/, [25, 53]);
-  await place(page, 'Aesthetics', /^Flower Garden/, [9, 53]);
-  await place(page, 'Aesthetics', /^Column/, [12, 53]);
-  await place(page, 'Aesthetics', /^Park/, [13, 53]);
-  await place(page, 'Culture', /^College/, [10, 43]);
-  await place(page, 'Culture', /^Podium/, [13, 43]);
-  await place(page, 'Culture', /^Gymnasium/, [17, 43]);
-  await place(page, 'Culture', /^Drama School/, [21, 43]);
-  await place(page, 'Culture', /^Theater/, [26, 42]);
-  await place(page, 'Distribution', /^Storehouse/, [27, 47]);
-  await place(page, 'Industry', /^Carding Shed/, [29, 46]);
-  await place(page, 'Distribution', /^Fleece Vendor/, [17, 53]);
-  for (const at of [[27, 58], [29, 59], [31, 58], [28, 60]] as [number, number][]) await place(page, 'Husbandry', /^Sheep/, at);
-  await chooseTool(page, 'Husbandry', /^Olive Tree/);
-  await drag(page, [28, 61], [31, 62]);
-  await place(page, 'Husbandry', /^Growers' Lodge/, [29, 48]);
-  await place(page, 'Industry', /^Olive Press/, [29, 43]);
-  await place(page, 'Distribution', /^Oil Vendor/, [17, 55]);
-  await place(page, 'Hygiene & Safety', /^Maintenance Office/, [9, 46]);
   await page.getByRole('button', { name: /^Road \(/ }).click();
-  await drag(page, [29, 50], [37, 50]);
-  await place(page, 'Industry', /^Timber Mill/, [33, 51]);
-  await place(page, 'Industry', /^Masonry Shop/, [31, 51]);
-  await place(page, 'Industry', /^Foundry/, [32, 48]);
-  await place(page, 'Industry', /^Sculpture Studio/, [34, 48]);
-  await place(page, 'Industry', /^Weaver/, [35, 51]);
-  await place(page, 'Mythology', /^Artisans' Guild/, [36, 48]);
-  await place(page, 'Mythology', /^Forge of Hephaestus/, [50, 53]);
-  await expect(page.locator('#status')).toHaveText('Needs 13 loads of marble in storehouses (has 0)');
-  await page.getByRole('button', { name: /^Road \(/ }).click();
-  await drag(page, [37, 50], [44, 50]);
-  await place(page, 'Distribution', /^Agora/, [40, 46]);
-  await place(page, 'Distribution', /^Cloth Vendor/, [40, 44]);
-  await place(page, 'Elite', /^Traders' Guild/, [46, 53]);
-  await expect(page.locator('#status')).toHaveText("A Traders' Guild goes over four Townhouses forming a 4×4 block");
-  await page.keyboard.press('r');
-  await expect(page.locator('#status')).toHaveText('Rotated 90° counterclockwise');
-  await page.keyboard.press('Escape');
+  await drag(page, [8, 45], [29, 45]);
   await expect(page.locator('#treasury')).not.toHaveText('5,000 dr');
 
-  await page.getByRole('button', { name: '4×' }).click();
-  await expect(page.locator('#population')).not.toHaveText('Population 0', { timeout: 15_000 });
-  await expect(page.locator('#labor')).toHaveText(/^(Unemployed|Need) \d+/);
-  const inspector = page.locator('#inspector');
-  const inspect = async (at: [number, number]) => {
-    const tile = await tileOnScreen(page, ...at);
-    await page.mouse.click(tile.x, tile.y, { button: 'right' });
-  };
-  await inspect([9, 51]);
-  await expect(inspector.locator('.meter-label')).toHaveText(['Food', 'Water', 'Fleece', 'Oil', 'Culture']);
-  const paused = await inspector.innerText();
-  await page.getByRole('button', { name: '4×' }).click();
-  await expect(inspector).not.toHaveText(paused, { timeout: 20_000 });
-  await inspector.screenshot({ path: 'test-results/inspector-house.png' });
-  await inspect([27, 47]);
-await expect(inspector.locator('.shelf-bay')).toHaveCount(8);
-const fleeceOrder = inspector.locator('.order', { hasText: 'Fleece' });
-await fleeceOrder.getByRole('button', { name: 'Refuse' }).click();
-await expect(fleeceOrder.getByRole('button', { name: 'Refuse' })).toHaveAttribute('aria-pressed', 'true');
-await inspector.screenshot({ path: 'test-results/inspector-storehouse.png' });
-await inspector.getByRole('button', { name: 'Accept all' }).click();
-await expect(fleeceOrder.getByRole('button', { name: 'Accept', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  await page.screenshot({ path: 'test-results/inspected-storehouse.png' });
-  await inspect([17, 51]);
-  await expect(inspector.locator('.meter')).toHaveCount(1);
-  await inspector.screenshot({ path: 'test-results/inspector-vendor.png' });
-  await inspect([40, 44]);
-  await expect(inspector).toContainText('Cloth Vendor');
-  await page.locator('#inspector-close').click();
-  const centre = await tileOnScreen(page, START_VIEW_CENTER.x, START_VIEW_CENTER.y);
-  await page.mouse.move(centre.x, centre.y);
-  await page.mouse.wheel(0, -800);
-  await page.waitForTimeout(6000);
   await page.screenshot({ path: 'test-results/screenshot.png' });
-  const mapButton = page.locator('#map-button');
-  const mapMenu = page.locator('#map-menu');
-  const ramp = page.locator('#map-ramp');
-  await expect(mapButton).toHaveText('Map: Off ▾');
-  const offWidth = (await mapButton.boundingBox())!.width;
-  const topbarBox = await page.locator('#topbar').boundingBox();
-  await page.keyboard.press('o');
-  await expect(mapButton).toHaveText('Map: Appeal ▾');
-  await expect(ramp).toBeHidden();
-  await page.screenshot({ path: 'test-results/appeal.png' });
-  await mapButton.click();
-  await expect(mapMenu.getByRole('button')).toHaveText(['Off', 'Water', 'Supplies', 'Culture', 'Appeal', 'Risk', 'Tax', 'Staff', 'Guilds']);
-  await mapMenu.getByRole('button', { name: 'Guilds', exact: true }).click();
-  await expect(mapMenu).toBeHidden();
-  await expect(ramp).toContainText('Within 4 tiles of the Main Road');
-  await page.screenshot({ path: 'test-results/guild-sites.png' });
-  for (const mode of ['Water', 'Supplies', 'Culture', 'Risk', 'Tax', 'Staff']) {
-    await mapButton.click();
-    await mapMenu.getByRole('button', { name: mode, exact: true }).click();
-    await expect(mapButton).toHaveText(`Map: ${mode} ▾`);
-    await expect(ramp).toBeHidden();
-    expect((await mapButton.boundingBox())!.width).toBe(offWidth);
-    expect(await page.locator('#topbar').boundingBox()).toEqual(topbarBox);
-    await page.screenshot({ path: `test-results/map-${mode.toLowerCase()}.png` });
-  }
-  await page.mouse.move(centre.x, centre.y);
-  await page.mouse.wheel(0, 800);
-  await page.waitForTimeout(500);
-  const fountain = await tileOnScreen(page, 18, 48);
-  await page.mouse.move(fountain.x, fountain.y);
-  await expect(page.locator('#map-tooltip')).toContainText('Workers');
-  await mapButton.click();
-  await mapMenu.getByRole('button', { name: 'Water', exact: true }).click();
-  const housePosition = await tileOnScreen(page, 9, 51);
-  await page.mouse.move(housePosition.x, housePosition.y);
-  await expect(page.locator('#map-tooltip')).toContainText(/water/i);
-  await mapButton.click();
-  await mapMenu.getByRole('button', { name: 'Supplies', exact: true }).click();
-  await page.mouse.move(housePosition.x, housePosition.y + 1);
-  await expect(page.locator('#map-tooltip')).toContainText('Fleece');
-  await mapButton.click();
-  await mapMenu.getByRole('button', { name: 'Water', exact: true }).click();
-  await page.keyboard.press('o');
-  await expect(mapButton).toHaveText('Map: Off ▾');
-  await expect(page.locator('#map-tooltip')).toBeHidden();
-  await page.keyboard.press('o');
-  await expect(mapButton).toHaveText('Map: Water ▾');
-  await page.keyboard.press('o');
-  await page.keyboard.press('l');
-  await expect(ledger).toContainText(/Well fed: \d+ \/ 24 months/);
-  await page.screenshot({ path: 'test-results/ledger-charter.png' });
-  for (const chapter of ['Population', 'Production', 'Priorities', 'Treasury']) {
-    await ledger.getByRole('button', { name: chapter, exact: true }).click();
-    await expect(page.locator('#ledger-sample')).toBeVisible();
-    await page.screenshot({ path: `test-results/ledger-${chapter.toLowerCase()}.png` });
-  }
-  await page.keyboard.press('l');
-
-  await page.keyboard.press('Space');
-  await expect(page.getByRole('button', { name: '❚❚' })).toHaveClass(/active/);
-  await page.keyboard.press('Space');
-  await expect(page.getByRole('button', { name: '4×' })).toHaveClass(/active/);
   expect(errors).toEqual([]);
 });

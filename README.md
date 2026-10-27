@@ -20,5 +20,5 @@ npm install
 npm run dev         # local dev server
 npm test            # simulation tests
 npm run typecheck
-npm run test:e2e    # smoke test + screenshot
+npm run test:e2e    # boot check
 ```

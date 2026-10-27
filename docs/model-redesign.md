@@ -94,9 +94,7 @@ gallery its own copy of the kit.
    `npx tsc --noUnusedLocals` lists them.
 4. Verify:
    - `npx tsc --noUnusedLocals` and `npm test` pass
-   - `npm run test:e2e` passes, and `test-results/screenshot.png` shows the model in the
-     game. The smoke test only reaches early content; for anything later, the gallery
-     close-ups are the check.
+   - `npm run test:e2e` passes, and the gallery close-ups show the model as chosen
 5. Work on `main`; no branch or PR. Commit only when the owner asks.
 
 ## Performance rules

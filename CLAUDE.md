@@ -48,8 +48,9 @@ binding. In short:
 2. **Get a plan.** If `docs/slices/NN-*.md` exists, execute it task by task and tick its
    boxes. Otherwise, write it first, in the same format as `docs/slices/01-foundation.md`.
 3. **Build test-first** on a local branch `slice-NN-name`, in small commits.
-4. **Look at the game.** `npm run test:e2e` saves `test-results/screenshot.png`. Open it
-   and check that the slice looks right.
+4. **Look at the game.** Drive the dev server with a throwaway, uncommitted Playwright
+   script that builds what the slice adds, screenshot it, and check that it looks right.
+   New models are checked in the gallery (`docs/model-redesign.md`).
 5. **Ship it.** Tick the slice in `docs/roadmap.md`, squash the branch onto `main` as one
    commit titled `Slice NN: Name`, and push. The commit body and the session's final
    report both carry:
@@ -67,7 +68,7 @@ npm run dev         # local dev server
 npm test            # simulation tests (Vitest)
 npm run typecheck
 npm run build
-npm run test:e2e    # Playwright smoke test + screenshot
+npm run test:e2e    # Playwright boot check
 ```
 
 ## CI status
@@ -83,6 +84,13 @@ curl -s "https://api.github.com/repos/fernandokokocha/zeus/actions/runs?branch=m
 If the preinstalled Chromium does not match the Playwright version, run the e2e test
 locally through an uncommitted config that sets
 `launchOptions.executablePath: '/opt/pw-browsers/chromium'`. CI installs its own.
+
+## Tests
+
+CI is an oracle: green means it works, red means it is broken. Every test it runs is
+deterministic. The e2e test stays a boot check, with the game paused and no waiting on
+the clock; it never grows into a scenario. Gameplay is covered by simulation tests and
+by the owner's playtest.
 
 ## Code rules
 
