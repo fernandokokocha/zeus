@@ -1,6 +1,7 @@
 import { BUILDING_SPECS } from './buildings';
 import { TICKS_PER_YEAR } from './clock';
 import { BUYER_LOAD, CART_LOAD, UNITS_PER_LOAD } from './food';
+import { recordFlow } from './flows';
 import type { Building, GameState } from './state';
 
 export const CLOTH_LOADS_PER_YEAR = 6;
@@ -24,5 +25,7 @@ function weave(state: GameState, weaver: Building): void {
   weaver.production = 0;
   weaver.fleece -= UNITS_PER_LOAD;
   weaver.cloth += UNITS_PER_LOAD;
+  recordFlow(state, 'used', 'fleece', UNITS_PER_LOAD);
+  recordFlow(state, 'made', 'cloth', UNITS_PER_LOAD);
   state.version++;
 }

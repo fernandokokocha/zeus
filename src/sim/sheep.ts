@@ -2,6 +2,7 @@ import { BUILDING_SPECS, footprintDistance } from './buildings';
 import { TICKS_PER_MONTH, TICKS_PER_YEAR } from './clock';
 import { adjacentRoadTiles } from './commands';
 import { CART_LOAD, UNITS_PER_LOAD } from './food';
+import { recordFlow } from './flows';
 import { NEIGHBOUR_STEPS, findOpenPath, isOpenGround } from './pathfinding';
 import { samePoint, type Point } from './point';
 import { nextRandom } from './rng';
@@ -143,6 +144,7 @@ function restartOn(shepherd: Shepherd, path: Point[]): void {
 function arrive(state: GameState, shepherd: Shepherd, shed: Building): void {
   if (shepherd.returning) {
     shed.fleece += shepherd.fleece;
+    recordFlow(state, 'made', 'fleece', shepherd.fleece);
     state.version++;
     return dismiss(state, shepherd);
   }

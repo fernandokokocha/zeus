@@ -6,8 +6,9 @@ import type { Point } from './point';
 import { exitTile } from './roamers';
 import { STUDIO_BRONZE_CAPACITY } from './materials';
 import { FLEECE_KEPT_FOR_VENDORS, WEAVER_FLEECE_CAPACITY } from './cloth';
+import { GOODS } from './flows';
 import { PRESS_OLIVE_CAPACITY } from './olives';
-import { SANCTUARIES, isSanctuary, stillNeeded, type Sanctuary } from './sanctuaries';
+import { SANCTUARIES, isSanctuary, recordConstruction, stillNeeded, type Sanctuary } from './sanctuaries';
 import { acceptsGood, storehouseSpace } from './storehouse';
 import { NO_BUILDING, buildingById, type Building, type Carrier, type CarrierKind, type GameState, type Good } from './state';
 import { isRoad, walkPath } from './walking';
@@ -64,8 +65,6 @@ const STORE_SPACE: Record<Store, (stock: Record<Good, number>, good: Good) => nu
   athenaSanctuary: (stock, good) => stillNeeded('athenaSanctuary', stock, good),
   hephaestusSanctuary: (stock, good) => stillNeeded('hephaestusSanctuary', stock, good),
 };
-
-const GOODS: Good[] = ['food', 'fleece', 'olives', 'oil', 'wood', 'marble', 'bronze', 'sculptures', 'cloth'];
 
 export function carrierKindsSentBy(type: BuildingType): CarrierKind[] {
   return (Object.keys(CARRIER_SPECS) as CarrierKind[]).filter((kind) => CARRIER_SPECS[kind].home === type);
@@ -199,6 +198,7 @@ function arrive(state: GameState, carrier: Carrier, home: Building): void {
     : -wholeLoads(Math.min(BUYER_LOAD, spareStock(carrier.kind, store), fetchRoom(state, carrier.kind, home)));
   store[good] += moved;
   carrier[good] -= moved;
+  if (isSanctuary(store.type)) recordConstruction(state, good, moved);
   state.version++;
   headHome(state, carrier, home);
 }

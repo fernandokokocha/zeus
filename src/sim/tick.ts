@@ -10,6 +10,7 @@ import { assignWorkers } from './labor';
 import { tickMaterials } from './materials';
 import { tickOlives } from './olives';
 import { recordPopulation } from './population';
+import { closeProductionMonth } from './production';
 import { tickSanctuaries } from './sanctuaries';
 import { tickSafety } from './safety';
 import { tickRoamers } from './roamers';
@@ -20,9 +21,10 @@ import type { GameState } from './state';
 
 export function tick(state: GameState): void {
   state.tick++;
+  const monthEnds = state.tick % TICKS_PER_MONTH === 0;
   assignWorkers(state);
   growCrops(state);
-  if (state.tick % TICKS_PER_MONTH === 0) {
+  if (monthEnds) {
     settleMonth(state);
     recordPopulation(state);
     harvestIfDue(state);
@@ -42,4 +44,5 @@ export function tick(state: GameState): void {
   tickGuilds(state);
   announceGuildSites(state);
   tickSafety(state);
+  if (monthEnds) closeProductionMonth(state);
 }

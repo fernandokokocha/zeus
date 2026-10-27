@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { axisTop, drachmas, graphPoints, madeShare, net } from '../../src/ui/ledger-chapters';
+import { axisTop, drachmas, graphPoints, loads, madeShare, net } from '../../src/ui/ledger-chapters';
 
 describe('axisTop', () => {
   it('rounds up to 1, 2 or 5 times a power of ten', () => {
@@ -50,5 +50,13 @@ describe('drachmas', () => {
     expect(drachmas(1234.6)).toBe('1,235 dr');
     expect(drachmas(-0.3)).toBe('0 dr');
     expect(drachmas(-12.4)).toBe('-12 dr');
+  });
+});
+
+describe('loads', () => {
+  it('turns units into loads, to one decimal', () => {
+    expect(loads(1200)).toBe('12');
+    expect(loads(375)).toBe('3.8');
+    expect(loads(16_666.67)).toBe('166.7');
   });
 });

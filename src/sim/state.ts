@@ -1,5 +1,6 @@
 import type { BuildingType, Rotation } from './buildings';
 import type { WellFed } from './charters';
+import { emptyFlows, type FlowBook } from './flows';
 import type { HouseLevel } from './housing';
 import { DEFAULT_SEED, MAP_SIZE, generateTerrain } from './map';
 import { clampPoint, type Point } from './point';
@@ -200,6 +201,7 @@ export interface GameState {
   treasury: number;
   accounts: Books;
   populationHistory: number[];
+  flows: FlowBook;
   lastMonth: { taxes: number; wages: number };
   tick: number;
   speed: Speed;
@@ -251,6 +253,7 @@ export function newGameState(size: number, terrain: Terrain[], mainRoad: Point[]
     treasury: STARTING_TREASURY,
     accounts: { thisYear: emptyAccounts(), lastYear: emptyAccounts() },
     populationHistory: [0],
+    flows: { thisMonth: emptyFlows(), months: [] },
     lastMonth: { taxes: 0, wages: 0 },
     tick: 0,
     speed: 1,

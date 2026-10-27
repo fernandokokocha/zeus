@@ -1,6 +1,7 @@
 import { BUILDING_SPECS, type BuildingType } from './buildings';
 import { adjacentRoadTiles } from './commands';
 import { UNITS_PER_LOAD } from './food';
+import { recordFlow } from './flows';
 import { postNotice } from './notices';
 import { findRoadPath, nearestByRoad } from './pathfinding';
 import type { Point } from './point';
@@ -83,6 +84,11 @@ export function sanctuaryObstacle(state: GameState, type: Sanctuary): string | n
   return `Needs ${SANCTUARY_SPECS[type].initialMarbleLoads} loads of marble in storehouses (has ${Math.floor(stored / UNITS_PER_LOAD)})`;
 }
 
+export function recordConstruction(state: GameState, good: Good, units: number): void {
+  recordFlow(state, 'used', good, units);
+  recordFlow(state, 'wanted', good, units);
+}
+
 export function takeInitialMarble(state: GameState, site: Building): void {
   let left = initialMarble(sanctuaryOf(site));
   for (const storehouse of storehouses(state).sort((a, b) => b.marble - a.marble)) {
@@ -91,6 +97,7 @@ export function takeInitialMarble(state: GameState, site: Building): void {
     left -= taken;
   }
   site.marble = initialMarble(sanctuaryOf(site));
+  recordConstruction(state, 'marble', site.marble);
 }
 
 function visitsLeft(state: GameState, site: Building): number {

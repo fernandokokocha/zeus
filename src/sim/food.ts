@@ -1,5 +1,6 @@
 import { BUILDING_SPECS } from './buildings';
 import { TICKS_PER_YEAR, monthOfYear } from './clock';
+import { recordFlow } from './flows';
 import { residentNeeds, isResidence } from './housing';
 import type { Building, GameState, PeddledGood } from './state';
 
@@ -35,7 +36,9 @@ export function growCrops(state: GameState): void {
 export function harvestIfDue(state: GameState): void {
   if (monthOfYear(state.tick) !== HARVEST_MONTH) return;
   for (const farm of state.buildings.filter((b) => b.type === 'wheatFarm')) {
-    farm.food += Math.round(farm.growth * WHEAT_LOADS_PER_YEAR) * UNITS_PER_LOAD;
+    const harvest = Math.round(farm.growth * WHEAT_LOADS_PER_YEAR) * UNITS_PER_LOAD;
+    farm.food += harvest;
+    recordFlow(state, 'made', 'food', harvest);
     farm.growth = 0;
   }
   state.version++;
@@ -58,7 +61,13 @@ export function monthlyUse(residence: Building, good: PeddledGood): number {
 
 export function eat(state: GameState): void {
   for (const house of state.buildings.filter(isResidence)) {
-    for (const good of PEDDLED_GOODS) house[good] = Math.max(0, house[good] - monthlyUse(house, good));
+    for (const good of PEDDLED_GOODS) {
+      const wanted = monthlyUse(house, good);
+      const used = Math.min(house[good], wanted);
+      house[good] -= used;
+      recordFlow(state, 'wanted', good, wanted);
+      recordFlow(state, 'used', good, used);
+    }
   }
 }
 

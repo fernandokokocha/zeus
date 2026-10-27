@@ -2,6 +2,7 @@ import { BUILDING_SPECS, footprintDistance, type BuildingType } from './building
 import { TICKS_PER_YEAR } from './clock';
 import { adjacentRoadTiles } from './commands';
 import { CART_LOAD, UNITS_PER_LOAD } from './food';
+import { recordFlow } from './flows';
 import { NEIGHBOUR_STEPS, findOpenPath, isOpenGround } from './pathfinding';
 import { samePoint, type Point } from './point';
 import { exitTile } from './roamers';
@@ -98,6 +99,8 @@ function cast(state: GameState, studio: Building): void {
   studio.production = 0;
   studio.bronze -= BRONZE_PER_SCULPTURE;
   studio.sculptures += UNITS_PER_LOAD;
+  recordFlow(state, 'used', 'bronze', BRONZE_PER_SCULPTURE);
+  recordFlow(state, 'made', 'sculptures', UNITS_PER_LOAD);
   state.version++;
 }
 
@@ -163,6 +166,7 @@ function restartOn(gatherer: Gatherer, path: Point[]): void {
 function arrive(state: GameState, gatherer: Gatherer, shop: Building): void {
   if (gatherer.returning) {
     shop[gatherer.good] += gatherer.load;
+    recordFlow(state, 'made', gatherer.good, gatherer.load);
     state.version++;
     return dismiss(state, gatherer);
   }

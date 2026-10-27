@@ -1,6 +1,8 @@
 import type { Accounts, TreasuryReport } from '../sim/treasury';
+import { UNITS_PER_LOAD } from '../sim/food';
 import type { PopulationReport } from '../sim/population';
-import type { PrioritiesReport, Priority, ProductionReport } from './ledger-samples';
+import type { ProductionReport } from '../sim/production';
+import type { PrioritiesReport, Priority } from './ledger-samples';
 
 const MIN_AXIS_TOP = 10;
 const AXIS_STEPS = [1, 2, 5];
@@ -43,6 +45,10 @@ function element<K extends keyof HTMLElementTagNameMap>(tag: K, className = '', 
 
 function count(value: number): string {
   return value.toLocaleString('en-US');
+}
+
+export function loads(units: number): string {
+  return (units / UNITS_PER_LOAD).toLocaleString('en-US', { maximumFractionDigits: 1 });
 }
 
 export function drachmas(value: number): string {
@@ -127,7 +133,7 @@ function productionBar(made: number, possible: number): HTMLElement {
   const solid = element('div', 'made');
   solid.style.width = `${madeShare(made, possible) * 100}%`;
   track.append(solid);
-  bar.append(track, element('span', '', possible === 0 ? 'no buildings' : `${count(made)} / ${count(possible)}`));
+  bar.append(track, element('span', '', possible === 0 ? 'no buildings' : `${loads(made)} / ${loads(possible)}`));
   return bar;
 }
 
@@ -135,12 +141,12 @@ export function productionChapter(report: ProductionReport): HTMLElement {
   const rows = report.goods.map(({ name, made, possible, used, wanted, stock, status }) => [
     name,
     productionBar(made, possible),
-    `${count(used)} / ${count(wanted)}`,
-    count(stock),
+    `${loads(used)} / ${loads(wanted)}`,
+    loads(stock),
     element('span', `status ${status}`, status),
   ]);
   return section(
-    'Last 12 months',
+    'Last 12 months, in loads',
     table(['Good', 'Made / could make', 'Used / wanted', 'In stock', 'Status'], rows),
   );
 }

@@ -2,6 +2,7 @@ import { BUILDING_SPECS, footprintDistance } from './buildings';
 import { TICKS_PER_YEAR } from './clock';
 import { adjacentRoadTiles } from './commands';
 import { CART_LOAD, UNITS_PER_LOAD } from './food';
+import { recordFlow } from './flows';
 import { findGrovePath, isOpenGround } from './pathfinding';
 import { samePoint, type Point } from './point';
 import { exitTile } from './roamers';
@@ -62,6 +63,8 @@ function pressOil(state: GameState, press: Building): void {
   press.production = 0;
   press.olives -= UNITS_PER_LOAD;
   press.oil += UNITS_PER_LOAD;
+  recordFlow(state, 'used', 'olives', UNITS_PER_LOAD);
+  recordFlow(state, 'made', 'oil', UNITS_PER_LOAD);
   state.version++;
 }
 
@@ -130,6 +133,7 @@ function restartOn(grower: Grower, path: Point[]): void {
 function arrive(state: GameState, grower: Grower, lodge: Building): void {
   if (grower.returning) {
     lodge.olives += grower.olives;
+    recordFlow(state, 'made', 'olives', grower.olives);
     state.version++;
     return dismiss(state, grower);
   }

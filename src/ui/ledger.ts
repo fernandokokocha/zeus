@@ -1,10 +1,11 @@
 import type { GameState } from '../sim/state';
 import { populationReport } from '../sim/population';
+import { productionReport } from '../sim/production';
 import { treasuryReport } from '../sim/treasury';
 import { createCharterChapter } from './charters';
 import { byId } from './dom';
 import { populationChapter, prioritiesChapter, productionChapter, treasuryChapter } from './ledger-chapters';
-import { SAMPLE_PRIORITIES, SAMPLE_PRODUCTION, type PrioritiesReport } from './ledger-samples';
+import { SAMPLE_PRIORITIES, type PrioritiesReport } from './ledger-samples';
 
 type ChapterId = 'population' | 'production' | 'priorities' | 'treasury' | 'charter';
 
@@ -42,11 +43,12 @@ export function createLedger(state: GameState): { update(): void } {
   const page = byId('ledger-page');
   const charter = createCharterChapter(state);
   const population = document.createElement('div');
+  const production = document.createElement('div');
   const treasury = document.createElement('div');
 
   const chapters: Record<ChapterId, Chapter> = {
     population: { title: 'Population', sample: false, body: population },
-    production: { title: 'Production', sample: true, body: productionChapter(SAMPLE_PRODUCTION) },
+    production: { title: 'Production', sample: false, body: production },
     priorities: { title: 'Priorities', sample: true, body: samplePriorities() },
     treasury: { title: 'Treasury', sample: false, body: treasury },
     charter: { title: 'Charter', sample: false, body: charter.body },
@@ -85,6 +87,7 @@ export function createLedger(state: GameState): { update(): void } {
       if (ledger.hidden) return;
       charter.update();
       population.replaceChildren(populationChapter(populationReport(state)));
+      production.replaceChildren(productionChapter(productionReport(state)));
       treasury.replaceChildren(treasuryChapter(treasuryReport(state)));
     },
   };
