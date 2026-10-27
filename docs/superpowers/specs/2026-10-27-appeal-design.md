@@ -11,7 +11,7 @@ one. The tiles around a block are spent on parks and gardens to get there. Befor
 asks for even more of that land, the player gets two new appeal tools:
 
 - **Road upgrades.** A road is no longer finished once it is built. Upgrading it is a
-  decision: a **Pretty** road for a housing street, or a **Fast** road for a working route.
+  decision: a **Ornate** road for a housing street, or a **Fast** road for a working route.
   A street is one or the other.
 - **The Monument.** A large appeal building that is earned, never bought, as Zeus's
   commemorative monuments are.
@@ -24,33 +24,34 @@ asks for even more of that land, the player gets two new appeal tools:
 |---|---|---|
 | Main Road | generated with the map | unchanged; it can't be upgraded |
 | Regular | the road tool | unchanged |
-| Pretty | upgrade of a regular road where appeal ≥ **25** | radiates appeal |
+| Ornate | upgrade of a regular road where appeal ≥ **25** | radiates appeal |
 | Fast | upgrade of any regular road | walkers move **1.5×** faster on it |
 
 - Each upgrade costs **1 load of marble**, taken straight from storehouse stock when the
   upgrade is placed, the way drachmas are spent. No cart delivers it. Without marble in any
   storehouse, the upgrade can't be placed.
-- **Pretty** is gated by the appeal of the road tile itself, at least the Townhouse devolve
+- **Ornate** is gated by the appeal of the road tile itself, at least the Townhouse devolve
   value (25). **Fast** has no gate, because working routes run through ugly industry.
-- **Upgradable hint:** a regular road tile that qualifies for Pretty right now is drawn
-  with a faint border, so the player sees where Pretty can go before choosing the tool.
-- **Pretty road appeal:** `[2, 1]` per tile (**ours**). Appeal adds up, so a street of them
-  lifts its houses noticeably; a Pretty road can make the next tile qualify, and a street
+- **Upgradable hint:** a regular road tile that qualifies for Ornate right now is drawn
+  with a faint border, so the player sees where Ornate can go before choosing the tool.
+- **Ornate Road appeal:** `[2, 1]` per tile (**ours**). Appeal adds up, so a street of them
+  lifts its houses noticeably; an Ornate Road can make the next tile qualify, and a street
   can be upgraded outward from its best end.
-- **Fast road speed:** a walker's progress per tick is multiplied by **1.5** (**ours**)
+- **Fast Road speed:** a walker's progress per tick is multiplied by **1.5** (**ours**)
   while the tile it is on is Fast. Every walker that uses roads benefits: cart pushers,
   buyers, peddlers, service and culture walkers. Paths don't change: walkers do not seek
-  Fast roads, they just move quicker when their usual path uses one.
-- **Permanent:** a Pretty road stays Pretty if appeal later drops. Demolishing an upgraded
-  road removes it entirely; the marble is lost. To turn Pretty into Fast, demolish and
+  Fast Roads, they just move quicker when their usual path uses one.
+- **Permanent:** an Ornate Road stays Ornate if appeal later drops. Demolishing an upgraded
+  road removes it entirely; the marble is lost. To turn Ornate into Fast, demolish and
   rebuild.
-- **Tools:** two new tools in the road group, **Pretty road** and **Fast road**. Each is
+- **Tools:** **Ornate Road** in the Aesthetics group and **Fast Road** in Distribution
+  (renamed from Pretty and moved out of the quick row after the slice 25 playtest). Each is
   dragged over existing road like the road tool. Tiles that can't take the upgrade (Main
-  Road, already upgraded, Pretty without the appeal) are skipped, and the drag preview
+  Road, already upgraded, Ornate without the appeal) are skipped, and the drag preview
   shows which tiles will take it and the marble it will cost. The drag stops taking tiles
   when marble runs out.
 - **Inspector:** a road tile says which kind it is. A regular tile shows its appeal and
-  whether it can be made Pretty.
+  whether it can be made Ornate.
 
 ### The looks
 
@@ -59,7 +60,7 @@ from the original game.
 
 - **Regular:** pale paving stones with a light edge (unchanged in spirit).
 - **Upgradable hint:** the regular look with a faint pale border.
-- **Pretty:** white flagstones with an ornate border, in the white-and-Aegean-blue
+- **Ornate:** white flagstones with an ornate border, in the white-and-Aegean-blue
   direction; the street that elite houses line.
 - **Fast:** grey stone with two clear wheel grooves, like the Greek cart rut-roads (the
   Diolkos). Functional, no decoration.
@@ -93,7 +94,7 @@ from the original game.
 ## Decisions taken without the owner
 
 - Upgrades take marble directly from storehouse stock rather than by cart.
-- The Pretty gate reads the road tile's own appeal.
-- Pretty appeal `[2, 1]`, Fast ×1.5, Monument appeal `[20, 20, 18, 16, 14, 12]`, all
+- The Ornate gate reads the road tile's own appeal.
+- Ornate appeal `[2, 1]`, Fast ×1.5, Monument appeal `[20, 20, 18, 16, 14, 12]`, all
   **ours** and recorded in `zeus-numbers.md`.
 - The 1,000-citizens monument is earned once per game.

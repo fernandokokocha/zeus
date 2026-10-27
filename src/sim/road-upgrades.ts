@@ -5,7 +5,7 @@ import type { Point } from './point';
 import { recordConstruction, storedMarble, takeStoredMarble } from './sanctuaries';
 import { inBounds, tileIndex, type GameState } from './state';
 
-export type RoadUpgrade = 'pretty' | 'fast';
+export type RoadUpgrade = 'ornate' | 'fast';
 
 export interface RoadUpgradeSpec {
   name: string;
@@ -16,8 +16,8 @@ export interface RoadUpgradeSpec {
 }
 
 export const ROAD_UPGRADE_SPECS: Record<RoadUpgrade, RoadUpgradeSpec> = {
-  pretty: { name: 'Pretty road', marbleLoads: 1, minAppeal: 25, appeal: [2, 1], speed: 1 },
-  fast: { name: 'Fast road', marbleLoads: 1, minAppeal: null, appeal: [], speed: 1.5 },
+  ornate: { name: 'Ornate Road', marbleLoads: 1, minAppeal: 25, appeal: [2, 1], speed: 1 },
+  fast: { name: 'Fast Road', marbleLoads: 1, minAppeal: null, appeal: [], speed: 1.5 },
 };
 
 export interface UpgradePlan {
@@ -35,15 +35,14 @@ export function upgradeObstacle(state: GameState, kind: RoadUpgrade, p: Point, a
   const i = tileIndex(state, p.x, p.y);
   if (!state.roads[i]) return 'An upgrade goes on a road';
   if (state.mainRoad[i]) return 'The Main Road cannot be upgraded';
-  const upgrade = state.roadUpgrades[i];
-  if (upgrade) return `Already a ${ROAD_UPGRADE_SPECS[upgrade].name.toLowerCase()}`;
+  if (state.roadUpgrades[i]) return 'Already upgraded';
   const { name, minAppeal } = ROAD_UPGRADE_SPECS[kind];
   if (minAppeal !== null && appeal[i] < minAppeal) return `${name} needs appeal ${minAppeal} (has ${appeal[i]})`;
   return null;
 }
 
-export function canBePretty(state: GameState, p: Point, appeal: number[]): boolean {
-  return upgradeObstacle(state, 'pretty', p, appeal) === null;
+export function canBeOrnate(state: GameState, p: Point, appeal: number[]): boolean {
+  return upgradeObstacle(state, 'ornate', p, appeal) === null;
 }
 
 export function upgradePlan(state: GameState, kind: RoadUpgrade, from: Point, to: Point): UpgradePlan {

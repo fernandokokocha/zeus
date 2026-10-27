@@ -44,7 +44,7 @@ export function previewTiles(
       return roadPath(start, hover)
         .filter((p) => inBounds(state, p.x, p.y))
         .map((p) => ({ ...p, kind: roadObstacle(state, p.x, p.y) ? 'invalid' : 'valid' }));
-    case 'prettyRoad':
+    case 'ornateRoad':
     case 'fastRoad': {
       const { taken } = upgradePlan(state, UPGRADE_TOOLS[tool], start, hover);
       return roadPath(start, hover)

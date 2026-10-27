@@ -44,24 +44,24 @@ describe('describeTile', () => {
   it('describes a road', () => {
     const game = grassGame();
     placeRoad(game, { x: 4, y: 4 }, { x: 4, y: 4 });
-    expect(describeTile(game, 4, 4)).toEqual({ title: 'Road', meters: [], lines: ['Tile 4, 4', 'Appeal 0', 'Pretty road needs appeal 25 (has 0)'] });
+    expect(describeTile(game, 4, 4)).toEqual({ title: 'Road', meters: [], lines: ['Tile 4, 4', 'Appeal 0', 'Ornate Road needs appeal 25 (has 0)'] });
   });
 
-  it('says when a road can be made Pretty', () => {
+  it('says when a road can be made Ornate', () => {
     const game = grassGame(30);
     placeRoad(game, { x: 4, y: 20 }, { x: 4, y: 20 });
     placeBuilding(game, 'palace', 2, 21);
     placeBuilding(game, 'flowerGarden', 5, 18);
-    expect(describeTile(game, 4, 20).lines).toEqual(['Tile 4, 20', 'Appeal 26', 'Can be made Pretty']);
+    expect(describeTile(game, 4, 20).lines).toEqual(['Tile 4, 20', 'Appeal 26', 'Can be made an Ornate Road']);
   });
 
-  it('describes Pretty and Fast roads', () => {
+  it('describes Ornate and Fast Roads', () => {
     const game = grassGame();
     placeRoad(game, { x: 4, y: 4 }, { x: 5, y: 4 });
-    game.roadUpgrades[tileIndex(game, 4, 4)] = 'pretty';
+    game.roadUpgrades[tileIndex(game, 4, 4)] = 'ornate';
     game.roadUpgrades[tileIndex(game, 5, 4)] = 'fast';
-    expect(describeTile(game, 4, 4)).toEqual({ title: 'Pretty road', meters: [], lines: ['Tile 4, 4', 'Radiates appeal'] });
-    expect(describeTile(game, 5, 4)).toEqual({ title: 'Fast road', meters: [], lines: ['Tile 5, 4', 'Walkers move 1.5× faster'] });
+    expect(describeTile(game, 4, 4)).toEqual({ title: 'Ornate Road', meters: [], lines: ['Tile 4, 4', 'Radiates appeal'] });
+    expect(describeTile(game, 5, 4)).toEqual({ title: 'Fast Road', meters: [], lines: ['Tile 5, 4', 'Walkers move 1.5× faster'] });
   });
 
   it('describes the Main Road', () => {

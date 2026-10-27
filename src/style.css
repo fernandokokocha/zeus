@@ -97,7 +97,7 @@ body {
 }
 
 #toolbar .quick-tools {
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   padding-bottom: 7px;
   border-bottom: 1px solid var(--terracotta);
 }

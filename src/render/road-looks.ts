@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { appealMap } from '../sim/appeal';
 import type { Point } from '../sim/point';
-import { canBePretty, type RoadUpgrade } from '../sim/road-upgrades';
+import { canBeOrnate, type RoadUpgrade } from '../sim/road-upgrades';
 import { inBounds, tileIndex, type GameState } from '../sim/state';
 import { PALETTE, tileHash } from './palette';
 
@@ -14,7 +14,7 @@ const hintGeometry = frameGeometry(HINT_OUTER, HINT_INNER);
 const hintMaterial = new THREE.MeshBasicMaterial({ color: PALETTE.upgradableHint, transparent: true, opacity: 0.55, depthWrite: false });
 
 const tileGeometry = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
-const prettyJointMaterial = new THREE.MeshLambertMaterial({ color: PALETTE.prettyJoint });
+const ornateJointMaterial = new THREE.MeshLambertMaterial({ color: PALETTE.ornateJoint });
 const FLAGSTONES_PER_SIDE = 2;
 const FLAGSTONE_GAP = 0.05;
 const FLAGSTONE_HEIGHT = 0.02;
@@ -90,7 +90,7 @@ export function upgradableTiles(state: GameState): Point[] {
   const appeal = appealMap(state);
   return state.roads.flatMap((road, i) => {
     const p = { x: i % state.size, y: Math.floor(i / state.size) };
-    return road && canBePretty(state, p, appeal) ? [p] : [];
+    return road && canBeOrnate(state, p, appeal) ? [p] : [];
   });
 }
 
@@ -98,8 +98,8 @@ export function hintMesh(tiles: Point[]): THREE.InstancedMesh {
   return instanced(hintGeometry, hintMaterial, tiles.map((p) => ({ matrix: at(p.x + 0.5, ROAD_HEIGHT + LAYER, p.y + 0.5) })));
 }
 
-export function prettyRoadMeshes(state: GameState): THREE.InstancedMesh[] {
-  const tiles = tilesOf(state, 'pretty');
+export function ornateRoadMeshes(state: GameState): THREE.InstancedMesh[] {
+  const tiles = tilesOf(state, 'ornate');
   const flagstones: Instance[] = [];
   const curbs: Instance[] = [];
   const inlays: Instance[] = [];
@@ -124,7 +124,7 @@ export function prettyRoadMeshes(state: GameState): THREE.InstancedMesh[] {
     }
   }
   return [
-    instanced(tileGeometry, prettyJointMaterial, tiles.map((p) => ({ matrix: at(p.x + 0.5, ROAD_HEIGHT, p.y + 0.5) }))),
+    instanced(tileGeometry, ornateJointMaterial, tiles.map((p) => ({ matrix: at(p.x + 0.5, ROAD_HEIGHT, p.y + 0.5) }))),
     instanced(flagstoneGeometry, flagstoneMaterial, flagstones),
     instanced(curbGeometry, curbMaterial, curbs),
     instanced(inlayGeometry, inlayMaterial, inlays),

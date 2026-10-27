@@ -7,7 +7,7 @@ import type { Animate } from './kit/figure';
 import { lookKey } from './look-key';
 import { buildingModel, roadblockModel } from './models';
 import { PALETTE, tileHash } from './palette';
-import { fastRoadMeshes, hintMesh, prettyRoadMeshes, upgradableTiles } from './road-looks';
+import { fastRoadMeshes, hintMesh, ornateRoadMeshes, upgradableTiles } from './road-looks';
 
 const ROAD_HEIGHT = 0.02;
 const roadGeometry = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
@@ -79,7 +79,7 @@ export function createWorldLayer(): {
     streets.add(
       roadMesh(state, (i) => state.roads[i] && !state.mainRoad[i] && !state.roadUpgrades[i], roadMaterial),
       hintMesh(upgradable),
-      ...prettyRoadMeshes(state),
+      ...ornateRoadMeshes(state),
       ...fastRoadMeshes(state),
       ...pavingMeshes(state),
       ...roadblockModels(state),
@@ -163,7 +163,7 @@ function geometryUsers(): { retain(object: THREE.Object3D): void; release(object
   };
 }
 
-const UPGRADE_KEYS = { pretty: 'p', fast: 'f' };
+const UPGRADE_KEYS = { ornate: 'p', fast: 'f' };
 
 function streetsKey(state: GameState, upgradable: Point[]): string {
   const tiles = state.roads.map((road, i) => {

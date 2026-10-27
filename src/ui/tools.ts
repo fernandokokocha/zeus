@@ -4,7 +4,7 @@ import { SANCTUARY_SPECS, type Sanctuary } from '../sim/sanctuaries';
 import { ROADBLOCK_COST, ROAD_TILE_COST, SHEEP_COST } from '../sim/treasury';
 
 export type SingleBuilding = Exclude<BuildingType, 'house' | 'ruins'>;
-export const UPGRADE_TOOLS = { prettyRoad: 'pretty', fastRoad: 'fast' } as const satisfies Record<string, RoadUpgrade>;
+export const UPGRADE_TOOLS = { ornateRoad: 'ornate', fastRoad: 'fast' } as const satisfies Record<string, RoadUpgrade>;
 export type UpgradeTool = keyof typeof UPGRADE_TOOLS;
 
 export function isUpgradeTool(tool: Tool): tool is UpgradeTool {
@@ -22,7 +22,7 @@ const upgradeLabel = (kind: RoadUpgrade) => `${ROAD_UPGRADE_SPECS[kind].name} ($
 
 export const TOOL_LABELS: Record<Tool, string> = {
   road: `Road (${ROAD_TILE_COST} dr)`,
-  prettyRoad: upgradeLabel('pretty'),
+  ornateRoad: upgradeLabel('ornate'),
   fastRoad: upgradeLabel('fast'),
   roadblock: `Roadblock (${ROADBLOCK_COST} dr)`,
   house: `Housing (${BUILDING_SPECS.house.cost} dr)`,
@@ -64,13 +64,11 @@ export const TOOL_LABELS: Record<Tool, string> = {
   demolish: 'Demolish',
 };
 
-export const QUICK_TOOLS = ['road', 'prettyRoad', 'fastRoad', 'roadblock', 'house', 'demolish'] as const satisfies Tool[];
+export const QUICK_TOOLS = ['road', 'roadblock', 'house', 'demolish'] as const satisfies Tool[];
 export type QuickTool = (typeof QUICK_TOOLS)[number];
 
 export const QUICK_TILE_LABELS: Record<QuickTool, string> = {
   road: 'Road',
-  prettyRoad: 'Pretty',
-  fastRoad: 'Fast',
   roadblock: 'Block',
   house: 'Housing',
   demolish: 'Demolish',
@@ -96,11 +94,11 @@ export interface ToolGroup {
 export const TOOL_GROUPS: ToolGroup[] = [
   { name: 'Husbandry', tileLabel: 'Husbandry', tools: ['wheatFarm', 'sheep', 'oliveTree', 'growersLodge'] },
   { name: 'Industry', tileLabel: 'Industry', tools: ['cardingShed', 'weaver', 'olivePress', 'timberMill', 'masonryShop', 'foundry', 'sculptureStudio'] },
-  { name: 'Distribution', tileLabel: 'Distribution', tools: ['granary', 'storehouse', 'agora', 'foodVendor', 'fleeceVendor', 'oilVendor', 'clothVendor'] },
+  { name: 'Distribution', tileLabel: 'Distribution', tools: ['granary', 'storehouse', 'fastRoad', 'agora', 'foodVendor', 'fleeceVendor', 'oilVendor', 'clothVendor'] },
   { name: 'Hygiene & Safety', tileLabel: 'Hygiene', tools: ['fountain', 'maintenanceOffice'] },
   { name: 'Administration', tileLabel: 'Admin', tools: ['palace', 'taxOffice'] },
   { name: 'Mythology', tileLabel: 'Mythology', tools: ['artisansGuild', 'demeterSanctuary', 'athenaSanctuary', 'hephaestusSanctuary'] },
   { name: 'Culture', tileLabel: 'Culture', tools: ['college', 'podium', 'gymnasium', 'dramaSchool', 'theater'] },
-  { name: 'Aesthetics', tileLabel: 'Aesthetics', tools: ['park', 'column', 'flowerGarden'] },
+  { name: 'Aesthetics', tileLabel: 'Aesthetics', tools: ['park', 'column', 'flowerGarden', 'ornateRoad'] },
   { name: 'Elite', tileLabel: 'Elite', tools: ['tradersGuild'] },
 ];

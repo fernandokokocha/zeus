@@ -50,7 +50,7 @@ export function attachToolInput({ view, state, toolbar, ghost, inspector, topbar
     switch (tool) {
       case 'road':
         return placeRoad(state, from, to);
-      case 'prettyRoad':
+      case 'ornateRoad':
       case 'fastRoad':
         return upgradeRoads(state, UPGRADE_TOOLS[tool], from, to);
       case 'roadblock':

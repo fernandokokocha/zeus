@@ -32,10 +32,10 @@ const appealAt = (game: GameState, x: number) => appealMap(game)[tileIndex(game,
 const upgradeAt = (game: GameState, x: number) => game.roadUpgrades[tileIndex(game, x, ROAD_Y)];
 
 describe('road upgrade numbers', () => {
-  it('cost a load of marble; Pretty needs the Townhouse devolve appeal and radiates [2, 1]; Fast is 1.5× quicker', () => {
-    expect(ROAD_UPGRADE_SPECS.pretty).toEqual({ name: 'Pretty road', marbleLoads: 1, minAppeal: 25, appeal: [2, 1], speed: 1 });
-    expect(ROAD_UPGRADE_SPECS.fast).toEqual({ name: 'Fast road', marbleLoads: 1, minAppeal: null, appeal: [], speed: 1.5 });
-    expect(ROAD_UPGRADE_SPECS.pretty.minAppeal).toBe(HOUSE_LEVELS.townhouse.appeal.devolve);
+  it('cost a load of marble; Ornate needs the Townhouse devolve appeal and radiates [2, 1]; Fast is 1.5× quicker', () => {
+    expect(ROAD_UPGRADE_SPECS.ornate).toEqual({ name: 'Ornate Road', marbleLoads: 1, minAppeal: 25, appeal: [2, 1], speed: 1 });
+    expect(ROAD_UPGRADE_SPECS.fast).toEqual({ name: 'Fast Road', marbleLoads: 1, minAppeal: null, appeal: [], speed: 1.5 });
+    expect(ROAD_UPGRADE_SPECS.ornate.minAppeal).toBe(HOUSE_LEVELS.townhouse.appeal.devolve);
   });
 });
 
@@ -47,19 +47,19 @@ describe('upgrading roads', () => {
     expect(storehouse.marble).toBe(loads(17));
   });
 
-  it('makes a road Pretty only where its own appeal is at least 25', () => {
+  it('makes a road Ornate only where its own appeal is at least 25', () => {
     const { game } = fineStreet();
     expect(appealAt(game, 8)).toBe(25);
     expect(appealAt(game, 9)).toBe(24);
-    expect(upgradeRoads(game, 'pretty', at(9), at(9))).toEqual({ ok: false, reason: 'Pretty road needs appeal 25 (has 24)' });
-    expect(upgradeRoads(game, 'pretty', at(8), at(8))).toEqual({ ok: true });
-    expect(upgradeAt(game, 8)).toBe('pretty');
+    expect(upgradeRoads(game, 'ornate', at(9), at(9))).toEqual({ ok: false, reason: 'Ornate Road needs appeal 25 (has 24)' });
+    expect(upgradeRoads(game, 'ornate', at(8), at(8))).toEqual({ ok: true });
+    expect(upgradeAt(game, 8)).toBe('ornate');
   });
 
-  it('counts Pretty tiles taken earlier in the same drag, so a street grows outward from its best end', () => {
+  it('counts Ornate tiles taken earlier in the same drag, so a street grows outward from its best end', () => {
     const { game, storehouse } = fineStreet();
-    upgradeRoads(game, 'pretty', at(5), at(12));
-    expect([5, 6, 7, 8, 9, 10].map((x) => upgradeAt(game, x))).toEqual(['pretty', 'pretty', 'pretty', 'pretty', 'pretty', null]);
+    upgradeRoads(game, 'ornate', at(5), at(12));
+    expect([5, 6, 7, 8, 9, 10].map((x) => upgradeAt(game, x))).toEqual(['ornate', 'ornate', 'ornate', 'ornate', 'ornate', null]);
     expect(storehouse.marble).toBe(loads(15));
   });
 
@@ -74,7 +74,7 @@ describe('upgrading roads', () => {
     expect(plan.skipped.map(({ at, reason }) => [at.x, reason])).toEqual([
       [6, 'The Main Road cannot be upgraded'],
       [7, 'The Main Road cannot be upgraded'],
-      [10, 'Already a fast road'],
+      [10, 'Already upgraded'],
       [13, 'An upgrade goes on a road'],
       [14, 'An upgrade goes on a road'],
     ]);
@@ -106,26 +106,26 @@ describe('upgrading roads', () => {
   });
 });
 
-describe('a Pretty road', () => {
+describe('a Ornate Road', () => {
   it('radiates appeal [2, 1] from its tile', () => {
     const { game } = fineStreet();
     const before = appealMap(game);
-    upgradeRoads(game, 'pretty', at(6), at(6));
+    upgradeRoads(game, 'ornate', at(6), at(6));
     const after = appealMap(game);
     const gain = (x: number, y: number) => after[tileIndex(game, x, y)] - before[tileIndex(game, x, y)];
     expect([gain(6, ROAD_Y), gain(7, ROAD_Y - 1), gain(8, ROAD_Y), gain(6, ROAD_Y - 2), gain(9, ROAD_Y)]).toEqual([2, 2, 1, 1, 0]);
   });
 
-  it('stays Pretty when the appeal around it drops', () => {
+  it('stays Ornate when the appeal around it drops', () => {
     const { game } = fineStreet();
-    upgradeRoads(game, 'pretty', at(6), at(6));
+    upgradeRoads(game, 'ornate', at(6), at(6));
     demolish(game, { x: 5, y: ROAD_Y - 2 }, { x: 6, y: ROAD_Y - 1 });
-    expect(upgradeAt(game, 6)).toBe('pretty');
+    expect(upgradeAt(game, 6)).toBe('ornate');
   });
 
   it('is gone when demolished, and road laid there again is regular', () => {
     const { game, storehouse } = fineStreet();
-    upgradeRoads(game, 'pretty', at(6), at(6));
+    upgradeRoads(game, 'ornate', at(6), at(6));
     demolish(game, at(6), at(6));
     expect(game.roads[tileIndex(game, 6, ROAD_Y)]).toBe(false);
     placeRoad(game, at(6), at(6));
@@ -134,7 +134,7 @@ describe('a Pretty road', () => {
   });
 });
 
-describe('a Fast road', () => {
+describe('a Fast Road', () => {
   function walked(upgrade: boolean, ticks: number): Walk {
     const { game } = street();
     if (upgrade) upgradeRoads(game, 'fast', at(0), at(29));

@@ -17,7 +17,7 @@ export const PALETTE = {
   pavingJoint: 0x8c8474,
   pavingStone: 0xd9d2c0,
   upgradableHint: 0xfbf6e8,
-  prettyJoint: 0xb9c7d4,
+  ornateJoint: 0xb9c7d4,
   aegeanBlue: 0x2f6fa8,
   fastStone: 0x8d8a85,
   wheelGroove: 0x4f4b46,
