@@ -13,7 +13,7 @@ the PR that delivers it.
 - [x] 17 · Guild sites
 - [x] 18 · Map button and columns
 - [x] 19 · Supplies and tax paid
-- [ ] 20 · Ledger
+- [x] 20 · Ledger
 - [ ] 21 · Ledger: Treasury
 - [ ] 22 · Ledger: Population
 - [ ] 23 · Ledger: Production

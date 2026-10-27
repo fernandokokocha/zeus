@@ -54,12 +54,16 @@ test('boots, builds a street with services, food, culture, fleece, oil, cloth, a
   await expect(noticeLog).toContainText('No notices yet');
   await page.keyboard.press('n');
   await expect(noticeLog).toBeHidden();
-  const charters = page.locator('#charters-panel');
-  await page.getByRole('button', { name: 'Charters' }).click();
-  await expect(charters).toContainText('Well fed: 0 / 24 months');
-  await expect(charters).toContainText("Traders' Guild permits: 0");
-  await page.keyboard.press('c');
-  await expect(charters).toBeHidden();
+  const ledger = page.locator('#ledger');
+  await page.getByRole('button', { name: 'Ledger' }).click();
+  await expect(ledger).toContainText('Population by month');
+  await expect(ledger).toContainText('Sample data');
+  await ledger.getByRole('button', { name: 'Charter' }).click();
+  await expect(ledger).toContainText('Well fed: 0 / 24 months');
+  await expect(ledger).toContainText("Traders' Guild permits: 0");
+  await expect(page.locator('#ledger-sample')).toBeHidden();
+  await page.keyboard.press('l');
+  await expect(ledger).toBeHidden();
 
   await page.getByRole('button', { name: 'Demolish' }).click();
   await drag(page, [8, 38], [30, 57]);
@@ -198,10 +202,15 @@ await expect(fleeceOrder.getByRole('button', { name: 'Accept', exact: true })).t
   await page.keyboard.press('o');
   await expect(mapButton).toHaveText('Map: Water ▾');
   await page.keyboard.press('o');
-  await page.keyboard.press('c');
-  await expect(charters).toContainText(/Well fed: \d+ \/ 24 months/);
-  await page.screenshot({ path: 'test-results/charters.png' });
-  await page.keyboard.press('c');
+  await page.keyboard.press('l');
+  await expect(ledger).toContainText(/Well fed: \d+ \/ 24 months/);
+  await page.screenshot({ path: 'test-results/ledger-charter.png' });
+  for (const chapter of ['Population', 'Production', 'Priorities', 'Treasury']) {
+    await ledger.getByRole('button', { name: chapter, exact: true }).click();
+    await expect(page.locator('#ledger-sample')).toBeVisible();
+    await page.screenshot({ path: `test-results/ledger-${chapter.toLowerCase()}.png` });
+  }
+  await page.keyboard.press('l');
 
   await page.keyboard.press('Space');
   await expect(page.getByRole('button', { name: '❚❚' })).toHaveClass(/active/);

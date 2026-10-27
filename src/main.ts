@@ -13,8 +13,8 @@ import { TICKS_PER_SECOND } from './sim/clock';
 import { tick } from './sim/tick';
 import { createGame } from './sim/state';
 import { byId } from './ui/dom';
-import { createCharters } from './ui/charters';
 import { createInspector } from './ui/inspector';
+import { createLedger } from './ui/ledger';
 import { createMapModes } from './ui/map-modes';
 import { createNotices } from './ui/notices';
 import { attachToolInput } from './ui/tool-input';
@@ -50,7 +50,7 @@ const controls = attachCameraControls(view, state.size);
 const topbar = createTopbar(state);
 const inspector = createInspector(state, highlight);
 const mapModes = createMapModes(state, view);
-const charters = createCharters(state);
+const ledger = createLedger(state);
 const notices = createNotices(state, (at) => controls.focus(at));
 const input = attachToolInput({
   view,
@@ -89,7 +89,7 @@ function frame(now: number): void {
   mapModes.update();
   topbar.update();
   notices.update(now / 1000);
-  charters.update();
+  ledger.update();
   inspector.refresh();
   view.renderer.render(view.scene, view.camera);
   requestAnimationFrame(frame);

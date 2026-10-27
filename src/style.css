@@ -23,7 +23,7 @@ body {
 #toolbar,
 #inspector,
 #notice-log,
-#charters-panel {
+#ledger {
   position: fixed;
   background: var(--parchment);
   border: 2px solid var(--terracotta);
@@ -363,39 +363,188 @@ button.active {
   background: #f2d3bf;
 }
 
-#charters-panel {
+#ledger {
   top: 60px;
-  left: 238px;
-  width: 280px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(860px, 92vw);
+  height: min(620px, 80vh);
+  display: flex;
+  gap: 14px;
+  padding: 10px 12px;
 }
 
-#charters-close {
+#ledger[hidden] {
+  display: none;
+}
+
+#ledger-chapters {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 120px;
+  flex-shrink: 0;
+  border-right: 1px solid #e2d5ba;
+  padding-right: 12px;
+}
+
+#ledger-chapters button {
+  text-align: left;
+  padding: 6px 8px;
+}
+
+#ledger-content {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+}
+
+#ledger-close {
   float: right;
 }
 
-#charters-panel h2 {
-  margin: 0 0 6px;
-  font-size: 18px;
+#ledger h2 {
+  margin: 0 0 8px;
+  font-size: 20px;
 }
 
-#charters-panel ul {
-  margin: 0;
-  padding: 0;
-  list-style: none;
+#ledger-sample {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border: 1px dashed var(--terracotta);
+  border-radius: 3px;
+  color: var(--terracotta);
+  font-size: 12px;
+  font-weight: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  vertical-align: middle;
 }
 
-#charters-panel li {
+#ledger-sample[hidden] {
+  display: none;
+}
+
+.ledger-section h3 {
+  margin: 12px 0 4px;
+  font-size: 15px;
+}
+
+.ledger-summary {
+  margin: 0 0 4px;
+  font-weight: bold;
+}
+
+.ledger-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ledger-table th {
+  text-align: left;
+  font-weight: normal;
+  font-style: italic;
+  border-bottom: 1px solid var(--ink);
+  padding: 2px 6px;
+}
+
+.ledger-table td {
   border-bottom: 1px solid #e2d5ba;
-  padding: 4px 0;
+  padding: 3px 6px;
 }
 
-#charters-panel li p {
+.ledger-graph {
+  width: 100%;
+  height: auto;
+  font-size: 11px;
+}
+
+.ledger-graph .grid {
+  stroke: #e2d5ba;
+}
+
+.ledger-graph .axis {
+  fill: var(--ink);
+}
+
+.ledger-graph .area {
+  fill: rgba(192, 100, 59, 0.15);
+}
+
+.ledger-graph .line {
+  fill: none;
+  stroke: var(--terracotta);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.production-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.production-bar .possible {
+  width: 160px;
+  height: 12px;
+  border: 1px solid var(--ink);
+  background: repeating-linear-gradient(45deg, #e2d5ba 0 3px, transparent 3px 6px);
+}
+
+.production-bar .made {
+  height: 100%;
+  background: var(--terracotta);
+}
+
+.status {
+  text-transform: capitalize;
+}
+
+.status.surplus {
+  color: #4f7a2a;
+}
+
+.status.short {
+  color: #b02a1a;
+  font-weight: bold;
+}
+
+.status.idle {
+  color: #8a7a66;
+}
+
+.priority-picker {
+  display: flex;
+  gap: 2px;
+}
+
+.priority-picker button {
+  width: 24px;
+}
+
+.open-switch {
+  width: 64px;
+}
+
+.open-switch.closed {
+  background: #d8cdb6;
+  color: #6b5a44;
+}
+
+.ledger-table .negative {
+  color: #b02a1a;
+}
+
+.charter-chapter p {
   margin: 2px 0 0;
   font-size: 13px;
 }
 
-#charter-permits {
-  margin: 6px 0 0;
+.charter-chapter .charter-permits {
+  margin-top: 10px;
+  font-size: inherit;
   font-weight: bold;
 }
 

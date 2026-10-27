@@ -17,7 +17,7 @@
       <span id="treasury"></span>
       <span id="date"></span>
       <span id="status"></span>
-      <button id="charters-button" title="Charters (C)">Charters</button>
+      <button id="ledger-button" title="Ledger (L)">Ledger</button>
       <button id="notices-button" title="Recent notices (N)">Notices</button>
       <div id="map-mode">
         <button id="map-button" title="Map modes (O toggles the last one)"></button>
@@ -32,16 +32,13 @@
       <h2>Notices</h2>
       <ol id="notice-log-lines"></ol>
     </aside>
-    <aside id="charters-panel" hidden>
-      <button id="charters-close" aria-label="Close">×</button>
-      <h2>Charters</h2>
-      <ul>
-        <li>
-          <strong id="charter-well-fed"></strong>
-          <p id="charter-well-fed-goal"></p>
-        </li>
-      </ul>
-      <p id="charter-permits"></p>
+    <aside id="ledger" hidden>
+      <nav id="ledger-chapters"></nav>
+      <div id="ledger-content">
+        <button id="ledger-close" aria-label="Close">×</button>
+        <h2><span id="ledger-title"></span> <span id="ledger-sample">Sample data</span></h2>
+        <div id="ledger-page"></div>
+      </div>
     </aside>
     <nav id="toolbar"></nav>
     <div id="map-tooltip" hidden></div>
