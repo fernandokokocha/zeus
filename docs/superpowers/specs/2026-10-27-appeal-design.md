@@ -88,10 +88,14 @@ from the original game.
   design, slice 28).
 - Demolishing a monument loses it; it is not returned to the count.
 - The build menu shows the count on the tool ("Monument (1)").
-- **Model:** a placeholder good enough to playtest, plus an entry in
-  `docs/redesign-backlog.md`. Direction for its round: a commemorative monument in white
-  marble and blue, close to the ones in Zeus, readable at default zoom as "the city's
-  pride". One state: built.
+- **Model:** designed with the owner, in `src/render/monument-models.ts`. Three bodies taken
+  from real Greek monuments (choregic monument of Lysicrates, Mausoleum of Halicarnassus,
+  Great Altar of Pergamon), and the game picks one per monument from its tile with
+  `monumentModel(emblem, x, y)`. Each achievement has its own **emblem**
+  (`src/render/kit/monument.ts`): a bronze or gold crown on a shared marble drum on top, and
+  the frieze carved on the body. The 1,000-citizens emblem is `CROWDED_CITY` (a bronze crowd
+  under a gold city crown); the trade-route one is `TRADE_ROUTE` (a gold ship). One state:
+  built.
 
 ## Decisions taken without the owner
 
