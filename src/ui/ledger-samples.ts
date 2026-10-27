@@ -20,19 +20,6 @@ export interface PrioritiesReport {
   industries: { name: string; buildings: number; workers: number; jobs: number; priority: Priority; open: boolean }[];
 }
 
-export interface Accounts {
-  taxes: number;
-  wages: number;
-  construction: number;
-  sheep: number;
-}
-
-export interface TreasuryReport {
-  treasury: number;
-  thisYear: { label: string; accounts: Accounts };
-  lastYear: { label: string; accounts: Accounts };
-}
-
 const SAMPLE_MONTHS = 40;
 
 function samplePopulationHistory(): number[] {
@@ -96,10 +83,4 @@ export const SAMPLE_PRIORITIES: PrioritiesReport = {
     industry('foundry', 1, 0, 0, false),
     industry('sculptureStudio', 1, 0, 0, false),
   ],
-};
-
-export const SAMPLE_TREASURY: TreasuryReport = {
-  treasury: 3412,
-  thisYear: { label: 'Year 4, so far', accounts: { taxes: 612, wages: 388, construction: 145, sheep: 0 } },
-  lastYear: { label: 'Year 3', accounts: { taxes: 1104, wages: 690, construction: 1270, sheep: 60 } },
 };

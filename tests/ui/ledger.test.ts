@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { axisTop, graphPoints, madeShare, net } from '../../src/ui/ledger-chapters';
+import { axisTop, drachmas, graphPoints, madeShare, net } from '../../src/ui/ledger-chapters';
 
 describe('axisTop', () => {
   it('rounds up to 1, 2 or 5 times a power of ten', () => {
@@ -42,5 +42,13 @@ describe('madeShare', () => {
 describe('net', () => {
   it('is income less spending', () => {
     expect(net({ taxes: 900, wages: 400, construction: 250, sheep: 30 })).toBe(220);
+  });
+});
+
+describe('drachmas', () => {
+  it('shows whole drachmas, and a sliver of debt as zero', () => {
+    expect(drachmas(1234.6)).toBe('1,235 dr');
+    expect(drachmas(-0.3)).toBe('0 dr');
+    expect(drachmas(-12.4)).toBe('-12 dr');
   });
 });

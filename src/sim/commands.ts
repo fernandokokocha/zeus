@@ -17,7 +17,7 @@ import { isSanctuary, sanctuaryObstacle, takeInitialMarble } from './sanctuaries
 import { GRAZE_PAUSE_TICKS, isPasture } from './sheep';
 import { NO_BUILDING, clampToMap, inBounds, tileIndex, type Building, type GameState } from './state';
 import { BUILDABLE, TERRAIN_NAMES } from './terrain';
-import { ROADBLOCK_COST, ROAD_TILE_COST, SHEEP_COST } from './treasury';
+import { ROADBLOCK_COST, ROAD_TILE_COST, SHEEP_COST, spend } from './treasury';
 import { walkerTile } from './walking';
 
 export type Result = { ok: true } | { ok: false; reason: string };
@@ -57,7 +57,7 @@ export function placeRoad(state: GameState, from: Point, to: Point): Result {
   }
   for (const p of path) {
     const i = tileIndex(state, p.x, p.y);
-    if (!state.roads[i]) state.treasury -= ROAD_TILE_COST;
+    if (!state.roads[i]) spend(state, 'construction', ROAD_TILE_COST);
     state.roads[i] = true;
   }
   state.version++;
@@ -75,7 +75,7 @@ export function placeRoadblock(state: GameState, at: Point): Result {
   const obstacle = roadblockObstacle(state, at);
   if (obstacle) return fail(obstacle);
   state.roadblocks[tileIndex(state, at.x, at.y)] = true;
-  state.treasury -= ROADBLOCK_COST;
+  spend(state, 'construction', ROADBLOCK_COST);
   state.version++;
   return OK;
 }
@@ -89,7 +89,7 @@ export function placeSheep(state: GameState, at: Point): Result {
   const obstacle = sheepObstacle(state, at);
   if (obstacle) return fail(obstacle);
   state.sheep.push({ id: state.nextSheepId++, home: at, path: [at], step: 0, progress: 0, fleece: 1, grazeRest: GRAZE_PAUSE_TICKS });
-  state.treasury -= SHEEP_COST;
+  spend(state, 'sheep', SHEEP_COST);
   state.version++;
   return OK;
 }
@@ -202,7 +202,7 @@ export function placeBuilding(state: GameState, type: BuildingType, x: number, y
 }
 
 export function build(state: GameState, placement: Placement): Building {
-  state.treasury -= BUILDING_SPECS[placement.type].cost;
+  spend(state, 'construction', BUILDING_SPECS[placement.type].cost);
   return addBuilding(state, placement);
 }
 

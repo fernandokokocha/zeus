@@ -1,15 +1,10 @@
-import type {
-  Accounts,
-  PopulationReport,
-  PrioritiesReport,
-  Priority,
-  ProductionReport,
-  TreasuryReport,
-} from './ledger-samples';
+import type { Accounts, TreasuryReport } from '../sim/treasury';
+import type { PopulationReport, PrioritiesReport, Priority, ProductionReport } from './ledger-samples';
 
 const MIN_AXIS_TOP = 10;
 const AXIS_STEPS = [1, 2, 5];
 const MONTHS_PER_YEAR = 12;
+const NO_YEAR = '–';
 const PRIORITIES: Priority[] = [0, 1, 2, 3];
 const INCOME: (keyof Accounts)[] = ['taxes'];
 const SPENDING: (keyof Accounts)[] = ['wages', 'construction', 'sheep'];
@@ -49,8 +44,9 @@ function count(value: number): string {
   return value.toLocaleString('en-US');
 }
 
-function drachmas(value: number): string {
-  return `${count(value)} dr`;
+export function drachmas(value: number): string {
+  const whole = Math.round(value);
+  return `${count(whole === 0 ? 0 : whole)} dr`;
 }
 
 function table(headings: string[], rows: (string | HTMLElement)[][]): HTMLTableElement {
@@ -185,24 +181,25 @@ export function prioritiesChapter(report: PrioritiesReport, controls: PriorityCo
 }
 
 function signed(value: number): HTMLElement {
-  return element('span', value < 0 ? 'negative' : '', drachmas(value));
+  return element('span', Math.round(value) < 0 ? 'negative' : '', drachmas(value));
 }
 
 export function treasuryChapter(report: TreasuryReport): HTMLElement {
   const body = element('div');
   const { thisYear, lastYear } = report;
-  const accountRow = (key: keyof Accounts) => [ACCOUNT_NAMES[key], drachmas(thisYear.accounts[key]), drachmas(lastYear.accounts[key])];
+  const lastYearCell = (cell: (accounts: Accounts) => string | HTMLElement) => (lastYear ? cell(lastYear.accounts) : NO_YEAR);
+  const accountRow = (key: keyof Accounts) => [ACCOUNT_NAMES[key], drachmas(thisYear.accounts[key]), lastYearCell((accounts) => drachmas(accounts[key]))];
   const group = (title: string) => [element('strong', '', title), '', ''];
   const rows = [
     group('Income'),
     ...INCOME.map(accountRow),
     group('Spending'),
     ...SPENDING.map(accountRow),
-    [element('strong', '', 'Net'), signed(net(thisYear.accounts)), signed(net(lastYear.accounts))],
+    [element('strong', '', 'Net'), signed(net(thisYear.accounts)), lastYearCell((accounts) => signed(net(accounts)))],
   ];
   body.append(
     element('p', 'ledger-summary', `Treasury now: ${drachmas(report.treasury)}`),
-    section('Income and spending', table(['', thisYear.label, lastYear.label], rows)),
+    section('Income and spending', table(['', thisYear.label, lastYear ? lastYear.label : 'Last year'], rows)),
   );
   return body;
 }

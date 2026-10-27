@@ -14,7 +14,7 @@ the PR that delivers it.
 - [x] 18 · Map button and columns
 - [x] 19 · Supplies and tax paid
 - [x] 20 · Ledger
-- [ ] 21 · Ledger: Treasury
+- [x] 21 · Ledger: Treasury
 - [ ] 22 · Ledger: Population
 - [ ] 23 · Ledger: Production
 - [ ] 24 · Production priorities

@@ -4,7 +4,7 @@ import type { HouseLevel } from './housing';
 import { DEFAULT_SEED, MAP_SIZE, generateTerrain } from './map';
 import { clampPoint, type Point } from './point';
 import type { Terrain } from './terrain';
-import { STARTING_TREASURY } from './treasury';
+import { STARTING_TREASURY, emptyAccounts, type Books } from './treasury';
 
 export type Speed = 0 | 1 | 2 | 4;
 export type PlayingSpeed = Exclude<Speed, 0>;
@@ -198,6 +198,7 @@ export interface GameState {
   rngState: number;
   entry: Point;
   treasury: number;
+  accounts: Books;
   lastMonth: { taxes: number; wages: number };
   tick: number;
   speed: Speed;
@@ -247,6 +248,7 @@ export function newGameState(size: number, terrain: Terrain[], mainRoad: Point[]
     rngState: DEFAULT_SEED,
     entry: mainRoad[0],
     treasury: STARTING_TREASURY,
+    accounts: { thisYear: emptyAccounts(), lastYear: emptyAccounts() },
     lastMonth: { taxes: 0, wages: 0 },
     tick: 0,
     speed: 1,
