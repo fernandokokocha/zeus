@@ -160,14 +160,14 @@ function describeBuildingKind(state: GameState, building: Building): Description
 }
 
 const UPGRADE_LINES = {
-  ornate: 'Radiates appeal',
-  fast: `Walkers move ${ROAD_UPGRADE_SPECS.fast.speed}× faster`,
+  ornate: ['Radiates appeal'],
+  fast: [`Walkers move ${ROAD_UPGRADE_SPECS.fast.speed}× faster`, 'Lowers appeal nearby'],
 };
 
 function describeRoad(state: GameState, x: number, y: number): Description {
   const tile = `Tile ${x}, ${y}`;
   const upgrade = state.roadUpgrades[tileIndex(state, x, y)];
-  if (upgrade) return { title: ROAD_UPGRADE_SPECS[upgrade].name, meters: [], lines: [tile, UPGRADE_LINES[upgrade]] };
+  if (upgrade) return { title: ROAD_UPGRADE_SPECS[upgrade].name, meters: [], lines: [tile, ...UPGRADE_LINES[upgrade]] };
   const appeal = appealMap(state);
   const obstacle = upgradeObstacle(state, 'ornate', { x, y }, appeal);
   return { title: 'Road', meters: [], lines: [tile, `Appeal ${appeal[tileIndex(state, x, y)]}`, obstacle ?? 'Can be made an Ornate Road'] };

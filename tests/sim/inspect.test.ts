@@ -61,7 +61,7 @@ describe('describeTile', () => {
     game.roadUpgrades[tileIndex(game, 4, 4)] = 'ornate';
     game.roadUpgrades[tileIndex(game, 5, 4)] = 'fast';
     expect(describeTile(game, 4, 4)).toEqual({ title: 'Ornate Road', meters: [], lines: ['Tile 4, 4', 'Radiates appeal'] });
-    expect(describeTile(game, 5, 4)).toEqual({ title: 'Fast Road', meters: [], lines: ['Tile 5, 4', 'Walkers move 1.5× faster'] });
+    expect(describeTile(game, 5, 4)).toEqual({ title: 'Fast Road', meters: [], lines: ['Tile 5, 4', 'Walkers move 1.5× faster', 'Lowers appeal nearby'] });
   });
 
   it('describes the Main Road', () => {

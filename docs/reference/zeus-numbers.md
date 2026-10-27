@@ -165,7 +165,7 @@ https://zeus.heavengames.com/gameinfo/gods/
 - Roadblock cost: **6 dr**.
 - Road upgrades (spec, **ours**): each costs **1 load of marble** a tile, taken from storehouses,
   fullest first, when placed. **Ornate** needs the tile's own appeal at **25** or more (the
-  Townhouse devolve value) and radiates appeal **2, 1**. **Fast** has no gate and moves walkers
+  Townhouse devolve value) and radiates appeal **2, 1**. **Fast** has no gate, radiates appeal **-2, -1** and moves walkers
   **1.5×** faster while they stand on it. An Ornate tile taken earlier in a drag counts toward the
   next tile's appeal.
 - Cart pusher load: **4 loads** (one granary slot). Buyer load: **4 loads**. Agora vendor stock: **8 loads**.

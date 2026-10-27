@@ -11,7 +11,7 @@ one. The tiles around a block are spent on parks and gardens to get there. Befor
 asks for even more of that land, the player gets two new appeal tools:
 
 - **Road upgrades.** A road is no longer finished once it is built. Upgrading it is a
-  decision: a **Ornate** road for a housing street, or a **Fast** road for a working route.
+  decision: an **Ornate** road for a housing street, or a **Fast** road for a working route.
   A street is one or the other.
 - **The Monument.** A large appeal building that is earned, never bought, as Zeus's
   commemorative monuments are.
@@ -25,7 +25,7 @@ asks for even more of that land, the player gets two new appeal tools:
 | Main Road | generated with the map | unchanged; it can't be upgraded |
 | Regular | the road tool | unchanged |
 | Ornate | upgrade of a regular road where appeal ≥ **25** | radiates appeal |
-| Fast | upgrade of any regular road | walkers move **1.5×** faster on it |
+| Fast | upgrade of any regular road | walkers move **1.5×** faster on it; lowers appeal `[-2, -1]` |
 
 - Each upgrade costs **1 load of marble**, taken straight from storehouse stock when the
   upgrade is placed, the way drachmas are spent. No cart delivers it. Without marble in any
@@ -37,6 +37,8 @@ asks for even more of that land, the player gets two new appeal tools:
 - **Ornate Road appeal:** `[2, 1]` per tile (**ours**). Appeal adds up, so a street of them
   lifts its houses noticeably; an Ornate Road can make the next tile qualify, and a street
   can be upgraded outward from its best end.
+- **Fast Road appeal:** `[-2, -1]` per tile (**ours**, added after the slice 25 playtest): a
+  noisy cart road, so the choice between Ornate and Fast is a real one.
 - **Fast Road speed:** a walker's progress per tick is multiplied by **1.5** (**ours**)
   while the tile it is on is Fast. Every walker that uses roads benefits: cart pushers,
   buyers, peddlers, service and culture walkers. Paths don't change: walkers do not seek

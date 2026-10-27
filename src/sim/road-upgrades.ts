@@ -17,7 +17,7 @@ export interface RoadUpgradeSpec {
 
 export const ROAD_UPGRADE_SPECS: Record<RoadUpgrade, RoadUpgradeSpec> = {
   ornate: { name: 'Ornate Road', marbleLoads: 1, minAppeal: 25, appeal: [2, 1], speed: 1 },
-  fast: { name: 'Fast Road', marbleLoads: 1, minAppeal: null, appeal: [], speed: 1.5 },
+  fast: { name: 'Fast Road', marbleLoads: 1, minAppeal: null, appeal: [-2, -1], speed: 1.5 },
 };
 
 export interface UpgradePlan {

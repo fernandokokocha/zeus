@@ -32,9 +32,9 @@ const appealAt = (game: GameState, x: number) => appealMap(game)[tileIndex(game,
 const upgradeAt = (game: GameState, x: number) => game.roadUpgrades[tileIndex(game, x, ROAD_Y)];
 
 describe('road upgrade numbers', () => {
-  it('cost a load of marble; Ornate needs the Townhouse devolve appeal and radiates [2, 1]; Fast is 1.5× quicker', () => {
+  it('cost a load of marble; Ornate needs the Townhouse devolve appeal and radiates [2, 1]; Fast is 1.5× quicker and radiates [-2, -1]', () => {
     expect(ROAD_UPGRADE_SPECS.ornate).toEqual({ name: 'Ornate Road', marbleLoads: 1, minAppeal: 25, appeal: [2, 1], speed: 1 });
-    expect(ROAD_UPGRADE_SPECS.fast).toEqual({ name: 'Fast Road', marbleLoads: 1, minAppeal: null, appeal: [], speed: 1.5 });
+    expect(ROAD_UPGRADE_SPECS.fast).toEqual({ name: 'Fast Road', marbleLoads: 1, minAppeal: null, appeal: [-2, -1], speed: 1.5 });
     expect(ROAD_UPGRADE_SPECS.ornate.minAppeal).toBe(HOUSE_LEVELS.townhouse.appeal.devolve);
   });
 });
@@ -106,7 +106,7 @@ describe('upgrading roads', () => {
   });
 });
 
-describe('a Ornate Road', () => {
+describe('an Ornate Road', () => {
   it('radiates appeal [2, 1] from its tile', () => {
     const { game } = fineStreet();
     const before = appealMap(game);
@@ -142,6 +142,14 @@ describe('a Fast Road', () => {
     for (let i = 0; i < ticks; i++) walkPath(game, walk, () => true, () => {});
     return walk;
   }
+
+  it('radiates appeal [-2, -1] from its tile, as a noisy cart road', () => {
+    const { game } = street();
+    upgradeRoads(game, 'fast', at(6), at(6));
+    const appeal = appealMap(game);
+    const at6 = (dx: number, dy: number) => appeal[tileIndex(game, 6 + dx, ROAD_Y + dy)];
+    expect([at6(0, 0), at6(1, 1), at6(2, 0), at6(0, -2), at6(3, 0)]).toEqual([-2, -2, -1, -1, 0]);
+  });
 
   it('moves walkers 1.5× faster while they are on it', () => {
     const ticks = Math.ceil(8 / WALKER_TILES_PER_TICK);
