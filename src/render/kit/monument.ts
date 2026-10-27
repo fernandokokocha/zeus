@@ -150,11 +150,14 @@ function tradeCrown(): THREE.Object3D {
 
 export const TRADE_ROUTE: Emblem = { crown: tradeCrown, relief: tradeRelief };
 
-export function onFourFaces(relief: () => THREE.Object3D, cx: number, cz: number, half: number, y: number): THREE.Group {
+export function friezeAround(emblem: Emblem, cx: number, cz: number, w: number, d: number, y: number, height: number): THREE.Group {
   const group = new THREE.Group();
+  const MARGIN = 0.12;
   for (let i = 0; i < 4; i++) {
     const a = (i * Math.PI) / 2;
-    const face = relief();
+    const facesZ = i % 2 === 0;
+    const face = emblem.relief((facesZ ? w : d) - MARGIN, height);
+    const half = (facesZ ? d : w) / 2;
     face.position.set(cx + Math.sin(a) * half, y, cz + Math.cos(a) * half);
     face.rotation.y = a;
     group.add(face);
