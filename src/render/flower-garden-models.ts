@@ -1,7 +1,5 @@
 import * as THREE from 'three';
-import type { Building } from '../sim/state';
 import { bakedOnce } from './bake';
-import { variantIndexAt } from './palette';
 import { FLOWER, bordered, bloomMass, lemonTreeInPot, pergola, raisedBed, stripedAlongX, tieredFountain, whiteTerrace } from './kit/flower-garden';
 import { flowerPot } from './kit/garden';
 import { cypress, statue } from './kit/luxury';
@@ -74,8 +72,4 @@ export function lemonTerrace(): THREE.Object3D {
   return group;
 }
 
-const GARDENS = [fourBeds, pergolaWalk, lemonTerrace].map((garden) => bakedOnce(garden));
-
-export function flowerGardenModel(garden: Building): THREE.Object3D {
-  return GARDENS[variantIndexAt(garden.x, garden.y, GARDENS.length)]();
-}
+export const flowerGardenModel = bakedOnce(lemonTerrace);

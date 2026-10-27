@@ -3,8 +3,6 @@ import { bakedOnce } from './bake';
 import { BLOOM, herm } from './kit/garden';
 import { cypress } from './kit/luxury';
 import { basin, clippedBush, gravelDisc, gravelPatch, marbleBench, parkLawn, planeTree, roundBed, steppingStones } from './kit/park';
-import { variantIndexAt } from './palette';
-import type { Building } from '../sim/state';
 
 const ALONG_THE_SIDE = Math.PI / 2;
 
@@ -39,8 +37,4 @@ export function planeTreeShade(): THREE.Object3D {
   return group;
 }
 
-const PARKS = [cypressSquare, hermInARoseRing, planeTreeShade].map((park) => bakedOnce(park));
-
-export function parkModel(park: Building): THREE.Object3D {
-  return PARKS[variantIndexAt(park.x, park.y, PARKS.length)]();
-}
+export const parkModel = bakedOnce(hermInARoseRing);
