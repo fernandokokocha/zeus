@@ -2,7 +2,7 @@
 
 Extends `2026-10-11-zeus-clone-design.md`. Everything there still holds: the working
 agreement, the architecture, the code rules. This document replaces its slice 12 and adds
-slices 12–17 and 25–26.
+slices 12–17. Trade is designed in `2026-10-27-trade-design.md`.
 
 ## Intent
 
@@ -121,8 +121,8 @@ spine of the city and the future route of traders.
 | Residents | 20 merchants, who are also its staff |
 | Needs | everything a Townhouse needs (food, water, fleece, oil, culture 45) plus **fine cloth** |
 | Appeal | moderate: it needs appeal at or above the Townhouse's devolve value (25) |
-| Taxes | **none**. It earns through trade instead (slice 25). |
-| Bonus | one trade route (slice 25). Until then the inspector shows "trade route: not yet available". |
+| Taxes | **none**. It earns through trade instead (`2026-10-27-trade-design.md`). |
+| Bonus | one trade route (trade design, slice 28). Until then the inspector shows "trade route: not yet available". |
 | Cost | 100 dr (**ours**) plus one permit |
 | Demotion | any need missing for a month → four vacant lots |
 
@@ -166,8 +166,7 @@ much as its rules.
     courtyard, blue cloth awnings and bolts of fine cloth on display. Amphorae and crates
     hint at the trade route to come.
   - Its silhouette must read as different from a Townhouse block at default zoom.
-- Slice 12's paved Main Road, slice 13's Weaver, slice 16's cloth vendor and slice 25's
-  Trading Post also get placeholder models and backlog entries.
+- Slice 12's paved Main Road, slice 13's Weaver, and slice 16's cloth vendor also get placeholder models and backlog entries.
 
 ## Guild sites (slice 17)
 
@@ -184,24 +183,10 @@ Planning help, so the player can build toward a guild deliberately.
 - **Notice** the first time a block becomes placeable: "A Traders' Guild can now be placed
   at …".
 
-## Trade (slices 25–26)
+## Trade
 
-Similar to the original game's land trade, except routes are earned instead of bought
-outright.
-
-- **Trading Post**, placed next to the Main Road. Use the Zeus size and cost.
-- **Partner cities:** a few fictional Greek cities. Each one buys some goods and sells some
-  goods, with prices and a yearly quota per good.
-- **Routes:** every Traders' Guild in the city opens one route to a partner of the
-  player's choice. Opening it also costs drachmas, as in Zeus. If the guild demotes, its
-  route closes.
-- **Traders** walk in from the west edge along the Main Road to the Trading Post, and walk
-  back out the same way.
-- **Slice 25 · Exports:** set a storehouse good to export. Traders buy it up to the quota,
-  and the drachmas go to the treasury.
-- **Slice 26 · Imports:** set a good to import, and traders bring it to the Trading Post,
-  which sends it to a storehouse. The treasury pays.
-- A trade panel lists routes, partners, quotas used this year and income.
+Replaced by `2026-10-27-trade-design.md` (slices 27–31): no Trading Post, no quotas;
+the guild is placed with a Trade Yard across the Main Road, and caravans carry the goods.
 
 ## Horizon (not planned)
 
