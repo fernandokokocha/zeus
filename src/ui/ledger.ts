@@ -1,57 +1,62 @@
 import type { GameState } from '../sim/state';
+import { prioritiesReport, setIndustryOpen, setIndustryPriority, type PrioritiesReport } from '../sim/labor';
 import { populationReport } from '../sim/population';
 import { productionReport } from '../sim/production';
 import { treasuryReport } from '../sim/treasury';
 import { createCharterChapter } from './charters';
 import { byId } from './dom';
 import { populationChapter, prioritiesChapter, productionChapter, treasuryChapter } from './ledger-chapters';
-import { SAMPLE_PRIORITIES, type PrioritiesReport } from './ledger-samples';
 
 type ChapterId = 'population' | 'production' | 'priorities' | 'treasury' | 'charter';
 
 interface Chapter {
   title: string;
-  sample: boolean;
   body: HTMLElement;
 }
 
-function samplePriorities(): HTMLElement {
-  const report: PrioritiesReport = { ...SAMPLE_PRIORITIES, industries: SAMPLE_PRIORITIES.industries.map((row) => ({ ...row })) };
+function createPrioritiesChapter(state: GameState): { body: HTMLElement; update(): void } {
   const body = document.createElement('div');
-  const render = () =>
+  let shown = '';
+  const render = (report: PrioritiesReport) =>
     body.replaceChildren(
       prioritiesChapter(report, {
         setPriority(industry, priority) {
-          report.industries[industry].priority = priority;
-          render();
+          setIndustryPriority(state, industry, priority);
+          update();
         },
         setOpen(industry, open) {
-          report.industries[industry].open = open;
-          render();
+          setIndustryOpen(state, industry, open);
+          update();
         },
       }),
     );
-  render();
-  return body;
+  function update(): void {
+    const report = prioritiesReport(state);
+    const key = JSON.stringify(report);
+    if (key === shown) return;
+    shown = key;
+    render(report);
+  }
+  return { body, update };
 }
 
 export function createLedger(state: GameState): { update(): void } {
   const ledger = byId('ledger');
   const nav = byId('ledger-chapters');
   const title = byId('ledger-title');
-  const sampleBadge = byId('ledger-sample');
   const page = byId('ledger-page');
   const charter = createCharterChapter(state);
+  const priorities = createPrioritiesChapter(state);
   const population = document.createElement('div');
   const production = document.createElement('div');
   const treasury = document.createElement('div');
 
   const chapters: Record<ChapterId, Chapter> = {
-    population: { title: 'Population', sample: false, body: population },
-    production: { title: 'Production', sample: false, body: production },
-    priorities: { title: 'Priorities', sample: true, body: samplePriorities() },
-    treasury: { title: 'Treasury', sample: false, body: treasury },
-    charter: { title: 'Charter', sample: false, body: charter.body },
+    population: { title: 'Population', body: population },
+    production: { title: 'Production', body: production },
+    priorities: { title: 'Priorities', body: priorities.body },
+    treasury: { title: 'Treasury', body: treasury },
+    charter: { title: 'Charter', body: charter.body },
   };
 
   const tabs = (Object.keys(chapters) as ChapterId[]).map((id) => {
@@ -66,7 +71,6 @@ export function createLedger(state: GameState): { update(): void } {
     const chapter = chapters[id];
     for (const { id: tabId, tab } of tabs) tab.classList.toggle('active', tabId === id);
     title.textContent = chapter.title;
-    sampleBadge.hidden = !chapter.sample;
     page.replaceChildren(chapter.body);
   }
 
@@ -86,6 +90,7 @@ export function createLedger(state: GameState): { update(): void } {
     update() {
       if (ledger.hidden) return;
       charter.update();
+      priorities.update();
       population.replaceChildren(populationChapter(populationReport(state)));
       production.replaceChildren(productionChapter(productionReport(state)));
       treasury.replaceChildren(treasuryChapter(treasuryReport(state)));

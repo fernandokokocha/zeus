@@ -7,6 +7,7 @@ import { WEAVER_FLEECE_CAPACITY, WEAVING_TICKS, canWeave } from './cloth';
 import { adjacentRoadTiles, agoraVendors, footprint } from './commands';
 import { hasWorkingPalace, houseTax } from './economy';
 import { GRANARY_CAPACITY, HARVEST_MONTH, UNITS_PER_LOAD, VENDOR_CAPACITY, houseStockTarget, monthlyUse } from './food';
+import { isClosed } from './industries';
 import { guildShortfalls, guildSiteOf, siteShortfalls, type GuildSite } from './guild';
 import { type HouseLevel, type HouseNeed, type ResidentNeed, HOUSE_LEVELS, LEVEL_CHANGE_TICKS, TRADERS_GUILD, NEXT_LEVEL, PREVIOUS_LEVEL, houseCapacity, houseLevel, evolutionBlockers, houseName, lacksCulture, missingNeeds } from './housing';
 import { ROAMER_SPECS, hasGoodsToSell, hasService, type RoamerSpec, roamerKindSentBy, serviceLeft } from './roamers';
@@ -347,7 +348,7 @@ function describeWorkplace(state: GameState, building: Building): Description {
   if (spec.workers > 0) {
     lines.push(`Workers ${building.workers}/${spec.workers}`);
     if (building.workers === 0) {
-      lines.push('No workers: does not work', ...stockLines(state, building));
+      lines.push(isClosed(state, building) ? 'Closed in the Ledger: does not work' : 'No workers: does not work', ...stockLines(state, building));
       return description;
     }
   }

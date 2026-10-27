@@ -408,23 +408,6 @@ button.active {
   font-size: 20px;
 }
 
-#ledger-sample {
-  margin-left: 6px;
-  padding: 1px 6px;
-  border: 1px dashed var(--terracotta);
-  border-radius: 3px;
-  color: var(--terracotta);
-  font-size: 12px;
-  font-weight: normal;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  vertical-align: middle;
-}
-
-#ledger-sample[hidden] {
-  display: none;
-}
-
 .ledger-section h3 {
   margin: 12px 0 4px;
   font-size: 15px;

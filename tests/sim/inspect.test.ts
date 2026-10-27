@@ -7,6 +7,7 @@ import { SHEARING_REST_TICKS, sheepTile } from '../../src/sim/sheep';
 import { TICKS_PER_MONTH } from '../../src/sim/clock';
 import { ROAMER_REST_TICKS } from '../../src/sim/roamers';
 import { tileIndex, type Building, type GameState } from '../../src/sim/state';
+import { setIndustryOpen } from '../../src/sim/labor';
 import { describeTile, inspectTile, type Meter, type StorehouseView } from '../../src/sim/inspect';
 import { setGoodAccepted, STOREHOUSE_CAPACITY } from '../../src/sim/storehouse';
 import { FIRE_BURN_TICKS, RISK_LIMIT, catchFire } from '../../src/sim/safety';
@@ -185,6 +186,16 @@ it('shows the water running down until the next carrier', () => {
     expect(describeTile(game, 2, 11).lines).toEqual(['Tile 2, 11', 'Workers 0/8', 'No workers: does not work', 'Fire risk 0%']);
     expect(describeTile(game, 6, 14).lines).toEqual(['Tile 6, 14', 'No road access: does not work', 'Collapse risk 0%']);
   });
+
+it("says when a building's industry is closed in the Ledger", () => {
+  const game = grassGame();
+  placeRoad(game, { x: 0, y: 10 }, { x: 19, y: 10 });
+  placeHouse(game, 0, 18);
+  game.buildings[0].residents = 40;
+  placeBuilding(game, 'olivePress', 2, 11);
+  setIndustryOpen(game, 'olivePress', false);
+  expect(describeTile(game, 2, 11).lines).toEqual(['Tile 2, 11', 'Workers 0/12', 'Closed in the Ledger: does not work', 'Olives: 0 of 4 loads', 'Waits for olives', 'Collapse risk 0%']);
+});
 
   it("shows last month's taxes and wages on the Palace", () => {
     const game = town();

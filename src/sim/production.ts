@@ -1,6 +1,7 @@
 import type { BuildingType } from './buildings';
 import { MONTHS_PER_YEAR } from './clock';
 import { CLOTH_LOADS_PER_YEAR } from './cloth';
+import { isClosed, isIndustry, type Industry } from './industries';
 import { GOODS, emptyFlows, recordFlow, type GoodFlow } from './flows';
 import { UNITS_PER_LOAD, WHEAT_LOADS_PER_YEAR } from './food';
 import { BRONZE_PER_SCULPTURE, SCULPTURES_PER_YEAR, WORKSHOP_SPECS } from './materials';
@@ -8,17 +9,6 @@ import { OIL_LOADS_PER_YEAR, OLIVES_PER_PICKING, PICKINGS_PER_YEAR } from './oli
 import { SANCTUARY_MATERIALS, isSanctuary, stillNeeded } from './sanctuaries';
 import { FLEECE_PER_SHEARING, SHEARINGS_PER_YEAR } from './sheep';
 import type { GameState, Good } from './state';
-
-type Industry =
-  | 'wheatFarm'
-  | 'cardingShed'
-  | 'growersLodge'
-  | 'olivePress'
-  | 'weaver'
-  | 'timberMill'
-  | 'masonryShop'
-  | 'foundry'
-  | 'sculptureStudio';
 
 interface Yearly {
   good: Good;
@@ -78,13 +68,9 @@ export interface ProductionReport {
   goods: GoodReport[];
 }
 
-function isIndustry(type: BuildingType): type is Industry {
-  return type in INDUSTRY_SPECS;
-}
-
 export function closeProductionMonth(state: GameState): void {
   for (const building of state.buildings) {
-    if (!isIndustry(building.type)) continue;
+    if (!isIndustry(building.type) || isClosed(state, building)) continue;
     const { makes, takes } = INDUSTRY_SPECS[building.type];
     recordFlow(state, 'possible', makes.good, makes.perYear / MONTHS_PER_YEAR);
     if (takes) recordFlow(state, 'wanted', takes.good, takes.perYear / MONTHS_PER_YEAR);

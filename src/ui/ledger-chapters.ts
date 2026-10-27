@@ -2,13 +2,14 @@ import type { Accounts, TreasuryReport } from '../sim/treasury';
 import { UNITS_PER_LOAD } from '../sim/food';
 import type { PopulationReport } from '../sim/population';
 import type { ProductionReport } from '../sim/production';
-import type { PrioritiesReport, Priority } from './ledger-samples';
+import { NO_PRIORITY, type Industry, type Priority } from '../sim/industries';
+import type { PrioritiesReport } from '../sim/labor';
 
 const MIN_AXIS_TOP = 10;
 const AXIS_STEPS = [1, 2, 5];
 const MONTHS_PER_YEAR = 12;
 const NO_YEAR = '–';
-const PRIORITIES: Priority[] = [0, 1, 2, 3];
+const PRIORITIES: Priority[] = [NO_PRIORITY, 1, 2, 3];
 const INCOME: (keyof Accounts)[] = ['taxes'];
 const SPENDING: (keyof Accounts)[] = ['wages', 'construction', 'sheep'];
 const ACCOUNT_NAMES: Record<keyof Accounts, string> = { taxes: 'Taxes', wages: 'Wages', construction: 'Construction', sheep: 'Sheep' };
@@ -152,22 +153,22 @@ export function productionChapter(report: ProductionReport): HTMLElement {
 }
 
 export interface PriorityControls {
-  setPriority(industry: number, priority: Priority): void;
-  setOpen(industry: number, open: boolean): void;
+  setPriority(industry: Industry, priority: Priority): void;
+  setOpen(industry: Industry, open: boolean): void;
 }
 
-function priorityPicker(industry: number, current: Priority, controls: PriorityControls): HTMLElement {
+function priorityPicker(industry: Industry, current: Priority, controls: PriorityControls): HTMLElement {
   const picker = element('div', 'priority-picker');
   for (const priority of PRIORITIES) {
-    const button = element('button', priority === current ? 'active' : '', priority === 0 ? '–' : String(priority));
-    button.title = priority === 0 ? 'No priority' : `Priority ${priority}`;
+    const button = element('button', priority === current ? 'active' : '', priority === NO_PRIORITY ? '–' : String(priority));
+    button.title = priority === NO_PRIORITY ? 'No priority' : `Priority ${priority}`;
     button.addEventListener('click', () => controls.setPriority(industry, priority));
     picker.append(button);
   }
   return picker;
 }
 
-function openSwitch(industry: number, open: boolean, controls: PriorityControls): HTMLElement {
+function openSwitch(industry: Industry, open: boolean, controls: PriorityControls): HTMLElement {
   const button = element('button', open ? 'open-switch' : 'open-switch closed', open ? 'Open' : 'Closed');
   button.addEventListener('click', () => controls.setOpen(industry, !open));
   return button;
@@ -176,12 +177,12 @@ function openSwitch(industry: number, open: boolean, controls: PriorityControls)
 export function prioritiesChapter(report: PrioritiesReport, controls: PriorityControls): HTMLElement {
   const body = element('div');
   const summary = element('p', 'ledger-summary', `Workers ${count(report.workers)} for ${count(report.jobs)} jobs`);
-  const rows = report.industries.map(({ name, buildings, workers, jobs, priority, open }, index) => [
+  const rows = report.industries.map(({ industry, name, buildings, workers, jobs, priority, open }) => [
     name,
     count(buildings),
     `${count(workers)} / ${count(jobs)}`,
-    priorityPicker(index, priority, controls),
-    openSwitch(index, open, controls),
+    priorityPicker(industry, priority, controls),
+    openSwitch(industry, open, controls),
   ]);
   body.append(summary, section('Industries', table(['Industry', 'Buildings', 'Workers', 'Priority', ''], rows)));
   return body;

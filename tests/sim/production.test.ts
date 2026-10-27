@@ -6,6 +6,7 @@ import { UNITS_PER_LOAD } from '../../src/sim/food';
 import { CASTING_TICKS } from '../../src/sim/materials';
 import { PRESSING_TICKS, OIL_LOADS_PER_YEAR } from '../../src/sim/olives';
 import { WEAVING_TICKS } from '../../src/sim/cloth';
+import { setIndustryOpen } from '../../src/sim/labor';
 import { productionReport, productionStatus, type GoodReport } from '../../src/sim/production';
 import { materialNeeded } from '../../src/sim/sanctuaries';
 import type { GameState, Good } from '../../src/sim/state';
@@ -247,5 +248,16 @@ describe('productionStatus', () => {
 
   it('is enough when what was wanted was used and made', () => {
     expect(productionStatus({ made: 400, used: 400, wanted: 400 })).toBe('enough');
+  });
+});
+
+describe('a closed industry', () => {
+  it('books nothing it could make or would take in', () => {
+    const game = town();
+    place(game, 'olivePress', 10, 13);
+    setIndustryOpen(game, 'olivePress', false);
+    runMaintained(game, 2);
+    expect(row(game, 'oil').possible).toBe(0);
+    expect(row(game, 'olives').wanted).toBe(0);
   });
 });

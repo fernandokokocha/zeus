@@ -17,6 +17,6 @@ the PR that delivers it.
 - [x] 21 · Ledger: Treasury
 - [x] 22 · Ledger: Population
 - [x] 23 · Ledger: Production
-- [ ] 24 · Production priorities
+- [x] 24 · Production priorities
 - [ ] 25 · Trade: exports
 - [ ] 26 · Trade: imports
