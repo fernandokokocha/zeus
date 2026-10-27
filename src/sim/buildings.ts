@@ -13,6 +13,7 @@ export type BuildingType =
   | 'park'
   | 'column'
   | 'flowerGarden'
+  | 'monument'
   | 'college'
   | 'podium'
   | 'gymnasium'
@@ -63,6 +64,7 @@ export const BUILDING_SPECS: Record<BuildingType, BuildingSpec> = {
   park: { name: 'Park', width: 1, height: 1, cost: 6, workers: 0, appeal: [3, 2, 1], needsRoad: false },
   column: { name: 'Column', width: 1, height: 1, cost: 8, workers: 0, appeal: [4, 2, 0], needsRoad: false },
   flowerGarden: { name: 'Flower Garden', width: 2, height: 2, cost: 20, workers: 0, appeal: [8, 7, 6], needsRoad: false },
+  monument: { name: 'Monument', width: 3, height: 3, cost: 0, workers: 0, appeal: [20, 20, 18, 16, 14, 12], needsRoad: false },
   college: { name: 'College', width: 3, height: 3, cost: 30, workers: 12, appeal: [-5, -8], needsRoad: true },
   podium: { name: 'Podium', width: 2, height: 2, cost: 15, workers: 4, appeal: [3, 2, 1], needsRoad: true },
   gymnasium: { name: 'Gymnasium', width: 3, height: 3, cost: 30, workers: 7, appeal: [], needsRoad: true },

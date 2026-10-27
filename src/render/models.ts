@@ -31,6 +31,8 @@ import { theaterModel } from './theater-models';
 import { columnModel } from './column-models';
 import { fountainModel } from './fountain-models';
 import { flowerGardenModel } from './flower-garden-models';
+import { CROWDED_CITY } from './kit/monument';
+import { monumentModel } from './monument-models';
 import { homesteadModel, hovelModel, hutModel, shackModel, tenementModel, apartmentModel, townhouseModel } from './house-models';
 
 const lambert = (color: number) => new THREE.MeshLambertMaterial({ color });
@@ -617,6 +619,7 @@ const MODELS: Record<Exclude<BuildingType, 'house'>, (building: Building, state:
   park: parkModel,
   column: columnModel,
   flowerGarden: flowerGardenModel,
+  monument: (b) => monumentModel(CROWDED_CITY, b.x, b.y),
   college: collegeModel,
   podium: (b, state) => podiumModel(isPerforming(state, b)),
   gymnasium: gymnasiumModel,

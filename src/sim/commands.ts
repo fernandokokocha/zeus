@@ -1,3 +1,4 @@
+import { monumentObstacle } from './monuments';
 import {
   AGORA_VENDOR_SPOTS,
   BUILDING_SPECS,
@@ -175,6 +176,7 @@ function placementObstacle(state: GameState, placement: Placement): string | nul
   if (type === 'palace' && state.buildings.some((b) => b.type === 'palace')) return 'Only one palace is allowed';
   if (isAgoraVendor(type)) return vendorObstacle(state, x, y);
   if (type === 'tradersGuild') return guildObstacle(state, placement);
+  if (type === 'monument') return footprintObstacle(state, placement) ?? monumentObstacle(state);
   if (isSanctuary(type)) return footprintObstacle(state, placement) ?? sanctuaryObstacle(state, type);
   const obstacle = footprintObstacle(state, placement);
   const meadowReason = MEADOW_REASONS[type];
@@ -197,6 +199,7 @@ export function placeBuilding(state: GameState, type: BuildingType, x: number, y
   const agora = isAgoraVendor(type) ? agoraAt(state, placement) : null;
   const building = type === 'tradersGuild' ? raiseGuild(state, placement) : build(state, agora ? { ...placement, rotation: agora.rotation } : placement);
   if (isSanctuary(type)) takeInitialMarble(state, building);
+  if (type === 'monument') state.monumentsToPlace--;
   state.version++;
   return OK;
 }

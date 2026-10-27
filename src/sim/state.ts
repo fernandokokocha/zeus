@@ -198,6 +198,8 @@ export interface GameState {
   nextNoticeId: number;
   wellFed: WellFed;
   guildPermits: number;
+  monumentsToPlace: number;
+  crowdedCityEarned: boolean;
   announcedGuildSites: number[];
   rngState: number;
   entry: Point;
@@ -252,6 +254,8 @@ export function newGameState(size: number, terrain: Terrain[], mainRoad: Point[]
     nextNoticeId: 1,
     wellFed: { months: 0, reset: null },
     guildPermits: 0,
+    monumentsToPlace: 0,
+    crowdedCityEarned: false,
     announcedGuildSites: [],
     rngState: DEFAULT_SEED,
     entry: mainRoad[0],

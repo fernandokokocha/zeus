@@ -31,6 +31,7 @@ const LOOKS: Record<BuildingType, Look> = {
   park: unchanging,
   column: unchanging,
   flowerGarden: unchanging,
+  monument: unchanging,
   college: staffed,
   podium: performing,
   gymnasium: staffed,

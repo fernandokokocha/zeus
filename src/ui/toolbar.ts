@@ -1,11 +1,13 @@
 import { byId } from './dom';
 import { GROUP_ICONS, TOOL_ICONS } from './icons';
-import { QUICK_TILE_LABELS, QUICK_TOOLS, TOOL_GROUPS, TOOL_LABELS, type Tool, type ToolGroup } from './tools';
+import type { GameState } from '../sim/state';
+import { QUICK_TILE_LABELS, QUICK_TOOLS, TOOL_GROUPS, TOOL_LABELS, type Tool, type ToolGroup, toolEnabled, toolLabel } from './tools';
 
-export function createToolbar(onChange: () => void): { current(): Tool | null; clear(): void } {
+export function createToolbar(state: GameState, onChange: () => void): { current(): Tool | null; clear(): void; update(): void } {
   const box = byId('toolbar');
   let current: Tool | null = null;
   let openGroup: ToolGroup | null = null;
+  let drawnLabels = '';
 
   const quickRow = document.createElement('div');
   quickRow.className = 'quick-tools';
@@ -42,6 +44,7 @@ export function createToolbar(onChange: () => void): { current(): Tool | null; c
 
   function renderDrawer(): void {
     drawer.replaceChildren();
+    drawnLabels = drawerLabels();
     drawer.hidden = !openGroup;
     if (!openGroup) return;
     const heading = document.createElement('h3');
@@ -49,14 +52,24 @@ export function createToolbar(onChange: () => void): { current(): Tool | null; c
     drawer.append(heading);
     for (const tool of openGroup.tools) {
       const button = document.createElement('button');
-      button.textContent = TOOL_LABELS[tool];
+      button.textContent = toolLabel(tool, state);
+      button.disabled = !toolEnabled(tool, state);
       button.classList.toggle('active', tool === current);
       button.addEventListener('click', () => select(current === tool ? null : tool));
       drawer.append(button);
     }
   }
 
-  function render(): void {
+function drawerLabels(): string {
+  return openGroup ? openGroup.tools.map((tool) => toolLabel(tool, state)).join() : '';
+}
+
+function update(): void {
+  if (current !== null && !toolEnabled(current, state)) select(null);
+  else if (drawerLabels() !== drawnLabels) render();
+}
+
+function render(): void {
     for (const { button, tool } of quickButtons) button.classList.toggle('active', tool === current);
     for (const { button, group } of groupButtons) {
       const holdsCurrent = current !== null && group.tools.includes(current);
@@ -73,5 +86,5 @@ export function createToolbar(onChange: () => void): { current(): Tool | null; c
 
   render();
 
-  return { current: () => current, clear: () => select(null) };
+  return { current: () => current, clear: () => select(null), update };
 }

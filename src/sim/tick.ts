@@ -7,6 +7,7 @@ import { eat, growCrops, harvestIfDue } from './food';
 import { announceGuildSites, tickGuilds } from './guild';
 import { evolveHouses } from './housing';
 import { assignWorkers } from './labor';
+import { earnMonuments } from './monuments';
 import { tickMaterials } from './materials';
 import { tickOlives } from './olives';
 import { recordPopulation } from './population';
@@ -21,6 +22,7 @@ import type { GameState } from './state';
 
 export function tick(state: GameState): void {
   state.tick++;
+  earnMonuments(state);
   const monthEnds = state.tick % TICKS_PER_MONTH === 0;
   assignWorkers(state);
   growCrops(state);

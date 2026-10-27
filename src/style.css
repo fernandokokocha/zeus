@@ -143,6 +143,11 @@ body {
   font-size: 14px;
 }
 
+#toolbar .tool-drawer button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
 #inspector {
   top: 60px;
   right: 8px;

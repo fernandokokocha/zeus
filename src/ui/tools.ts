@@ -1,5 +1,6 @@
 import { BUILDING_SPECS, type BuildingType } from '../sim/buildings';
 import { ROAD_UPGRADE_SPECS, type RoadUpgrade } from '../sim/road-upgrades';
+import type { GameState } from '../sim/state';
 import { SANCTUARY_SPECS, type Sanctuary } from '../sim/sanctuaries';
 import { ROADBLOCK_COST, ROAD_TILE_COST, SHEEP_COST } from '../sim/treasury';
 
@@ -37,6 +38,7 @@ export const TOOL_LABELS: Record<Tool, string> = {
   park: priced('park'),
   column: priced('column'),
   flowerGarden: priced('flowerGarden'),
+  monument: BUILDING_SPECS.monument.name,
   college: priced('college'),
   podium: priced('podium'),
   gymnasium: priced('gymnasium'),
@@ -99,6 +101,14 @@ export const TOOL_GROUPS: ToolGroup[] = [
   { name: 'Administration', tileLabel: 'Admin', tools: ['palace', 'taxOffice'] },
   { name: 'Mythology', tileLabel: 'Mythology', tools: ['artisansGuild', 'demeterSanctuary', 'athenaSanctuary', 'hephaestusSanctuary'] },
   { name: 'Culture', tileLabel: 'Culture', tools: ['college', 'podium', 'gymnasium', 'dramaSchool', 'theater'] },
-  { name: 'Aesthetics', tileLabel: 'Aesthetics', tools: ['park', 'column', 'flowerGarden', 'ornateRoad'] },
+  { name: 'Aesthetics', tileLabel: 'Aesthetics', tools: ['park', 'column', 'flowerGarden', 'monument', 'ornateRoad'] },
   { name: 'Elite', tileLabel: 'Elite', tools: ['tradersGuild'] },
 ];
+
+export function toolLabel(tool: Tool, state: GameState): string {
+  return tool === 'monument' ? `${TOOL_LABELS.monument} (${state.monumentsToPlace})` : TOOL_LABELS[tool];
+}
+
+export function toolEnabled(tool: Tool, state: GameState): boolean {
+  return tool !== 'monument' || state.monumentsToPlace > 0;
+}

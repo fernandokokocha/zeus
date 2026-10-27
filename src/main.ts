@@ -52,13 +52,14 @@ const inspector = createInspector(state, highlight);
 const mapModes = createMapModes(state, view);
 const ledger = createLedger(state);
 const notices = createNotices(state, (at) => controls.focus(at));
+const toolbar = createToolbar(state, () => input.toolChanged());
 const input = attachToolInput({
   view,
   state,
   ghost,
   inspector,
   topbar,
-  toolbar: createToolbar(() => input.toolChanged()),
+  toolbar,
 });
 window.addEventListener('resize', () => resizeView(view));
 
@@ -88,6 +89,7 @@ function frame(now: number): void {
   columns.sync(state, mapModes.shown());
   mapModes.update();
   topbar.update();
+  toolbar.update();
   notices.update(now / 1000);
   ledger.update();
   inspector.refresh();

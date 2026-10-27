@@ -21,7 +21,7 @@ the PR that delivers it.
 - [x] 23 · Ledger: Production
 - [x] 24 · Production priorities
 - [x] 25 · Road upgrades
-- [ ] 26 · Monument
+- [x] 26 · Monument
 - [ ] 27 · Guild yard
 - [ ] 28 · World map and routes
 - [ ] 29 · Trade: exports
