@@ -32,6 +32,7 @@ import { FOUNDRY_OPTIONS } from './foundry-options';
 import { STOREHOUSE_OPTIONS } from './storehouse-options';
 import { TRADERS_GUILD_OPTIONS } from './traders-guild-options';
 import { PEDDLER_OPTIONS } from './peddler-options';
+import { FAST_ROAD_OPTIONS } from './fast-road-options';
 import { bake } from '../render/bake';
 import type { Animate } from '../render/kit/figure';
 import type { DesignSet } from './options';
@@ -69,6 +70,7 @@ const SETS: Record<string, DesignSet> = {
   storehouse: { title: 'Storehouse', needs: '3×3 · 12 workers · without and with workers, empty and holding every good', options: STOREHOUSE_OPTIONS, chosen: 0, footprint: [3, 3] },
   peddler: { title: 'Peddler', needs: 'Walker · one per agora, carrying fresh goods from every vendor · on the road beside a Shack, a cart pusher behind him for contrast', options: PEDDLER_OPTIONS, chosen: 0, footprint: [3, 2] },
   tradersGuild: { title: "Traders' Guild", needs: '4×4 · 20 merchants · fully supplied and missing a need (burning turns its tiles into ruins)', options: TRADERS_GUILD_OPTIONS, chosen: 0, footprint: [4, 4] },
+  fastRoad: { title: 'Fast Road', needs: 'Road upgrade · 1 marble a tile · ruts along the street, curving through every turn', options: FAST_ROAD_OPTIONS, footprint: [3, 3] },
 };
 
 const footprint = (set: DesignSet): [number, number] => set.footprint ?? [2, 2];
