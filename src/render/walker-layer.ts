@@ -252,6 +252,7 @@ function createFigureSet(figure: Part[], group: THREE.Group): FigureSet {
       material.transparent = isFaded;
       material.opacity = isFaded ? FADED_OPACITY : 1;
       material.depthWrite = !isFaded;
+      material.needsUpdate = true;
     }
   }
 

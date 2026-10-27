@@ -184,7 +184,7 @@ describe('the supplies column on an agora', () => {
     placeBuilding(game, 'clothVendor', 10, 18);
     const cloth = lastBuilding(game);
     food.food = VENDOR_CAPACITY / 4;
-    expect(columnOf(game, 'supplies', food)).toEqual({ building: food, bars: [[{ kind: 'food', share: 0.25 }]], details: ['Food 2 / 8 loads'] });
+    expect(columnOf(game, 'supplies', food)).toEqual({ building: food, bars: [[{ kind: 'food', share: 0.25 }]], details: ['Food 200 / 800'] });
     expect(columnOf(game, 'supplies', cloth)!.bars).toEqual([[{ kind: 'cloth', share: 0 }]]);
     expect(buildingLook(game, 'supplies', agora)).toBe('serving');
   });

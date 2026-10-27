@@ -2,7 +2,7 @@ import { appealMap } from './appeal';
 import { BUILDING_SPECS, isAgoraVendor, vendorGood, type BuildingType } from './buildings';
 import { CULTURES, CULTURE_POINTS, culturePoints } from './culture';
 import { taxPaidLastYear } from './economy';
-import { UNITS_PER_LOAD, VENDOR_CAPACITY, houseStockTarget } from './food';
+import { VENDOR_CAPACITY, houseStockTarget } from './food';
 import { guildSiteTiles, placeableGuildSites, siteSurroundings } from './guild';
 import { buildingName, houseLevel, isResidence } from './housing';
 import { amount, drachmas } from './inspect';
@@ -130,7 +130,7 @@ function vendorColumn(vendor: Building): Omit<Column, 'building'> {
   const good = vendorGood(vendor);
   return {
     bars: [[{ kind: good, share: vendor[good] / VENDOR_CAPACITY }]],
-    details: [`${capitalized(good)} ${amount(vendor[good] / UNITS_PER_LOAD)} / ${VENDOR_CAPACITY / UNITS_PER_LOAD} loads`],
+    details: [`${capitalized(good)} ${amount(vendor[good])} / ${amount(VENDOR_CAPACITY)}`],
   };
 }
 
