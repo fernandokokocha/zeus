@@ -1,4 +1,4 @@
-import { monumentObstacle, takeMonument } from './monuments';
+import { monumentObstacle, takeMonument, type MonumentKind } from './monuments';
 import {
   AGORA_VENDOR_SPOTS,
   BUILDING_SPECS,
@@ -177,7 +177,6 @@ function placementObstacle(state: GameState, placement: Placement): string | nul
   if (type === 'palace' && state.buildings.some((b) => b.type === 'palace')) return 'Only one palace is allowed';
   if (isAgoraVendor(type)) return vendorObstacle(state, x, y);
   if (type === 'tradersGuild') return guildObstacle(state, placement);
-  if (type === 'monument') return footprintObstacle(state, placement) ?? monumentObstacle(state);
   if (isSanctuary(type)) return footprintObstacle(state, placement) ?? sanctuaryObstacle(state, type);
   const obstacle = footprintObstacle(state, placement);
   const meadowReason = MEADOW_REASONS[type];
@@ -194,13 +193,23 @@ function vendorObstacle(state: GameState, x: number, y: number): string | null {
 }
 
 export function placeBuilding(state: GameState, type: BuildingType, x: number, y: number, rotation: Rotation = 0): Result {
+  if (type === 'monument') throw new Error('A monument is placed with placeMonument');
   const placement = { type, x, y, rotation };
   const obstacle = placementObstacle(state, placement);
   if (obstacle) return fail(obstacle);
   const agora = isAgoraVendor(type) ? agoraAt(state, placement) : null;
   const building = type === 'tradersGuild' ? raiseGuild(state, placement) : build(state, agora ? { ...placement, rotation: agora.rotation } : placement);
   if (isSanctuary(type)) takeInitialMarble(state, building);
-  if (type === 'monument') building.monument = takeMonument(state);
+  state.version++;
+  return OK;
+}
+
+export function placeMonument(state: GameState, kind: MonumentKind, x: number, y: number, rotation: Rotation = 0): Result {
+  const placement: Placement = { type: 'monument', x, y, rotation };
+  const obstacle = monumentObstacle(state, kind) ?? footprintObstacle(state, placement);
+  if (obstacle) return fail(obstacle);
+  takeMonument(state, kind);
+  addBuilding(state, placement).monument = kind;
   state.version++;
   return OK;
 }

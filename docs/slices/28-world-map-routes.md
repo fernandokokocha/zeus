@@ -23,9 +23,10 @@ guild's inspector.
 
 ## Decisions (closest to Zeus, recorded in the commit)
 
-1. **Monuments are placed oldest first.** The Monument tool places the earliest earned
-   monument that isn't placed yet, with its own emblem. Zeus builds each commemorative
-   monument from its own achievement; a picker can come later if wanted.
+1. **The player picks which monument to place.** The Aesthetics menu lists one Monument
+   entry per kind ("Monument: 1,000 citizens (1)", "Monument: trade route (2)"), each
+   disabled while none of its kind is waiting. Zeus builds each commemorative monument from
+   its own achievement. (Owner feedback: first built as oldest-first.)
 2. **The route notice carries the monument:** "Trade route to Kerynthos opened. A monument
    can be raised." for the first route to a partner, the plain notice otherwise.
 3. **A guild that breaks up names its route** in the break-up notice ("… Its permit is lost

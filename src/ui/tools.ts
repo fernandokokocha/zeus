@@ -1,18 +1,25 @@
 import { BUILDING_SPECS, type BuildingType } from '../sim/buildings';
 import { ROAD_UPGRADE_SPECS, type RoadUpgrade } from '../sim/road-upgrades';
+import { MONUMENT_NAMES, monumentsWaiting, type MonumentKind } from '../sim/monuments';
 import type { GameState } from '../sim/state';
 import { SANCTUARY_SPECS, type Sanctuary } from '../sim/sanctuaries';
 import { ROADBLOCK_COST, ROAD_TILE_COST, SHEEP_COST } from '../sim/treasury';
 
-export type SingleBuilding = Exclude<BuildingType, 'house' | 'ruins' | 'tradeYard'>;
+export type SingleBuilding = Exclude<BuildingType, 'house' | 'ruins' | 'tradeYard' | 'monument'>;
 export const UPGRADE_TOOLS = { ornateRoad: 'ornate', fastRoad: 'fast' } as const satisfies Record<string, RoadUpgrade>;
 export type UpgradeTool = keyof typeof UPGRADE_TOOLS;
+export const MONUMENT_TOOLS = { crowdedCityMonument: 'crowdedCity', tradeRouteMonument: 'tradeRoute' } as const satisfies Record<string, MonumentKind>;
+export type MonumentTool = keyof typeof MONUMENT_TOOLS;
 
 export function isUpgradeTool(tool: Tool): tool is UpgradeTool {
   return tool in UPGRADE_TOOLS;
 }
 
-export type Tool = 'road' | UpgradeTool | 'roadblock' | 'house' | SingleBuilding | 'sheep' | 'demolish';
+export function isMonumentTool(tool: Tool): tool is MonumentTool {
+  return tool in MONUMENT_TOOLS;
+}
+
+export type Tool = 'road' | UpgradeTool | 'roadblock' | 'house' | SingleBuilding | MonumentTool | 'sheep' | 'demolish';
 
 const priced = (type: BuildingType) => `${BUILDING_SPECS[type].name} (${BUILDING_SPECS[type].cost} dr)`;
 
@@ -38,7 +45,8 @@ export const TOOL_LABELS: Record<Tool, string> = {
   park: priced('park'),
   column: priced('column'),
   flowerGarden: priced('flowerGarden'),
-  monument: BUILDING_SPECS.monument.name,
+  crowdedCityMonument: `${BUILDING_SPECS.monument.name}: ${MONUMENT_NAMES.crowdedCity}`,
+  tradeRouteMonument: `${BUILDING_SPECS.monument.name}: ${MONUMENT_NAMES.tradeRoute}`,
   college: priced('college'),
   podium: priced('podium'),
   gymnasium: priced('gymnasium'),
@@ -101,14 +109,14 @@ export const TOOL_GROUPS: ToolGroup[] = [
   { name: 'Administration', tileLabel: 'Admin', tools: ['palace', 'taxOffice'] },
   { name: 'Mythology', tileLabel: 'Mythology', tools: ['artisansGuild', 'demeterSanctuary', 'athenaSanctuary', 'hephaestusSanctuary'] },
   { name: 'Culture', tileLabel: 'Culture', tools: ['college', 'podium', 'gymnasium', 'dramaSchool', 'theater'] },
-  { name: 'Aesthetics', tileLabel: 'Aesthetics', tools: ['park', 'column', 'flowerGarden', 'monument', 'ornateRoad'] },
+  { name: 'Aesthetics', tileLabel: 'Aesthetics', tools: ['park', 'column', 'flowerGarden', 'crowdedCityMonument', 'tradeRouteMonument', 'ornateRoad'] },
   { name: 'Elite', tileLabel: 'Elite', tools: ['tradersGuild'] },
 ];
 
 export function toolLabel(tool: Tool, state: GameState): string {
-  return tool === 'monument' ? `${TOOL_LABELS.monument} (${state.monumentsToPlace.length})` : TOOL_LABELS[tool];
+  return isMonumentTool(tool) ? `${TOOL_LABELS[tool]} (${monumentsWaiting(state, MONUMENT_TOOLS[tool])})` : TOOL_LABELS[tool];
 }
 
 export function toolEnabled(tool: Tool, state: GameState): boolean {
-  return tool !== 'monument' || state.monumentsToPlace.length > 0;
+  return !isMonumentTool(tool) || monumentsWaiting(state, MONUMENT_TOOLS[tool]) > 0;
 }

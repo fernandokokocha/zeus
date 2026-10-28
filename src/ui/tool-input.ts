@@ -1,6 +1,6 @@
 import type { View } from '../render/view';
 import type { Rotation } from '../sim/buildings';
-import { demolish, placeBuilding, placeHouses, placeOliveTrees, placeRoad, placeRoadblock, placeSheep, type Result } from '../sim/commands';
+import { demolish, placeBuilding, placeMonument, placeHouses, placeOliveTrees, placeRoad, placeRoadblock, placeSheep, type Result } from '../sim/commands';
 import { UNITS_PER_LOAD } from '../sim/food';
 import { inspectTile } from '../sim/inspect';
 import { ROAD_UPGRADE_SPECS, upgradePlan, upgradeRoads } from '../sim/road-upgrades';
@@ -10,7 +10,7 @@ import { clampToMap, inBounds, type GameState } from '../sim/state';
 import { tileUnderPointer } from '../render/picking';
 import { placementOrigin, previewTiles, type PreviewTile } from './preview';
 import type { Inspector } from './inspector';
-import { UPGRADE_TOOLS, isUpgradeTool, type Tool, type UpgradeTool } from './tools';
+import { MONUMENT_TOOLS, UPGRADE_TOOLS, isMonumentTool, isUpgradeTool, type Tool, type UpgradeTool } from './tools';
 
 const LEFT_BUTTON = 0;
 const RIGHT_BUTTON = 2;
@@ -64,6 +64,10 @@ export function attachToolInput({ view, state, toolbar, ghost, inspector, topbar
       case 'demolish':
         return demolish(state, from, to);
       default: {
+        if (isMonumentTool(tool)) {
+          const origin = placementOrigin(state, 'monument', to, rotation);
+          return placeMonument(state, MONUMENT_TOOLS[tool], origin.x, origin.y, rotation);
+        }
         const origin = placementOrigin(state, tool, to, rotation);
         return placeBuilding(state, tool, origin.x, origin.y, rotation);
       }

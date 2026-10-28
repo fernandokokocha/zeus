@@ -87,7 +87,9 @@ from the original game.
 - **More later:** the first route opened to each trade partner earns one (the trade
   design, slice 28).
 - Demolishing a monument loses it; it is not returned to the count.
-- The build menu shows the count on the tool ("Monument (1)").
+- The build menu lists one Monument entry per achievement, with its count ("Monument: trade
+  route (2)"), and the player picks which to place. An entry is disabled while none of its
+  kind is waiting.
 - **Model:** designed with the owner, in `src/render/monument-models.ts`. Three bodies taken
   from real Greek monuments (choregic monument of Lysicrates, Mausoleum of Halicarnassus,
   Great Altar of Pergamon), and the game picks one per monument from its tile with

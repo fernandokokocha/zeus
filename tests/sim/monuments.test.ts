@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { demolish, placeBuilding } from '../../src/sim/commands';
+import { demolish, placeMonument } from '../../src/sim/commands';
 import { MONUMENT_POPULATION, MONUMENT_EARNED_NOTICE } from '../../src/sim/monuments';
 import { canBurn, canCollapse } from '../../src/sim/safety';
 import type { GameState } from '../../src/sim/state';
@@ -51,14 +51,14 @@ describe('earning a monument', () => {
 describe('placing a monument', () => {
   it('needs an earned monument', () => {
     const game = grassGame();
-    expect(placeBuilding(game, 'monument', 10, 10)).toEqual({ ok: false, reason: 'No monument has been earned yet' });
+    expect(placeMonument(game, 'crowdedCity', 10, 10)).toEqual({ ok: false, reason: 'No 1,000 citizens monument is waiting' });
   });
 
   it('is free, needs no road, and uses up the earned monument', () => {
     const game = grassGame();
     game.monumentsToPlace = ['crowdedCity'];
     const treasury = game.treasury;
-    expect(placeBuilding(game, 'monument', 10, 10)).toEqual({ ok: true });
+    expect(placeMonument(game, 'crowdedCity', 10, 10)).toEqual({ ok: true });
     expect(game.treasury).toBe(treasury);
     expect(game.monumentsToPlace).toEqual([]);
   });
@@ -66,31 +66,39 @@ describe('placing a monument', () => {
   it('is lost when demolished', () => {
     const game = grassGame();
     game.monumentsToPlace = ['crowdedCity'];
-    placeBuilding(game, 'monument', 10, 10);
+    placeMonument(game, 'crowdedCity', 10, 10);
     demolish(game, { x: 10, y: 10 }, { x: 10, y: 10 });
     expect(game.buildings).toEqual([]);
     expect(game.monumentsToPlace).toEqual([]);
   });
 
-  it('keeps the kind that earned it', () => {
+  it('places the kind the player picks', () => {
     const game = grassGame();
-    game.monumentsToPlace = ['tradeRoute'];
-    placeBuilding(game, 'monument', 10, 10);
+    game.monumentsToPlace = ['crowdedCity', 'tradeRoute', 'tradeRoute'];
+    placeMonument(game, 'tradeRoute', 10, 10);
     expect(monumentOf(game).monument).toBe('tradeRoute');
+    expect(game.monumentsToPlace).toEqual(['crowdedCity', 'tradeRoute']);
   });
 
-  it('places the oldest earned monument first', () => {
+  it('needs one of the picked kind waiting', () => {
     const game = grassGame();
-    game.monumentsToPlace = ['crowdedCity', 'tradeRoute'];
-    placeBuilding(game, 'monument', 10, 10);
-    expect(monumentOf(game).monument).toBe('crowdedCity');
-    expect(game.monumentsToPlace).toEqual(['tradeRoute']);
+    game.monumentsToPlace = ['crowdedCity'];
+    expect(placeMonument(game, 'tradeRoute', 10, 10)).toEqual({ ok: false, reason: 'No trade route monument is waiting' });
+    expect(game.buildings).toEqual([]);
+  });
+
+  it('needs clear ground', () => {
+    const game = grassGame();
+    game.monumentsToPlace = ['crowdedCity'];
+    placeMonument(game, 'crowdedCity', 10, 10);
+    game.monumentsToPlace = ['crowdedCity'];
+    expect(placeMonument(game, 'crowdedCity', 11, 11)).toEqual({ ok: false, reason: 'A building is in the way' });
   });
 
   it('never burns or collapses', () => {
     const game = grassGame();
     game.monumentsToPlace = ['crowdedCity'];
-    placeBuilding(game, 'monument', 10, 10);
+    placeMonument(game, 'crowdedCity', 10, 10);
     expect(canBurn(monumentOf(game))).toBe(false);
     expect(canCollapse(monumentOf(game))).toBe(false);
   });

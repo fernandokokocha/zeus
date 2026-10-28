@@ -9,19 +9,20 @@ describe('TOOL_GROUPS', () => {
   });
 });
 
-describe('the Monument tool', () => {
-  it('shows how many monuments are waiting to be placed', () => {
+describe('the Monument tools', () => {
+  it('list each kind with how many are waiting', () => {
     const game = grassGame();
-    game.monumentsToPlace = ['crowdedCity'];
-    expect(toolLabel('monument', game)).toBe('Monument (1)');
+    game.monumentsToPlace = ['crowdedCity', 'tradeRoute', 'tradeRoute'];
+    expect(toolLabel('crowdedCityMonument', game)).toBe('Monument: 1,000 citizens (1)');
+    expect(toolLabel('tradeRouteMonument', game)).toBe('Monument: trade route (2)');
     expect(toolLabel('park', game)).toBe(TOOL_LABELS.park);
   });
 
-  it('works only while a monument is waiting', () => {
+  it('work only while a monument of their kind is waiting', () => {
     const game = grassGame();
-    expect(toolEnabled('monument', game)).toBe(false);
-    game.monumentsToPlace = ['crowdedCity'];
-    expect(toolEnabled('monument', game)).toBe(true);
+    game.monumentsToPlace = ['tradeRoute'];
+    expect(toolEnabled('crowdedCityMonument', game)).toBe(false);
+    expect(toolEnabled('tradeRouteMonument', game)).toBe(true);
     expect(toolEnabled('park', grassGame())).toBe(true);
   });
 });

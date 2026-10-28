@@ -4,7 +4,7 @@ import { blueprintTiles } from '../sim/guild';
 import { rectBetween, tilesIn, type Point } from '../sim/point';
 import { upgradePlan } from '../sim/road-upgrades';
 import { clampToMap, inBounds, type GameState } from '../sim/state';
-import { UPGRADE_TOOLS, type Tool } from './tools';
+import { UPGRADE_TOOLS, isMonumentTool, type Tool } from './tools';
 
 export type PreviewKind = 'valid' | 'warning' | 'invalid';
 
@@ -65,7 +65,9 @@ export function previewTiles(
     case 'house':
     case 'oliveTree':
       return lotOrigins(start, hover, tool).flatMap((lot) => buildingPreview(state, tool, lot, rotation));
-    default:
-      return buildingPreview(state, tool, placementOrigin(state, tool, hover, rotation), rotation);
+    default: {
+      const type = isMonumentTool(tool) ? 'monument' : tool;
+      return buildingPreview(state, type, placementOrigin(state, type, hover, rotation), rotation);
+    }
   }
 }
