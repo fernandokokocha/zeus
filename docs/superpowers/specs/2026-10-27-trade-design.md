@@ -2,7 +2,7 @@
 
 Extends `2026-10-11-zeus-clone-design.md`, `2026-10-25-elite-housing-design.md` and
 `2026-10-27-appeal-design.md`. Everything there still holds. Replaces the elite-housing
-design's "Trade (slices 25–26)" section and its Trading Post, and adds slices 27–31.
+design's "Trade (slices 25–26)" section and its Trading Post, and adds slices 27–31 (and 28b).
 Agreed with the owner on 2026-10-27.
 
 ## Intent
@@ -143,6 +143,30 @@ goods, very few precious ones. It is also the size of a yard slot holding that g
 - **When the guild demotes,** its route closes and the partner becomes available again.
   Caravans already on their way finish what they are doing: ours still deliver their
   drachmas, foreign ones turn back without charging.
+
+## Map of Greece (slice 28b)
+
+Agreed with the owner on 2026-10-28, after slice 28. A separate slice so it can be reverted
+on its own if the owner doesn't like it.
+
+- **The World panel draws a real map of Greece,** plain and flat: sea and land in two
+  colours, no terrain or relief. Coastlines come from public-domain data (Natural Earth),
+  cut to the Aegean and simplified once by a throwaway script into an SVG path committed
+  with the code. Never traced from Zeus's own map.
+- **Real cities at their real places.** Our city is **Athens** for now (the map and the
+  scenario will choose it later). Its Main Road leaving west matches the Sacred Way to
+  Eleusis, Megara and the Isthmus. The four partners become real cities reachable by land,
+  for example **Thebes, Corinth, Argos and Sparta**, keeping their colours; their goods may
+  be reshuffled to suit them (Boeotian grain, Corinthian bronze). Islands are drawn but
+  can't be partners: trade is land only.
+- **Realistic-ish routes.** A small hand-made **road network** of real towns and passes
+  (Eleusis, Megara, the Isthmus, Cithaeron, …) joined by road segments that follow the
+  ancient roads. A route is the path through that network, so routes sharing a road share
+  its line. Caravans now, and soldiers later, are drawn along these lines.
+- **Round trip from length.** A route's length turns into its round trip with one speed
+  constant, rounded to whole months. Roughly: Thebes ~3, Corinth ~4, Argos ~5–6, Sparta ~9.
+  The fixed round trips in the partner table above are replaced.
+- The rest of slice 28 stands: clicking a city, choosing a partner, routes, monuments.
 
 ## Exports (slice 29)
 
