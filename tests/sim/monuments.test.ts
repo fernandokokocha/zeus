@@ -20,20 +20,20 @@ function monumentOf(game: GameState) {
 
 describe('earning a monument', () => {
   it('starts with none to place', () => {
-    expect(grassGame().monumentsToPlace).toBe(0);
+    expect(grassGame().monumentsToPlace).toEqual([]);
   });
 
   it(`earns one, with a notice, when the population reaches ${MONUMENT_POPULATION}`, () => {
     const game = cityOf(MONUMENT_POPULATION);
     runTicks(game, 1);
-    expect(game.monumentsToPlace).toBe(1);
+    expect(game.monumentsToPlace).toEqual(['crowdedCity']);
     expect(game.notices.map((n) => n.text)).toEqual([MONUMENT_EARNED_NOTICE]);
   });
 
   it('earns nothing below that', () => {
     const game = cityOf(MONUMENT_POPULATION - 1);
     runTicks(game, 1);
-    expect(game.monumentsToPlace).toBe(0);
+    expect(game.monumentsToPlace).toEqual([]);
   });
 
   it('earns it once, even when the population drops and climbs back', () => {
@@ -43,7 +43,7 @@ describe('earning a monument', () => {
     runTicks(game, 1);
     game.buildings[0].residents = MONUMENT_POPULATION;
     runTicks(game, 1);
-    expect(game.monumentsToPlace).toBe(1);
+    expect(game.monumentsToPlace).toEqual(['crowdedCity']);
     expect(game.notices).toHaveLength(1);
   });
 });
@@ -56,25 +56,40 @@ describe('placing a monument', () => {
 
   it('is free, needs no road, and uses up the earned monument', () => {
     const game = grassGame();
-    game.monumentsToPlace = 1;
+    game.monumentsToPlace = ['crowdedCity'];
     const treasury = game.treasury;
     expect(placeBuilding(game, 'monument', 10, 10)).toEqual({ ok: true });
     expect(game.treasury).toBe(treasury);
-    expect(game.monumentsToPlace).toBe(0);
+    expect(game.monumentsToPlace).toEqual([]);
   });
 
   it('is lost when demolished', () => {
     const game = grassGame();
-    game.monumentsToPlace = 1;
+    game.monumentsToPlace = ['crowdedCity'];
     placeBuilding(game, 'monument', 10, 10);
     demolish(game, { x: 10, y: 10 }, { x: 10, y: 10 });
     expect(game.buildings).toEqual([]);
-    expect(game.monumentsToPlace).toBe(0);
+    expect(game.monumentsToPlace).toEqual([]);
+  });
+
+  it('keeps the kind that earned it', () => {
+    const game = grassGame();
+    game.monumentsToPlace = ['tradeRoute'];
+    placeBuilding(game, 'monument', 10, 10);
+    expect(monumentOf(game).monument).toBe('tradeRoute');
+  });
+
+  it('places the oldest earned monument first', () => {
+    const game = grassGame();
+    game.monumentsToPlace = ['crowdedCity', 'tradeRoute'];
+    placeBuilding(game, 'monument', 10, 10);
+    expect(monumentOf(game).monument).toBe('crowdedCity');
+    expect(game.monumentsToPlace).toEqual(['tradeRoute']);
   });
 
   it('never burns or collapses', () => {
     const game = grassGame();
-    game.monumentsToPlace = 1;
+    game.monumentsToPlace = ['crowdedCity'];
     placeBuilding(game, 'monument', 10, 10);
     expect(canBurn(monumentOf(game))).toBe(false);
     expect(canCollapse(monumentOf(game))).toBe(false);

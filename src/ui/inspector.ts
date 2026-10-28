@@ -13,12 +13,13 @@ export interface Inspector {
   isOpen(): boolean;
 }
 
-export function createInspector(state: GameState, highlight: { show(tiles: Point[]): void }): Inspector {
+export function createInspector(state: GameState, highlight: { show(tiles: Point[]): void }, openRouteFor: (guildId: number) => void): Inspector {
   const panel = byId('inspector');
   const title = byId('inspector-title');
   const lines = byId('inspector-lines');
   const meters = byId('inspector-meters');
   const storehouse = byId('inspector-storehouse');
+  const actions = byId('inspector-actions');
   let look: (() => Inspection) | null = null;
   let shown = '';
 
@@ -37,7 +38,16 @@ export function createInspector(state: GameState, highlight: { show(tiles: Point
     meters.hidden = description.meters.length === 0;
     storehouse.replaceChildren(...(description.storehouse ? storehousePanel(description.storehouse, ordersOf(state, description.storehouse.id)) : []));
     storehouse.hidden = !description.storehouse;
+    actions.replaceChildren(...(description.openRoute === undefined ? [] : [openRouteButton(description.openRoute)]));
+    actions.hidden = description.openRoute === undefined;
   }
+
+function openRouteButton(guildId: number): HTMLButtonElement {
+  const button = document.createElement('button');
+  button.textContent = 'Open route';
+  button.addEventListener('click', () => openRouteFor(guildId));
+  return button;
+}
 
   function close(): void {
     if (panel.hidden) return;

@@ -23,7 +23,8 @@ body {
 #toolbar,
 #inspector,
 #notice-log,
-#ledger {
+#ledger,
+#world {
   position: fixed;
   background: var(--parchment);
   border: 2px solid var(--terracotta);
@@ -662,4 +663,131 @@ button.active {
 .order-switch .order-refused {
   background: #a3301f;
   color: #ffffff;
+}
+
+#world {
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(900px, 94vw);
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 10px 12px;
+}
+
+#world h2 {
+  margin: 0 0 8px;
+  font-size: 20px;
+}
+
+#world-close {
+  float: right;
+}
+
+#world-prompt {
+  margin: 0 0 8px;
+  font-weight: bold;
+  color: var(--terracotta);
+}
+
+#world-body {
+  display: flex;
+  gap: 14px;
+}
+
+#world-map {
+  flex: 3;
+  min-width: 0;
+}
+
+#world-details {
+  flex: 2;
+  min-width: 0;
+  font-size: 14px;
+}
+
+#world-details p {
+  margin: 2px 0;
+}
+
+.world-drawing {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.world-land {
+  fill: #e9dcbc;
+  stroke: #d8c49a;
+}
+
+.world-road {
+  fill: none;
+  stroke: #9b7b52;
+  stroke-width: 4;
+  stroke-dasharray: 10 5;
+  stroke-linejoin: round;
+}
+
+.world-trip {
+  font-size: 12px;
+  font-style: italic;
+  text-anchor: middle;
+  fill: var(--ink);
+}
+
+.world-name {
+  font-size: 13px;
+  text-anchor: middle;
+  fill: var(--ink);
+}
+
+.world-city {
+  cursor: pointer;
+}
+
+.world-city circle,
+.world-ours {
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+
+.world-city:hover circle {
+  stroke-width: 4;
+}
+
+.world-selected circle {
+  stroke: var(--terracotta);
+  stroke-width: 4;
+}
+
+.world-choosable circle {
+  stroke: var(--parchment);
+  stroke-width: 4;
+  animation: world-pulse 1s ease-in-out infinite alternate;
+}
+
+.world-taken {
+  opacity: 0.45;
+}
+
+@keyframes world-pulse {
+  to {
+    stroke: var(--terracotta);
+  }
+}
+
+.world-partner {
+  margin: 0 0 6px;
+  font-size: 17px;
+  border-left: 8px solid;
+  padding-left: 8px;
+}
+
+.world-hint {
+  font-style: italic;
+}
+
+#inspector-actions {
+  margin-top: 8px;
 }

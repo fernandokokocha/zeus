@@ -23,7 +23,7 @@ the PR that delivers it.
 - [x] 25 · Road upgrades
 - [x] 26 · Monument
 - [x] 27 · Guild yard
-- [ ] 28 · World map and routes
+- [x] 28 · World map and routes
 - [ ] 29 · Trade: exports
 - [ ] 30 · Trade: imports
 - [ ] 31 · Ledger: Trade

@@ -41,7 +41,7 @@ const INDUSTRY_SPECS: Record<Industry, IndustrySpec> = {
   },
 };
 
-const GOOD_TITLES: Record<Good, string> = {
+export const GOOD_TITLES: Record<Good, string> = {
   food: 'Food',
   fleece: 'Fleece',
   olives: 'Olives',

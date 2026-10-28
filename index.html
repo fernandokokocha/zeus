@@ -18,6 +18,7 @@
       <span id="date"></span>
       <span id="status"></span>
       <button id="ledger-button" title="Ledger (L)">Ledger</button>
+      <button id="world-button" title="Trade partners">World</button>
       <button id="notices-button" title="Recent notices (N)">Notices</button>
       <div id="map-mode">
         <button id="map-button" title="Map modes (O toggles the last one)"></button>
@@ -40,6 +41,15 @@
         <div id="ledger-page"></div>
       </div>
     </aside>
+<aside id="world" hidden>
+  <button id="world-close" aria-label="Close">×</button>
+  <h2>World</h2>
+  <p id="world-prompt" hidden></p>
+  <div id="world-body">
+    <div id="world-map"></div>
+    <div id="world-details"></div>
+  </div>
+</aside>
     <nav id="toolbar"></nav>
     <div id="map-tooltip" hidden></div>
     <aside id="inspector" hidden>
@@ -48,6 +58,7 @@
       <ul id="inspector-lines"></ul>
       <div id="inspector-meters"></div>
       <div id="inspector-storehouse" hidden></div>
+      <div id="inspector-actions" hidden></div>
     </aside>
     <script type="module" src="./src/main.ts"></script>
   </body>

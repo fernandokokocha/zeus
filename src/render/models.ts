@@ -32,9 +32,10 @@ import { theaterModel } from './theater-models';
 import { columnModel } from './column-models';
 import { fountainModel } from './fountain-models';
 import { flowerGardenModel } from './flower-garden-models';
-import { CROWDED_CITY } from './kit/monument';
+import { CROWDED_CITY, TRADE_ROUTE, type Emblem } from './kit/monument';
 import { monumentModel } from './monument-models';
 import { homesteadModel, hovelModel, hutModel, shackModel, tenementModel, apartmentModel, townhouseModel } from './house-models';
+import type { MonumentKind } from '../sim/monuments';
 
 const lambert = (color: number) => new THREE.MeshLambertMaterial({ color });
 const earth = lambert(PALETTE.dirt);
@@ -609,6 +610,13 @@ function sanctuaryModel(site: Building): THREE.Object3D {
   return group;
 }
 
+const EMBLEMS: Record<MonumentKind, Emblem> = { crowdedCity: CROWDED_CITY, tradeRoute: TRADE_ROUTE };
+
+function emblemOf(monument: Building): Emblem {
+  if (monument.monument === null) throw new Error(`Monument ${monument.id} has no kind`);
+  return EMBLEMS[monument.monument];
+}
+
 const MODELS: Record<Exclude<BuildingType, 'house'>, (building: Building, state: GameState) => THREE.Object3D> = {
   fountain: fountainModel,
   taxOffice: taxOfficeModel,
@@ -620,7 +628,7 @@ const MODELS: Record<Exclude<BuildingType, 'house'>, (building: Building, state:
   park: parkModel,
   column: columnModel,
   flowerGarden: flowerGardenModel,
-  monument: (b) => monumentModel(CROWDED_CITY, b.x, b.y),
+  monument: (b) => monumentModel(emblemOf(b), b.x, b.y),
   college: collegeModel,
   podium: (b, state) => podiumModel(isPerforming(state, b)),
   gymnasium: gymnasiumModel,

@@ -62,8 +62,7 @@ export function attachToolInput({ view, state, toolbar, ghost, inspector, topbar
       case 'oliveTree':
         return placeOliveTrees(state, from, to);
       case 'demolish':
-        demolish(state, from, to);
-        return { ok: true };
+        return demolish(state, from, to);
       default: {
         const origin = placementOrigin(state, tool, to, rotation);
         return placeBuilding(state, tool, origin.x, origin.y, rotation);

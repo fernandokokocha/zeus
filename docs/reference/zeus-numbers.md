@@ -96,7 +96,7 @@ https://zeus.heavengames.com/gameinfo/appeal/. Fire/collapse are risk increments
 | Park | 1×1 | — | 6 | 3,2,1 | — | — |
 | Column | 1×1 | — | 8 | 4,2,0 | — | — |
 | Flower Garden | 2×2 | — | 20 | 8,7,6 | — | — |
-| Monument (**ours**, earned: first at **1,000** citizens, once per game) | 3×3 | — | free | 20,20,18,16,14,12 | — | — |
+| Monument (**ours**, earned: first at **1,000** citizens, once per game; one per partner's first trade route) | 3×3 | — | free | 20,20,18,16,14,12 | — | — |
 | Any sanctuary | see below | | | 20,18,16,14,12,10 | — | — |
 | Traders' Guild (**ours**, elite house) | 4×4 | — (20 merchants) | 100 + 1 permit | — | 8 | — |
 | Trade Yard (spec, placed with its guild) | 4×2 | — | part of the guild's 100 | — | — | — |
@@ -145,6 +145,34 @@ https://zeus.heavengames.com/gameinfo/gods/
 | Demeter | farms | food delivered to granaries | land infertile, farms cursed, sheep killed |
 | Athena | olive press, carding shed | oil and olives delivered | olive trees cursed |
 | Hephaestus | sculpture studio | no fire risk while favorable | sets fires, studios cursed |
+
+## Trade (spec, **ours**)
+
+Land trade with four fictional partners. Each Traders' Guild opens **one route**, free, and
+each partner takes one route; the first route ever opened to a partner earns a monument.
+Each partner owns **2** caravans. Round trip is the time a caravan spends off the map.
+
+| partner | round trip | buys from us | sells to us |
+|---|---|---|---|
+| Melanthos | 3 months | fleece, olives | food, wood |
+| Kerynthos | 5 months | food, wood, marble | fleece, olives, oil |
+| Argyra | 5 months | oil, cloth, sculptures | marble, bronze |
+| Halikeia | 8 months | cloth, bronze, oil | sculptures, wood |
+
+Prices in drachmas per load, the same at every partner. Caravan load is the most one caravan
+carries, in loads.
+
+| good | caravan load | they pay us | we pay them |
+|---|---|---|---|
+| food | 8 | 10 | 15 |
+| olives | 8 | 12 | 18 |
+| fleece | 6 | 20 | 30 |
+| wood | 6 | 15 | 22 |
+| marble | 6 | 25 | 38 |
+| oil | 4 | 25 | 38 |
+| bronze | 4 | 35 | 52 |
+| cloth | 4 | 45 | — |
+| sculptures | 2 | 120 | 180 |
 
 ## Not found: our choices
 

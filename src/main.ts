@@ -20,6 +20,7 @@ import { createNotices } from './ui/notices';
 import { attachToolInput } from './ui/tool-input';
 import { createToolbar } from './ui/toolbar';
 import { createTopbar } from './ui/topbar';
+import { createWorld } from './ui/world';
 
 const MAX_TICKS_PER_FRAME = 40;
 const MAX_FRAME_SECONDS = 0.25;
@@ -48,9 +49,10 @@ view.scene.add(highlight.mesh);
 
 const controls = attachCameraControls(view, state.size);
 const topbar = createTopbar(state);
-const inspector = createInspector(state, highlight);
+const inspector = createInspector(state, highlight, (guildId) => worldPanel.chooseFor(guildId));
 const mapModes = createMapModes(state, view);
 const ledger = createLedger(state);
+const worldPanel = createWorld(state, topbar);
 const notices = createNotices(state, (at) => controls.focus(at));
 const toolbar = createToolbar(state, () => input.toolChanged());
 const input = attachToolInput({
@@ -92,6 +94,7 @@ function frame(now: number): void {
   toolbar.update();
   notices.update(now / 1000);
   ledger.update();
+  worldPanel.update();
   inspector.refresh();
   view.renderer.render(view.scene, view.camera);
   requestAnimationFrame(frame);

@@ -106,9 +106,9 @@ export const TOOL_GROUPS: ToolGroup[] = [
 ];
 
 export function toolLabel(tool: Tool, state: GameState): string {
-  return tool === 'monument' ? `${TOOL_LABELS.monument} (${state.monumentsToPlace})` : TOOL_LABELS[tool];
+  return tool === 'monument' ? `${TOOL_LABELS.monument} (${state.monumentsToPlace.length})` : TOOL_LABELS[tool];
 }
 
 export function toolEnabled(tool: Tool, state: GameState): boolean {
-  return tool !== 'monument' || state.monumentsToPlace > 0;
+  return tool !== 'monument' || state.monumentsToPlace.length > 0;
 }

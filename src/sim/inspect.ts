@@ -8,7 +8,8 @@ import { adjacentRoadTiles, agoraVendors, footprint } from './commands';
 import { hasWorkingPalace, houseTax } from './economy';
 import { GRANARY_CAPACITY, HARVEST_MONTH, UNITS_PER_LOAD, VENDOR_CAPACITY, houseStockTarget, monthlyUse } from './food';
 import { isClosed } from './industries';
-import { guildShortfalls, guildSiteOf, siteShortfalls, type GuildSite } from './guild';
+import { PARTNERS, routeOf, routeStatus } from './trade';
+import { guildOfYard, guildShortfalls, guildSiteOf, siteShortfalls, type GuildSite } from './guild';
 import { type HouseLevel, type HouseNeed, type ResidentNeed, HOUSE_LEVELS, LEVEL_CHANGE_TICKS, TRADERS_GUILD, NEXT_LEVEL, PREVIOUS_LEVEL, houseCapacity, houseLevel, evolutionBlockers, houseName, lacksCulture, missingNeeds } from './housing';
 import { ROAMER_SPECS, hasGoodsToSell, hasService, type RoamerSpec, roamerKindSentBy, serviceLeft } from './roamers';
 import { TRAINEE_SPECS, isPerforming, staffedVenues, traineeKindFor, traineeKindSentBy } from './schools';
@@ -101,6 +102,7 @@ export interface Description {
   meters: Meter[];
   lines: string[];
   storehouse?: StorehouseView;
+  openRoute?: number;
 }
 
 export interface Inspection {
@@ -156,7 +158,7 @@ function describeBuilding(state: GameState, building: Building): Description {
 function describeBuildingKind(state: GameState, building: Building): Description {
   if (building.type === 'house') return describeHouse(state, building);
   if (building.type === 'tradersGuild') return describeGuild(state, building);
-  if (building.type === 'tradeYard') return { title: BUILDING_SPECS.tradeYard.name, meters: [], lines: [`Tile ${building.x}, ${building.y}`, 'Trade Yard: trade opens with a route'] };
+  if (building.type === 'tradeYard') return describeYard(state, building);
   return describeWorkplace(state, building);
 }
 
@@ -265,14 +267,21 @@ function guildSiteStatus(site: GuildSite, house: Building): string {
   return `Possible guild site at ${at}: ${missing.join(', ')}`;
 }
 
+function describeYard(state: GameState, yard: Building): Description {
+  const route = routeOf(state, guildOfYard(state, yard));
+  const trade = route ? `Trade Yard: trading with ${PARTNERS[route.partner].name}` : 'Trade Yard: trade opens with a route';
+  return { title: BUILDING_SPECS.tradeYard.name, meters: [], lines: [`Tile ${yard.x}, ${yard.y}`, trade] };
+}
+
 function describeGuild(state: GameState, guild: Building): Description {
   const missing = guildShortfalls(state, guild);
+  const route = routeStatus(state, guild);
   const lines = [
     `Tile ${guild.x}, ${guild.y}`,
     `Merchants ${guild.residents}/${TRADERS_GUILD.merchants}`,
     `Appeal ${houseAppeal(state, guild)}`,
     'Pays no tax: earns through trade',
-    'Trade route: not yet available',
+    route.line,
     missing.length === 0 ? 'Fully supplied' : `Missing ${missing.join(', ')}: breaks up in ${amount((LEVEL_CHANGE_TICKS - guild.pendingTicks) / TICKS_PER_MONTH)} months`,
   ];
   const needFor = (need: ResidentNeed): Need => (missing.includes(need) ? 'missing' : 'met');
@@ -284,7 +293,7 @@ function describeGuild(state: GameState, guild: Building): Description {
     cultureMeter(state, guild, culturePoints(state, guild) < TRADERS_GUILD.culture ? 'missing' : 'met'),
     stockMeter(guild, 'cloth', needFor('cloth')),
   ];
-  return { title: BUILDING_SPECS.tradersGuild.name, meters, lines };
+  return { title: BUILDING_SPECS.tradersGuild.name, meters, lines, ...(route.canOpen ? { openRoute: guild.id } : {}) };
 }
 
 function supplyMeters(state: GameState, house: Building, target: HouseLevel): Meter[] {

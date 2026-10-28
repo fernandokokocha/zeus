@@ -1080,7 +1080,7 @@ describe("the inspector on a Traders' Guild", () => {
         'Merchants 20/20',
         'Appeal 27',
         'Pays no tax: earns through trade',
-        'Trade route: not yet available',
+        'Trade route: none, needs a Palace with a road to the Main Road',
         'Fully supplied',
         'Fire risk 0%',
       ],

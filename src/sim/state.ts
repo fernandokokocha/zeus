@@ -2,11 +2,13 @@ import type { BuildingType, Rotation } from './buildings';
 import type { WellFed } from './charters';
 import { emptyFlows, type FlowBook } from './flows';
 import type { HouseLevel } from './housing';
+import type { MonumentKind } from './monuments';
 import { defaultIndustrySettings, type IndustrySettings } from './industries';
 import { DEFAULT_SEED, MAP_SIZE, generateTerrain } from './map';
 import { clampPoint, type Point } from './point';
 import type { RoadUpgrade } from './road-upgrades';
 import type { Terrain } from './terrain';
+import type { Partner, Route } from './trade';
 import { STARTING_TREASURY, emptyAccounts, type Books } from './treasury';
 
 export type Speed = 0 | 1 | 2 | 4;
@@ -50,6 +52,7 @@ export interface Building {
   collapseRisk: number;
   burningUntil: number;
   taxPaid: number[];
+  monument: MonumentKind | null;
 }
 
 export interface Walk {
@@ -198,9 +201,11 @@ export interface GameState {
   nextNoticeId: number;
   wellFed: WellFed;
   guildPermits: number;
-  monumentsToPlace: number;
+  monumentsToPlace: MonumentKind[];
   crowdedCityEarned: boolean;
   announcedGuildSites: number[];
+  routes: Route[];
+  partnersTraded: Partner[];
   rngState: number;
   entry: Point;
   treasury: number;
@@ -254,9 +259,11 @@ export function newGameState(size: number, terrain: Terrain[], mainRoad: Point[]
     nextNoticeId: 1,
     wellFed: { months: 0, reset: null },
     guildPermits: 0,
-    monumentsToPlace: 0,
+    monumentsToPlace: [],
     crowdedCityEarned: false,
     announcedGuildSites: [],
+    routes: [],
+    partnersTraded: [],
     rngState: DEFAULT_SEED,
     entry: mainRoad[0],
     treasury: STARTING_TREASURY,

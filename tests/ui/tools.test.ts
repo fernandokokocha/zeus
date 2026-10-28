@@ -12,7 +12,7 @@ describe('TOOL_GROUPS', () => {
 describe('the Monument tool', () => {
   it('shows how many monuments are waiting to be placed', () => {
     const game = grassGame();
-    game.monumentsToPlace = 1;
+    game.monumentsToPlace = ['crowdedCity'];
     expect(toolLabel('monument', game)).toBe('Monument (1)');
     expect(toolLabel('park', game)).toBe(TOOL_LABELS.park);
   });
@@ -20,7 +20,7 @@ describe('the Monument tool', () => {
   it('works only while a monument is waiting', () => {
     const game = grassGame();
     expect(toolEnabled('monument', game)).toBe(false);
-    game.monumentsToPlace = 1;
+    game.monumentsToPlace = ['crowdedCity'];
     expect(toolEnabled('monument', game)).toBe(true);
     expect(toolEnabled('park', grassGame())).toBe(true);
   });

@@ -5,6 +5,7 @@ import { culturePoints } from './culture';
 import { LEVEL_CHANGE_TICKS, TRADERS_GUILD, hasNeed, houseLevel } from './housing';
 import { postNotice } from './notices';
 import { rectBetween, tilesIn, type Point } from './point';
+import { PARTNERS, routeOf } from './trade';
 import { buildingById, inBounds, tileIndex, type Building, type Coverage, type GameState, type PeddledGood } from './state';
 
 const CARRIED_GOODS: PeddledGood[] = ['food', 'fleece', 'oil', 'cloth'];
@@ -206,6 +207,12 @@ export function yardOf(state: GameState, guild: Building): Building {
   return found;
 }
 
+export function guildOfYard(state: GameState, yard: Building): Building {
+  const guild = state.buildings.find((b) => b.type === 'tradersGuild' && yardOf(state, b) === yard);
+  if (guild === undefined) throw new Error(`Trade Yard ${yard.id} has no guild`);
+  return guild;
+}
+
 export function raiseGuild(state: GameState, placement: Placement): Building {
   const houses = buildingsUnder(state, placement);
   removeBuildings(state, new Set(houses.map((h) => h.id)));
@@ -255,7 +262,9 @@ export function tickGuilds(state: GameState): void {
 }
 
 function breakUp(state: GameState, guild: Building, missing: string[]): void {
-  postNotice(state, `The Traders' Guild at ${guild.x},${guild.y} broke up: it lacked ${missing.join(', ')}. Its permit is lost`, guild);
+  const route = routeOf(state, guild);
+  const routeCloses = route ? ` and its route to ${PARTNERS[route.partner].name} closes` : '';
+  postNotice(state, `The Traders' Guild at ${guild.x},${guild.y} broke up: it lacked ${missing.join(', ')}. Its permit is lost${routeCloses}`, guild);
   removeBuildings(state, new Set([guild.id]));
   const { width, height } = BUILDING_SPECS.tradersGuild;
   const corner = { x: guild.x + width - 1, y: guild.y + height - 1 };
