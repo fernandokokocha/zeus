@@ -758,10 +758,17 @@ button.active {
   cursor: pointer;
 }
 
-.world-city circle,
-.world-ours {
+.world-city circle {
   stroke: var(--ink);
   stroke-width: 2;
+}
+
+.world-halo {
+  fill: var(--parchment);
+}
+
+.world-our-name {
+  font-size: 15px;
 }
 
 .world-city:hover circle {

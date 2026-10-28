@@ -18,6 +18,8 @@ const PIXELS_PER_DEGREE = MAP_WIDTH / ((GREECE_BOUNDS.east - GREECE_BOUNDS.west)
 const MAP_HEIGHT = (GREECE_BOUNDS.north - GREECE_BOUNDS.south) * PIXELS_PER_DEGREE;
 const OUR_CITY: Place = 'athens';
 const CITY_RADIUS = 9;
+const OUR_RADIUS = 11;
+const OUR_HALO = 16;
 const STOP_RADIUS = 3;
 const LINE_HEIGHT = 12;
 type Side = 'above' | 'below' | 'left' | 'right';
@@ -86,7 +88,7 @@ export function createWorld(state: GameState, topbar: { showStatus(text: string)
   const prompt = byId('world-prompt');
   const map = byId<HTMLElement>('world-map');
   const details = byId('world-details');
-  let selected: Partner | null = null;
+  let selected: Place | null = null;
   let choosingFor: number | null = null;
   let shown = '';
 
@@ -136,8 +138,20 @@ export function createWorld(state: GameState, topbar: { showStatus(text: string)
       drawing.append(city);
     }
     const home = project(OUR_CITY);
-    drawing.append(svg('circle', { cx: home.x, cy: home.y, r: CITY_RADIUS, fill: OUR_COLOR, class: 'world-ours' }));
-    drawing.append(...label(OUR_CITY, CITY_RADIUS, [{ text: PLACES[OUR_CITY].name, className: 'world-name' }]));
+    const ours = svg('g', { class: OUR_CITY === selected ? 'world-city world-selected' : 'world-city' });
+    ours.append(
+      svg('circle', { cx: home.x, cy: home.y, r: OUR_HALO, class: 'world-halo' }),
+      svg('circle', { cx: home.x, cy: home.y, r: OUR_RADIUS, fill: OUR_COLOR }),
+      ...label(OUR_CITY, OUR_HALO, [
+        { text: PLACES[OUR_CITY].name, className: 'world-name world-our-name' },
+        { text: 'Our city', className: 'world-trip' },
+      ]),
+    );
+    ours.addEventListener('click', () => {
+      selected = OUR_CITY;
+      update();
+    });
+    drawing.append(ours);
     return drawing;
   }
 
@@ -164,6 +178,17 @@ export function createWorld(state: GameState, topbar: { showStatus(text: string)
     return section;
   }
 
+  function ourDetails(report: PartnerView[]): HTMLElement[] {
+    const title = element('h3', 'world-partner', PLACES[OUR_CITY].name);
+    title.style.borderColor = OUR_COLOR;
+    const open = report.filter((view) => !view.available).map((view) => view.name);
+    return [
+      title,
+      element('p', '', 'Our city. Caravans leave along the Sacred Way to Eleusis.'),
+      element('p', '', `Trade routes: ${open.length === 0 ? 'none yet' : open.join(', ')}`),
+    ];
+  }
+  
   function drawDetails(view: PartnerView | undefined): HTMLElement[] {
     if (view === undefined) return [element('p', 'world-hint', 'Click a city to see what it trades.')];
     const title = element('h3', 'world-partner', view.name);
@@ -194,7 +219,7 @@ export function createWorld(state: GameState, topbar: { showStatus(text: string)
     prompt.textContent = choosingFor === null ? '' : promptText(choosingFor);
     prompt.hidden = choosingFor === null;
     map.replaceChildren(drawMap(report));
-    details.replaceChildren(...drawDetails(report.find((view) => view.partner === selected)));
+    details.replaceChildren(...(selected === OUR_CITY ? ourDetails(report) : drawDetails(report.find((view) => view.partner === selected))));
   }
 
   byId('world-button').addEventListener('click', () => (panel.hidden ? open() : close()));
