@@ -10,8 +10,9 @@ import { GRANARY_CAPACITY, HARVEST_MONTH, UNITS_PER_LOAD, VENDOR_CAPACITY, house
 import { isClosed } from './industries';
 import { PLACES } from './greece';
 import { CARAVAN_MERCHANTS, caravansOf, slotHoldings } from './exports';
-import { PARTNERS, routeOf, routeStatus } from './trade';
+import { PARTNERS, TRADE_GOODS, routeOf, routeStatus } from './trade';
 import { GOOD_TITLES } from './production';
+import { caravansComing, ordersWaitingForMoney } from './imports';
 import { guildOfYard, guildShortfalls, guildSiteOf, siteShortfalls, type GuildSite } from './guild';
 import { type HouseLevel, type HouseNeed, type ResidentNeed, HOUSE_LEVELS, LEVEL_CHANGE_TICKS, TRADERS_GUILD, NEXT_LEVEL, PREVIOUS_LEVEL, houseCapacity, houseLevel, evolutionBlockers, houseName, lacksCulture, missingNeeds } from './housing';
 import { ROAMER_SPECS, hasGoodsToSell, hasService, type RoamerSpec, roamerKindSentBy, serviceLeft } from './roamers';
@@ -56,6 +57,7 @@ import {
   type Artisan,
   type Building,
   type Caravan,
+  type ForeignCaravan,
   type CaravanTrip,
   type Carrier,
   type Gatherer,
@@ -94,7 +96,7 @@ export interface StorehouseOrder {
   accepted: boolean;
 }
 
-export interface ExportSlotView {
+export interface SlotView {
   good: Good | null;
   loads: number;
   capacity: number;
@@ -102,8 +104,9 @@ export interface ExportSlotView {
 
 export interface TradeYardView {
   id: number;
-  choices: { good: Good; name: string }[];
-  slots: ExportSlotView[];
+  exports: { good: Good; name: string }[];
+  imports: { good: Good; name: string; load: number }[];
+  slots: SlotView[];
 }
 
 export interface StorehouseView {
@@ -156,6 +159,7 @@ export function inspectTile(state: GameState, x: number, y: number): Look {
     follow((s) => s.roamers, describeRoamer) ??
     follow((s) => s.carriers, describeCarrier) ??
     follow((s) => s.caravans.filter((c) => c.trip !== 'away'), describeCaravan) ??
+    follow((s) => s.foreignCaravans.filter((c) => c.trip === 'in' || c.trip === 'back'), describeForeignCaravan) ??
     follow((s) => s.trainees, describeTrainee) ??
     follow((s) => s.shepherds, describeShepherd) ??
     follow((s) => s.growers, describeGrower) ??
@@ -261,6 +265,15 @@ const CARRIER_HOMES: Record<Carrier['kind'], string> = {
   bronzeExport: 'yard',
   sculptureExport: 'yard',
   clothExport: 'yard',
+  foodUnload: 'yard',
+  fleeceUnload: 'yard',
+  oliveUnload: 'yard',
+  oilUnload: 'yard',
+  woodUnload: 'yard',
+  marbleUnload: 'yard',
+  bronzeUnload: 'yard',
+  sculptureUnload: 'yard',
+  clothUnload: 'yard',
 };
 
 function describeHouse(state: GameState, house: Building): Description {
@@ -304,20 +317,32 @@ function describeYard(state: GameState, yard: Building): Description {
   lines.push(`Trade Yard: trading with ${PLACES[route.partner].name}`);
   if (yard.workers === 0) lines.push('No workers: no goods are fetched');
   lines.push(...caravansOf(state, guild).filter((c) => c.trip === 'away').map((c) => caravanAwayLine(state, c)));
+  lines.push(...caravansComing(state, yard).map((c) => caravanComingLine(state, c)));
+  lines.push(...ordersWaitingForMoney(state, yard).map(({ good, loads, cost }) => `Waiting: the treasury can't pay for ${loads} ${GOOD_NAMES[good]} (${drachmas(cost)})`));
+  const { buys, sells } = PARTNERS[route.partner];
   const tradeYard = {
     id: yard.id,
-    choices: PARTNERS[route.partner].buys.map((good) => ({ good, name: GOOD_TITLES[good] })),
+    exports: buys.map((good) => ({ good, name: GOOD_TITLES[good] })),
+    imports: sells.map((good) => ({ good, name: GOOD_TITLES[good], load: TRADE_GOODS[good].caravanLoad })),
     slots: slotHoldings(yard).map(({ good, units, capacity }) => ({ good, loads: units / UNITS_PER_LOAD, capacity: capacity / UNITS_PER_LOAD })),
   };
   return { title, meters: [], lines, tradeYard };
 }
 
 function caravanAwayLine(state: GameState, caravan: Caravan): string {
-  const months = Math.ceil((caravan.backAt - state.tick) / TICKS_PER_MONTH);
-  return `Caravan to ${PLACES[caravan.partner].name} with ${caravanCargo(caravan)}: back in about ${months} ${months === 1 ? 'month' : 'months'}`;
+  return `Caravan to ${PLACES[caravan.partner].name} with ${caravanCargo(caravan)}: back in about ${months(caravan.backAt - state.tick)}`;
 }
 
-function caravanCargo(caravan: Caravan): string {
+function months(ticks: number): string {
+  const count = Math.ceil(ticks / TICKS_PER_MONTH);
+  return `${count} ${count === 1 ? 'month' : 'months'}`;
+}
+
+function caravanComingLine(state: GameState, caravan: ForeignCaravan): string {
+  return `Caravan from ${PLACES[caravan.partner].name} with ${caravanCargo(caravan)}: here in about ${months(caravan.dueAt - state.tick)}`;
+}
+
+function caravanCargo(caravan: Caravan | ForeignCaravan): string {
   return `${caravan.loads} loads of ${GOOD_NAMES[caravan.good]}`;
 }
 
@@ -745,6 +770,16 @@ function describeCaravan(state: GameState, caravan: Caravan): Description {
     merchants: ['Merchants walking home to the guild'],
   };
   return { title: 'Trade Caravan', meters: [], lines: [from, ...trip[caravan.trip]] };
+}
+
+function describeForeignCaravan(state: GameState, caravan: ForeignCaravan): Description {
+  const partner = PLACES[caravan.partner].name;
+  const trip: Record<'in' | 'back', string[]> = {
+    in: [`Bringing ${caravanCargo(caravan)} to the ${BUILDING_SPECS.tradeYard.name}`, `We pay ${drachmas(caravan.cost)} when it unloads`],
+    back: [`Heading home to ${partner}`],
+  };
+  if (caravan.trip !== 'in' && caravan.trip !== 'back') throw new Error(`Caravan from ${partner} is off the map`);
+  return { title: 'Trade Caravan', meters: [], lines: [`From ${partner}`, ...trip[caravan.trip]] };
 }
 
 function describeTrainee(state: GameState, trainee: Trainee): Description {

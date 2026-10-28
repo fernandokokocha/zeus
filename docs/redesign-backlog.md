@@ -51,7 +51,7 @@ Drawn in `src/render/walker-layer.ts` as `Part` lists; see "Walkers and animals"
 | 25 | Gatherers | lumberjack (with log), quarryman (with block), miner (with ore), olive grower |
 | 26 | Townsfolk | settler, artisan, shepherd |
 | 27 | Sheep | shorn, half-grown, woolly |
-| 33 | Trade caravans | ours going out laden, coming home with a money chest, merchants walking back unladen; later the foreign caravan in each partner's colour. Placeholder in `src/render/walker-layer.ts`: one merchant in white with a blue cloak beside a pack donkey |
+| 33 | Trade caravans | ours going out laden, coming home with a money chest, merchants walking back unladen; foreign caravans in each partner's colour, laden coming in and bare walking back. Placeholder in `src/render/walker-layer.ts`: one merchant in white with a cloak (blue for ours, the partner's colour for theirs) beside a pack donkey |
 
 Workers already standing in redesigned buildings fix some of these looks: the water carrier
 (Fountain), athlete (Gymnasium), axeman in the lumberjack's olive tunic (Timber Mill),

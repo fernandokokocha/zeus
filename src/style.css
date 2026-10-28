@@ -569,6 +569,17 @@ button.active {
   align-items: center;
 }
 
+.yard-slot-controls {
+  display: flex;
+  gap: 4px;
+  min-width: 0;
+}
+
+.yard-slot-controls select:first-child {
+  flex: 1;
+  min-width: 0;
+}
+
 .good-icon {
   display: inline-flex;
   width: 20px;

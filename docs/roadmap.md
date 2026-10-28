@@ -26,5 +26,5 @@ the PR that delivers it.
 - [x] 28 · World map and routes
 - [x] 28b · Map of Greece
 - [x] 29 · Trade: exports
-- [ ] 30 · Trade: imports
+- [x] 30 · Trade: imports
 - [ ] 31 · Ledger: Trade

@@ -1,17 +1,13 @@
 import { PLACES, type Place } from '../sim/greece';
 import { buildingById, type GameState } from '../sim/state';
 import { PARTNERS, PARTNER_CARAVANS, openRoute, worldReport, type Partner, type PartnerView, type TradeOffer } from '../sim/trade';
+import { PARTNER_COLORS } from '../render/palette';
 import { byId } from './dom';
 import { GREECE_BOUNDS, GREECE_LAND } from './greece-land';
 
 const SVG = 'http://www.w3.org/2000/svg';
 const OUR_COLOR = '#2f5d9b';
-const PARTNER_COLORS: Record<Partner, string> = {
-  thebes: '#4f8a3c',
-  corinth: '#a8322d',
-  argos: '#c9962e',
-  sparta: '#6d3f8f',
-};
+const partnerColor = (partner: Partner) => `#${PARTNER_COLORS[partner].toString(16).padStart(6, '0')}`;
 const MAP_WIDTH = 600;
 const MID_LATITUDE_COS = Math.cos((((GREECE_BOUNDS.south + GREECE_BOUNDS.north) / 2) * Math.PI) / 180);
 const PIXELS_PER_DEGREE = MAP_WIDTH / ((GREECE_BOUNDS.east - GREECE_BOUNDS.west) * MID_LATITUDE_COS);
@@ -137,7 +133,7 @@ export function createWorld(state: GameState, topbar: { showStatus(text: string)
     for (const view of report) {
       const at = project(view.partner);
       const city = svg('g', { class: cityClass(view) });
-      city.append(svg('circle', { cx: at.x, cy: at.y, r: CITY_RADIUS, fill: PARTNER_COLORS[view.partner] }));
+      city.append(svg('circle', { cx: at.x, cy: at.y, r: CITY_RADIUS, fill: partnerColor(view.partner) }));
       city.append(
         ...label(view.partner, CITY_RADIUS, [
           { text: view.name, className: 'world-name' },
@@ -202,7 +198,7 @@ export function createWorld(state: GameState, topbar: { showStatus(text: string)
   function drawDetails(view: PartnerView | undefined): HTMLElement[] {
     if (view === undefined) return [element('p', 'world-hint', 'Click a city to see what it trades.')];
     const title = element('h3', 'world-partner', view.name);
-    title.style.borderColor = PARTNER_COLORS[view.partner];
+    title.style.borderColor = partnerColor(view.partner);
     return [
       title,
       element('p', '', `Round trip: ${months(view.roundTripMonths)}`),

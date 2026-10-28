@@ -182,6 +182,12 @@ storehouses (granaries for food). A caravan takes **5** of the guild's 20 mercha
 guild has at most **4** caravans out. Its drachmas (caravan load × "they pay us") reach the
 treasury only at the Palace.
 
+Imports (spec): a slot can instead import a good its partner sells, **1** load up to one caravan
+load. The partner sends one of its **2** caravans when the slot is empty and the treasury can
+cover the amount at "we pay them"; the treasury is charged when it unloads at the yard. Half
+the round trip is spent coming, half going home. The yard keeps only what its export slots
+hold; its workers cart everything else to storehouses (granaries for food).
+
 ## Not found: our choices
 
 - Granary and storehouse capacity: **32 loads each** (8 slots × 4 loads).

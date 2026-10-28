@@ -1,3 +1,5 @@
+import type { Partner } from '../sim/trade';
+
 import type { Terrain } from '../sim/terrain';
 
 export const TERRAIN_COLORS: Record<Terrain, number> = {
@@ -7,6 +9,13 @@ export const TERRAIN_COLORS: Record<Terrain, number> = {
   marble: 0xd8d4c8,
   copper: 0xb07a4a,
   water: 0x3f7fb5,
+};
+
+export const PARTNER_COLORS: Record<Partner, number> = {
+  thebes: 0x4f8a3c,
+  corinth: 0xa8322d,
+  argos: 0xc9962e,
+  sparta: 0x6d3f8f,
 };
 
 export const PALETTE = {

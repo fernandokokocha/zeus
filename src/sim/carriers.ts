@@ -31,6 +31,10 @@ function exportCart(good: Good, stores: Store[]): CarrierSpec {
   return { name: 'Cart Pusher', home: 'tradeYard', good, stores, delivers: false, capacity: (yard) => exportCapacity(yard, good) };
 }
 
+function unloadCart(good: Good, stores: Store[]): CarrierSpec {
+  return { name: 'Cart Pusher', home: 'tradeYard', good, stores, delivers: true, capacity: (yard) => exportCapacity(yard, good) };
+}
+
 export const CARRIER_SPECS: Record<CarrierKind, CarrierSpec> = {
   cartPusher: { name: 'Cart Pusher', home: 'wheatFarm', good: 'food', stores: ['granary'], delivers: true, capacity: nothing },
   buyer: { name: 'Buyer', home: 'foodVendor', good: 'food', stores: ['granary'], delivers: false, capacity: () => VENDOR_CAPACITY },
@@ -60,6 +64,15 @@ export const CARRIER_SPECS: Record<CarrierKind, CarrierSpec> = {
   bronzeExport: exportCart('bronze', ['storehouse']),
   sculptureExport: exportCart('sculptures', ['storehouse']),
   clothExport: exportCart('cloth', ['storehouse']),
+  foodUnload: unloadCart('food', ['granary']),
+  fleeceUnload: unloadCart('fleece', ['storehouse']),
+  oliveUnload: unloadCart('olives', ['storehouse']),
+  oilUnload: unloadCart('oil', ['storehouse']),
+  woodUnload: unloadCart('wood', ['storehouse']),
+  marbleUnload: unloadCart('marble', ['storehouse']),
+  bronzeUnload: unloadCart('bronze', ['storehouse']),
+  sculptureUnload: unloadCart('sculptures', ['storehouse']),
+  clothUnload: unloadCart('cloth', ['storehouse']),
 };
 
 const KEPT_BACK: Partial<Record<CarrierKind, number>> = { weaverBuyer: FLEECE_KEPT_FOR_VENDORS };
@@ -118,9 +131,13 @@ function fetchRoom(state: GameState, kind: CarrierKind, home: Building): number 
   return capacity(home) - incoming.reduce((sum, c) => sum + c[good], home[good]);
 }
 
+function surplus(kind: CarrierKind, home: Building): number {
+  const { good, capacity } = CARRIER_SPECS[kind];
+  return Math.max(0, home[good] - capacity(home));
+}
+
 function wantsTrip(state: GameState, kind: CarrierKind, home: Building): boolean {
-  const { good, delivers } = CARRIER_SPECS[kind];
-  return delivers ? home[good] > 0 : fetchRoom(state, kind, home) >= UNITS_PER_LOAD;
+  return CARRIER_SPECS[kind].delivers ? surplus(kind, home) > 0 : fetchRoom(state, kind, home) >= UNITS_PER_LOAD;
 }
 
 export function tickCarriers(state: GameState): void {
@@ -138,7 +155,7 @@ function sendCarrier(state: GameState, building: Building, kind: CarrierKind): v
   const target = nearestByRoad(state, exit, carrierDestinations(state, kind));
   if (!target) return;
   const { good, delivers } = CARRIER_SPECS[kind];
-  const load = delivers ? Math.min(CART_LOAD, building[good], storeRoom(state, target.building, good)) : 0;
+  const load = delivers ? Math.min(CART_LOAD, surplus(kind, building), storeRoom(state, target.building, good)) : 0;
   building[good] -= load;
   state.carriers.push({
     id: state.nextCarrierId++,

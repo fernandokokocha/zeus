@@ -73,17 +73,19 @@ describe("the yard's slots", () => {
   it('are four, all off', () => {
     const { yard } = tradingTown();
     expect(YARD_SLOTS).toBe(4);
-    expect(yard.exportSlots).toEqual([null, null, null, null]);
+    expect(yard.tradeSlots).toEqual([null, null, null, null]);
   });
 
   it('take a good the partner buys, in any mix', () => {
+    const fleece = { trade: 'export', good: 'fleece' };
+    const olives = { trade: 'export', good: 'olives' };
     const town = tradingTown('thebes');
     exporting(town, 0, 'fleece');
     exporting(town, 1, 'olives');
     exporting(town, 3, 'fleece');
-    expect(town.yard.exportSlots).toEqual(['fleece', 'olives', null, 'fleece']);
+    expect(town.yard.tradeSlots).toEqual([fleece, olives, null, fleece]);
     exporting(town, 0, null);
-    expect(town.yard.exportSlots).toEqual([null, 'olives', null, 'fleece']);
+    expect(town.yard.tradeSlots).toEqual([null, olives, null, fleece]);
   });
 
   it("refuse a good the partner doesn't buy", () => {
@@ -291,9 +293,13 @@ describe("the yard's inspector", () => {
     expect(description.lines).toContain('Caravan to Thebes with 6 loads of fleece: back in about 2 months');
     expect(description.tradeYard).toEqual({
       id: town.yard.id,
-      choices: [
+      exports: [
         { good: 'fleece', name: 'Fleece' },
         { good: 'olives', name: 'Olives' },
+      ],
+      imports: [
+        { good: 'food', name: 'Food', load: 8 },
+        { good: 'wood', name: 'Wood', load: 6 },
       ],
       slots: [
         { good: 'fleece', loads: 0, capacity: 6 },

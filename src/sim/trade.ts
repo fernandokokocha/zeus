@@ -76,6 +76,10 @@ export interface PartnerView {
   available: boolean;
 }
 
+export function partnerCaravansHome(state: GameState, partner: Partner): number {
+  return PARTNER_CARAVANS - state.foreignCaravans.filter((c) => c.partner === partner).length;
+}
+
 export function routeOf(state: GameState, guild: Building): Route | null {
   return state.routes.find((r) => r.guildId === guild.id) ?? null;
 }
@@ -149,7 +153,7 @@ export function worldReport(state: GameState): PartnerView[] {
       roundTripMonths: roundTripMonths(partner),
       buys: offers(buys, (spec) => spec.theyPay),
       sells: offers(sells, (spec) => spec.wePay),
-      caravansHome: PARTNER_CARAVANS,
+      caravansHome: partnerCaravansHome(state, partner),
       route: route === null ? 'Available' : `Open, to the Traders' Guild at ${tradingGuild(state, route).x},${tradingGuild(state, route).y}`,
       available: route === null,
     };

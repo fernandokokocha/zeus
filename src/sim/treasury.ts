@@ -14,10 +14,11 @@ export interface Accounts {
   wages: number;
   construction: number;
   sheep: number;
+  imports: number;
 }
 
 export type Income = 'taxes' | 'trade';
-export type Spending = 'wages' | 'construction' | 'sheep';
+export type Spending = 'wages' | 'construction' | 'sheep' | 'imports';
 
 export interface Books {
   thisYear: Accounts;
@@ -38,7 +39,7 @@ export interface TreasuryReport {
 const FOUNDING_YEAR = 1;
 
 export function emptyAccounts(): Accounts {
-  return { taxes: 0, trade: 0, wages: 0, construction: 0, sheep: 0 };
+  return { taxes: 0, trade: 0, wages: 0, construction: 0, sheep: 0, imports: 0 };
 }
 
 export function spend(state: GameState, category: Spending, amount: number): void {

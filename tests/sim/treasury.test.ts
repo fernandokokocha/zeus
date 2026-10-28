@@ -62,6 +62,7 @@ describe('the books', () => {
       wages: 0,
       construction: 4 * ROAD_TILE_COST + ROADBLOCK_COST + BUILDING_SPECS.fountain.cost,
       sheep: 0,
+      imports: 0,
     });
   });
 
@@ -89,7 +90,7 @@ describe('the books', () => {
     const year1 = { ...game.accounts.thisYear };
     runTicks(game, 1);
     expect(game.accounts.lastYear).toEqual(year1);
-    expect(game.accounts.thisYear).toEqual({ taxes: 0, trade: 0, wages: game.lastMonth.wages, construction: 0, sheep: 0 });
+    expect(game.accounts.thisYear).toEqual({ taxes: 0, trade: 0, wages: game.lastMonth.wages, construction: 0, sheep: 0, imports: 0 });
   });
 });
 

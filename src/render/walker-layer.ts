@@ -1,11 +1,12 @@
 import * as THREE from 'three';
-import type { CaravanTrip, CarrierKind, GameState, Material, RoamerKind, TraineeKind, Walk } from '../sim/state';
+import type { CaravanTrip, CarrierKind, GameState, Good, Material, RoamerKind, TraineeKind, Walk } from '../sim/state';
 import { CARRIER_SPECS } from '../sim/carriers';
 import { SERVING_WALKERS, type Overlay } from '../sim/overlays';
 import { ROAMER_SPECS } from '../sim/roamers';
 import { FULL_FLEECE } from '../sim/sheep';
 import { walkerPosition, walkerSpeed } from '../sim/walking';
-import { PALETTE } from './palette';
+import { PALETTE, PARTNER_COLORS } from './palette';
+import type { Partner } from '../sim/trade';
 import { FADED_OPACITY } from './world-layer';
 import { awningCartPeddler } from './peddler-models';
 import { FIGURE_SCALE, body, cart, jar, mergedByColour, type Part } from './kit/walker';
@@ -14,14 +15,15 @@ const BOB_HEIGHT = 0.06;
 const BOB_STEPS_PER_TILE = 2;
 const START_CAPACITY = 64;
 
-type ExportCart = Extract<CarrierKind, `${string}Export`>;
+type YardCart = Extract<CarrierKind, `${string}Export` | `${string}Unload`>;
 
 type Figure =
   | 'settler'
   | 'artisan'
   | RoamerKind
-  | Exclude<CarrierKind, ExportCart>
+  | Exclude<CarrierKind, YardCart>
   | CaravanFigure
+  | ForeignFigure
   | TraineeKind
   | 'shepherd'
   | 'shepherdWithFleece'
@@ -40,26 +42,31 @@ const GATHERER_FIGURES: Record<Material, { empty: GathererFigure; laden: Gathere
 
 type CaravanFigure = 'caravanLaden' | 'caravanWithChest' | 'caravanUnladen';
 
+type ForeignFigure = `${Partner}Caravan` | `${Partner}CaravanBare`;
+
+const PARTNERS_DRAWN = Object.keys(PARTNER_COLORS) as Partner[];
+
 const CARAVAN_FIGURES: Record<Exclude<CaravanTrip, 'away'>, CaravanFigure> = {
   out: 'caravanLaden',
   home: 'caravanWithChest',
   merchants: 'caravanUnladen',
 };
 
-const EXPORT_CARTS: Record<ExportCart, Figure> = {
-  foodExport: 'cartPusher',
-  fleeceExport: 'fleeceCart',
-  oliveExport: 'oliveCart',
-  oilExport: 'oilCart',
-  woodExport: 'woodCart',
-  marbleExport: 'marbleCart',
-  bronzeExport: 'bronzeCart',
-  sculptureExport: 'sculptureCart',
-  clothExport: 'clothCart',
+const YARD_CARTS: Record<Good, Figure> = {
+  food: 'cartPusher',
+  fleece: 'fleeceCart',
+  olives: 'oliveCart',
+  oil: 'oilCart',
+  wood: 'woodCart',
+  marble: 'marbleCart',
+  bronze: 'bronzeCart',
+  sculptures: 'sculptureCart',
+  cloth: 'clothCart',
 };
 
 function carrierFigure(kind: CarrierKind): Figure {
-  return kind in EXPORT_CARTS ? EXPORT_CARTS[kind as ExportCart] : (kind as Exclude<CarrierKind, ExportCart>);
+  const { home, good } = CARRIER_SPECS[kind];
+  return home === 'tradeYard' ? YARD_CARTS[good] : (kind as Exclude<CarrierKind, YardCart>);
 }
 
 const CARRIER_FIGURES = [...new Set((Object.keys(CARRIER_SPECS) as CarrierKind[]).map(carrierFigure))];
@@ -80,10 +87,14 @@ function donkey(load: Part[]): Part[] {
   ];
 }
 
-const merchant: Part[] = [
-  ...body(PALETTE.merchantTunic),
-  { geometry: new THREE.CylinderGeometry(0.065, 0.095, 0.16, 8, 1, true, Math.PI, Math.PI).translate(0, 0.18, 0), color: PALETTE.merchantCloak },
-];
+function merchantIn(cloak: number): Part[] {
+  return [
+    ...body(PALETTE.merchantTunic),
+    { geometry: new THREE.CylinderGeometry(0.065, 0.095, 0.16, 8, 1, true, Math.PI, Math.PI).translate(0, 0.18, 0), color: cloak },
+  ];
+}
+
+const merchant = merchantIn(PALETTE.merchantCloak);
 
 const packSacks: Part[] = [
   { geometry: new THREE.SphereGeometry(0.05, 8, 6).scale(0.8, 1, 1.2).translate(0.075, 0.2, -0.06), color: PALETTE.sack },
@@ -277,7 +288,20 @@ const FIGURES: Record<Figure, Part[]> = {
   caravanLaden: [...merchant, ...donkey(packSacks)],
   caravanWithChest: [...merchant, ...donkey(moneyChest)],
   caravanUnladen: [...merchant, ...donkey([])],
+  ...foreignFigures(),
 };
+
+function foreignFigures(): Record<ForeignFigure, Part[]> {
+  return Object.fromEntries(
+    PARTNERS_DRAWN.flatMap((partner) => {
+      const trader = merchantIn(PARTNER_COLORS[partner]);
+      return [
+        [`${partner}Caravan`, [...trader, ...donkey(packSacks)]],
+        [`${partner}CaravanBare`, [...trader, ...donkey([])]],
+      ];
+    }),
+  ) as Record<ForeignFigure, Part[]>;
+}
 
 interface FigureSet {
   show(walks: Walk[], lookAhead: (walk: Walk) => number): void;
@@ -374,6 +398,11 @@ export function createWalkerLayer(): { group: THREE.Group; sync(state: GameState
       }
       for (const trip of Object.keys(CARAVAN_FIGURES) as (keyof typeof CARAVAN_FIGURES)[]) {
         sets[CARAVAN_FIGURES[trip]].show(state.caravans.filter((c) => c.trip === trip), ahead);
+      }
+      for (const partner of PARTNERS_DRAWN) {
+        const theirs = state.foreignCaravans.filter((c) => c.partner === partner);
+        sets[`${partner}Caravan`].show(theirs.filter((c) => c.trip === 'in'), ahead);
+        sets[`${partner}CaravanBare`].show(theirs.filter((c) => c.trip === 'back'), ahead);
       }
       for (const good of Object.keys(GATHERER_FIGURES) as Material[]) {
         const { empty, laden } = GATHERER_FIGURES[good];

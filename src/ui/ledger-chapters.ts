@@ -11,8 +11,8 @@ const MONTHS_PER_YEAR = 12;
 const NO_YEAR = '–';
 const PRIORITIES: Priority[] = [NO_PRIORITY, 1, 2, 3];
 const INCOME: (keyof Accounts)[] = ['taxes', 'trade'];
-const SPENDING: (keyof Accounts)[] = ['wages', 'construction', 'sheep'];
-const ACCOUNT_NAMES: Record<keyof Accounts, string> = { taxes: 'Taxes', trade: 'Trade', wages: 'Wages', construction: 'Construction', sheep: 'Sheep' };
+const SPENDING: (keyof Accounts)[] = ['wages', 'construction', 'sheep', 'imports'];
+const ACCOUNT_NAMES: Record<keyof Accounts, string> = { taxes: 'Taxes', trade: 'Trade', wages: 'Wages', construction: 'Construction', sheep: 'Sheep', imports: 'Imports' };
 
 const GRAPH = { width: 560, height: 170, left: 44, bottom: 22, top: 8 };
 

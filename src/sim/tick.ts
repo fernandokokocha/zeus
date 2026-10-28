@@ -2,6 +2,7 @@ import { tallyWellFed } from './charters';
 import { TICKS_PER_MONTH } from './clock';
 import { tickCarriers } from './carriers';
 import { tickCaravans } from './exports';
+import { tickImports } from './imports';
 import { tickCloth } from './cloth';
 import { settleMonth } from './economy';
 import { eat, growCrops, harvestIfDue } from './food';
@@ -38,6 +39,7 @@ export function tick(state: GameState): void {
   tickRoamers(state);
   tickCarriers(state);
   tickCaravans(state);
+  tickImports(state);
   tickSchools(state);
   tickSheep(state);
   tickOlives(state);

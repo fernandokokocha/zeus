@@ -53,8 +53,10 @@ export interface Building {
   burningUntil: number;
   taxPaid: number[];
   monument: MonumentKind | null;
-  exportSlots: (Good | null)[];
+  tradeSlots: TradeSlot[];
 }
+
+export type TradeSlot = { trade: 'export'; good: Good } | { trade: 'import'; good: Good; loads: number } | null;
 
 export interface Walk {
   path: Point[];
@@ -152,7 +154,16 @@ export type CarrierKind =
   | 'marbleExport'
   | 'bronzeExport'
   | 'sculptureExport'
-  | 'clothExport';
+  | 'clothExport'
+  | 'foodUnload'
+  | 'fleeceUnload'
+  | 'oliveUnload'
+  | 'oilUnload'
+  | 'woodUnload'
+  | 'marbleUnload'
+  | 'bronzeUnload'
+  | 'sculptureUnload'
+  | 'clothUnload';
 
 export interface Carrier extends Walk {
   id: number;
@@ -183,6 +194,20 @@ export interface Caravan extends Walk {
   trip: CaravanTrip;
   backAt: number;
   waiting: boolean;
+}
+
+export type ForeignTrip = 'coming' | 'in' | 'back' | 'going';
+
+export interface ForeignCaravan extends Walk {
+  id: number;
+  partner: Partner;
+  yardId: number;
+  slot: number;
+  good: Good;
+  loads: number;
+  cost: number;
+  trip: ForeignTrip;
+  dueAt: number;
 }
 
 export interface Notice {
@@ -223,6 +248,8 @@ export interface GameState {
   nextArtisanId: number;
   caravans: Caravan[];
   nextCaravanId: number;
+  foreignCaravans: ForeignCaravan[];
+  nextForeignCaravanId: number;
   notices: Notice[];
   nextNoticeId: number;
   wellFed: WellFed;
@@ -283,6 +310,8 @@ export function newGameState(size: number, terrain: Terrain[], mainRoad: Point[]
     nextArtisanId: 1,
     caravans: [],
     nextCaravanId: 1,
+    foreignCaravans: [],
+    nextForeignCaravanId: 1,
     notices: [],
     nextNoticeId: 1,
     wellFed: { months: 0, reset: null },

@@ -41,7 +41,7 @@ describe('madeShare', () => {
 
 describe('net', () => {
   it('is income less spending', () => {
-    expect(net({ taxes: 900, trade: 0, wages: 400, construction: 250, sheep: 30 })).toBe(220);
+    expect(net({ taxes: 900, trade: 0, wages: 400, construction: 250, sheep: 30, imports: 0 })).toBe(220);
   });
 });
 

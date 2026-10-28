@@ -6,7 +6,7 @@ import { guildOfYard, yardOf } from './guild';
 import { postNotice } from './notices';
 import { findRoadPath } from './pathfinding';
 import type { Point } from './point';
-import { buildingById, type Building, type Caravan, type GameState, type Good } from './state';
+import { buildingById, type Building, type Caravan, type GameState, type Good, type TradeSlot } from './state';
 import { PARTNERS, TRADE_GOODS, roundTripMonths, routeOf } from './trade';
 import { collect } from './treasury';
 import { walkPath } from './walking';
@@ -20,40 +20,51 @@ export interface SlotHolding {
   capacity: number;
 }
 
-export function emptyExportSlots(): (Good | null)[] {
-  return new Array<Good | null>(YARD_SLOTS).fill(null);
+export function emptyTradeSlots(): TradeSlot[] {
+  return new Array<TradeSlot>(YARD_SLOTS).fill(null);
 }
 
 export function caravanUnits(good: Good): number {
   return TRADE_GOODS[good].caravanLoad * UNITS_PER_LOAD;
 }
 
-export function setExportSlot(state: GameState, yardId: number, slot: number, good: Good | null): Result {
+export const NO_ROUTE = 'Open a trade route first';
+
+export function tradeYardById(state: GameState, yardId: number): Building {
   const yard = buildingById(state, yardId);
   if (yard === undefined || yard.type !== 'tradeYard') throw new Error(`Building ${yardId} is not a Trade Yard`);
+  return yard;
+}
+
+export function setExportSlot(state: GameState, yardId: number, slot: number, good: Good | null): Result {
+  const yard = tradeYardById(state, yardId);
   const route = routeOf(state, guildOfYard(state, yard));
-  if (route === null) return { ok: false, reason: 'Open a trade route first' };
+  if (route === null) return { ok: false, reason: NO_ROUTE };
   if (good !== null && !PARTNERS[route.partner].buys.includes(good)) {
     return { ok: false, reason: `${PLACES[route.partner].name} doesn't buy ${good}` };
   }
-  yard.exportSlots[slot] = good;
+  yard.tradeSlots[slot] = good === null ? null : { trade: 'export', good };
   state.version++;
   return { ok: true };
 }
 
 export function exportCapacity(yard: Building, good: Good): number {
-  const slots = yard.exportSlots.filter((g) => g === good).length;
+  const slots = yard.tradeSlots.filter((s) => s !== null && s.trade === 'export' && s.good === good).length;
   return slots * caravanUnits(good);
+}
+
+function slotCapacity(slot: NonNullable<TradeSlot>): number {
+  return slot.trade === 'export' ? caravanUnits(slot.good) : slot.loads * UNITS_PER_LOAD;
 }
 
 export function slotHoldings(yard: Building): SlotHolding[] {
   const left = { ...yard };
-  return yard.exportSlots.map((good) => {
-    if (good === null) return { good, units: 0, capacity: 0 };
-    const capacity = caravanUnits(good);
-    const units = Math.min(capacity, left[good]);
-    left[good] -= units;
-    return { good, units, capacity };
+  return yard.tradeSlots.map((slot) => {
+    if (slot === null) return { good: null, units: 0, capacity: 0 };
+    const capacity = slotCapacity(slot);
+    const units = Math.min(capacity, left[slot.good]);
+    left[slot.good] -= units;
+    return { good: slot.good, units, capacity };
   });
 }
 
@@ -98,7 +109,10 @@ function formCaravan(state: GameState, guild: Building): void {
 }
 
 function fullSlotGood(yard: Building): Good | null {
-  for (const { good, units, capacity } of slotHoldings(yard)) if (good !== null && units === capacity) return good;
+  const holdings = slotHoldings(yard);
+  for (const [i, slot] of yard.tradeSlots.entries()) {
+    if (slot !== null && slot.trade === 'export' && holdings[i].units === holdings[i].capacity) return slot.good;
+  }
   return null;
 }
 
