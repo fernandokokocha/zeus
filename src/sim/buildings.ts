@@ -90,7 +90,7 @@ export const BUILDING_SPECS: Record<BuildingType, BuildingSpec> = {
   athenaSanctuary: { name: 'Arbor of Athena', width: 16, height: 12, cost: 2160, workers: 60, appeal: SANCTUARY_APPEAL, needsRoad: true },
   hephaestusSanctuary: { name: 'Forge of Hephaestus', width: 13, height: 8, cost: 760, workers: 60, appeal: SANCTUARY_APPEAL, needsRoad: true },
   tradersGuild: { name: "Traders' Guild", width: 4, height: 4, cost: 100, workers: 0, appeal: [], needsRoad: true },
-  tradeYard: { name: 'Trade Yard', width: 4, height: 2, cost: 0, workers: 0, appeal: [], needsRoad: true },
+  tradeYard: { name: 'Trade Yard', width: 4, height: 2, cost: 0, workers: 8, appeal: [], needsRoad: true },
   ruins: { name: 'Ruins', width: 1, height: 1, cost: 0, workers: 0, appeal: [], needsRoad: false },
 };
 

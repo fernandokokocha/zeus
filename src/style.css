@@ -549,6 +549,26 @@ button.active {
   display: none;
 }
 
+#inspector-yard {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+}
+
+#inspector-yard[hidden] {
+  display: none;
+}
+
+.yard-slot {
+  --meter-color: #9a8463;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 8px;
+  align-items: center;
+}
+
 .good-icon {
   display: inline-flex;
   width: 20px;

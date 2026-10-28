@@ -10,9 +10,9 @@ const AXIS_STEPS = [1, 2, 5];
 const MONTHS_PER_YEAR = 12;
 const NO_YEAR = '–';
 const PRIORITIES: Priority[] = [NO_PRIORITY, 1, 2, 3];
-const INCOME: (keyof Accounts)[] = ['taxes'];
+const INCOME: (keyof Accounts)[] = ['taxes', 'trade'];
 const SPENDING: (keyof Accounts)[] = ['wages', 'construction', 'sheep'];
-const ACCOUNT_NAMES: Record<keyof Accounts, string> = { taxes: 'Taxes', wages: 'Wages', construction: 'Construction', sheep: 'Sheep' };
+const ACCOUNT_NAMES: Record<keyof Accounts, string> = { taxes: 'Taxes', trade: 'Trade', wages: 'Wages', construction: 'Construction', sheep: 'Sheep' };
 
 const GRAPH = { width: 560, height: 170, left: 44, bottom: 22, top: 8 };
 

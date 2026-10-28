@@ -4,7 +4,9 @@ import type { Point } from '../sim/point';
 import { buildingById, type GameState } from '../sim/state';
 import { setAllAccepted, setGoodAccepted } from '../sim/storehouse';
 import { byId } from './dom';
+import { setExportSlot } from '../sim/exports';
 import { storehousePanel, type StorehouseOrders } from './storehouse-panel';
+import { yardPanel } from './yard-panel';
 
 export interface Inspector {
   open(look: () => Inspection): void;
@@ -19,6 +21,7 @@ export function createInspector(state: GameState, highlight: { show(tiles: Point
   const lines = byId('inspector-lines');
   const meters = byId('inspector-meters');
   const storehouse = byId('inspector-storehouse');
+  const yard = byId('inspector-yard');
   const actions = byId('inspector-actions');
   let look: (() => Inspection) | null = null;
   let shown = '';
@@ -38,6 +41,9 @@ export function createInspector(state: GameState, highlight: { show(tiles: Point
     meters.hidden = description.meters.length === 0;
     storehouse.replaceChildren(...(description.storehouse ? storehousePanel(description.storehouse, ordersOf(state, description.storehouse.id)) : []));
     storehouse.hidden = !description.storehouse;
+    const tradeYard = description.tradeYard;
+    yard.replaceChildren(...(tradeYard ? yardPanel(tradeYard, (slot, good) => setExportSlot(state, tradeYard.id, slot, good)) : []));
+    yard.hidden = !tradeYard;
     actions.replaceChildren(...(description.openRoute === undefined ? [] : [openRouteButton(description.openRoute)]));
     actions.hidden = description.openRoute === undefined;
   }

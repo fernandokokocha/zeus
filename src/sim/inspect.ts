@@ -9,7 +9,9 @@ import { hasWorkingPalace, houseTax } from './economy';
 import { GRANARY_CAPACITY, HARVEST_MONTH, UNITS_PER_LOAD, VENDOR_CAPACITY, houseStockTarget, monthlyUse } from './food';
 import { isClosed } from './industries';
 import { PLACES } from './greece';
-import { routeOf, routeStatus } from './trade';
+import { CARAVAN_MERCHANTS, caravansOf, slotHoldings } from './exports';
+import { PARTNERS, routeOf, routeStatus } from './trade';
+import { GOOD_TITLES } from './production';
 import { guildOfYard, guildShortfalls, guildSiteOf, siteShortfalls, type GuildSite } from './guild';
 import { type HouseLevel, type HouseNeed, type ResidentNeed, HOUSE_LEVELS, LEVEL_CHANGE_TICKS, TRADERS_GUILD, NEXT_LEVEL, PREVIOUS_LEVEL, houseCapacity, houseLevel, evolutionBlockers, houseName, lacksCulture, missingNeeds } from './housing';
 import { ROAMER_SPECS, hasGoodsToSell, hasService, type RoamerSpec, roamerKindSentBy, serviceLeft } from './roamers';
@@ -53,6 +55,8 @@ import {
   tileIndex,
   type Artisan,
   type Building,
+  type Caravan,
+  type CaravanTrip,
   type Carrier,
   type Gatherer,
   type GameState,
@@ -90,6 +94,18 @@ export interface StorehouseOrder {
   accepted: boolean;
 }
 
+export interface ExportSlotView {
+  good: Good | null;
+  loads: number;
+  capacity: number;
+}
+
+export interface TradeYardView {
+  id: number;
+  choices: { good: Good; name: string }[];
+  slots: ExportSlotView[];
+}
+
 export interface StorehouseView {
   id: number;
   bays: StorehouseBay[];
@@ -103,6 +119,7 @@ export interface Description {
   meters: Meter[];
   lines: string[];
   storehouse?: StorehouseView;
+  tradeYard?: TradeYardView;
   openRoute?: number;
 }
 
@@ -138,6 +155,7 @@ export function inspectTile(state: GameState, x: number, y: number): Look {
     follow((s) => s.settlers, describeSettler) ??
     follow((s) => s.roamers, describeRoamer) ??
     follow((s) => s.carriers, describeCarrier) ??
+    follow((s) => s.caravans.filter((c) => c.trip !== 'away'), describeCaravan) ??
     follow((s) => s.trainees, describeTrainee) ??
     follow((s) => s.shepherds, describeShepherd) ??
     follow((s) => s.growers, describeGrower) ??
@@ -234,6 +252,15 @@ const CARRIER_HOMES: Record<Carrier['kind'], string> = {
   marbleSupply: 'storehouse',
   woodSupply: 'storehouse',
   sculptureSupply: 'storehouse',
+  foodExport: 'yard',
+  fleeceExport: 'yard',
+  oliveExport: 'yard',
+  oilExport: 'yard',
+  woodExport: 'yard',
+  marbleExport: 'yard',
+  bronzeExport: 'yard',
+  sculptureExport: 'yard',
+  clothExport: 'yard',
 };
 
 function describeHouse(state: GameState, house: Building): Description {
@@ -269,9 +296,29 @@ function guildSiteStatus(site: GuildSite, house: Building): string {
 }
 
 function describeYard(state: GameState, yard: Building): Description {
-  const route = routeOf(state, guildOfYard(state, yard));
-  const trade = route ? `Trade Yard: trading with ${PLACES[route.partner].name}` : 'Trade Yard: trade opens with a route';
-  return { title: BUILDING_SPECS.tradeYard.name, meters: [], lines: [`Tile ${yard.x}, ${yard.y}`, trade] };
+  const guild = guildOfYard(state, yard);
+  const route = routeOf(state, guild);
+  const lines = [`Tile ${yard.x}, ${yard.y}`, `Workers ${yard.workers}/${BUILDING_SPECS.tradeYard.workers}`];
+  const title = BUILDING_SPECS.tradeYard.name;
+  if (route === null) return { title, meters: [], lines: [...lines, 'Trade Yard: trade opens with a route'] };
+  lines.push(`Trade Yard: trading with ${PLACES[route.partner].name}`);
+  if (yard.workers === 0) lines.push('No workers: no goods are fetched');
+  lines.push(...caravansOf(state, guild).filter((c) => c.trip === 'away').map((c) => caravanAwayLine(state, c)));
+  const tradeYard = {
+    id: yard.id,
+    choices: PARTNERS[route.partner].buys.map((good) => ({ good, name: GOOD_TITLES[good] })),
+    slots: slotHoldings(yard).map(({ good, units, capacity }) => ({ good, loads: units / UNITS_PER_LOAD, capacity: capacity / UNITS_PER_LOAD })),
+  };
+  return { title, meters: [], lines, tradeYard };
+}
+
+function caravanAwayLine(state: GameState, caravan: Caravan): string {
+  const months = Math.ceil((caravan.backAt - state.tick) / TICKS_PER_MONTH);
+  return `Caravan to ${PLACES[caravan.partner].name} with ${caravanCargo(caravan)}: back in about ${months} ${months === 1 ? 'month' : 'months'}`;
+}
+
+function caravanCargo(caravan: Caravan): string {
+  return `${caravan.loads} loads of ${GOOD_NAMES[caravan.good]}`;
 }
 
 function describeGuild(state: GameState, guild: Building): Description {
@@ -283,6 +330,7 @@ function describeGuild(state: GameState, guild: Building): Description {
     `Appeal ${houseAppeal(state, guild)}`,
     'Pays no tax: earns through trade',
     route.line,
+    ...(routeOf(state, guild) ? [`Caravans out ${caravansOf(state, guild).length} of ${TRADERS_GUILD.merchants / CARAVAN_MERCHANTS}`] : []),
     missing.length === 0 ? 'Fully supplied' : `Missing ${missing.join(', ')}: breaks up in ${amount((LEVEL_CHANGE_TICKS - guild.pendingTicks) / TICKS_PER_MONTH)} months`,
   ];
   const needFor = (need: ResidentNeed): Need => (missing.includes(need) ? 'missing' : 'met');
@@ -683,6 +731,20 @@ function describeCarrier(state: GameState, carrier: Carrier): Description {
     lines.push(`Looking for another ${storeNames}`);
   }
   return { title: name, meters: [], lines };
+}
+
+function describeCaravan(state: GameState, caravan: Caravan): Description {
+  if (caravan.trip === 'away') throw new Error(`Caravan ${caravan.id} is off the map`);
+  const guild = buildingById(state, caravan.guildId);
+  const from = guild ? homeLine(state, guild.id) : "Its Traders' Guild is gone";
+  const partner = PLACES[caravan.partner].name;
+  const worth = drachmas(caravan.drachmas);
+  const trip: Record<Exclude<CaravanTrip, 'away'>, string[]> = {
+    out: [caravan.waiting ? 'Waiting: no road west' : `Heading out to ${partner}`, `Carrying ${caravanCargo(caravan)}, worth ${worth}`],
+    home: [caravan.waiting ? 'Waiting: no road to the Palace' : `Taking ${worth} to the Palace`, `Sold ${caravanCargo(caravan)} in ${partner}`],
+    merchants: ['Merchants walking home to the guild'],
+  };
+  return { title: 'Trade Caravan', meters: [], lines: [from, ...trip[caravan.trip]] };
 }
 
 function describeTrainee(state: GameState, trainee: Trainee): Description {

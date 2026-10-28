@@ -18,6 +18,7 @@ import { isSanctuary, sanctuaryObstacle, takeInitialMarble } from './sanctuaries
 import { GRAZE_PAUSE_TICKS, isPasture } from './sheep';
 import { NO_BUILDING, clampToMap, inBounds, tileIndex, type Building, type GameState } from './state';
 import { BUILDABLE, TERRAIN_NAMES } from './terrain';
+import { emptyExportSlots } from './exports';
 import { PALACE_DELIVERS } from './trade';
 import { ROADBLOCK_COST, ROAD_TILE_COST, SHEEP_COST, spend } from './treasury';
 import { walkerTile } from './walking';
@@ -248,6 +249,7 @@ export function addBuilding(state: GameState, placement: Placement): Building {
     burningUntil: 0,
     taxPaid: [],
     monument: null,
+    exportSlots: placement.type === 'tradeYard' ? emptyExportSlots() : [],
   };
   state.buildings.push(building);
   for (const p of footprint(placement)) state.buildingIdAt[tileIndex(state, p.x, p.y)] = building.id;

@@ -33,7 +33,7 @@ Old models live in `src/render/models.ts`, each wired in `MODELS`.
 | 15 | Podium | 2×2 · 4 | idle / performing (`isPerforming`) | Philosophers speak here. |
 | 17 | Sanctuary building stages | 13×8 to 18×12 · 60 | stages 0–4 (`builtStages`), then finished | Shared by all three gods: staked outline, platform, columns, cella and beams, roof, scaffolding, material piles. |
 | 18 | Sanctuary precincts | as above | finished | Each god's garden: Demeter, Athena, Hephaestus (`PRECINCT_GARDENS`). One agent per god. |
-| 32 | Trade Yard and Storehouse | 4×2 · 0 and 3×3 · 12 | yard: empty; export slots full; import slots full; a caravan loading or unloading in front of it. Storehouse: every current state (stock by bay, staffed or not) | One round for both, because the yard looks like an agora crossed with a storehouse and the current storehouse is to be replaced. Yard placeholder in `src/render/trade-yard-models.ts`: paving, a hitching rail on the road side, crates, amphorae and sacks under a striped awning. Direction: an open, paved market court with stacked goods, awnings and pack-animal rails facing the road. The guild and the yard frame the Main Road between them, so either model may dress its side of that stretch. |
+| 32 | Trade Yard and Storehouse | 4×2 · 8 and 3×3 · 12 | yard: empty; export slots full; import slots full; a caravan loading or unloading in front of it. Storehouse: every current state (stock by bay, staffed or not) | One round for both, because the yard looks like an agora crossed with a storehouse and the current storehouse is to be replaced. Yard placeholder in `src/render/trade-yard-models.ts`: paving, a hitching rail on the road side, crates, amphorae and sacks under a striped awning. Direction: an open, paved market court with stacked goods, awnings and pack-animal rails facing the road. The guild and the yard frame the Main Road between them, so either model may dress its side of that stretch. |
 | 19 | Ruins and vacant lot | 1×1 / 2×2 | ruins smouldering / burning; vacant lot | Ruins are left by fire or collapse; the vacant lot is a house plot nobody has moved into. |
 
 ## People and animals
@@ -51,6 +51,7 @@ Drawn in `src/render/walker-layer.ts` as `Part` lists; see "Walkers and animals"
 | 25 | Gatherers | lumberjack (with log), quarryman (with block), miner (with ore), olive grower |
 | 26 | Townsfolk | settler, artisan, shepherd |
 | 27 | Sheep | shorn, half-grown, woolly |
+| 33 | Trade caravans | ours going out laden, coming home with a money chest, merchants walking back unladen; later the foreign caravan in each partner's colour. Placeholder in `src/render/walker-layer.ts`: one merchant in white with a blue cloak beside a pack donkey |
 
 Workers already standing in redesigned buildings fix some of these looks: the water carrier
 (Fountain), athlete (Gymnasium), axeman in the lumberjack's olive tunic (Timber Mill),

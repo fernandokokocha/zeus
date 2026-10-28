@@ -38,6 +38,6 @@ export function settleMonth(state: GameState): void {
   const wages = (laborSummary(state).employed * WAGE_PER_WORKER_PER_YEAR) / MONTHS_PER_YEAR;
   const taxes = collectTaxes(state);
   spend(state, 'wages', wages);
-  collect(state, taxes);
+  collect(state, 'taxes', taxes);
   state.lastMonth = { taxes, wages };
 }

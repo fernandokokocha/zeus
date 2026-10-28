@@ -25,6 +25,6 @@ the PR that delivers it.
 - [x] 27 · Guild yard
 - [x] 28 · World map and routes
 - [x] 28b · Map of Greece
-- [ ] 29 · Trade: exports
+- [x] 29 · Trade: exports
 - [ ] 30 · Trade: imports
 - [ ] 31 · Ledger: Trade

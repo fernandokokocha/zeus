@@ -53,6 +53,7 @@ export interface Building {
   burningUntil: number;
   taxPaid: number[];
   monument: MonumentKind | null;
+  exportSlots: (Good | null)[];
 }
 
 export interface Walk {
@@ -142,7 +143,16 @@ export type CarrierKind =
   | 'clothBuyer'
   | 'marbleSupply'
   | 'woodSupply'
-  | 'sculptureSupply';
+  | 'sculptureSupply'
+  | 'foodExport'
+  | 'fleeceExport'
+  | 'oliveExport'
+  | 'oilExport'
+  | 'woodExport'
+  | 'marbleExport'
+  | 'bronzeExport'
+  | 'sculptureExport'
+  | 'clothExport';
 
 export interface Carrier extends Walk {
   id: number;
@@ -159,6 +169,20 @@ export interface Carrier extends Walk {
   sculptures: number;
   cloth: number;
   returning: boolean;
+}
+
+export type CaravanTrip = 'out' | 'away' | 'home' | 'merchants';
+
+export interface Caravan extends Walk {
+  id: number;
+  guildId: number;
+  partner: Partner;
+  good: Good;
+  loads: number;
+  drachmas: number;
+  trip: CaravanTrip;
+  backAt: number;
+  waiting: boolean;
 }
 
 export interface Notice {
@@ -197,6 +221,8 @@ export interface GameState {
   felledUntil: number[];
   artisans: Artisan[];
   nextArtisanId: number;
+  caravans: Caravan[];
+  nextCaravanId: number;
   notices: Notice[];
   nextNoticeId: number;
   wellFed: WellFed;
@@ -255,6 +281,8 @@ export function newGameState(size: number, terrain: Terrain[], mainRoad: Point[]
     felledUntil: new Array<number>(size * size).fill(0),
     artisans: [],
     nextArtisanId: 1,
+    caravans: [],
+    nextCaravanId: 1,
     notices: [],
     nextNoticeId: 1,
     wellFed: { months: 0, reset: null },

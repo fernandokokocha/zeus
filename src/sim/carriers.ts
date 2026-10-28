@@ -6,6 +6,7 @@ import type { Point } from './point';
 import { exitTile } from './roamers';
 import { STUDIO_BRONZE_CAPACITY } from './materials';
 import { FLEECE_KEPT_FOR_VENDORS, WEAVER_FLEECE_CAPACITY } from './cloth';
+import { exportCapacity } from './exports';
 import { GOODS } from './flows';
 import { PRESS_OLIVE_CAPACITY } from './olives';
 import { SANCTUARIES, isSanctuary, recordConstruction, stillNeeded, type Sanctuary } from './sanctuaries';
@@ -21,29 +22,44 @@ export interface CarrierSpec {
   good: Good;
   stores: Store[];
   delivers: boolean;
-  capacity: number;
+  capacity: (home: Building) => number;
+}
+
+const nothing = () => 0;
+
+function exportCart(good: Good, stores: Store[]): CarrierSpec {
+  return { name: 'Cart Pusher', home: 'tradeYard', good, stores, delivers: false, capacity: (yard) => exportCapacity(yard, good) };
 }
 
 export const CARRIER_SPECS: Record<CarrierKind, CarrierSpec> = {
-  cartPusher: { name: 'Cart Pusher', home: 'wheatFarm', good: 'food', stores: ['granary'], delivers: true, capacity: 0 },
-  buyer: { name: 'Buyer', home: 'foodVendor', good: 'food', stores: ['granary'], delivers: false, capacity: VENDOR_CAPACITY },
-  fleeceCart: { name: 'Cart Pusher', home: 'cardingShed', good: 'fleece', stores: ['storehouse'], delivers: true, capacity: 0 },
-  fleeceBuyer: { name: 'Buyer', home: 'fleeceVendor', good: 'fleece', stores: ['storehouse'], delivers: false, capacity: VENDOR_CAPACITY },
-  oliveCart: { name: 'Cart Pusher', home: 'growersLodge', good: 'olives', stores: ['olivePress', 'storehouse'], delivers: true, capacity: 0 },
-  oilCart: { name: 'Cart Pusher', home: 'olivePress', good: 'oil', stores: ['storehouse'], delivers: true, capacity: 0 },
-  oliveBuyer: { name: 'Buyer', home: 'olivePress', good: 'olives', stores: ['storehouse'], delivers: false, capacity: PRESS_OLIVE_CAPACITY },
-  oilBuyer: { name: 'Buyer', home: 'oilVendor', good: 'oil', stores: ['storehouse'], delivers: false, capacity: VENDOR_CAPACITY },
-  woodCart: { name: 'Cart Pusher', home: 'timberMill', good: 'wood', stores: ['storehouse'], delivers: true, capacity: 0 },
-  marbleCart: { name: 'Cart Pusher', home: 'masonryShop', good: 'marble', stores: ['storehouse'], delivers: true, capacity: 0 },
-  bronzeCart: { name: 'Cart Pusher', home: 'foundry', good: 'bronze', stores: ['sculptureStudio', 'storehouse'], delivers: true, capacity: 0 },
-  sculptureCart: { name: 'Cart Pusher', home: 'sculptureStudio', good: 'sculptures', stores: ['storehouse'], delivers: true, capacity: 0 },
-  bronzeBuyer: { name: 'Buyer', home: 'sculptureStudio', good: 'bronze', stores: ['storehouse'], delivers: false, capacity: STUDIO_BRONZE_CAPACITY },
-  weaverBuyer: { name: 'Buyer', home: 'weaver', good: 'fleece', stores: ['storehouse'], delivers: false, capacity: WEAVER_FLEECE_CAPACITY },
-  clothCart: { name: 'Cart Pusher', home: 'weaver', good: 'cloth', stores: ['storehouse'], delivers: true, capacity: 0 },
-  clothBuyer: { name: 'Buyer', home: 'clothVendor', good: 'cloth', stores: ['storehouse'], delivers: false, capacity: VENDOR_CAPACITY },
-  marbleSupply: { name: 'Cart Pusher', home: 'storehouse', good: 'marble', stores: SANCTUARIES, delivers: true, capacity: 0 },
-  woodSupply: { name: 'Cart Pusher', home: 'storehouse', good: 'wood', stores: SANCTUARIES, delivers: true, capacity: 0 },
-  sculptureSupply: { name: 'Cart Pusher', home: 'storehouse', good: 'sculptures', stores: SANCTUARIES, delivers: true, capacity: 0 },
+  cartPusher: { name: 'Cart Pusher', home: 'wheatFarm', good: 'food', stores: ['granary'], delivers: true, capacity: nothing },
+  buyer: { name: 'Buyer', home: 'foodVendor', good: 'food', stores: ['granary'], delivers: false, capacity: () => VENDOR_CAPACITY },
+  fleeceCart: { name: 'Cart Pusher', home: 'cardingShed', good: 'fleece', stores: ['storehouse'], delivers: true, capacity: nothing },
+  fleeceBuyer: { name: 'Buyer', home: 'fleeceVendor', good: 'fleece', stores: ['storehouse'], delivers: false, capacity: () => VENDOR_CAPACITY },
+  oliveCart: { name: 'Cart Pusher', home: 'growersLodge', good: 'olives', stores: ['olivePress', 'storehouse'], delivers: true, capacity: nothing },
+  oilCart: { name: 'Cart Pusher', home: 'olivePress', good: 'oil', stores: ['storehouse'], delivers: true, capacity: nothing },
+  oliveBuyer: { name: 'Buyer', home: 'olivePress', good: 'olives', stores: ['storehouse'], delivers: false, capacity: () => PRESS_OLIVE_CAPACITY },
+  oilBuyer: { name: 'Buyer', home: 'oilVendor', good: 'oil', stores: ['storehouse'], delivers: false, capacity: () => VENDOR_CAPACITY },
+  woodCart: { name: 'Cart Pusher', home: 'timberMill', good: 'wood', stores: ['storehouse'], delivers: true, capacity: nothing },
+  marbleCart: { name: 'Cart Pusher', home: 'masonryShop', good: 'marble', stores: ['storehouse'], delivers: true, capacity: nothing },
+  bronzeCart: { name: 'Cart Pusher', home: 'foundry', good: 'bronze', stores: ['sculptureStudio', 'storehouse'], delivers: true, capacity: nothing },
+  sculptureCart: { name: 'Cart Pusher', home: 'sculptureStudio', good: 'sculptures', stores: ['storehouse'], delivers: true, capacity: nothing },
+  bronzeBuyer: { name: 'Buyer', home: 'sculptureStudio', good: 'bronze', stores: ['storehouse'], delivers: false, capacity: () => STUDIO_BRONZE_CAPACITY },
+  weaverBuyer: { name: 'Buyer', home: 'weaver', good: 'fleece', stores: ['storehouse'], delivers: false, capacity: () => WEAVER_FLEECE_CAPACITY },
+  clothCart: { name: 'Cart Pusher', home: 'weaver', good: 'cloth', stores: ['storehouse'], delivers: true, capacity: nothing },
+  clothBuyer: { name: 'Buyer', home: 'clothVendor', good: 'cloth', stores: ['storehouse'], delivers: false, capacity: () => VENDOR_CAPACITY },
+  marbleSupply: { name: 'Cart Pusher', home: 'storehouse', good: 'marble', stores: SANCTUARIES, delivers: true, capacity: nothing },
+  woodSupply: { name: 'Cart Pusher', home: 'storehouse', good: 'wood', stores: SANCTUARIES, delivers: true, capacity: nothing },
+  sculptureSupply: { name: 'Cart Pusher', home: 'storehouse', good: 'sculptures', stores: SANCTUARIES, delivers: true, capacity: nothing },
+  foodExport: exportCart('food', ['granary']),
+  fleeceExport: exportCart('fleece', ['storehouse']),
+  oliveExport: exportCart('olives', ['storehouse']),
+  oilExport: exportCart('oil', ['storehouse']),
+  woodExport: exportCart('wood', ['storehouse']),
+  marbleExport: exportCart('marble', ['storehouse']),
+  bronzeExport: exportCart('bronze', ['storehouse']),
+  sculptureExport: exportCart('sculptures', ['storehouse']),
+  clothExport: exportCart('cloth', ['storehouse']),
 };
 
 const KEPT_BACK: Partial<Record<CarrierKind, number>> = { weaverBuyer: FLEECE_KEPT_FOR_VENDORS };
@@ -99,7 +115,7 @@ export function carrierDestinations(state: GameState, kind: CarrierKind): Buildi
 function fetchRoom(state: GameState, kind: CarrierKind, home: Building): number {
   const { good, capacity } = CARRIER_SPECS[kind];
   const incoming = state.carriers.filter((c) => c.homeId !== home.id && isBringing(c, home));
-  return capacity - incoming.reduce((sum, c) => sum + c[good], home[good]);
+  return capacity(home) - incoming.reduce((sum, c) => sum + c[good], home[good]);
 }
 
 function wantsTrip(state: GameState, kind: CarrierKind, home: Building): boolean {
@@ -195,7 +211,7 @@ function arrive(state: GameState, carrier: Carrier, home: Building): void {
   if (!store) throw new Error(`Carrier ${carrier.id} reached missing building ${carrier.destinationId}`);
   const moved = delivers
     ? Math.min(carrier[good], storeSpace(store, store, good))
-    : -wholeLoads(Math.min(BUYER_LOAD, spareStock(carrier.kind, store), fetchRoom(state, carrier.kind, home)));
+    : -wholeLoads(Math.min(BUYER_LOAD, spareStock(carrier.kind, store), Math.max(0, fetchRoom(state, carrier.kind, home))));
   store[good] += moved;
   carrier[good] -= moved;
   if (isSanctuary(store.type)) recordConstruction(state, good, moved);

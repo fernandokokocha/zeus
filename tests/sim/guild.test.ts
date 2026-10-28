@@ -90,7 +90,7 @@ describe("a Traders' Guild's Trade Yard", () => {
 
   it('says trade opens with a route', () => {
     const { game } = placedGuild();
-    expect(describeTile(game, 4, 17)).toMatchObject({ title: 'Trade Yard', lines: ['Tile 3, 17', 'Trade Yard: trade opens with a route'] });
+    expect(describeTile(game, 4, 17)).toMatchObject({ title: 'Trade Yard', lines: ['Tile 3, 17', 'Workers 0/8', 'Trade Yard: trade opens with a route'] });
   });
 });
 
@@ -156,7 +156,7 @@ describe("placing a Traders' Guild", () => {
   it('places its Trade Yard across the Main Road, at no cost of its own', () => {
     const { game } = placedGuild();
     expect(yardOf(game)).toMatchObject({ x: GUILD_BLOCK.x, y: 17, rotation: 0 });
-    expect(BUILDING_SPECS.tradeYard).toMatchObject({ width: 4, height: 2, cost: 0, workers: 0, appeal: [] });
+    expect(BUILDING_SPECS.tradeYard).toMatchObject({ width: 4, height: 2, cost: 0, workers: 8, appeal: [] });
   });
 
   it('needs a straight stretch of Main Road all along its front', () => {
@@ -199,7 +199,7 @@ describe("placing a Traders' Guild", () => {
   it('houses merchants who work there: they neither take jobs nor fill them', () => {
     const { game } = placedGuild();
     expect(population(game)).toBe(60);
-    expect(laborSummary(game)).toMatchObject({ workforce: 20, jobs: 0 });
+    expect(laborSummary(game)).toMatchObject({ workforce: 20, jobs: BUILDING_SPECS.tradeYard.workers });
   });
 
   it('pays no tax', () => {
@@ -283,7 +283,7 @@ describe("a Traders' Guild's demotion", () => {
     const before = game.treasury;
     runTicks(game, LEVEL_CHANGE_TICKS);
     expect(game.buildings.some((b) => b.id === guild.id)).toBe(false);
-    expect(game.treasury).toBe(before);
+    expect(game.treasury).toBe(before - game.lastMonth.wages);
     expect(game.guildPermits).toBe(0);
   });
 

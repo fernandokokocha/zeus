@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import type { CarrierKind, GameState, Material, RoamerKind, TraineeKind, Walk } from '../sim/state';
+import type { CaravanTrip, CarrierKind, GameState, Material, RoamerKind, TraineeKind, Walk } from '../sim/state';
 import { CARRIER_SPECS } from '../sim/carriers';
 import { SERVING_WALKERS, type Overlay } from '../sim/overlays';
 import { ROAMER_SPECS } from '../sim/roamers';
@@ -14,11 +14,14 @@ const BOB_HEIGHT = 0.06;
 const BOB_STEPS_PER_TILE = 2;
 const START_CAPACITY = 64;
 
+type ExportCart = Extract<CarrierKind, `${string}Export`>;
+
 type Figure =
   | 'settler'
   | 'artisan'
   | RoamerKind
-  | CarrierKind
+  | Exclude<CarrierKind, ExportCart>
+  | CaravanFigure
   | TraineeKind
   | 'shepherd'
   | 'shepherdWithFleece'
@@ -34,6 +37,64 @@ const GATHERER_FIGURES: Record<Material, { empty: GathererFigure; laden: Gathere
   marble: { empty: 'quarryman', laden: 'quarrymanWithBlock' },
   bronze: { empty: 'miner', laden: 'minerWithOre' },
 };
+
+type CaravanFigure = 'caravanLaden' | 'caravanWithChest' | 'caravanUnladen';
+
+const CARAVAN_FIGURES: Record<Exclude<CaravanTrip, 'away'>, CaravanFigure> = {
+  out: 'caravanLaden',
+  home: 'caravanWithChest',
+  merchants: 'caravanUnladen',
+};
+
+const EXPORT_CARTS: Record<ExportCart, Figure> = {
+  foodExport: 'cartPusher',
+  fleeceExport: 'fleeceCart',
+  oliveExport: 'oliveCart',
+  oilExport: 'oilCart',
+  woodExport: 'woodCart',
+  marbleExport: 'marbleCart',
+  bronzeExport: 'bronzeCart',
+  sculptureExport: 'sculptureCart',
+  clothExport: 'clothCart',
+};
+
+function carrierFigure(kind: CarrierKind): Figure {
+  return kind in EXPORT_CARTS ? EXPORT_CARTS[kind as ExportCart] : (kind as Exclude<CarrierKind, ExportCart>);
+}
+
+const CARRIER_FIGURES = [...new Set((Object.keys(CARRIER_SPECS) as CarrierKind[]).map(carrierFigure))];
+
+function donkey(load: Part[]): Part[] {
+  const leg = (x: number, z: number): Part => ({ geometry: new THREE.CylinderGeometry(0.014, 0.012, 0.12, 6).translate(x, 0.06, z), color: PALETTE.donkey });
+  return [
+    { geometry: new THREE.BoxGeometry(0.1, 0.1, 0.24).translate(0.14, 0.17, -0.06), color: PALETTE.donkey },
+    { geometry: new THREE.BoxGeometry(0.06, 0.07, 0.11).rotateX(-0.5).translate(0.14, 0.26, 0.09), color: PALETTE.donkey },
+    { geometry: new THREE.BoxGeometry(0.045, 0.045, 0.05).translate(0.14, 0.24, 0.15), color: PALETTE.donkeyMuzzle },
+    { geometry: new THREE.ConeGeometry(0.012, 0.06, 5).translate(0.125, 0.33, 0.07), color: PALETTE.donkey },
+    { geometry: new THREE.ConeGeometry(0.012, 0.06, 5).translate(0.155, 0.33, 0.07), color: PALETTE.donkey },
+    leg(0.11, -0.15),
+    leg(0.17, -0.15),
+    leg(0.11, 0.03),
+    leg(0.17, 0.03),
+    ...load,
+  ];
+}
+
+const merchant: Part[] = [
+  ...body(PALETTE.merchantTunic),
+  { geometry: new THREE.CylinderGeometry(0.065, 0.095, 0.16, 8, 1, true, Math.PI, Math.PI).translate(0, 0.18, 0), color: PALETTE.merchantCloak },
+];
+
+const packSacks: Part[] = [
+  { geometry: new THREE.SphereGeometry(0.05, 8, 6).scale(0.8, 1, 1.2).translate(0.075, 0.2, -0.06), color: PALETTE.sack },
+  { geometry: new THREE.SphereGeometry(0.05, 8, 6).scale(0.8, 1, 1.2).translate(0.205, 0.2, -0.06), color: PALETTE.sack },
+  { geometry: new THREE.BoxGeometry(0.09, 0.06, 0.1).translate(0.14, 0.25, -0.06), color: PALETTE.merchantCloak },
+];
+
+const moneyChest: Part[] = [
+  { geometry: new THREE.BoxGeometry(0.1, 0.07, 0.12).translate(0.14, 0.255, -0.06), color: PALETTE.moneyChest },
+  { geometry: new THREE.BoxGeometry(0.104, 0.015, 0.124).translate(0.14, 0.27, -0.06), color: PALETTE.coins },
+];
 
 type SheepCoat = 'shornSheep' | 'halfGrownSheep' | 'woollySheep';
 
@@ -213,6 +274,9 @@ const FIGURES: Record<Figure, Part[]> = {
     { geometry: new THREE.SphereGeometry(0.07, 8, 6).scale(1.3, 0.8, 1).translate(0, 0.26, -0.08), color: PALETTE.wool },
   ],
   cartPusher: cart([{ geometry: new THREE.BoxGeometry(0.15, 0.08, 0.16).translate(0, 0.18, 0.22), color: PALETTE.sack }]),
+  caravanLaden: [...merchant, ...donkey(packSacks)],
+  caravanWithChest: [...merchant, ...donkey(moneyChest)],
+  caravanUnladen: [...merchant, ...donkey([])],
 };
 
 interface FigureSet {
@@ -305,8 +369,11 @@ export function createWalkerLayer(): { group: THREE.Group; sync(state: GameState
       for (const kind of Object.keys(ROAMER_SPECS) as RoamerKind[]) {
         sets[kind].show(state.roamers.filter((r) => r.kind === kind), ahead);
       }
-      for (const kind of Object.keys(CARRIER_SPECS) as CarrierKind[]) {
-        sets[kind].show(state.carriers.filter((c) => c.kind === kind), ahead);
+      for (const figure of CARRIER_FIGURES) {
+        sets[figure].show(state.carriers.filter((c) => carrierFigure(c.kind) === figure), ahead);
+      }
+      for (const trip of Object.keys(CARAVAN_FIGURES) as (keyof typeof CARAVAN_FIGURES)[]) {
+        sets[CARAVAN_FIGURES[trip]].show(state.caravans.filter((c) => c.trip === trip), ahead);
       }
       for (const good of Object.keys(GATHERER_FIGURES) as Material[]) {
         const { empty, laden } = GATHERER_FIGURES[good];

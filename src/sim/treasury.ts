@@ -10,11 +10,13 @@ export const TAX_RATE = 0.09;
 
 export interface Accounts {
   taxes: number;
+  trade: number;
   wages: number;
   construction: number;
   sheep: number;
 }
 
+export type Income = 'taxes' | 'trade';
 export type Spending = 'wages' | 'construction' | 'sheep';
 
 export interface Books {
@@ -36,7 +38,7 @@ export interface TreasuryReport {
 const FOUNDING_YEAR = 1;
 
 export function emptyAccounts(): Accounts {
-  return { taxes: 0, wages: 0, construction: 0, sheep: 0 };
+  return { taxes: 0, trade: 0, wages: 0, construction: 0, sheep: 0 };
 }
 
 export function spend(state: GameState, category: Spending, amount: number): void {
@@ -44,9 +46,9 @@ export function spend(state: GameState, category: Spending, amount: number): voi
   state.accounts.thisYear[category] += amount;
 }
 
-export function collect(state: GameState, taxes: number): void {
-  state.treasury += taxes;
-  state.accounts.thisYear.taxes += taxes;
+export function collect(state: GameState, category: Income, amount: number): void {
+  state.treasury += amount;
+  state.accounts.thisYear[category] += amount;
 }
 
 export function closeYear(state: GameState): void {

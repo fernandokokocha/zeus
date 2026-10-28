@@ -99,7 +99,7 @@ https://zeus.heavengames.com/gameinfo/appeal/. Fire/collapse are risk increments
 | Monument (**ours**, earned: first at **1,000** citizens, once per game; one per partner's first trade route) | 3×3 | — | free | 20,20,18,16,14,12 | — | — |
 | Any sanctuary | see below | | | 20,18,16,14,12,10 | — | — |
 | Traders' Guild (**ours**, elite house) | 4×4 | — (20 merchants) | 100 + 1 permit | — | 8 | — |
-| Trade Yard (spec, placed with its guild) | 4×2 | — | part of the guild's 100 | — | — | — |
+| Trade Yard (spec, placed with its guild) | 4×2 | 8 (**ours**) | part of the guild's 100 | — | — | — |
 
 - Collapse timing: 60 ÷ risk increment = months until collapse without maintenance.
 - Sculpture Studio workers: 12 on the industry page, 18 on the model-data page. Use 12.
@@ -175,6 +175,12 @@ carries, in loads.
 | bronze | 4 | 35 | 52 |
 | cloth | 4 | 45 | — |
 | sculptures | 2 | 120 | 180 |
+
+Exports (**ours**): a Trade Yard has **4** slots, each off or exporting one good its partner
+buys, and holding up to one caravan load of it. Its **8** workers fetch the goods from
+storehouses (granaries for food). A caravan takes **5** of the guild's 20 merchants, so a
+guild has at most **4** caravans out. Its drachmas (caravan load × "they pay us") reach the
+treasury only at the Palace.
 
 ## Not found: our choices
 
