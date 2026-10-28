@@ -823,6 +823,11 @@ button.active {
   padding-left: 8px;
 }
 
+.world-confirm {
+  align-self: flex-start;
+  margin: 4px 0 8px;
+}
+
 .world-hint {
   font-style: italic;
 }

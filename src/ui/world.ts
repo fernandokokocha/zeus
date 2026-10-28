@@ -104,12 +104,22 @@ export function createWorld(state: GameState, topbar: { showStatus(text: string)
 
   function choose(view: PartnerView): void {
     selected = view.partner;
-    if (choosingFor !== null && view.available) {
-      const result = openRoute(state, choosingFor, view.partner);
-      if (result.ok) choosingFor = null;
-      else topbar.showStatus(result.reason);
-    }
     update();
+  }
+
+  function confirmRoute(guildId: number, partner: Partner): void {
+    const result = openRoute(state, guildId, partner);
+    if (result.ok) choosingFor = null;
+    else topbar.showStatus(result.reason);
+    update();
+  }
+
+  function openRouteButton(view: PartnerView): HTMLElement[] {
+    const guildId = choosingFor;
+    if (guildId === null || !view.available) return [];
+    const button = element('button', 'world-confirm', `Open route to ${view.name}`);
+    button.addEventListener('click', () => confirmRoute(guildId, view.partner));
+    return [button];
   }
 
   function drawMap(report: PartnerView[]): SVGSVGElement {
@@ -197,6 +207,7 @@ export function createWorld(state: GameState, topbar: { showStatus(text: string)
       title,
       element('p', '', `Round trip: ${months(view.roundTripMonths)}`),
       element('p', '', `Route: ${view.route}`),
+      ...openRouteButton(view),
       element('p', '', `Caravans: ${view.caravansHome} of ${PARTNER_CARAVANS} at home`),
       offerTable('Buys from us', 'They pay', view.buys),
       offerTable('Sells to us', 'We pay', view.sells),
