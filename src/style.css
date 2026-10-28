@@ -716,29 +716,41 @@ button.active {
   display: block;
 }
 
+.world-sea {
+  fill: #b9cfd6;
+}
+
 .world-land {
   fill: #e9dcbc;
-  stroke: #d8c49a;
+  fill-rule: evenodd;
 }
 
 .world-road {
   fill: none;
   stroke: #9b7b52;
-  stroke-width: 4;
-  stroke-dasharray: 10 5;
+  stroke-width: 3;
+  stroke-dasharray: 8 4;
   stroke-linejoin: round;
 }
 
 .world-trip {
-  font-size: 12px;
+  font-size: 11px;
   font-style: italic;
-  text-anchor: middle;
   fill: var(--ink);
 }
 
 .world-name {
   font-size: 13px;
-  text-anchor: middle;
+  font-weight: bold;
+  fill: var(--ink);
+}
+
+.world-stop {
+  fill: var(--ink);
+}
+
+.world-stop-name {
+  font-size: 10px;
   fill: var(--ink);
 }
 

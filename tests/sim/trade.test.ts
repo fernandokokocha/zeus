@@ -27,7 +27,7 @@ function tradingTown(): { game: GameState; guild: Building } {
   return town;
 }
 
-function opened(partner: Partner = 'kerynthos'): { game: GameState; guild: Building } {
+function opened(partner: Partner = 'argos'): { game: GameState; guild: Building } {
   const town = tradingTown();
   const result = openRoute(town.game, town.guild.id, partner);
   if (!result.ok) throw new Error(result.reason);
@@ -46,6 +46,13 @@ describe('the partner cities', () => {
     expect(TRADE_GOODS.cloth.wePay).toBeNull();
   });
 
+  it('sell what their lands are known for', () => {
+    expect(PARTNERS.thebes.sells).toContain('food');
+    expect(PARTNERS.corinth.sells).toContain('bronze');
+    expect(PARTNERS.argos.sells).toContain('sculptures');
+    expect(PARTNERS.sparta.sells).toContain('marble');
+  });
+
   it('price every good they buy and sell', () => {
     for (const partner of Object.values(PARTNERS)) {
       for (const good of partner.sells) expect(TRADE_GOODS[good].wePay).toBeGreaterThan(TRADE_GOODS[good].theyPay);
@@ -55,55 +62,55 @@ describe('the partner cities', () => {
 
 describe('opening a route', () => {
   it('ties the guild to the partner with a notice at the guild', () => {
-    const { game, guild } = opened('kerynthos');
-    expect(game.routes).toEqual([{ partner: 'kerynthos', guildId: guild.id }]);
-    expect(game.notices.at(-1)).toMatchObject({ text: 'Trade route to Kerynthos opened. A monument can be raised.', at: { x: 3, y: 12 } });
+    const { game, guild } = opened('argos');
+    expect(game.routes).toEqual([{ partner: 'argos', guildId: guild.id }]);
+    expect(game.notices.at(-1)).toMatchObject({ text: 'Trade route to Argos opened. A monument can be raised.', at: { x: 3, y: 12 } });
   });
 
   it('earns a trade-route monument for the first route to a partner', () => {
-    const { game } = opened('argyra');
+    const { game } = opened('corinth');
     expect(game.monumentsToPlace).toEqual(['tradeRoute']);
   });
 
   it('earns nothing when a route to that partner was opened before', () => {
-    const { game, guild } = opened('argyra');
+    const { game, guild } = opened('corinth');
     demolish(game, guild, guild);
     const second = raiseGuild(game, SECOND_GUILD);
-    expect(openRoute(game, second.id, 'argyra')).toEqual({ ok: true });
+    expect(openRoute(game, second.id, 'corinth')).toEqual({ ok: true });
     expect(game.monumentsToPlace).toEqual(['tradeRoute']);
-    expect(game.notices.at(-1)?.text).toBe('Trade route to Argyra opened');
+    expect(game.notices.at(-1)?.text).toBe('Trade route to Corinth opened');
   });
 
   it('is free', () => {
     const { game, guild } = tradingTown();
     const treasury = game.treasury;
-    openRoute(game, guild.id, 'melanthos');
+    openRoute(game, guild.id, 'thebes');
     expect(game.treasury).toBe(treasury);
   });
 
   it('gives a guild one route only', () => {
-    const { game, guild } = opened('kerynthos');
-    expect(openRoute(game, guild.id, 'argyra')).toEqual({ ok: false, reason: 'This guild already trades with Kerynthos' });
+    const { game, guild } = opened('argos');
+    expect(openRoute(game, guild.id, 'corinth')).toEqual({ ok: false, reason: 'This guild already trades with Argos' });
   });
 
   it('gives a partner one guild only', () => {
-    const { game } = opened('kerynthos');
+    const { game } = opened('argos');
     const second = raiseGuild(game, SECOND_GUILD);
-    expect(openRoute(game, second.id, 'kerynthos')).toEqual({ ok: false, reason: 'Kerynthos already trades with a guild' });
+    expect(openRoute(game, second.id, 'argos')).toEqual({ ok: false, reason: 'Argos already trades with a guild' });
   });
 
   it('needs a Palace with a road to the Main Road', () => {
     const noRoad = placedGuild();
     const reason = 'Opening a route needs a Palace with a road to the Main Road';
-    expect(openRoute(noRoad.game, noRoad.guild.id, 'kerynthos')).toEqual({ ok: false, reason });
+    expect(openRoute(noRoad.game, noRoad.guild.id, 'argos')).toEqual({ ok: false, reason });
 
     const cutOff = placedGuild();
     placeRoad(cutOff.game, { x: 10, y: 6 }, { x: 10, y: 14 });
-    expect(openRoute(cutOff.game, cutOff.guild.id, 'kerynthos')).toEqual({ ok: false, reason });
+    expect(openRoute(cutOff.game, cutOff.guild.id, 'argos')).toEqual({ ok: false, reason });
 
     const noPalace = tradingTown();
     demolish(noPalace.game, PALACE_TILE, PALACE_TILE);
-    expect(openRoute(noPalace.game, noPalace.guild.id, 'kerynthos')).toEqual({ ok: false, reason });
+    expect(openRoute(noPalace.game, noPalace.guild.id, 'argos')).toEqual({ ok: false, reason });
   });
 });
 
@@ -125,10 +132,10 @@ describe('the Palace while a route is open', () => {
 
 describe('a route closes when its guild goes', () => {
   it('when the guild is demolished, freeing the partner', () => {
-    const { game, guild } = opened('kerynthos');
+    const { game, guild } = opened('argos');
     demolish(game, guild, guild);
     expect(game.routes).toEqual([]);
-    expect(worldReport(game).find((p) => p.partner === 'kerynthos')?.available).toBe(true);
+    expect(worldReport(game).find((p) => p.partner === 'argos')?.available).toBe(true);
   });
 
   it('when the guild burns', () => {
@@ -138,13 +145,13 @@ describe('a route closes when its guild goes', () => {
   });
 
   it('when the guild breaks up, saying so in its notice', () => {
-    const { game, guild } = opened('kerynthos');
+    const { game, guild } = opened('argos');
     supplyGuild(guild);
     guild.cloth = 0;
     runTicks(game, LEVEL_CHANGE_TICKS);
     expect(game.routes).toEqual([]);
     expect(game.notices.at(-1)?.text).toBe(
-      "The Traders' Guild at 3,12 broke up: it lacked cloth. Its permit is lost and its route to Kerynthos closes",
+      "The Traders' Guild at 3,12 broke up: it lacked cloth. Its permit is lost and its route to Argos closes",
     );
   });
 });
@@ -158,8 +165,8 @@ describe("the guild's route", () => {
   });
 
   it('names its partner once open', () => {
-    const { game, guild } = opened('halikeia');
-    expect(routeStatus(game, guild)).toEqual({ line: 'Trade route: Halikeia, 8-month round trip', canOpen: false });
+    const { game, guild } = opened('sparta');
+    expect(routeStatus(game, guild)).toEqual({ line: 'Trade route: Sparta, 9-month round trip', canOpen: false });
     expect(describeTile(game, guild.x, guild.y).openRoute).toBeUndefined();
   });
 
@@ -183,18 +190,18 @@ describe("the yard's inspector", () => {
   });
 
   it('names the partner once the route is open', () => {
-    const { game } = opened('melanthos');
-    expect(describeTile(game, 3, 17).lines).toContain('Trade Yard: trading with Melanthos');
+    const { game } = opened('thebes');
+    expect(describeTile(game, 3, 17).lines).toContain('Trade Yard: trading with Thebes');
   });
 });
 
 describe('the world report', () => {
   it('lists each partner with its goods, prices, caravans and route', () => {
-    const { game } = opened('argyra');
-    const [melanthos, , argyra] = worldReport(game);
-    expect(melanthos).toEqual({
-      partner: 'melanthos',
-      name: 'Melanthos',
+    const { game } = opened('corinth');
+    const [thebes, corinth] = worldReport(game);
+    expect(thebes).toEqual({
+      partner: 'thebes',
+      name: 'Thebes',
       roundTripMonths: 3,
       buys: [
         { good: 'fleece', name: 'Fleece', load: 6, price: 20 },
@@ -208,6 +215,6 @@ describe('the world report', () => {
       route: 'Available',
       available: true,
     });
-    expect(argyra).toMatchObject({ route: "Open, to the Traders' Guild at 3,12", available: false });
+    expect(corinth).toMatchObject({ route: "Open, to the Traders' Guild at 3,12", available: false });
   });
 });

@@ -1,24 +1,34 @@
 import { adjacentRoadTiles, type Result } from './commands';
+import { PLACES, roadKm, type Place } from './greece';
 import { postNotice } from './notices';
 import { findRoadPath } from './pathfinding';
 import { GOOD_TITLES } from './production';
 import { buildingById, type Building, type GameState, type Good } from './state';
 
-export type Partner = 'melanthos' | 'kerynthos' | 'argyra' | 'halikeia';
+export type Partner = Extract<Place, 'thebes' | 'corinth' | 'argos' | 'sparta'>;
 
 export interface PartnerSpec {
-  name: string;
-  roundTripMonths: number;
+  road: Place[];
   buys: Good[];
   sells: Good[];
 }
 
 export const PARTNERS: Record<Partner, PartnerSpec> = {
-  melanthos: { name: 'Melanthos', roundTripMonths: 3, buys: ['fleece', 'olives'], sells: ['food', 'wood'] },
-  kerynthos: { name: 'Kerynthos', roundTripMonths: 5, buys: ['food', 'wood', 'marble'], sells: ['fleece', 'olives', 'oil'] },
-  argyra: { name: 'Argyra', roundTripMonths: 5, buys: ['oil', 'cloth', 'sculptures'], sells: ['marble', 'bronze'] },
-  halikeia: { name: 'Halikeia', roundTripMonths: 8, buys: ['cloth', 'bronze', 'oil'], sells: ['sculptures', 'wood'] },
+  thebes: { road: ['athens', 'eleusis', 'eleutherae', 'thebes'], buys: ['fleece', 'olives'], sells: ['food', 'wood'] },
+  corinth: { road: ['athens', 'eleusis', 'megara', 'isthmus', 'corinth'], buys: ['oil', 'cloth', 'sculptures'], sells: ['bronze', 'wood'] },
+  argos: { road: ['athens', 'eleusis', 'megara', 'isthmus', 'corinth', 'mycenae', 'argos'], buys: ['food', 'wood', 'marble'], sells: ['olives', 'oil', 'sculptures'] },
+  sparta: {
+    road: ['athens', 'eleusis', 'megara', 'isthmus', 'corinth', 'mycenae', 'argos', 'tegea', 'sparta'],
+    buys: ['cloth', 'bronze', 'oil'],
+    sells: ['marble', 'fleece'],
+  },
 };
+
+export const CARAVAN_KM_PER_MONTH = 40;
+
+export function roundTripMonths(partner: Partner): number {
+  return Math.round((2 * roadKm(PARTNERS[partner].road)) / CARAVAN_KM_PER_MONTH);
+}
 
 export interface TradeGoodSpec {
   caravanLoad: number;
@@ -89,8 +99,8 @@ function tradingGuild(state: GameState, route: Route): Building {
 
 function routeObstacle(state: GameState, guild: Building, partner: Partner): string | null {
   const own = routeOf(state, guild);
-  if (own) return `This guild already trades with ${PARTNERS[own.partner].name}`;
-  if (routeTo(state, partner)) return `${PARTNERS[partner].name} already trades with a guild`;
+  if (own) return `This guild already trades with ${PLACES[own.partner].name}`;
+  if (routeTo(state, partner)) return `${PLACES[partner].name} already trades with a guild`;
   if (!palaceReachesMainRoad(state)) return `Opening a route ${NEEDS_PALACE}`;
   return null;
 }
@@ -106,7 +116,7 @@ export function openRoute(state: GameState, guildId: number, partner: Partner): 
     state.partnersTraded.push(partner);
     state.monumentsToPlace.push('tradeRoute');
   }
-  postNotice(state, `Trade route to ${PARTNERS[partner].name} opened${first ? '. A monument can be raised.' : ''}`, guild);
+  postNotice(state, `Trade route to ${PLACES[partner].name} opened${first ? '. A monument can be raised.' : ''}`, guild);
   state.version++;
   return { ok: true };
 }
@@ -114,8 +124,7 @@ export function openRoute(state: GameState, guildId: number, partner: Partner): 
 export function routeStatus(state: GameState, guild: Building): { line: string; canOpen: boolean } {
   const route = routeOf(state, guild);
   if (route) {
-    const { name, roundTripMonths } = PARTNERS[route.partner];
-    return { line: `Trade route: ${name}, ${roundTripMonths}-month round trip`, canOpen: false };
+    return { line: `Trade route: ${PLACES[route.partner].name}, ${roundTripMonths(route.partner)}-month round trip`, canOpen: false };
   }
   if (state.routes.length === Object.keys(PARTNERS).length) return { line: `Trade route: none, ${NO_PARTNER_LEFT}`, canOpen: false };
   if (!palaceReachesMainRoad(state)) return { line: `Trade route: none, ${NEEDS_PALACE}`, canOpen: false };
@@ -132,12 +141,12 @@ function offers(goods: Good[], price: (spec: TradeGoodSpec) => number | null): T
 
 export function worldReport(state: GameState): PartnerView[] {
   return (Object.keys(PARTNERS) as Partner[]).map((partner) => {
-    const { name, roundTripMonths, buys, sells } = PARTNERS[partner];
+    const { buys, sells } = PARTNERS[partner];
     const route = routeTo(state, partner);
     return {
       partner,
-      name,
-      roundTripMonths,
+      name: PLACES[partner].name,
+      roundTripMonths: roundTripMonths(partner),
       buys: offers(buys, (spec) => spec.theyPay),
       sells: offers(sells, (spec) => spec.wePay),
       caravansHome: PARTNER_CARAVANS,

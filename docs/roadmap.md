@@ -24,7 +24,7 @@ the PR that delivers it.
 - [x] 26 · Monument
 - [x] 27 · Guild yard
 - [x] 28 · World map and routes
-- [ ] 28b · Map of Greece
+- [x] 28b · Map of Greece
 - [ ] 29 · Trade: exports
 - [ ] 30 · Trade: imports
 - [ ] 31 · Ledger: Trade

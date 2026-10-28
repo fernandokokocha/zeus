@@ -1,21 +1,39 @@
+import { PLACES, type Place } from '../sim/greece';
 import { buildingById, type GameState } from '../sim/state';
-import { PARTNER_CARAVANS, openRoute, worldReport, type Partner, type PartnerView, type TradeOffer } from '../sim/trade';
+import { PARTNERS, PARTNER_CARAVANS, openRoute, worldReport, type Partner, type PartnerView, type TradeOffer } from '../sim/trade';
 import { byId } from './dom';
+import { GREECE_BOUNDS, GREECE_LAND } from './greece-land';
 
 const SVG = 'http://www.w3.org/2000/svg';
 const OUR_COLOR = '#2f5d9b';
 const PARTNER_COLORS: Record<Partner, string> = {
-  melanthos: '#4f8a3c',
-  kerynthos: '#c9962e',
-  argyra: '#a8322d',
-  halikeia: '#6d3f8f',
+  thebes: '#4f8a3c',
+  corinth: '#a8322d',
+  argos: '#c9962e',
+  sparta: '#6d3f8f',
 };
-const MAP = { width: 600, height: 280 };
-const OUR_CITY = { x: 540, y: 140 };
-const CROSSROADS = { x: 450, y: 140 };
-const PIXELS_PER_MONTH = 42;
-const PARTNER_ROWS: Record<Partner, number> = { melanthos: 40, kerynthos: 105, argyra: 175, halikeia: 240 };
-const CITY_RADIUS = 16;
+const MAP_WIDTH = 600;
+const MID_LATITUDE_COS = Math.cos((((GREECE_BOUNDS.south + GREECE_BOUNDS.north) / 2) * Math.PI) / 180);
+const PIXELS_PER_DEGREE = MAP_WIDTH / ((GREECE_BOUNDS.east - GREECE_BOUNDS.west) * MID_LATITUDE_COS);
+const MAP_HEIGHT = (GREECE_BOUNDS.north - GREECE_BOUNDS.south) * PIXELS_PER_DEGREE;
+const OUR_CITY: Place = 'athens';
+const CITY_RADIUS = 9;
+const STOP_RADIUS = 3;
+const LINE_HEIGHT = 12;
+type Side = 'above' | 'below' | 'left' | 'right';
+const LABEL_SIDES: Record<Place, Side> = {
+  athens: 'right',
+  eleusis: 'below',
+  eleutherae: 'right',
+  thebes: 'above',
+  megara: 'below',
+  isthmus: 'above',
+  corinth: 'left',
+  mycenae: 'right',
+  argos: 'right',
+  tegea: 'left',
+  sparta: 'below',
+};
 
 export interface World {
   update(): void;
@@ -36,8 +54,27 @@ function element<K extends keyof HTMLElementTagNameMap>(tag: K, className = '', 
   return node;
 }
 
-function partnerAt(view: PartnerView): { x: number; y: number } {
-  return { x: CROSSROADS.x - view.roundTripMonths * PIXELS_PER_MONTH, y: PARTNER_ROWS[view.partner] };
+function project(place: Place): { x: number; y: number } {
+  const { lon, lat } = PLACES[place];
+  return { x: (lon - GREECE_BOUNDS.west) * MID_LATITUDE_COS * PIXELS_PER_DEGREE, y: (GREECE_BOUNDS.north - lat) * PIXELS_PER_DEGREE };
+}
+
+function label(place: Place, radius: number, lines: { text: string; className: string }[]): SVGTextElement[] {
+  const at = project(place);
+  const gap = radius + 4;
+  const stack = (lines.length - 1) * LINE_HEIGHT;
+  const anchors: Record<Side, { x: number; y: number; anchor: string }> = {
+    above: { x: at.x, y: at.y - gap - stack, anchor: 'middle' },
+    below: { x: at.x, y: at.y + gap + 9, anchor: 'middle' },
+    left: { x: at.x - gap, y: at.y + 4 - stack / 2, anchor: 'end' },
+    right: { x: at.x + gap, y: at.y + 4 - stack / 2, anchor: 'start' },
+  };
+  const { x, y, anchor } = anchors[LABEL_SIDES[place]];
+  return lines.map((line, i) => svg('text', { x, y: y + i * LINE_HEIGHT, 'text-anchor': anchor, class: line.className }, line.text));
+}
+
+function roadPoints(partner: Partner): string {
+  return PARTNERS[partner].road.map((place) => `${project(place).x},${project(place).y}`).join(' ');
 }
 
 function months(count: number): string {
@@ -74,25 +111,33 @@ export function createWorld(state: GameState, topbar: { showStatus(text: string)
   }
 
   function drawMap(report: PartnerView[]): SVGSVGElement {
-    const drawing = svg('svg', { viewBox: `0 0 ${MAP.width} ${MAP.height}`, class: 'world-drawing' });
-    drawing.append(svg('rect', { x: 0, y: 0, width: MAP.width, height: MAP.height, class: 'world-land' }));
-    drawing.append(svg('line', { x1: CROSSROADS.x, y1: CROSSROADS.y, x2: OUR_CITY.x, y2: OUR_CITY.y, class: 'world-road' }));
-    for (const view of report) {
-      const at = partnerAt(view);
-      const bend = { x: CROSSROADS.x - 30, y: at.y };
-      drawing.append(svg('polyline', { points: `${CROSSROADS.x},${CROSSROADS.y} ${bend.x},${bend.y} ${at.x},${at.y}`, class: 'world-road' }));
-      drawing.append(svg('text', { x: (bend.x + at.x) / 2, y: at.y - 6, class: 'world-trip' }, months(view.roundTripMonths)));
+    const drawing = svg('svg', { viewBox: `0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`, class: 'world-drawing' });
+    drawing.append(svg('rect', { x: 0, y: 0, width: MAP_WIDTH, height: MAP_HEIGHT, class: 'world-sea' }));
+    drawing.append(svg('path', { d: GREECE_LAND, class: 'world-land' }));
+    for (const view of report) drawing.append(svg('polyline', { points: roadPoints(view.partner), class: 'world-road' }));
+    const partners: Place[] = report.map((view) => view.partner);
+    const stops = new Set(report.flatMap((view) => PARTNERS[view.partner].road).filter((place) => place !== OUR_CITY && !partners.includes(place)));
+    for (const stop of stops) {
+      const at = project(stop);
+      drawing.append(svg('circle', { cx: at.x, cy: at.y, r: STOP_RADIUS, class: 'world-stop' }));
+      drawing.append(...label(stop, STOP_RADIUS, [{ text: PLACES[stop].name, className: 'world-stop-name' }]));
     }
     for (const view of report) {
-      const at = partnerAt(view);
+      const at = project(view.partner);
       const city = svg('g', { class: cityClass(view) });
       city.append(svg('circle', { cx: at.x, cy: at.y, r: CITY_RADIUS, fill: PARTNER_COLORS[view.partner] }));
-      city.append(svg('text', { x: at.x, y: at.y + CITY_RADIUS + 13, class: 'world-name' }, view.name));
+      city.append(
+        ...label(view.partner, CITY_RADIUS, [
+          { text: view.name, className: 'world-name' },
+          { text: months(view.roundTripMonths), className: 'world-trip' },
+        ]),
+      );
       city.addEventListener('click', () => choose(view));
       drawing.append(city);
     }
-    drawing.append(svg('circle', { cx: OUR_CITY.x, cy: OUR_CITY.y, r: CITY_RADIUS, fill: OUR_COLOR, class: 'world-ours' }));
-    drawing.append(svg('text', { x: OUR_CITY.x, y: OUR_CITY.y + CITY_RADIUS + 13, class: 'world-name' }, 'Our city'));
+    const home = project(OUR_CITY);
+    drawing.append(svg('circle', { cx: home.x, cy: home.y, r: CITY_RADIUS, fill: OUR_COLOR, class: 'world-ours' }));
+    drawing.append(...label(OUR_CITY, CITY_RADIUS, [{ text: PLACES[OUR_CITY].name, className: 'world-name' }]));
     return drawing;
   }
 

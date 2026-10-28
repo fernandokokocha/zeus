@@ -8,7 +8,8 @@ import { adjacentRoadTiles, agoraVendors, footprint } from './commands';
 import { hasWorkingPalace, houseTax } from './economy';
 import { GRANARY_CAPACITY, HARVEST_MONTH, UNITS_PER_LOAD, VENDOR_CAPACITY, houseStockTarget, monthlyUse } from './food';
 import { isClosed } from './industries';
-import { PARTNERS, routeOf, routeStatus } from './trade';
+import { PLACES } from './greece';
+import { routeOf, routeStatus } from './trade';
 import { guildOfYard, guildShortfalls, guildSiteOf, siteShortfalls, type GuildSite } from './guild';
 import { type HouseLevel, type HouseNeed, type ResidentNeed, HOUSE_LEVELS, LEVEL_CHANGE_TICKS, TRADERS_GUILD, NEXT_LEVEL, PREVIOUS_LEVEL, houseCapacity, houseLevel, evolutionBlockers, houseName, lacksCulture, missingNeeds } from './housing';
 import { ROAMER_SPECS, hasGoodsToSell, hasService, type RoamerSpec, roamerKindSentBy, serviceLeft } from './roamers';
@@ -269,7 +270,7 @@ function guildSiteStatus(site: GuildSite, house: Building): string {
 
 function describeYard(state: GameState, yard: Building): Description {
   const route = routeOf(state, guildOfYard(state, yard));
-  const trade = route ? `Trade Yard: trading with ${PARTNERS[route.partner].name}` : 'Trade Yard: trade opens with a route';
+  const trade = route ? `Trade Yard: trading with ${PLACES[route.partner].name}` : 'Trade Yard: trade opens with a route';
   return { title: BUILDING_SPECS.tradeYard.name, meters: [], lines: [`Tile ${yard.x}, ${yard.y}`, trade] };
 }
 

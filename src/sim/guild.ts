@@ -5,7 +5,8 @@ import { culturePoints } from './culture';
 import { LEVEL_CHANGE_TICKS, TRADERS_GUILD, hasNeed, houseLevel } from './housing';
 import { postNotice } from './notices';
 import { rectBetween, tilesIn, type Point } from './point';
-import { PARTNERS, routeOf } from './trade';
+import { PLACES } from './greece';
+import { routeOf } from './trade';
 import { buildingById, inBounds, tileIndex, type Building, type Coverage, type GameState, type PeddledGood } from './state';
 
 const CARRIED_GOODS: PeddledGood[] = ['food', 'fleece', 'oil', 'cloth'];
@@ -263,7 +264,7 @@ export function tickGuilds(state: GameState): void {
 
 function breakUp(state: GameState, guild: Building, missing: string[]): void {
   const route = routeOf(state, guild);
-  const routeCloses = route ? ` and its route to ${PARTNERS[route.partner].name} closes` : '';
+  const routeCloses = route ? ` and its route to ${PLACES[route.partner].name} closes` : '';
   postNotice(state, `The Traders' Guild at ${guild.x},${guild.y} broke up: it lacked ${missing.join(', ')}. Its permit is lost${routeCloses}`, guild);
   removeBuildings(state, new Set([guild.id]));
   const { width, height } = BUILDING_SPECS.tradersGuild;

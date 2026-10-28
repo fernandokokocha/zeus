@@ -148,16 +148,18 @@ https://zeus.heavengames.com/gameinfo/gods/
 
 ## Trade (spec, **ours**)
 
-Land trade with four fictional partners. Each Traders' Guild opens **one route**, free, and
-each partner takes one route; the first route ever opened to a partner earns a monument.
-Each partner owns **2** caravans. Round trip is the time a caravan spends off the map.
+Land trade with four real cities, joined to Athens by ancient roads. Each Traders' Guild opens
+**one route**, free, and each partner takes one route; the first route ever opened to a
+partner earns a monument. Each partner owns **2** caravans. Round trip is the time a caravan
+spends off the map: a caravan covers **40 km a month**, so round trip = 2 × road length ÷ 40,
+rounded to whole months. Road length is the great-circle length of the road's segments.
 
-| partner | round trip | buys from us | sells to us |
-|---|---|---|---|
-| Melanthos | 3 months | fleece, olives | food, wood |
-| Kerynthos | 5 months | food, wood, marble | fleece, olives, oil |
-| Argyra | 5 months | oil, cloth, sculptures | marble, bronze |
-| Halikeia | 8 months | cloth, bronze, oil | sculptures, wood |
+| partner | road from Athens | road length | round trip | buys from us | sells to us |
+|---|---|---|---|---|---|
+| Thebes | Eleusis, Eleutherae | 56 km | 3 months | fleece, olives | food, wood |
+| Corinth | Eleusis, Megara, Isthmus | 78 km | 4 months | oil, cloth, sculptures | bronze, wood |
+| Argos | … Corinth, Mycenae | 112 km | 6 months | food, wood, marble | olives, oil, sculptures |
+| Sparta | … Argos, Tegea | 187 km | 9 months | cloth, bronze, oil | marble, fleece |
 
 Prices in drachmas per load, the same at every partner. Caravan load is the most one caravan
 carries, in loads.
