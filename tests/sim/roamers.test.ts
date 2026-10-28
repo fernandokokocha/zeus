@@ -8,6 +8,7 @@ import {
   exitTile,
   hasService,
   nextRoamTile,
+  pathHome,
 } from '../../src/sim/roamers';
 import type { BuildingType } from '../../src/sim/buildings';
 import type { Building, GameState } from '../../src/sim/state';
@@ -98,6 +99,44 @@ describe('nextRoamTile', () => {
     placeRoad(replay, { x: 2, y: 5 }, { x: 8, y: 5 });
     placeRoad(replay, { x: 5, y: 2 }, { x: 5, y: 8 });
     expect(Array.from({ length: 30 }, () => nextRoamTile(replay, walked))).toEqual(picks);
+  });
+});
+
+describe('pathHome', () => {
+  function ringAroundFountain(): { game: GameState; fountain: Building } {
+    const game = grassGame();
+    placeRoad(game, { x: 4, y: 4 }, { x: 12, y: 4 });
+    placeRoad(game, { x: 4, y: 8 }, { x: 12, y: 8 });
+    placeRoad(game, { x: 4, y: 4 }, { x: 4, y: 8 });
+    placeRoad(game, { x: 12, y: 4 }, { x: 12, y: 8 });
+    placeBuilding(game, 'fountain', 5, 5);
+    return { game, fountain: game.buildings[0] };
+  }
+
+  const NEARER_THE_TOP = { x: 12, y: 6 };
+  const OPPOSITE_CORNER = { x: 12, y: 8 };
+  const TOP_BLOCK = { x: 9, y: 4 };
+  const BOTTOM_BLOCK = { x: 9, y: 8 };
+  const tiles = (path: { x: number; y: number }[] | null) => (path ?? []).map((p) => `${p.x},${p.y}`);
+
+  it('takes the shortest way, even through a roadblock', () => {
+    const { game, fountain } = ringAroundFountain();
+    placeRoadblock(game, TOP_BLOCK);
+    expect(tiles(pathHome(game, NEARER_THE_TOP, fountain))).toContain('9,4');
+  });
+
+  it('picks the way without a roadblock between two equally short ones', () => {
+    const top = ringAroundFountain();
+    placeRoadblock(top.game, TOP_BLOCK);
+    const aroundTop = tiles(pathHome(top.game, OPPOSITE_CORNER, top.fountain));
+    expect(aroundTop).not.toContain('9,4');
+    expect(aroundTop.at(-1)).toBe('4,6');
+
+    const bottom = ringAroundFountain();
+    placeRoadblock(bottom.game, BOTTOM_BLOCK);
+    const aroundBottom = tiles(pathHome(bottom.game, OPPOSITE_CORNER, bottom.fountain));
+    expect(aroundBottom).not.toContain('9,8');
+    expect(aroundBottom.at(-1)).toBe('6,4');
   });
 });
 

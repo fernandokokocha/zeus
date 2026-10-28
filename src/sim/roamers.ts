@@ -3,7 +3,7 @@ import { TICKS_PER_MONTH } from './clock';
 import { adjacentRoadTiles, agoraVendors, roadSite } from './commands';
 import { stockHouse } from './food';
 import { isResidence } from './housing';
-import { NEIGHBOUR_STEPS, findRoadPath } from './pathfinding';
+import { NEIGHBOUR_STEPS, findRoadPathPastFewestRoadblocks } from './pathfinding';
 import { samePoint, type Point } from './point';
 import { nextRandom } from './rng';
 import { isPerforming, traineeKindFor } from './schools';
@@ -145,8 +145,12 @@ function carryOn(state: GameState, roamer: Roamer, home: Building): boolean {
   return headHome(state, roamer, home);
 }
 
+export function pathHome(state: GameState, from: Point, home: Building): Point[] | null {
+  return findRoadPathPastFewestRoadblocks(state, from, adjacentRoadTiles(state, home));
+}
+
 function headHome(state: GameState, roamer: Roamer, home: Building): boolean {
-  const path = findRoadPath(state, roamer.path[roamer.step], adjacentRoadTiles(state, home));
+  const path = pathHome(state, roamer.path[roamer.step], home);
   if (!path || path.length === 1) {
     dismiss(state, roamer);
     return false;

@@ -22,6 +22,47 @@ export function findRoadPath(state: GameState, from: Point, targets: Point[]): P
   return findPath(state, from, targets, (i) => state.roads[i]);
 }
 
+export function findRoadPathPastFewestRoadblocks(state: GameState, from: Point, targets: Point[]): Point[] | null {
+  const targetSet = new Set(targets.map((p) => tileIndex(state, p.x, p.y)));
+  const tiles = state.size * state.size;
+  const cameFrom = new Int32Array(tiles).fill(UNVISITED);
+  const distance = new Int32Array(tiles);
+  const roadblocks = new Int32Array(tiles);
+  const start = tileIndex(state, from.x, from.y);
+  cameFrom[start] = start;
+  const queue = [start];
+  let best: number | null = null;
+
+  for (let head = 0; head < queue.length; head++) {
+    const current = queue[head];
+    if (best !== null && distance[current] > distance[best]) break;
+    if (targetSet.has(current)) {
+      if (best === null || roadblocks[current] < roadblocks[best]) best = current;
+      continue;
+    }
+    const x = current % state.size;
+    const y = Math.floor(current / state.size);
+    for (const step of NEIGHBOUR_STEPS) {
+      const nx = x + step.x;
+      const ny = y + step.y;
+      if (!inBounds(state, nx, ny)) continue;
+      const next = tileIndex(state, nx, ny);
+      if (!state.roads[next]) continue;
+      const blocks = roadblocks[current] + (state.roadblocks[next] ? 1 : 0);
+      if (cameFrom[next] === UNVISITED) {
+        cameFrom[next] = current;
+        distance[next] = distance[current] + 1;
+        roadblocks[next] = blocks;
+        queue.push(next);
+      } else if (distance[next] === distance[current] + 1 && blocks < roadblocks[next]) {
+        cameFrom[next] = current;
+        roadblocks[next] = blocks;
+      }
+    }
+  }
+  return best === null ? null : pathTo(state, cameFrom, best);
+}
+
 export function findOpenPath(state: GameState, from: Point, targets: Point[]): Point[] | null {
   return findPath(state, from, targets, (i) => isOpenTile(state, i));
 }
