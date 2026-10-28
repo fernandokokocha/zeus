@@ -8,6 +8,7 @@ import { findRoadPath } from './pathfinding';
 import type { Point } from './point';
 import { buildingById, type Building, type Caravan, type GameState, type Good, type TradeSlot } from './state';
 import { PARTNERS, TRADE_GOODS, roundTripMonths, routeOf } from './trade';
+import { bookTrade } from './trade-books';
 import { collect } from './treasury';
 import { walkPath } from './walking';
 
@@ -170,6 +171,7 @@ function arrive(state: GameState, caravan: Caravan): void {
     caravan.backAt = state.tick + roundTripMonths(caravan.partner) * TICKS_PER_MONTH;
   } else if (caravan.trip === 'home') {
     collect(state, 'trade', caravan.drachmas);
+    bookTrade(state, 'exports', caravan.good, caravan.loads, caravan.drachmas);
     const palace = state.buildings.find((b) => b.type === 'palace');
     if (palace === undefined) throw new Error(`Caravan ${caravan.id} reached a Palace that is gone`);
     postNotice(state, `Caravan back from ${PLACES[caravan.partner].name}: +${caravan.drachmas} dr`, palace);

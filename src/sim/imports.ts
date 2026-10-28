@@ -8,6 +8,7 @@ import { findRoadPath } from './pathfinding';
 import type { Point } from './point';
 import { buildingById, type Building, type ForeignCaravan, type GameState, type Good } from './state';
 import { PARTNERS, TRADE_GOODS, partnerCaravansHome, roundTripMonths, routeOf, type Partner } from './trade';
+import { bookTrade } from './trade-books';
 import { spend } from './treasury';
 import { walkPath } from './walking';
 
@@ -147,6 +148,7 @@ function arrive(state: GameState, caravan: ForeignCaravan): void {
     const yard = yardOf(state, caravan);
     yard[caravan.good] += caravan.loads * UNITS_PER_LOAD;
     spend(state, 'imports', caravan.cost);
+    bookTrade(state, 'imports', caravan.good, caravan.loads, caravan.cost);
     headWest(state, caravan);
   } else {
     caravan.trip = 'going';

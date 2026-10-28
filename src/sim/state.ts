@@ -9,6 +9,7 @@ import { clampPoint, type Point } from './point';
 import type { RoadUpgrade } from './road-upgrades';
 import type { Terrain } from './terrain';
 import type { Partner, Route } from './trade';
+import { emptyTradeYear, type TradeBooks } from './trade-books';
 import { STARTING_TREASURY, emptyAccounts, type Books } from './treasury';
 
 export type Speed = 0 | 1 | 2 | 4;
@@ -263,6 +264,7 @@ export interface GameState {
   entry: Point;
   treasury: number;
   accounts: Books;
+  tradeBooks: TradeBooks;
   populationHistory: number[];
   flows: FlowBook;
   industries: IndustrySettings;
@@ -325,6 +327,7 @@ export function newGameState(size: number, terrain: Terrain[], mainRoad: Point[]
     entry: mainRoad[0],
     treasury: STARTING_TREASURY,
     accounts: { thisYear: emptyAccounts(), lastYear: emptyAccounts() },
+    tradeBooks: { thisYear: emptyTradeYear(), lastYear: emptyTradeYear() },
     populationHistory: [0],
     flows: { thisMonth: emptyFlows(), months: [] },
     industries: defaultIndustrySettings(),

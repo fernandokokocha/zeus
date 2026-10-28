@@ -1,41 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { TICKS_PER_MONTH } from '../../src/sim/clock';
-import { demolish, placeBuilding, placeRoad } from '../../src/sim/commands';
+import { demolish, placeRoad } from '../../src/sim/commands';
 import { CARAVAN_MERCHANTS, YARD_SLOTS, setExportSlot, slotHoldings, tickCaravans } from '../../src/sim/exports';
 import { yardOf } from '../../src/sim/guild';
 import { describeTile } from '../../src/sim/inspect';
-import type { Building, Caravan, GameState } from '../../src/sim/state';
-import { openRoute, roundTripMonths, type Partner } from '../../src/sim/trade';
-import { placedGuild, runTicks, supplyGuild } from './helpers';
+import type { Caravan, GameState } from '../../src/sim/state';
+import { roundTripMonths } from '../../src/sim/trade';
+import { placedGuild, runTicks, supplyGuild, tradingTown, withStore, type Town } from './helpers';
 
 const STOREHOUSE = { x: 11, y: 8 };
 const GRANARY = { x: 11, y: 11 };
-const PALACE_ROAD = { from: { x: 10, y: 6 }, to: { x: 10, y: 15 } };
 const WEST_EDGE = { x: 0, y: 16 };
 const WALK_LIMIT = 2 * TICKS_PER_MONTH;
-
-interface Town {
-  game: GameState;
-  guild: Building;
-  yard: Building;
-}
-
-function tradingTown(partner: Partner = 'thebes'): Town {
-  const { game, guild } = placedGuild();
-  placeRoad(game, PALACE_ROAD.from, PALACE_ROAD.to);
-  const opened = openRoute(game, guild.id, partner);
-  if (!opened.ok) throw new Error(opened.reason);
-  return { game, guild, yard: yardOf(game, guild) };
-}
-
-function withStore(town: Town, type: 'storehouse' | 'granary', at: { x: number; y: number }): Building {
-  const placed = placeBuilding(town.game, type, at.x, at.y);
-  if (!placed.ok) throw new Error(placed.reason);
-  const store = town.game.buildings[town.game.buildings.length - 1];
-  for (const house of town.game.buildings.filter((b) => b.type === 'house')) house.residents = 200;
-  supplyGuild(town.guild);
-  return store;
-}
 
 function exporting(town: Town, slot: number, good: Parameters<typeof setExportSlot>[3]): void {
   const set = setExportSlot(town.game, town.yard.id, slot, good);

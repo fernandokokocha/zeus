@@ -1,43 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import { TICKS_PER_MONTH } from '../../src/sim/clock';
-import { demolish, placeBuilding, placeRoad } from '../../src/sim/commands';
+import { demolish } from '../../src/sim/commands';
 import { setExportSlot, slotHoldings } from '../../src/sim/exports';
 import { yardOf } from '../../src/sim/guild';
 import { setImportSlot, tickImports } from '../../src/sim/imports';
 import { describeTile, type TradeYardView } from '../../src/sim/inspect';
-import type { Building, ForeignCaravan, GameState, Good } from '../../src/sim/state';
-import { PARTNER_CARAVANS, openRoute, roundTripMonths, worldReport, type Partner } from '../../src/sim/trade';
-import { placedGuild, runTicks, supplyGuild } from './helpers';
+import type { ForeignCaravan, GameState, Good } from '../../src/sim/state';
+import { PARTNER_CARAVANS, roundTripMonths, worldReport } from '../../src/sim/trade';
+import { placedGuild, runTicks, tradingTown, withStore, type Town } from './helpers';
 
 const STOREHOUSE = { x: 11, y: 8 };
 const GRANARY = { x: 11, y: 11 };
-const PALACE_ROAD = { from: { x: 10, y: 6 }, to: { x: 10, y: 15 } };
 const WALK_LIMIT = 2 * TICKS_PER_MONTH;
 const HALF_TRIP = (roundTripMonths('thebes') * TICKS_PER_MONTH) / 2;
 const SIX_WOOD = 6 * 22;
-
-interface Town {
-  game: GameState;
-  guild: Building;
-  yard: Building;
-}
-
-function tradingTown(partner: Partner = 'thebes'): Town {
-  const { game, guild } = placedGuild();
-  placeRoad(game, PALACE_ROAD.from, PALACE_ROAD.to);
-  const opened = openRoute(game, guild.id, partner);
-  if (!opened.ok) throw new Error(opened.reason);
-  return { game, guild, yard: yardOf(game, guild) };
-}
-
-function withStore(town: Town, type: 'storehouse' | 'granary', at: { x: number; y: number }): Building {
-  const placed = placeBuilding(town.game, type, at.x, at.y);
-  if (!placed.ok) throw new Error(placed.reason);
-  const store = town.game.buildings[town.game.buildings.length - 1];
-  for (const house of town.game.buildings.filter((b) => b.type === 'house')) house.residents = 200;
-  supplyGuild(town.guild);
-  return store;
-}
 
 function importing(town: Town, slot: number, good: Good, loads: number): void {
   const set = setImportSlot(town.game, town.yard.id, slot, good, loads);

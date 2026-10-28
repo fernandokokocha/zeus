@@ -1,9 +1,11 @@
-import { placeBuilding, placeHouses, type Result } from '../../src/sim/commands';
+import { placeBuilding, placeHouses, placeRoad, type Result } from '../../src/sim/commands';
+import { yardOf } from '../../src/sim/guild';
 import { HOUSE_LEVELS } from '../../src/sim/housing';
 import type { Point } from '../../src/sim/point';
 import { tick } from '../../src/sim/tick';
 import { newGameState, type Building, type GameState } from '../../src/sim/state';
 import type { Terrain } from '../../src/sim/terrain';
+import { openRoute, type Partner } from '../../src/sim/trade';
 
 const ENTRY_ROAD_LENGTH = 8;
 
@@ -86,4 +88,29 @@ export function placedGuild(): { game: GameState; guild: Building } {
 export function supplyGuild(guild: Building): void {
   Object.assign(guild, { food: 15, fleece: 6, oil: 6, cloth: 24 });
   Object.assign(guild.coveredUntil, { water: FOREVER, athletics: FOREVER, drama: FOREVER });
+}
+
+const PALACE_ROAD = { from: { x: 10, y: 6 }, to: { x: 10, y: 15 } };
+
+export interface Town {
+  game: GameState;
+  guild: Building;
+  yard: Building;
+}
+
+export function tradingTown(partner: Partner = 'thebes'): Town {
+  const { game, guild } = placedGuild();
+  placeRoad(game, PALACE_ROAD.from, PALACE_ROAD.to);
+  const opened = openRoute(game, guild.id, partner);
+  if (!opened.ok) throw new Error(opened.reason);
+  return { game, guild, yard: yardOf(game, guild) };
+}
+
+export function withStore(town: Town, type: 'storehouse' | 'granary', at: { x: number; y: number }): Building {
+  const placed = placeBuilding(town.game, type, at.x, at.y);
+  if (!placed.ok) throw new Error(placed.reason);
+  const store = town.game.buildings[town.game.buildings.length - 1];
+  for (const house of town.game.buildings.filter((b) => b.type === 'house')) house.residents = 200;
+  supplyGuild(town.guild);
+  return store;
 }

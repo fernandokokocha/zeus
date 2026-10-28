@@ -333,7 +333,7 @@ function caravanAwayLine(state: GameState, caravan: Caravan): string {
   return `Caravan to ${PLACES[caravan.partner].name} with ${caravanCargo(caravan)}: back in about ${months(caravan.backAt - state.tick)}`;
 }
 
-function months(ticks: number): string {
+export function months(ticks: number): string {
   const count = Math.ceil(ticks / TICKS_PER_MONTH);
   return `${count} ${count === 1 ? 'month' : 'months'}`;
 }
@@ -342,7 +342,7 @@ function caravanComingLine(state: GameState, caravan: ForeignCaravan): string {
   return `Caravan from ${PLACES[caravan.partner].name} with ${caravanCargo(caravan)}: here in about ${months(caravan.dueAt - state.tick)}`;
 }
 
-function caravanCargo(caravan: Caravan | ForeignCaravan): string {
+export function caravanCargo(caravan: Caravan | ForeignCaravan): string {
   return `${caravan.loads} loads of ${GOOD_NAMES[caravan.good]}`;
 }
 

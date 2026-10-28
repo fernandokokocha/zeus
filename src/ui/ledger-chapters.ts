@@ -4,11 +4,14 @@ import type { PopulationReport } from '../sim/population';
 import type { ProductionReport } from '../sim/production';
 import { NO_PRIORITY, type Industry, type Priority } from '../sim/industries';
 import type { PrioritiesReport } from '../sim/labor';
+import type { Tally } from '../sim/trade-books';
+import type { GoodRow, TradeReport } from '../sim/trade-ledger';
 
 const MIN_AXIS_TOP = 10;
 const AXIS_STEPS = [1, 2, 5];
 const MONTHS_PER_YEAR = 12;
 const NO_YEAR = '–';
+const NO_CARGO = '–';
 const PRIORITIES: Priority[] = [NO_PRIORITY, 1, 2, 3];
 const INCOME: (keyof Accounts)[] = ['taxes', 'trade'];
 const SPENDING: (keyof Accounts)[] = ['wages', 'construction', 'sheep', 'imports'];
@@ -208,6 +211,36 @@ export function treasuryChapter(report: TreasuryReport): HTMLElement {
   body.append(
     element('p', 'ledger-summary', `Treasury now: ${drachmas(report.treasury)}`),
     section('Income and spending', table(['', thisYear.label, lastYear ? lastYear.label : 'Last year'], rows)),
+  );
+  return body;
+}
+
+function note(text: string): HTMLElement {
+  return element('p', 'ledger-summary', text);
+}
+
+function tableOrNote(headings: string[], rows: (string | HTMLElement)[][], empty: string): HTMLElement {
+  return rows.length === 0 ? note(empty) : table(headings, rows);
+}
+
+function tally({ loads, drachmas: value }: Tally): string {
+  return `${count(loads)} ${loads === 1 ? 'load' : 'loads'}, ${drachmas(value)}`;
+}
+
+function goodsTable(rows: GoodRow[], years: TradeReport['years'], empty: string): HTMLElement {
+  const cells = rows.map(({ name, thisYear, lastYear }) => [name, tally(thisYear), lastYear ? tally(lastYear) : NO_YEAR]);
+  return tableOrNote(['Good', years.thisYear, years.lastYear ?? 'Last year'], cells, empty);
+}
+
+export function tradeChapter(report: TradeReport): HTMLElement {
+  const body = element('div');
+  const routes = report.routes.map(({ guild, partner, roundTripMonths }) => [partner, guild, `${roundTripMonths} months`]);
+  const caravans = report.caravans.map(({ partner, trade, goods, value, where }) => [partner, trade, goods ?? NO_CARGO, value === null ? NO_CARGO : drachmas(value), where]);
+  body.append(
+    section('Routes', tableOrNote(['Partner', 'Guild', 'Round trip'], routes, "No routes open. A Traders' Guild opens one from its inspector.")),
+    section('Caravans', tableOrNote(['Partner', 'Trade', 'Goods', 'Value', 'Where'], caravans, 'No caravans out')),
+    section('Exports', goodsTable(report.exports, report.years, 'No exports yet')),
+    section('Imports', goodsTable(report.imports, report.years, 'No imports yet')),
   );
   return body;
 }

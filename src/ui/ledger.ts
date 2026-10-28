@@ -2,12 +2,13 @@ import type { GameState } from '../sim/state';
 import { prioritiesReport, setIndustryOpen, setIndustryPriority, type PrioritiesReport } from '../sim/labor';
 import { populationReport } from '../sim/population';
 import { productionReport } from '../sim/production';
+import { tradeReport } from '../sim/trade-ledger';
 import { treasuryReport } from '../sim/treasury';
 import { createCharterChapter } from './charters';
 import { byId } from './dom';
-import { populationChapter, prioritiesChapter, productionChapter, treasuryChapter } from './ledger-chapters';
+import { populationChapter, prioritiesChapter, productionChapter, tradeChapter, treasuryChapter } from './ledger-chapters';
 
-type ChapterId = 'population' | 'production' | 'priorities' | 'treasury' | 'charter';
+type ChapterId = 'population' | 'production' | 'priorities' | 'treasury' | 'trade' | 'charter';
 
 interface Chapter {
   title: string;
@@ -50,12 +51,14 @@ export function createLedger(state: GameState): { update(): void } {
   const population = document.createElement('div');
   const production = document.createElement('div');
   const treasury = document.createElement('div');
+  const trade = document.createElement('div');
 
   const chapters: Record<ChapterId, Chapter> = {
     population: { title: 'Population', body: population },
     production: { title: 'Production', body: production },
     priorities: { title: 'Priorities', body: priorities.body },
     treasury: { title: 'Treasury', body: treasury },
+    trade: { title: 'Trade', body: trade },
     charter: { title: 'Charter', body: charter.body },
   };
 
@@ -94,6 +97,7 @@ export function createLedger(state: GameState): { update(): void } {
       population.replaceChildren(populationChapter(populationReport(state)));
       production.replaceChildren(productionChapter(productionReport(state)));
       treasury.replaceChildren(treasuryChapter(treasuryReport(state)));
+      trade.replaceChildren(tradeChapter(tradeReport(state)));
     },
   };
 }
