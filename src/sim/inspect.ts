@@ -9,11 +9,11 @@ import { hasWorkingPalace, houseTax } from './economy';
 import { GRANARY_CAPACITY, HARVEST_MONTH, UNITS_PER_LOAD, VENDOR_CAPACITY, houseStockTarget, monthlyUse } from './food';
 import { isClosed } from './industries';
 import { PLACES } from './greece';
-import { CARAVAN_MERCHANTS, caravansOf, slotHoldings } from './exports';
+import { YARD_CART_PUSHERS, caravanLimit, caravansOf, slotHoldings, yardMerchants } from './exports';
 import { PARTNERS, TRADE_GOODS, routeOf, routeStatus } from './trade';
 import { GOOD_TITLES } from './production';
 import { caravansComing, ordersWaitingForMoney } from './imports';
-import { guildOfYard, guildShortfalls, guildSiteOf, siteShortfalls, type GuildSite } from './guild';
+import { guildOfYard, guildShortfalls, guildSiteOf, siteShortfalls, yardOf, type GuildSite } from './guild';
 import { type HouseLevel, type HouseNeed, type ResidentNeed, HOUSE_LEVELS, LEVEL_CHANGE_TICKS, TRADERS_GUILD, NEXT_LEVEL, PREVIOUS_LEVEL, houseCapacity, houseLevel, evolutionBlockers, houseName, lacksCulture, missingNeeds } from './housing';
 import { ROAMER_SPECS, hasGoodsToSell, hasService, type RoamerSpec, roamerKindSentBy, serviceLeft } from './roamers';
 import { TRAINEE_SPECS, isPerforming, staffedVenues, traineeKindFor, traineeKindSentBy } from './schools';
@@ -311,7 +311,12 @@ function guildSiteStatus(site: GuildSite, house: Building): string {
 function describeYard(state: GameState, yard: Building): Description {
   const guild = guildOfYard(state, yard);
   const route = routeOf(state, guild);
-  const lines = [`Tile ${yard.x}, ${yard.y}`, `Workers ${yard.workers}/${BUILDING_SPECS.tradeYard.workers}`];
+  const merchantPosts = BUILDING_SPECS.tradeYard.workers - YARD_CART_PUSHERS;
+  const lines = [
+    `Tile ${yard.x}, ${yard.y}`,
+    `Workers ${yard.workers}/${BUILDING_SPECS.tradeYard.workers}`,
+    `Cart pushers ${Math.min(yard.workers, YARD_CART_PUSHERS)}/${YARD_CART_PUSHERS}, merchants ${yardMerchants(yard)}/${merchantPosts}`,
+  ];
   const title = BUILDING_SPECS.tradeYard.name;
   if (route === null) return { title, meters: [], lines: [...lines, 'Trade Yard: trade opens with a route'] };
   lines.push(`Trade Yard: trading with ${PLACES[route.partner].name}`);
@@ -351,11 +356,11 @@ function describeGuild(state: GameState, guild: Building): Description {
   const route = routeStatus(state, guild);
   const lines = [
     `Tile ${guild.x}, ${guild.y}`,
-    `Merchants ${guild.residents}/${TRADERS_GUILD.merchants}`,
+    `Residents ${guild.residents}/${houseCapacity(guild)}`,
     `Appeal ${houseAppeal(state, guild)}`,
-    'Pays no tax: earns through trade',
+    taxStatus(state, guild),
     route.line,
-    ...(routeOf(state, guild) ? [`Caravans out ${caravansOf(state, guild).length} of ${TRADERS_GUILD.merchants / CARAVAN_MERCHANTS}`] : []),
+    ...(routeOf(state, guild) ? [`Caravans out ${caravansOf(state, guild).length} of ${caravanLimit(yardOf(state, guild))}`] : []),
     missing.length === 0 ? 'Fully supplied' : `Missing ${missing.join(', ')}: breaks up in ${amount((LEVEL_CHANGE_TICKS - guild.pendingTicks) / TICKS_PER_MONTH)} months`,
   ];
   const needFor = (need: ResidentNeed): Need => (missing.includes(need) ? 'missing' : 'met');

@@ -1,6 +1,6 @@
 import { TICKS_PER_MONTH } from './clock';
 import { adjacentRoadTiles } from './commands';
-import { houseCapacity, houseLevel } from './housing';
+import { houseCapacity, houseLevel, isResidence } from './housing';
 import { findRoadPath, nearestByRoad } from './pathfinding';
 import type { Point } from './point';
 import { buildingById, type Building, type GameState, type Settler } from './state';
@@ -21,7 +21,7 @@ export function roomFor(state: GameState, house: Building): number {
 }
 
 export function closestLotWithRoom(state: GameState, from: Point): { house: Building; path: Point[] } | null {
-  const lots = state.buildings.filter((b) => b.type === 'house' && roomFor(state, b) > 0);
+  const lots = state.buildings.filter((b) => isResidence(b) && roomFor(state, b) > 0);
   const nearest = nearestByRoad(state, from, lots);
   return nearest && { house: nearest.building, path: nearest.path };
 }

@@ -70,7 +70,7 @@ const SETS: Record<string, DesignSet> = {
   foundry: { title: 'Foundry', needs: '2×2 · 15 workers · without and with workers, ore and bronze stock', options: FOUNDRY_OPTIONS, chosen: 0 },
   storehouse: { title: 'Storehouse', needs: '3×3 · 12 workers · without and with workers, empty and holding every good', options: STOREHOUSE_OPTIONS, chosen: 0, footprint: [3, 3] },
   peddler: { title: 'Peddler', needs: 'Walker · one per agora, carrying fresh goods from every vendor · on the road beside a Shack, a cart pusher behind him for contrast', options: PEDDLER_OPTIONS, chosen: 0, footprint: [3, 2] },
-  tradersGuild: { title: "Traders' Guild", needs: '4×4 · 20 merchants · fully supplied and missing a need (burning turns its tiles into ruins)', options: TRADERS_GUILD_OPTIONS, chosen: 0, footprint: [4, 4] },
+  tradersGuild: { title: "Traders' Guild", needs: '4×4 · 240 residents · fully supplied and missing a need (burning turns its tiles into ruins)', options: TRADERS_GUILD_OPTIONS, chosen: 0, footprint: [4, 4] },
   fastRoad: { title: 'Fast Road', needs: 'Road upgrade · 1 marble a tile · ruts along the street, curving through every turn', options: FAST_ROAD_OPTIONS, footprint: [3, 3] },
   monument: { title: 'Monument', needs: '3×3 · no workers · earned, never bought · beside a Fast Road crossroads, one emblem per achievement on a shared body', options: MONUMENT_OPTIONS, chosen: [0, 1, 2], footprint: [5, 5] },
 };

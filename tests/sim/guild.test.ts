@@ -3,6 +3,7 @@ import { houseAppeal } from '../../src/sim/appeal';
 import { BUILDING_SPECS, footprintDistance } from '../../src/sim/buildings';
 import { TICKS_PER_MONTH } from '../../src/sim/clock';
 import { demolish, placeBuilding, placeRoad } from '../../src/sim/commands';
+import { houseStockTarget } from '../../src/sim/food';
 import { LEVEL_CHANGE_TICKS, TRADERS_GUILD } from '../../src/sim/housing';
 import { laborSummary } from '../../src/sim/labor';
 import { guildBlueprint } from '../../src/sim/guild';
@@ -88,9 +89,17 @@ describe("a Traders' Guild's Trade Yard", () => {
     expect(canBurn(yard) || canCollapse(yard)).toBe(false);
   });
 
+  it('fills its cart pushers first, then its merchants', () => {
+    const { game } = placedGuild();
+    yardOf(game).workers = 18;
+    expect(describeTile(game, 4, 17).lines[2]).toBe('Cart pushers 8/8, merchants 10/20');
+    yardOf(game).workers = 5;
+    expect(describeTile(game, 4, 17).lines[2]).toBe('Cart pushers 5/8, merchants 0/20');
+  });
+
   it('says trade opens with a route', () => {
     const { game } = placedGuild();
-    expect(describeTile(game, 4, 17)).toMatchObject({ title: 'Trade Yard', lines: ['Tile 3, 17', 'Workers 0/8', 'Trade Yard: trade opens with a route'] });
+    expect(describeTile(game, 4, 17)).toMatchObject({ title: 'Trade Yard', lines: ['Tile 3, 17', 'Workers 0/28', 'Cart pushers 0/8, merchants 0/20', 'Trade Yard: trade opens with a route'] });
   });
 });
 
@@ -100,18 +109,26 @@ describe("placing a Traders' Guild", () => {
     const before = game.treasury;
     expect(placeBuilding(game, 'tradersGuild', GUILD_BLOCK.x, GUILD_BLOCK.y)).toEqual({ ok: true });
     expect(blockLots(game)).toEqual([]);
-    expect(guildOf(game)).toMatchObject({ x: GUILD_BLOCK.x, y: GUILD_BLOCK.y, residents: TRADERS_GUILD.merchants });
+    expect(guildOf(game)).toMatchObject({ x: GUILD_BLOCK.x, y: GUILD_BLOCK.y, residents: 240 });
     expect(game.treasury).toBe(before - 100);
     expect(game.guildPermits).toBe(0);
     expect(BUILDING_SPECS.tradersGuild).toMatchObject({ width: 4, height: 4, cost: 100 });
   });
 
-  it('keeps 20 merchants, and every resident when the four held fewer', () => {
-    expect(TRADERS_GUILD.merchants).toBe(20);
+  it('keeps every resident of the four Townhouses, up to 240', () => {
+    expect(TRADERS_GUILD.capacity).toBe(240);
     const { game, houses } = guildBlock();
-    houses.forEach((h) => (h.residents = 4));
+    houses.forEach((h, i) => (h.residents = 50 + i));
     placeBuilding(game, 'tradersGuild', GUILD_BLOCK.x, GUILD_BLOCK.y);
-    expect(guildOf(game).residents).toBe(16);
+    expect(guildOf(game).residents).toBe(206);
+  });
+
+  it('is topped up to 240 by settlers', () => {
+    const { game, guild } = placedGuild();
+    supplyGuild(guild);
+    guild.residents = 230;
+    for (let i = 0; i < TICKS_PER_MONTH && guild.residents < 240; i++) tick(game);
+    expect(guild.residents).toBe(240);
   });
 
   it("keeps the four houses' stocks and their latest water and culture", () => {
@@ -156,7 +173,7 @@ describe("placing a Traders' Guild", () => {
   it('places its Trade Yard across the Main Road, at no cost of its own', () => {
     const { game } = placedGuild();
     expect(yardOf(game)).toMatchObject({ x: GUILD_BLOCK.x, y: 17, rotation: 0 });
-    expect(BUILDING_SPECS.tradeYard).toMatchObject({ width: 4, height: 2, cost: 0, workers: 8, appeal: [] });
+    expect(BUILDING_SPECS.tradeYard).toMatchObject({ width: 4, height: 2, cost: 0, workers: 28, appeal: [] });
   });
 
   it('needs a straight stretch of Main Road all along its front', () => {
@@ -196,19 +213,23 @@ describe("placing a Traders' Guild", () => {
     expect(placeBuilding(game, 'tradersGuild', GUILD_BLOCK.x, GUILD_BLOCK.y)).toEqual({ ok: false, reason: 'Needs appeal 25 here (has 22)' });
   });
 
-  it('houses merchants who work there: they neither take jobs nor fill them', () => {
+  it('sends its residents to work like any house', () => {
     const { game } = placedGuild();
-    expect(population(game)).toBe(60);
-    expect(laborSummary(game)).toMatchObject({ workforce: 20, jobs: BUILDING_SPECS.tradeYard.workers });
+    expect(population(game)).toBe(280);
+    expect(laborSummary(game)).toMatchObject({ workforce: Math.floor(280 * 0.52), jobs: BUILDING_SPECS.tradeYard.workers });
   });
 
-  it('pays no tax', () => {
+  it('pays tax at multiplier 1, half a Townhouse, once a tax collector passed', () => {
+    expect(TRADERS_GUILD.taxMultiplier).toBe(1);
     const { game, guild } = placedGuild();
     placeRoad(game, { x: 1, y: 5 }, { x: 9, y: 5 });
     supplyGuild(guild);
-    guild.coveredUntil.tax = FAR;
     untilMonthEnd(game);
     expect(game.lastMonth.taxes).toBe(0);
+    guild.coveredUntil.tax = FAR;
+    untilMonthEnd(game);
+    expect(game.lastMonth.taxes).toBeCloseTo(240 * 0.09);
+    expect(guild.taxPaid.at(-1)).toBeCloseTo(240 * 0.09);
   });
 
   it('can burn like a house, leaving ruins', () => {
@@ -225,12 +246,17 @@ describe("a Traders' Guild's needs", () => {
     expect(TRADERS_GUILD).toMatchObject({ culture: 45, appeal: 25 });
   });
 
-  it('uses 5 food, 2 fleece, 2 oil and 8 cloth a month', () => {
+  it("uses food per resident, four houses' fleece and oil, and 8 cloth a month", () => {
     const { game, guild } = placedGuild();
     supplyGuild(guild);
     Object.assign(guild, { food: 100, fleece: 100, oil: 100, cloth: 100 });
     untilMonthEnd(game);
-    expect(guild).toMatchObject({ food: 95, fleece: 98, oil: 98, cloth: 92 });
+    expect(guild).toMatchObject({ food: 40, fleece: 92, oil: 92, cloth: 92 });
+  });
+
+  it('is stocked with 3 months of fleece and oil', () => {
+    const { guild } = placedGuild();
+    expect([houseStockTarget(guild, 'fleece'), houseStockTarget(guild, 'oil')]).toEqual([24, 24]);
   });
 
   it('is stocked with 3 months of cloth by a cloth peddler', () => {

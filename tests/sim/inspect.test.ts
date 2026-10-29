@@ -1069,7 +1069,7 @@ describe('inspectTile', () => {
 describe("the inspector on a Traders' Guild", () => {
   const needs = (game: GameState) => describeTile(game, 4, 13).meters.map((m) => [m.label, m.need]);
 
-  it('shows its merchants, appeal, trade and that it is fully supplied', () => {
+  it('shows its residents, appeal, tax, trade and that it is fully supplied', () => {
     const { game, guild } = placedGuild();
     supplyGuild(guild);
     tick(game);
@@ -1077,9 +1077,9 @@ describe("the inspector on a Traders' Guild", () => {
       title: "Traders' Guild",
       lines: [
         'Tile 3, 12',
-        'Merchants 20/20',
+        'Residents 240/240',
         'Appeal 27',
-        'Pays no tax: earns through trade',
+        'No tax collector has passed',
         'Trade route: none, needs a Palace with a road to the Main Road',
         'Fully supplied',
         'Fire risk 0%',

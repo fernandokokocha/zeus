@@ -16,7 +16,6 @@ from the labor pool and is where the bonus is made.
 
 Spec: `docs/superpowers/specs/2026-10-29-elite-rework-scholars-design.md`.
 
-- Elite rework
 - Well dressed
 
 ## Scholars' House

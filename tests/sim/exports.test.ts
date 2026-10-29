@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { TICKS_PER_MONTH } from '../../src/sim/clock';
 import { demolish, placeRoad } from '../../src/sim/commands';
-import { CARAVAN_MERCHANTS, YARD_SLOTS, setExportSlot, slotHoldings, tickCaravans } from '../../src/sim/exports';
+import { BUILDING_SPECS } from '../../src/sim/buildings';
+import { CARAVAN_MERCHANTS, YARD_CART_PUSHERS, YARD_SLOTS, setExportSlot, slotHoldings, tickCaravans } from '../../src/sim/exports';
 import { yardOf } from '../../src/sim/guild';
 import { describeTile } from '../../src/sim/inspect';
 import type { Caravan, GameState } from '../../src/sim/state';
 import { roundTripMonths } from '../../src/sim/trade';
-import { placedGuild, runTicks, supplyGuild, tradingTown, withStore, type Town } from './helpers';
+import { emptyCity, placedGuild, runTicks, supplyGuild, tradingTown, withStore, type Town } from './helpers';
 
 const STOREHOUSE = { x: 11, y: 8 };
 const GRANARY = { x: 11, y: 11 };
@@ -95,7 +96,7 @@ describe("the yard's cart pushers", () => {
     store.fleece = 600;
     exporting(town, 0, 'fleece');
     runTicks(town.game, TICKS_PER_MONTH);
-    expect(town.yard.workers).toBe(8);
+    expect(town.yard.workers).toBe(28);
     expect(store.fleece).toBe(0);
     expect(onlyCaravan(town.game)).toMatchObject({ good: 'fleece', loads: 6 });
   });
@@ -114,7 +115,7 @@ describe("the yard's cart pushers", () => {
     const town = tradingTown('thebes');
     const store = withStore(town, 'storehouse', STOREHOUSE);
     store.fleece = 1600;
-    for (const house of town.game.buildings.filter((b) => b.type === 'house')) house.residents = 0;
+    emptyCity(town.game);
     exporting(town, 0, 'fleece');
     runTicks(town.game, TICKS_PER_MONTH);
     expect(town.yard.fleece).toBe(0);
@@ -152,22 +153,27 @@ describe('a caravan setting off', () => {
     expect(town.game.caravans).toEqual([]);
   });
 
-  it('needs five merchants home, so twenty send four at most', () => {
+  it('needs five merchants home, so a fully staffed yard sends four at most', () => {
     const town = tradingTown('thebes');
     for (let slot = 0; slot < YARD_SLOTS; slot++) exporting(town, slot, 'fleece');
     town.yard.fleece = 6000;
+    town.yard.workers = BUILDING_SPECS.tradeYard.workers;
     advance(town.game, 10);
-    expect(town.guild.residents).toBe(4 * CARAVAN_MERCHANTS);
     expect(town.game.caravans).toHaveLength(4);
     expect(town.yard.fleece).toBe(3600);
   });
 
-  it('counts only the merchants the guild has', () => {
-    const town = tradingTown('thebes');
-    fullFleeceSlot(town);
-    town.guild.residents = CARAVAN_MERCHANTS - 1;
-    advance(town.game, 1);
-    expect(town.game.caravans).toEqual([]);
+  it("takes its merchants from the yard's staff, after its 8 cart pushers", () => {
+    expect([YARD_CART_PUSHERS, CARAVAN_MERCHANTS]).toEqual([8, 5]);
+    const caravansWith = (workers: number) => {
+      const town = tradingTown('thebes');
+      for (let slot = 0; slot < YARD_SLOTS; slot++) exporting(town, slot, 'fleece');
+      town.yard.fleece = 6000;
+      town.yard.workers = workers;
+      advance(town.game, 10);
+      return town.game.caravans.length;
+    };
+    expect([8, 12, 13, 18, 22, 28].map(caravansWith)).toEqual([0, 0, 1, 2, 2, 4]);
   });
 });
 
@@ -300,5 +306,12 @@ describe("the guild's inspector", () => {
     fullFleeceSlot(town);
     advance(town.game, 1);
     expect(describeTile(town.game, town.guild.x, town.guild.y).lines).toContain('Caravans out 1 of 4');
+  });
+
+  it("counts the caravans the yard's merchants allow", () => {
+    const town = tradingTown('thebes');
+    supplyGuild(town.guild);
+    town.yard.workers = 18;
+    expect(describeTile(town.game, town.guild.x, town.guild.y).lines).toContain('Caravans out 0 of 2');
   });
 });

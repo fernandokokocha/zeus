@@ -219,7 +219,7 @@ export function raiseGuild(state: GameState, placement: Placement): Building {
   removeBuildings(state, new Set(houses.map((h) => h.id)));
   const guild = build(state, placement);
   addBuilding(state, guildBlueprint(placement).yard);
-  guild.residents = Math.min(TRADERS_GUILD.merchants, sum(houses, (h) => h.residents));
+  guild.residents = Math.min(TRADERS_GUILD.capacity, sum(houses, (h) => h.residents));
   for (const good of CARRIED_GOODS) guild[good] = sum(houses, (h) => h[good]);
   for (const service of Object.keys(guild.coveredUntil) as Coverage[]) {
     guild.coveredUntil[service] = Math.max(...houses.map((h) => h.coveredUntil[service]));

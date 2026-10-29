@@ -7,7 +7,7 @@ import { setImportSlot, tickImports } from '../../src/sim/imports';
 import { describeTile, type TradeYardView } from '../../src/sim/inspect';
 import type { ForeignCaravan, GameState, Good } from '../../src/sim/state';
 import { PARTNER_CARAVANS, roundTripMonths, worldReport } from '../../src/sim/trade';
-import { placedGuild, runTicks, tradingTown, withStore, type Town } from './helpers';
+import { emptyCity, placedGuild, runTicks, tradingTown, withStore, type Town } from './helpers';
 
 const STOREHOUSE = { x: 11, y: 8 };
 const GRANARY = { x: 11, y: 11 };
@@ -149,7 +149,7 @@ describe("the yard's cart pushers", () => {
   it('move nothing without workers', () => {
     const town = tradingTown('thebes');
     const store = withStore(town, 'storehouse', STOREHOUSE);
-    for (const house of town.game.buildings.filter((b) => b.type === 'house')) house.residents = 0;
+    emptyCity(town.game);
     importing(town, 0, 'wood', 4);
     town.yard.wood = 400;
     runTicks(town.game, TICKS_PER_MONTH);

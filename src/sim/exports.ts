@@ -14,6 +14,7 @@ import { walkPath } from './walking';
 
 export const YARD_SLOTS = 4;
 export const CARAVAN_MERCHANTS = 5;
+export const YARD_CART_PUSHERS = 8;
 
 export interface SlotHolding {
   good: Good | null;
@@ -73,8 +74,16 @@ export function caravansOf(state: GameState, guild: Building): Caravan[] {
   return state.caravans.filter((c) => c.guildId === guild.id);
 }
 
+export function yardMerchants(yard: Building): number {
+  return Math.max(0, yard.workers - YARD_CART_PUSHERS);
+}
+
+export function caravanLimit(yard: Building): number {
+  return Math.floor(yardMerchants(yard) / CARAVAN_MERCHANTS);
+}
+
 function merchantsHome(state: GameState, guild: Building): number {
-  return guild.residents - CARAVAN_MERCHANTS * caravansOf(state, guild).length;
+  return yardMerchants(yardOf(state, guild)) - CARAVAN_MERCHANTS * caravansOf(state, guild).length;
 }
 
 export function tickCaravans(state: GameState): void {

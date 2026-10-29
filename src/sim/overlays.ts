@@ -70,10 +70,6 @@ function occupiedResidence<T>(read: (state: GameState, residence: Building) => T
   return (state, building) => (isResidence(building) && building.residents > 0 ? read(state, building) : null);
 }
 
-function occupiedHouse<T>(read: (state: GameState, house: Building) => T): (state: GameState, building: Building) => T | null {
-  return (state, building) => (building.type === 'house' && houseLevel(building) ? read(state, building) : null);
-}
-
 function months(count: number): string {
   return count.toFixed(1);
 }
@@ -135,7 +131,7 @@ function vendorColumn(vendor: Building): Omit<Column, 'building'> {
 }
 
 function biggestTaxPaid(state: GameState): number {
-  return Math.max(0, ...state.buildings.filter((b) => b.type === 'house' && houseLevel(b)).map(taxPaidLastYear));
+  return Math.max(0, ...state.buildings.filter((b) => isResidence(b) && houseLevel(b)).map(taxPaidLastYear));
 }
 
 function taxColumn(state: GameState, house: Building): Omit<Column, 'building'> {
@@ -160,7 +156,7 @@ const COLUMN_READERS: Record<ColumnOverlay, ColumnReader> = {
   supplies: (state, building) => (isAgoraVendor(building.type) ? vendorColumn(building) : residenceSupplies(state, building)),
   culture: occupiedResidence(cultureColumn),
   risk: (_, building) => riskColumn(building),
-  tax: occupiedHouse(taxColumn),
+  tax: occupiedResidence(taxColumn),
   staffing: (_, building) => staffColumn(building),
 };
 

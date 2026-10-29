@@ -58,8 +58,12 @@ export const HOUSE_LEVELS: Record<HouseLevel, HouseLevelSpec> = {
   },
 };
 
+const ELITE_HOUSES = 4;
+
 export const TRADERS_GUILD = {
-  merchants: 20,
+  houses: ELITE_HOUSES,
+  capacity: ELITE_HOUSES * HOUSE_LEVELS.townhouse.capacity,
+  taxMultiplier: 1,
   needs: [...HOUSE_LEVELS.townhouse.needs, 'cloth'] as ResidentNeed[],
   culture: HOUSE_LEVELS.townhouse.culture,
   appeal: HOUSE_LEVELS.townhouse.appeal.devolve,
@@ -93,7 +97,12 @@ export function houseLevel(house: Building): HouseLevel | null {
 }
 
 export function houseCapacity(house: Building): number {
+  if (house.type === 'tradersGuild') return TRADERS_GUILD.capacity;
   return HOUSE_LEVELS[houseLevel(house) ?? 'hut'].capacity;
+}
+
+export function taxMultiplier(residence: Building, level: HouseLevel): number {
+  return residence.type === 'tradersGuild' ? TRADERS_GUILD.taxMultiplier : HOUSE_LEVELS[level].taxMultiplier;
 }
 
 export function houseName(house: Building): string {

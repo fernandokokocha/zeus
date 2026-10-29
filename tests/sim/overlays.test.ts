@@ -279,10 +279,11 @@ describe("map overlays on a Traders' Guild", () => {
     expect(columnOf(game, 'culture', guild)!.bars.map(([part]) => part.kind)).toEqual(['philosophy', 'athletics', 'drama']);
   });
 
-  it('leave out tax: it pays none', () => {
+  it('stand its tax column, scaled with the houses', () => {
     const { game, guild } = placedGuild();
     guild.taxPaid = [1];
-    expect(columnOf(game, 'tax', guild)).toBeNull();
+    game.buildings.find((b) => b.type === 'house' && b.residents > 0)!.taxPaid = [4];
+    expect(columnOf(game, 'tax', guild)!.bars).toEqual([[{ kind: 'tax', share: 0.25 }]]);
   });
 });
 

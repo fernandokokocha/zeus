@@ -1,7 +1,7 @@
 import { BUILDING_SPECS } from './buildings';
 import { TICKS_PER_YEAR, monthOfYear } from './clock';
 import { recordFlow } from './flows';
-import { residentNeeds, isResidence } from './housing';
+import { TRADERS_GUILD, residentNeeds, isResidence } from './housing';
 import type { Building, GameState, PeddledGood } from './state';
 
 export const UNITS_PER_LOAD = 100;
@@ -44,10 +44,14 @@ export function harvestIfDue(state: GameState): void {
   state.version++;
 }
 
+function housesIn(residence: Building): number {
+  return residence.type === 'tradersGuild' ? TRADERS_GUILD.houses : 1;
+}
+
 const MONTHLY_NEED: Record<PeddledGood, (residence: Building) => number> = {
   food: (house) => house.residents * FOOD_PER_RESIDENT_PER_MONTH,
-  fleece: () => FLEECE_PER_HOUSE_PER_MONTH,
-  oil: () => OIL_PER_HOUSE_PER_MONTH,
+  fleece: (residence) => housesIn(residence) * FLEECE_PER_HOUSE_PER_MONTH,
+  oil: (residence) => housesIn(residence) * OIL_PER_HOUSE_PER_MONTH,
   cloth: (residence) => (residence.type === 'tradersGuild' ? CLOTH_PER_GUILD_PER_MONTH : 0),
 };
 

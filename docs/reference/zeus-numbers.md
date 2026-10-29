@@ -98,8 +98,8 @@ https://zeus.heavengames.com/gameinfo/appeal/. Fire/collapse are risk increments
 | Flower Garden | 2×2 | — | 20 | 8,7,6 | — | — |
 | Monument (**ours**, earned: first at **1,000** citizens, once per game; one per partner's first trade route) | 3×3 | — | free | 20,20,18,16,14,12 | — | — |
 | Any sanctuary | see below | | | 20,18,16,14,12,10 | — | — |
-| Traders' Guild (**ours**, elite house) | 4×4 | — (20 merchants) | 100 + 1 permit | — | 8 | — |
-| Trade Yard (spec, placed with its guild) | 4×2 | 8 (**ours**) | part of the guild's 100 | — | — | — |
+| Traders' Guild (**ours**, elite house) | 4×4 | — (240 residents, in the labor pool) | 100 + 1 permit | — | 8 | — |
+| Trade Yard (spec, placed with its guild) | 4×2 | 28: 8 cart pushers, then 20 merchants (**ours**) | part of the guild's 100 | — | — | — |
 
 - Collapse timing: 60 ÷ risk increment = months until collapse without maintenance.
 - Sculpture Studio workers: 12 on the industry page, 18 on the model-data page. Use 12.
@@ -178,8 +178,9 @@ carries, in loads.
 
 Exports (**ours**): a Trade Yard has **4** slots, each off or exporting one good its partner
 buys, and holding up to one caravan load of it. Its **8** workers fetch the goods from
-storehouses (granaries for food). A caravan takes **5** of the guild's 20 merchants, so a
-guild has at most **4** caravans out. Its drachmas (caravan load × "they pay us") reach the
+storehouses (granaries for food). A caravan takes **5** of the yard's 20 merchants, so a
+yard has at most **4** caravans out; a short-staffed yard fills its **8** cart-pusher posts first
+and sends ⌊merchants ÷ 5⌋. Its drachmas (caravan load × "they pay us") reach the
 treasury only at the Palace.
 
 Imports (spec): a slot can instead import a good its partner sells, **1** load up to one caravan
@@ -274,15 +275,17 @@ hold; its workers cart everything else to storehouses (granaries for food).
   **8 s** of real time and fades over **1 s**, at most **4** at once.
 - Well fed charter (spec): **24** months in a row with no house that eats going hungry
   grants **1** Traders' Guild permit, then the count restarts.
-- Traders' Guild (spec): **20** merchants who are its staff and stay out of the labor pool;
-  placed over four Townhouses in an exact 4×4 block whose front lines a straight **4**-tile
+- Traders' Guild (spec): keeps every resident of its four Townhouses (capacity **240**), who
+  join the labor pool, and settlers top it up; pays tax at multiplier **1** (**ours**, half a
+  Townhouse's). Placed over four Townhouses in an exact 4×4 block whose front lines a straight **4**-tile
   stretch of Main Road, with its **4×2** Trade Yard across the road on clear ground, and block appeal at least **25**; needs a Townhouse's needs plus cloth, culture
-  **45** and appeal **25**; pays no tax. Any need missing for **1 month** breaks it into four
+  **45** and appeal **25**. Any need missing for **1 month** breaks it into four
   vacant lots and the permit is lost.
+- A guild uses food per resident and four houses' fleece and oil (**8 units** each a month).
 - Cloth (spec, **ours**): a guild uses **8 units** a month; a cloth peddler fills it to **3 months**
   (24 units), like other goods. Ordinary houses take no cloth.
-- Placing a guild keeps the four houses' food, fleece and oil, summed, and their latest water and
-  culture coverage; residents beyond 20 leave.
+- Placing a guild keeps the four houses' food, fleece and oil, summed, their latest water and
+  culture coverage, and all their residents.
 - Guild sites (spec): a house shows the site of the 4×4 block it belongs to whose front lines the
   Main Road and that is closest to qualifying. "A Traders' Guild can now be placed at …" is posted **once per
   block**, named by its corner, the first time the block qualifies.

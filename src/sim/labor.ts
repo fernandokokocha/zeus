@@ -1,5 +1,6 @@
 import { BUILDING_SPECS } from './buildings';
 import { adjacentRoadTiles } from './commands';
+import { isResidence } from './housing';
 import { INDUSTRIES, NO_PRIORITY, isClosed, isIndustry, type Industry, type Priority } from './industries';
 import { isUnderConstruction } from './sanctuaries';
 import type { Building, GameState } from './state';
@@ -8,8 +9,8 @@ export const WORKING_SHARE = 0.52;
 const UNPRIORITIZED_RANK = 4;
 
 export function workforce(state: GameState): number {
-  const commoners = state.buildings.filter((b) => b.type === 'house').reduce((sum, house) => sum + house.residents, 0);
-  return Math.floor(commoners * WORKING_SHARE);
+  const residents = state.buildings.filter(isResidence).reduce((sum, residence) => sum + residence.residents, 0);
+  return Math.floor(residents * WORKING_SHARE);
 }
 
 function canWork(state: GameState, building: Building): boolean {
