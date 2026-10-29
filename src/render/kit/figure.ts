@@ -29,10 +29,12 @@ const DECLAIM_PACE = 0.3;
 const DECLAIM_REACH = 0.12;
 const LECTURE_TEMPO = 0.9;
 const LECTURE_GLANCE = 0.35;
+const WRITE_STROKE = 7;
+const WRITE_LINE = 0.6;
 
 export type Animate = (seconds: number) => void;
 export type Hat = 'straw' | 'pilos' | 'helmet' | 'bare';
-export type Motion = 'rest' | 'lookout' | 'hammer' | 'patrol' | 'throw' | 'sprint' | 'saw' | 'declaim' | 'lecture';
+export type Motion = 'rest' | 'lookout' | 'hammer' | 'patrol' | 'throw' | 'sprint' | 'saw' | 'declaim' | 'lecture' | 'write';
 
 export interface FigureParts {
   legs: THREE.Object3D;
@@ -153,6 +155,15 @@ const MOTIONS: Record<Motion, (pose: { torso: THREE.Object3D; neck: THREE.Object
     arm!.rotation.x = -Math.abs(gesture) * 0.3;
     torso.rotation.z = 0.06 + gesture * 0.05;
     neck.rotation.z = 0.12 + gesture * 0.06;
+  },
+  write: ({ torso, neck, arm }, t) => {
+    const line = Math.sin(t * WRITE_LINE);
+    const glance = Math.max(Math.sin(t * WRITE_LINE * 0.5), 0);
+    arm!.rotation.z = Math.sin(t * WRITE_STROKE) * 0.06;
+    arm!.rotation.y = line * 0.25;
+    torso.rotation.z = -0.12;
+    neck.rotation.z = -0.2 + glance * 0.25;
+    neck.rotation.y = line * 0.15 + glance * 0.6;
   },
   lecture: ({ torso, neck, arm, body }, t) => {
     const point = Math.max(Math.sin(t * LECTURE_TEMPO), 0);
