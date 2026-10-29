@@ -271,7 +271,7 @@ export interface GameState {
   monumentsToPlace: MonumentKind[];
   worksOfArt: number;
   crowdedCityEarned: boolean;
-  announcedGuildSites: number[];
+  announcedEliteSites: Record<EliteType, number[]>;
   routes: Route[];
   partnersTraded: Partner[];
   rngState: number;
@@ -336,7 +336,7 @@ export function newGameState(size: number, terrain: Terrain[], mainRoad: Point[]
     monumentsToPlace: [],
     worksOfArt: 0,
     crowdedCityEarned: false,
-    announcedGuildSites: [],
+    announcedEliteSites: { tradersGuild: [], scholarsHouse: [] },
     routes: [],
     partnersTraded: [],
     rngState: DEFAULT_SEED,

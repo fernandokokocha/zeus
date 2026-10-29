@@ -1,7 +1,7 @@
 import type { View } from '../render/view';
 import { overlayColor } from '../render/overlay-layer';
 import { tileUnderPointer } from '../render/picking';
-import { GUILD_SITE_READINGS, OVERLAYS, overlayReportAt, type Overlay } from '../sim/overlays';
+import { ELITE_SITE_READINGS, OVERLAYS, overlayReportAt, type Overlay } from '../sim/overlays';
 import type { Point } from '../sim/point';
 import type { GameState } from '../sim/state';
 import { byId } from './dom';
@@ -14,14 +14,15 @@ export const OVERLAY_NAMES: Record<Overlay, string> = {
   risk: 'Risk',
   tax: 'Tax',
   staffing: 'Staff',
-  guildSites: 'Guilds',
+  eliteSites: 'Elites',
 };
 
 const TOOLTIP_OFFSET = 16;
 
-const GUILD_SITES_KEY = [
-  { at: GUILD_SITE_READINGS.inRange, label: 'Along a straight stretch of the Main Road' },
-  { at: GUILD_SITE_READINGS.placeable, label: "A Traders' Guild can be placed now" },
+const ELITE_SITES_KEY = [
+  { at: ELITE_SITE_READINGS.guildRange, label: "Traders' Guild: along a straight stretch of the Main Road" },
+  { at: ELITE_SITE_READINGS.tradersGuild, label: "A Traders' Guild can be placed now" },
+  { at: ELITE_SITE_READINGS.scholarsHouse, label: "A Scholars' House can be placed now" },
 ];
 
 function mapLabel(overlay: Overlay | null): string {
@@ -68,12 +69,12 @@ export function createMapModes(state: GameState, view: View): { shown(): Overlay
 
   function showRamp(overlay: Overlay | null): void {
     ramp.replaceChildren();
-    ramp.hidden = overlay !== 'guildSites';
+    ramp.hidden = overlay !== 'eliteSites';
     if (ramp.hidden) return;
-    for (const { at, label: text } of GUILD_SITES_KEY) {
+    for (const { at, label: text } of ELITE_SITES_KEY) {
       const swatch = document.createElement('span');
       swatch.className = 'ramp-swatch';
-      swatch.style.background = overlayColor('guildSites', at).getStyle();
+      swatch.style.background = overlayColor('eliteSites', at).getStyle();
       const label = document.createElement('span');
       label.textContent = text;
       ramp.append(swatch, label);

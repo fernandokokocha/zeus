@@ -3,8 +3,8 @@ import { BUILDING_SPECS, isAgoraVendor, vendorGood, type BuildingType } from './
 import { CULTURES, CULTURE_POINTS, culturePoints } from './culture';
 import { taxPaidLastYear } from './economy';
 import { VENDOR_CAPACITY, houseStockTarget } from './food';
-import { guildSiteTiles, placeableGuildSites, siteSurroundings } from './guild';
-import { ELITE_HOUSING, buildingName, houseLevel, isResidence } from './housing';
+import { eliteSiteTiles, guildRange, placeableEliteSites } from './elite-sites';
+import { ELITE_HOUSING, buildingName, houseLevel, isResidence, type EliteType } from './housing';
 import { isEliteType } from './elites';
 import { amount, drachmas } from './inspect';
 import { isUnderConstruction } from './sanctuaries';
@@ -13,10 +13,10 @@ import { canBurn, canCollapse, riskShare } from './safety';
 import type { Point } from './point';
 import { NO_BUILDING, buildingById, inBounds, tileIndex, type Building, type CarrierKind, type Culture, type GameState, type PeddledGood, type RoamerKind, type TraineeKind } from './state';
 
-export const OVERLAYS = ['water', 'supplies', 'culture', 'appeal', 'risk', 'tax', 'staffing', 'guildSites'] as const;
+export const OVERLAYS = ['water', 'supplies', 'culture', 'appeal', 'risk', 'tax', 'staffing', 'eliteSites'] as const;
 
 export type Overlay = (typeof OVERLAYS)[number];
-export type TintOverlay = 'appeal' | 'guildSites';
+export type TintOverlay = 'appeal' | 'eliteSites';
 export type ColumnOverlay = Exclude<Overlay, TintOverlay>;
 
 export type Reading = number | null;
@@ -49,7 +49,7 @@ const SERVERS: Record<Overlay, BuildingType[]> = {
   risk: ['maintenanceOffice'],
   tax: ['taxOffice', 'palace'],
   staffing: [],
-  guildSites: [],
+  eliteSites: [],
 };
 
 export type WalkerKind = RoamerKind | CarrierKind | TraineeKind;
@@ -62,7 +62,7 @@ export const SERVING_WALKERS: Record<Overlay, WalkerKind[]> = {
   risk: ['superintendent'],
   tax: ['taxCollector'],
   staffing: [],
-  guildSites: [],
+  eliteSites: [],
 };
 
 type ColumnReader = (state: GameState, building: Building) => Omit<Column, 'building'> | null;
@@ -201,16 +201,20 @@ export function buildingLook(state: GameState, overlay: Overlay, building: Build
 
 export function overlayReadings(state: GameState, overlay: TintOverlay): Reading[] {
   if (overlay === 'appeal') return appealMap(state).map((appeal) => (appeal === 0 ? null : appeal));
-  return guildSiteReadings(state);
+  return eliteSiteReadings(state);
 }
 
-export const GUILD_SITE_READINGS = { inRange: 0, placeable: 1 };
+export const ELITE_SITE_READINGS = { guildRange: 0, tradersGuild: 1, scholarsHouse: 2 } satisfies Record<EliteType | 'guildRange', number>;
 
-function guildSiteReadings(state: GameState): Reading[] {
-  const around = siteSurroundings(state);
-  const readings = around.inRange.map((inRange, i) => (inRange && !state.mainRoad[i] ? GUILD_SITE_READINGS.inRange : null));
-  for (const site of placeableGuildSites(state, around)) {
-    for (const tile of guildSiteTiles(site)) readings[tileIndex(state, tile.x, tile.y)] = GUILD_SITE_READINGS.placeable;
+const PAINTED_LAST_WINS: EliteType[] = ['scholarsHouse', 'tradersGuild'];
+
+function eliteSiteReadings(state: GameState): Reading[] {
+  const readings: Reading[] = guildRange(state).map((inRange, i) => (inRange && !state.mainRoad[i] ? ELITE_SITE_READINGS.guildRange : null));
+  const appeal = appealMap(state);
+  for (const type of PAINTED_LAST_WINS) {
+    for (const site of placeableEliteSites(state, type, appeal)) {
+      for (const tile of eliteSiteTiles(site)) readings[tileIndex(state, tile.x, tile.y)] = ELITE_SITE_READINGS[type];
+    }
   }
   return readings;
 }

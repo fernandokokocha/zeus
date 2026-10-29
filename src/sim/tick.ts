@@ -8,7 +8,7 @@ import { tickScrolls } from './scrolls';
 import { readScrolls } from './scholars';
 import { settleMonth } from './economy';
 import { eat, growCrops, harvestIfDue } from './food';
-import { announceGuildSites } from './guild';
+import { announceEliteSites } from './elite-sites';
 import { tickElites } from './elites';
 import { evolveHouses } from './housing';
 import { assignWorkers } from './labor';
@@ -54,7 +54,7 @@ export function tick(state: GameState): void {
   tickSanctuaries(state);
   evolveHouses(state);
   tickElites(state);
-  announceGuildSites(state);
+  announceEliteSites(state);
   tickSafety(state);
   if (monthEnds) closeProductionMonth(state);
 }

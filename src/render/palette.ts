@@ -133,6 +133,8 @@ export const PALETTE = {
   overlayGood: 0x3fae4a,
   overlayBad: 0xd8402f,
   overlayGuildRange: 0x7f9fcf,
+  overlayTradersGuild: 0x2f5fb8,
+  overlayScholarsHouse: 0x8a4fc4,
   flatBase: 0xd8ccb2,
   columnStub: 0xece4d4,
   columnWater: 0x3d8fd6,

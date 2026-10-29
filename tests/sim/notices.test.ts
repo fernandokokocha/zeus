@@ -8,7 +8,7 @@ import { RISK_LIMIT, catchFire } from '../../src/sim/safety';
 import { SANCTUARY_WORK } from '../../src/sim/sanctuaries';
 import type { GameState } from '../../src/sim/state';
 import { tick } from '../../src/sim/tick';
-import { guildBlock, grassGame, placeHouse, runTicks } from './helpers';
+import { SCHOLARS_NEIGHBOURS, guildBlock, grassGame, placeHouse, runTicks, scholarsBlock } from './helpers';
 
 const loads = (count: number) => count * UNITS_PER_LOAD;
 
@@ -132,5 +132,41 @@ describe('the guild site notice', () => {
     game.permits.tradersGuild = 1;
     tick(game);
     expect(siteNotices(game)).toHaveLength(1);
+  });
+});
+
+describe("the Scholars' House site notice", () => {
+  const siteNotices = (game: GameState) => game.notices.filter((n) => n.text.startsWith("A Scholars' House can now be placed"));
+
+  it("is posted at the block the first time a Scholars' House can be placed there", () => {
+    const { game } = scholarsBlock();
+    tick(game);
+    expect(siteNotices(game)).toMatchObject([{ text: "A Scholars' House can now be placed at 3,12", at: { x: 3, y: 12 } }]);
+  });
+
+  it("is posted once per block, and only with a permit", () => {
+    const { game } = scholarsBlock();
+    game.permits.scholarsHouse = 0;
+    runTicks(game, 3);
+    expect(siteNotices(game)).toEqual([]);
+    game.permits.scholarsHouse = 1;
+    runTicks(game, 3);
+    game.permits.scholarsHouse = 0;
+    tick(game);
+    game.permits.scholarsHouse = 1;
+    runTicks(game, 3);
+    expect(siteNotices(game)).toHaveLength(1);
+  });
+
+  it("is posted for a block already announced for a Traders' Guild", () => {
+    const { game } = guildBlock();
+    tick(game);
+    for (const n of SCHOLARS_NEIGHBOURS) placeBuilding(game, n.type, n.x, n.y);
+    game.permits.scholarsHouse = 1;
+    tick(game);
+    expect(game.notices.map((n) => n.text).filter((text) => text.endsWith("can now be placed at 3,12"))).toEqual([
+      "A Traders' Guild can now be placed at 3,12",
+      "A Scholars' House can now be placed at 3,12",
+    ]);
   });
 });

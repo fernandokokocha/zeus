@@ -204,4 +204,6 @@ the upgrades when the time comes. Works of Art are its currency, and the first s
   scrolls (slice 38).
 - Scholars read 8 units a month, the guild's cloth amount (slice 38).
 - Works of Art are a count, not a stored good, and survive demotion.
-- Scholars are purple on the Elites map mode.
+- Scholars are purple on the Elites map mode; a placeable guild block turns deep blue.
+- A Scholars' House site shows in the inspector only once one of its neighbours stands within
+  6 tiles (slice 39), so not every house along a road carries the line.

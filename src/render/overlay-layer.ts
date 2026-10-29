@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { GUILD_SITE_READINGS, isColumnOverlay, overlayReadings, type Overlay, type TintOverlay } from '../sim/overlays';
+import { ELITE_SITE_READINGS, isColumnOverlay, overlayReadings, type Overlay, type TintOverlay } from '../sim/overlays';
 import type { GameState } from '../sim/state';
 import { PALETTE } from './palette';
 
@@ -20,9 +20,10 @@ const TINT_SCALES: Record<TintOverlay, ColorStop[]> = {
     { at: 0, color: PALETTE.plaster },
     { at: 20, color: good },
   ],
-  guildSites: [
-    { at: GUILD_SITE_READINGS.inRange, color: PALETTE.overlayGuildRange },
-    { at: GUILD_SITE_READINGS.placeable, color: good },
+  eliteSites: [
+    { at: ELITE_SITE_READINGS.guildRange, color: PALETTE.overlayGuildRange },
+    { at: ELITE_SITE_READINGS.tradersGuild, color: PALETTE.overlayTradersGuild },
+    { at: ELITE_SITE_READINGS.scholarsHouse, color: PALETTE.overlayScholarsHouse },
   ],
 };
 

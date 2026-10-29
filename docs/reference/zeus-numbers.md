@@ -317,6 +317,8 @@ hold; its workers cart everything else to storehouses (granaries for food).
   (24 units). Ordinary houses take no cloth.
 - Placing a guild keeps the four houses' food, fleece and oil, summed, their latest water and
   culture coverage, and all their residents.
-- Guild sites (spec): a house shows the site of the 4×4 block it belongs to whose front lines the
-  Main Road and that is closest to qualifying. "A Traders' Guild can now be placed at …" is posted **once per
-  block**, named by its corner, the first time the block qualifies.
+- Elite sites (spec): a house shows, for each elite type, the site of the 4×4 block it belongs to
+  whose front lines the type's road and that is closest to qualifying. A Scholars' House site also
+  needs at least one of its neighbours within **6** tiles before it shows. "A Traders' Guild (Scholars'
+  House) can now be placed at …" is posted **once per block per type**, named by its corner, the first
+  time the block qualifies.

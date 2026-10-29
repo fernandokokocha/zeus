@@ -15,7 +15,7 @@ import { FIRE_BURN_TICKS, RISK_LIMIT, catchFire } from '../../src/sim/safety';
 import { SETTLER_SPAWN_INTERVAL_TICKS } from '../../src/sim/settlers';
 import { walkerTile } from '../../src/sim/walking';
 import { tick } from '../../src/sim/tick';
-import { guildBlock, grassGame, mainRoadGame, placeHouse, placedGuild, runTicks, setMeadow, setTerrain, supplyGuild } from './helpers';
+import { SCHOLARS_NEIGHBOURS, guildBlock, grassGame, scholarsBlock, mainRoadGame, placeHouse, placedGuild, runTicks, setMeadow, setTerrain, supplyGuild } from './helpers';
 
 function meter(game: GameState, x: number, y: number, label: string): Meter {
   const found = describeTile(game, x, y).meters.find((m) => m.label === label);
@@ -1219,5 +1219,48 @@ it('prefers, among equally short blocks, the one already made of houses', () => 
     const { game } = guildBlock(18);
     expect(siteLine(game, 3, 12)).toBeUndefined();
     expect(siteLine(game, 3, 14)).toMatch(/^Possible guild site at 3, 14: 2 of the other 3 houses not Townhouses/);
+  });
+});
+
+describe("the inspector on a possible Scholars' House site", () => {
+  const siteLine = (game: GameState, x: number, y: number) => describeTile(game, x, y).lines.find((line) => /Scholars' House site/.test(line));
+
+  it("says a Scholars' House can be placed on a ready block", () => {
+    const { game } = scholarsBlock();
+    expect(siteLine(game, 5, 14)).toBe("Scholars' House site at 3, 12: a Scholars' House can be placed now");
+  });
+
+  it("names each neighbour missing within 6 tiles", () => {
+    const { game } = scholarsBlock(['gymnasium']);
+    expect(siteLine(game, 3, 12)).toBe("Possible Scholars' House site at 3, 12: no Theater within 6 tiles, no Podium within 6 tiles");
+  });
+
+  it("shows nowhere without any of its neighbours", () => {
+    const { game } = scholarsBlock([]);
+    expect(siteLine(game, 3, 12)).toBeUndefined();
+  });
+
+  it("names a Library whose ground across the road isn't clear", () => {
+    const { game } = scholarsBlock();
+    placeBuilding(game, 'park', 4, 18);
+    expect(siteLine(game, 3, 12)).toBe("Possible Scholars' House site at 3, 12: the Library's ground across the road isn't clear");
+  });
+
+  it("names a house not a Townhouse yet and a missing permit", () => {
+    const { game, houses } = scholarsBlock();
+    houses[3].level = 'apartment';
+    game.permits.scholarsHouse = 0;
+    expect(siteLine(game, 5, 14)).toBe("Possible Scholars' House site at 3, 12: not a Townhouse yet, no permit");
+  });
+
+  it("shows beside the guild's line on a block that could take either", () => {
+    const { game } = guildBlock();
+    for (const n of SCHOLARS_NEIGHBOURS) placeBuilding(game, n.type, n.x, n.y);
+    game.permits.scholarsHouse = 1;
+    const lines = describeTile(game, 3, 12).lines.filter((line) => / site at /.test(line));
+    expect(lines).toEqual([
+      "Guild site at 3, 12: a Traders' Guild can be placed now",
+      "Scholars' House site at 3, 12: a Scholars' House can be placed now",
+    ]);
   });
 });
