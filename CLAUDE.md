@@ -7,8 +7,9 @@ build it one slice at a time, and the owner playtests the deployed build between
   `docs/superpowers/specs/2026-10-25-elite-housing-design.md` (elite housing, slices 12–17),
   `docs/superpowers/specs/2026-10-26-map-modes-ledger-design.md` (map modes and the Ledger,
   slices 18–24), `docs/superpowers/specs/2026-10-27-appeal-design.md` (road upgrades and the
-  Monument, slices 25–26) and `docs/superpowers/specs/2026-10-27-trade-design.md` (trade,
-  slices 27–31). Read all five every session.
+  Monument, slices 25–26), `docs/superpowers/specs/2026-10-27-trade-design.md` (trade,
+  slices 27–31) and `docs/superpowers/specs/2026-10-29-elite-rework-scholars-design.md`
+  (elite rework and the Scholars' House, slices 33–38 and on). Read all six every session.
 - **Gameplay numbers:** `docs/reference/zeus-numbers.md`.
 - **Progress:** `docs/roadmap.md`.
 - **Slice plans:** `docs/slices/NN-name.md`.
