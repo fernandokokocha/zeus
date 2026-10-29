@@ -12,6 +12,7 @@ import { createWorldLayer } from './render/world-layer';
 import { TICKS_PER_SECOND } from './sim/clock';
 import { tick } from './sim/tick';
 import { createGame } from './sim/state';
+import { isStartCity, startCity } from './sim/start-cities';
 import { byId } from './ui/dom';
 import { createInspector } from './ui/inspector';
 import { createLedger } from './ui/ledger';
@@ -26,8 +27,10 @@ const MAX_TICKS_PER_FRAME = 40;
 const MAX_FRAME_SECONDS = 0.25;
 const START_VIEW_OFFSET = 15;
 
-const seed = new URLSearchParams(location.search).get('seed');
-const state = seed === null ? createGame() : createGame(Number(seed));
+const params = new URLSearchParams(location.search);
+const seed = params.get('seed');
+const city = params.get('city');
+const state = city !== null && isStartCity(city) ? startCity(city) : seed === null ? createGame() : createGame(Number(seed));
 const inward = (c: number) => (c === 0 ? 1 : c === state.size - 1 ? -1 : 0);
 const view = createView(
   byId<HTMLCanvasElement>('view'),
