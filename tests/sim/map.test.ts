@@ -14,11 +14,4 @@ describe('generateTerrain', () => {
     const kinds = new Set(generateTerrain(DEFAULT_SEED).terrain);
     expect([...kinds].sort()).toEqual(['copper', 'forest', 'grass', 'marble', 'meadow', 'water']);
   });
-
-  it('has water only near the east edge', () => {
-    const { terrain } = generateTerrain(DEFAULT_SEED);
-    terrain.forEach((kind, i) => {
-      if (kind === 'water') expect(i % MAP_SIZE).toBeGreaterThan(MAP_SIZE / 2);
-    });
-  });
 });

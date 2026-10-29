@@ -28,9 +28,10 @@ const START_VIEW_OFFSET = 15;
 
 const seed = new URLSearchParams(location.search).get('seed');
 const state = seed === null ? createGame() : createGame(Number(seed));
+const inward = (c: number) => (c === 0 ? 1 : c === state.size - 1 ? -1 : 0);
 const view = createView(
   byId<HTMLCanvasElement>('view'),
-  new THREE.Vector3(state.entry.x + START_VIEW_OFFSET, 0, state.entry.y),
+  new THREE.Vector3(state.entry.x + inward(state.entry.x) * START_VIEW_OFFSET, 0, state.entry.y + inward(state.entry.y) * START_VIEW_OFFSET),
 );
 const terrain = createTerrainLayer();
 view.scene.add(terrain.group);

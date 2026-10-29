@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { footprint } from '../../src/sim/commands';
 import { guildBlueprint } from '../../src/sim/guild';
-import { MAP_SIZE, generateTerrain } from '../../src/sim/map';
+import { MAP_SIZE, ORIENTATIONS, generateTerrain, orientMap } from '../../src/sim/map';
 import type { Point } from '../../src/sim/point';
 import { BUILDABLE, type Terrain } from '../../src/sim/terrain';
 
@@ -11,12 +11,34 @@ const ROTATIONS = [0, 1, 2, 3] as const;
 const GUILD_PLACEMENTS = 7;
 const CLEARABLE: ReadonlySet<Terrain> = new Set<Terrain>([...BUILDABLE, 'forest']);
 const MAX_HORIZONTAL_RUNS = 3;
+const DEPOSIT_ROAD_CLEARANCE = 8;
 const BAND = { minY: MAP_SIZE / 4, maxY: (MAP_SIZE * 3) / 4 - 1 };
 
 interface Run {
   dx: number;
   dy: number;
   steps: number;
+}
+
+type GeneratedMap = ReturnType<typeof generateTerrain>;
+
+const CANONICAL_ENTRY = [
+  { x: 0, y: MAP_SIZE / 2 },
+  { x: 1, y: MAP_SIZE / 2 },
+];
+
+function canonical({ terrain, mainRoad }: GeneratedMap): GeneratedMap {
+  const turned = ORIENTATIONS.map((o) => orientMap(terrain, mainRoad, o));
+  const match = turned.find((map) => JSON.stringify(map.mainRoad.slice(0, 2)) === JSON.stringify(CANONICAL_ENTRY));
+  if (!match) throw new Error('No orientation brings the entry to the middle of the west edge');
+  return match;
+}
+
+function entryEdge({ mainRoad: [entry] }: GeneratedMap): string {
+  if (entry.x === 0) return 'west';
+  if (entry.x === MAP_SIZE - 1) return 'east';
+  if (entry.y === 0) return 'north';
+  return 'south';
 }
 
 function runsOf(road: Point[]): Run[] {
@@ -41,36 +63,72 @@ function at(terrain: Terrain[], x: number, y: number): Terrain {
   return terrain[y * MAP_SIZE + x];
 }
 
-function guildBlueprints(terrain: Terrain[], road: Point[]): number {
-  const index = (p: Point) => p.y * MAP_SIZE + p.x;
-  const inMap = (p: Point) => p.x >= 0 && p.y >= 0 && p.x < MAP_SIZE && p.y < MAP_SIZE;
+const index = (p: Point) => p.y * MAP_SIZE + p.x;
+const inMap = (p: Point) => p.x >= 0 && p.y >= 0 && p.x < MAP_SIZE && p.y < MAP_SIZE;
+
+function blueprintGrounds(road: Point[]): Point[][] {
   const onRoad = new Set(road.map(index));
-  const taken = new Set<number>();
-  let count = 0;
-  for (const corner of road) {
-    for (const rotation of ROTATIONS) {
+  return road.flatMap((corner) =>
+    ROTATIONS.flatMap((rotation) => {
       const [offset] = guildBlueprint({ type: 'tradersGuild', x: 0, y: 0, rotation }).road;
       const guild = { type: 'tradersGuild', x: corner.x - offset.x, y: corner.y - offset.y, rotation } as const;
       const blueprint = guildBlueprint(guild);
       const ground = [...footprint(guild), ...footprint(blueprint.yard)];
-      const fits =
-        blueprint.road.every((p) => inMap(p) && onRoad.has(index(p))) &&
-        ground.every((p) => inMap(p) && CLEARABLE.has(terrain[index(p)]) && !onRoad.has(index(p)) && !taken.has(index(p)));
-      if (fits) {
-        ground.forEach((p) => taken.add(index(p)));
-        count++;
-      }
+      const fits = blueprint.road.every((p) => inMap(p) && onRoad.has(index(p))) && ground.every((p) => inMap(p) && !onRoad.has(index(p)));
+      return fits ? [ground] : [];
+    }),
+  );
+}
+
+function guildBlueprints(terrain: Terrain[], road: Point[]): number {
+  const taken = new Set<number>();
+  let count = 0;
+  for (const ground of blueprintGrounds(road)) {
+    if (ground.every((p) => CLEARABLE.has(terrain[index(p)]) && !taken.has(index(p)))) {
+      ground.forEach((p) => taken.add(index(p)));
+      count++;
     }
   }
   return count;
 }
 
+function tilesOf(terrain: Terrain[], kind: Terrain): Point[] {
+  return terrain.flatMap((t, i) => (t === kind ? [{ x: i % MAP_SIZE, y: Math.floor(i / MAP_SIZE) }] : []));
+}
+
+function regionsOf(terrain: Terrain[], kind: Terrain): number {
+  const seen = new Set<number>();
+  let regions = 0;
+  for (const start of tilesOf(terrain, kind)) {
+    if (seen.has(index(start))) continue;
+    regions++;
+    const queue = [start];
+    seen.add(index(start));
+    while (queue.length > 0) {
+      const p = queue.pop()!;
+      for (const n of [{ x: p.x + 1, y: p.y }, { x: p.x - 1, y: p.y }, { x: p.x, y: p.y + 1 }, { x: p.x, y: p.y - 1 }]) {
+        if (inMap(n) && terrain[index(n)] === kind && !seen.has(index(n))) {
+          seen.add(index(n));
+          queue.push(n);
+        }
+      }
+    }
+  }
+  return regions;
+}
+
 describe.each(SEEDS)('the Main Road on seed %i', (seed) => {
-  const { terrain, mainRoad } = generateTerrain(seed);
+  const { terrain, mainRoad } = canonical(generateTerrain(seed));
   const runs = runsOf(mainRoad);
 
-  it('starts at the middle of the west edge', () => {
+  it('turned so it enters from the west, starts at the middle of the west edge', () => {
     expect(mainRoad[0]).toEqual({ x: 0, y: MAP_SIZE / 2 });
+  });
+
+  it('has the sea on the far side from the entry', () => {
+    terrain.forEach((kind, i) => {
+      if (kind === 'water') expect(i % MAP_SIZE).toBeGreaterThan(MAP_SIZE / 2);
+    });
   });
 
   it('is a connected path that never crosses itself', () => {
@@ -114,6 +172,22 @@ it('turns only one way vertically, never doubling back', () => {
     }
   });
 
+  it('has exactly one marble deposit and one copper deposit', () => {
+    expect(regionsOf(terrain, 'marble')).toBe(1);
+    expect(regionsOf(terrain, 'copper')).toBe(1);
+  });
+
+  it('keeps every deposit tile more than 8 tiles from the Main Road', () => {
+    for (const d of [...tilesOf(terrain, 'marble'), ...tilesOf(terrain, 'copper')]) {
+      for (const p of mainRoad) expect(Math.max(Math.abs(d.x - p.x), Math.abs(d.y - p.y))).toBeGreaterThan(DEPOSIT_ROAD_CLEARANCE);
+    }
+  });
+
+  it('puts no deposit where a Traders’ Guild blueprint could go', () => {
+    const guildGround = new Set(blueprintGrounds(mainRoad).flat().map(index));
+    for (const d of [...tilesOf(terrain, 'marble'), ...tilesOf(terrain, 'copper')]) expect(guildGround.has(index(d))).toBe(false);
+  });
+
   it('leaves room for 7 Traders’ Guilds with their yards, on ground that is buildable or can be cleared', () => {
     expect(guildBlueprints(terrain, mainRoad)).toBeGreaterThanOrEqual(GUILD_PLACEMENTS);
   });
@@ -124,6 +198,10 @@ describe('the Main Road across seeds', () => {
     expect(generateTerrain(7).mainRoad).toEqual(generateTerrain(7).mainRoad);
   });
 
+  it('enters from every edge of the map across seeds', () => {
+    expect(new Set(SEEDS.map((seed) => entryEdge(generateTerrain(seed))))).toEqual(new Set(['west', 'east', 'north', 'south']));
+  });
+
   it('differs between seeds', () => {
     const shapes = new Set(SEEDS.slice(0, 10).map((seed) => JSON.stringify(generateTerrain(seed).mainRoad)));
     expect(shapes.size).toBe(10);
@@ -131,7 +209,7 @@ describe('the Main Road across seeds', () => {
 
 it('reaches the coast on some maps and ends inland on others', () => {
   const reachesWater = SEEDS.map((seed) => {
-    const { terrain, mainRoad } = generateTerrain(seed);
+    const { terrain, mainRoad } = canonical(generateTerrain(seed));
     const end = mainRoad.at(-1)!;
     return at(terrain, end.x + 1, end.y) === 'water';
   });
@@ -140,7 +218,7 @@ it('reaches the coast on some maps and ends inland on others', () => {
 });
 
 it('ends inland anywhere along a spectrum of lengths', () => {
-  const inlandEnds = SEEDS.map((seed) => generateTerrain(seed))
+  const inlandEnds = SEEDS.map((seed) => canonical(generateTerrain(seed)))
     .filter(({ terrain, mainRoad }) => at(terrain, mainRoad.at(-1)!.x + 1, mainRoad.at(-1)!.y) !== 'water')
     .map(({ mainRoad }) => mainRoad.at(-1)!.x);
   expect(Math.min(...inlandEnds)).toBeLessThan(35);

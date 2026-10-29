@@ -46,7 +46,7 @@ function routeRows(state: GameState): RouteRow[] {
 
 function ourCaravanWhere(state: GameState, caravan: Caravan): string {
   const where: Record<CaravanTrip, () => string> = {
-    out: () => (caravan.waiting ? 'Waiting: no road west' : `Heading out to ${PLACES[caravan.partner].name}`),
+    out: () => (caravan.waiting ? 'Waiting: no road out of the city' : `Heading out to ${PLACES[caravan.partner].name}`),
     away: () => `Away: back in about ${months(caravan.backAt - state.tick)}`,
     home: () => (caravan.waiting ? 'Waiting: no road to the Palace' : `Taking ${drachmas(caravan.drachmas)} to the Palace`),
     merchants: () => 'Merchants walking home to the guild',

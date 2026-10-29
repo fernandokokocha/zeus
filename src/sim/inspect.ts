@@ -765,7 +765,7 @@ function describeCaravan(state: GameState, caravan: Caravan): Description {
   const partner = PLACES[caravan.partner].name;
   const worth = drachmas(caravan.drachmas);
   const trip: Record<Exclude<CaravanTrip, 'away'>, string[]> = {
-    out: [caravan.waiting ? 'Waiting: no road west' : `Heading out to ${partner}`, `Carrying ${caravanCargo(caravan)}, worth ${worth}`],
+    out: [caravan.waiting ? 'Waiting: no road out of the city' : `Heading out to ${partner}`, `Carrying ${caravanCargo(caravan)}, worth ${worth}`],
     home: [caravan.waiting ? 'Waiting: no road to the Palace' : `Taking ${worth} to the Palace`, `Sold ${caravanCargo(caravan)} in ${partner}`],
     merchants: ['Merchants walking home to the guild'],
   };

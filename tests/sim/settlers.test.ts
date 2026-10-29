@@ -42,8 +42,11 @@ describe('settlers', () => {
     const game = createGame(7);
     const { mainRoad } = generateTerrain(7);
     const stop = mainRoad[6];
-    for (const [dx, dy] of [[0, 1], [1, 1], [0, 2], [1, 2]]) setTerrain(game, stop.x + dx, stop.y + dy, 'grass');
-    placeHouse(game, stop.x, stop.y + 1);
+    const along = { x: mainRoad[7].x - stop.x, y: mainRoad[7].y - stop.y };
+    const beside = { x: -along.y, y: along.x };
+    const lot = [1, 2].flatMap((out) => [0, 1].map((on) => ({ x: stop.x + out * beside.x + on * along.x, y: stop.y + out * beside.y + on * along.y })));
+    for (const p of lot) setTerrain(game, p.x, p.y, 'grass');
+    placeHouse(game, Math.min(...lot.map((p) => p.x)), Math.min(...lot.map((p) => p.y)));
     runTicks(game, SETTLER_SPAWN_INTERVAL_TICKS);
     const [settler] = game.settlers;
     expect(settler.path).toEqual(mainRoad.slice(0, 7));

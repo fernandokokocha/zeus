@@ -53,8 +53,9 @@ first version.
 The pre-built entry road becomes the **Main Road**, a long, generated road that is the
 spine of the city and the future route of traders.
 
-- It enters at the middle of the west edge, where settlers arrive now, and runs east. How
-  far is up to the seed, on a spectrum: some maps end it inland after about 25 tiles,
+- It enters at the middle of the west edge, where settlers arrive now, and runs east (since
+  slice 32 the finished map is rotated or mirrored at random, so any edge). How far is up
+  to the seed, on a spectrum: some maps end it inland after about 25 tiles,
   some far east, and about a third reach the coast. Its length sets how many guild sites
   the map has. Only a road that reaches the shore leaves room for a later harbour.
 - **Shape:** long straight runs joined by right-angle turns. A tight staircase leaves no

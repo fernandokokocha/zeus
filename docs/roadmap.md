@@ -8,11 +8,6 @@ Everything still to build, in order: milestones and ad-hoc requests mixed.
 - The next thing to build is the first item. It gets its slice number when work starts, and
   it is deleted from here in the commit that delivers it.
 
-- **Map generation fix** (ad-hoc):
-  - **Deposits:** one marble deposit and one copper deposit per map, and neither within reach of the Main Road. No deposit tile may fall where a Traders' Guild blueprint could go, so deposits never take guild space.
-  - **Road direction:** the Main Road always runs west to east today, entering at the west edge with the sea in the east. Its vertical runs already go up or down at random. Keep the road monotonic (it never doubles back), but at the end of generation rotate or mirror the whole map at random. Then the entry edge, the coast and the road's direction vary from map to map.
-  - **Test:** the 100-seed tests check all of the above on every orientation.
-
 ## Elite rework
 
 Every elite keeps the population and consumption of the four Townhouses it replaces, adds
