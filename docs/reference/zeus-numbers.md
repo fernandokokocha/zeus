@@ -285,6 +285,10 @@ hold; its workers cart everything else to storehouses (granaries for food).
   Townhouse running out of fleece or oil (a guild counts as a Townhouse) grants **1** Traders'
   Guild permit, then the count restarts. A month with no Townhouse resets a running count.
   Permits are held per elite type.
+- Learned city charter (spec): **24** months in a row with at least one Townhouse and every
+  Townhouse covered by philosophy, athletics and drama at month end (elite houses count as
+  Townhouses) grants **1** Scholars' House permit, then the count restarts. A month with no
+  Townhouse resets a running count.
 - Traders' Guild (spec): keeps every resident of its four Townhouses (capacity **240**), who
   join the labor pool, and settlers top it up; pays tax at multiplier **1** (**ours**, half a
   Townhouse's). Placed over four Townhouses in an exact 4×4 block whose front lines a straight **4**-tile

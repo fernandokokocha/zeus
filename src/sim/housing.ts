@@ -58,7 +58,12 @@ export const HOUSE_LEVELS: Record<HouseLevel, HouseLevelSpec> = {
   },
 };
 
-export type EliteType = 'tradersGuild';
+export type EliteType = 'tradersGuild' | 'scholarsHouse';
+
+export const ELITE_NAMES: Record<EliteType, string> = {
+  tradersGuild: BUILDING_SPECS.tradersGuild.name,
+  scholarsHouse: "Scholars' House",
+};
 
 const ELITE_HOUSES = 4;
 

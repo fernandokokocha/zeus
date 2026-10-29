@@ -531,6 +531,14 @@ button.active {
   font-size: 13px;
 }
 
+.charter-chapter strong {
+  display: block;
+}
+
+.charter-chapter p + strong {
+  margin-top: 10px;
+}
+
 .charter-chapter .charter-permits {
   margin-top: 10px;
 }

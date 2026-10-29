@@ -1,5 +1,5 @@
 import type { BuildingType, Rotation } from './buildings';
-import type { WellDressed } from './charters';
+import type { CharterCount } from './charters';
 import { emptyFlows, type FlowBook } from './flows';
 import type { EliteType, HouseLevel } from './housing';
 import type { MonumentKind } from './monuments';
@@ -263,7 +263,8 @@ export interface GameState {
   nextForeignCaravanId: number;
   notices: Notice[];
   nextNoticeId: number;
-  wellDressed: WellDressed;
+  wellDressed: CharterCount;
+  learnedCity: CharterCount;
   permits: Record<EliteType, number>;
   monumentsToPlace: MonumentKind[];
   crowdedCityEarned: boolean;
@@ -327,7 +328,8 @@ export function newGameState(size: number, terrain: Terrain[], mainRoad: Point[]
     notices: [],
     nextNoticeId: 1,
     wellDressed: { months: 0, reset: null },
-    permits: { tradersGuild: 0 },
+    learnedCity: { months: 0, reset: null },
+    permits: { tradersGuild: 0, scholarsHouse: 0 },
     monumentsToPlace: [],
     crowdedCityEarned: false,
     announcedGuildSites: [],

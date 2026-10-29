@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { WELL_DRESSED_MONTHS, tallyWellDressed } from '../../src/sim/charters';
+import { LEARNED_CITY_MONTHS, WELL_DRESSED_MONTHS, tallyLearnedCity, tallyWellDressed } from '../../src/sim/charters';
 import { FLEECE_PER_HOUSE_PER_MONTH, OIL_PER_HOUSE_PER_MONTH } from '../../src/sim/food';
 import { HOUSE_LEVELS } from '../../src/sim/housing';
+import { TICKS_PER_MONTH } from '../../src/sim/clock';
+import { tick } from '../../src/sim/tick';
 import type { Building, GameState } from '../../src/sim/state';
 import { grassGame, placeHouse, placedGuild, supplyGuild } from './helpers';
 
@@ -115,5 +117,105 @@ describe('the Well dressed charter', () => {
     guild.oil = 0;
     tallyWellDressed(game);
     expect(game.wellDressed.reset).toEqual({ tick: game.tick, cause: "Traders' Guild at 3,12 ran out of oil" });
+  });
+});
+
+const FAR_FUTURE = 1_000_000;
+
+function cover(house: Building): void {
+  Object.assign(house.coveredUntil, { philosophy: FAR_FUTURE, athletics: FAR_FUTURE, drama: FAR_FUTURE });
+}
+
+function learnedCity(): { game: GameState; house: Building } {
+  const { game, house } = cityWithTownhouse();
+  cover(house);
+  return { game, house };
+}
+
+describe("the Learned city charter", () => {
+  it("starts at zero months, with no reset and no permit", () => {
+    const game = grassGame();
+    expect(game.learnedCity).toEqual({ months: 0, reset: null });
+    expect(game.permits.scholarsHouse).toBe(0);
+  });
+
+  it("counts a month in which every Townhouse has philosophy, athletics and drama", () => {
+    const { game } = learnedCity();
+    tallyLearnedCity(game);
+    tallyLearnedCity(game);
+    expect(game.learnedCity).toEqual({ months: 2, reset: null });
+  });
+
+  it(`grants a Scholars' House permit after ${LEARNED_CITY_MONTHS} months and starts again`, () => {
+    const { game } = learnedCity();
+    game.learnedCity.months = LEARNED_CITY_MONTHS - 1;
+    tallyLearnedCity(game);
+    expect(game.permits.scholarsHouse).toBe(1);
+    expect(game.permits.tradersGuild).toBe(0);
+    expect(game.learnedCity).toEqual({ months: 0, reset: null });
+    expect(game.notices).toEqual([
+      { id: 1, tick: 0, text: "Charter complete: Learned city. A Scholars' House permit is granted", at: null },
+    ]);
+  });
+
+  it("resets when a Townhouse misses a culture, naming it and the culture", () => {
+    const { game, house } = learnedCity();
+    game.tick = 90;
+    game.learnedCity.months = 10;
+    house.coveredUntil.drama = 90;
+    tallyLearnedCity(game);
+    expect(game.learnedCity).toEqual({ months: 0, reset: { tick: 90, cause: "Townhouse at 4,4 missed drama" } });
+    expect(game.permits.scholarsHouse).toBe(0);
+  });
+
+  it("names the first culture missed when several are", () => {
+    const { game, house } = learnedCity();
+    house.coveredUntil.athletics = 0;
+    house.coveredUntil.drama = 0;
+    tallyLearnedCity(game);
+    expect(game.learnedCity.reset).toEqual({ tick: 0, cause: "Townhouse at 4,4 missed athletics" });
+  });
+
+  it("is not reset by lower houses without culture", () => {
+    const { game } = learnedCity();
+    placeHouse(game, 8, 4);
+    Object.assign(game.buildings[1], { level: "apartment", residents: 40 });
+    tallyLearnedCity(game);
+    expect(game.learnedCity).toEqual({ months: 1, reset: null });
+  });
+
+  it("resets a running count in a month with no Townhouse", () => {
+    const game = grassGame();
+    game.learnedCity.months = 10;
+    tallyLearnedCity(game);
+    expect(game.learnedCity).toEqual({ months: 0, reset: { tick: 0, cause: "no Townhouse in the city" } });
+  });
+
+  it("counts a Traders' Guild as a Townhouse, and is reset by one missing a culture", () => {
+    const { game, guild } = placedGuild();
+    for (const house of game.buildings.filter((b) => b.type === "house")) house.residents = 0;
+    cover(guild);
+    tallyLearnedCity(game);
+    expect(game.learnedCity).toEqual({ months: 1, reset: null });
+    guild.coveredUntil.philosophy = 0;
+    tallyLearnedCity(game);
+    expect(game.learnedCity.reset).toEqual({ tick: game.tick, cause: "Traders' Guild at 3,12 missed philosophy" });
+  });
+
+it("is tallied at the end of every month", () => {
+  const { game } = learnedCity();
+  for (let i = 0; i < TICKS_PER_MONTH; i++) tick(game);
+  expect(game.learnedCity).toEqual({ months: 1, reset: null });
+});
+
+  it("is not affected by Well dressed, nor Well dressed by it", () => {
+    const { game, house } = learnedCity();
+    house.oil = 0;
+    tallyLearnedCity(game);
+    expect(game.learnedCity).toEqual({ months: 1, reset: null });
+    house.oil = PLENTY;
+    house.coveredUntil.drama = 0;
+    tallyWellDressed(game);
+    expect(game.wellDressed).toEqual({ months: 1, reset: null });
   });
 });
