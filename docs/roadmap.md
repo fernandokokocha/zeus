@@ -36,9 +36,3 @@ anywhere.
 - **Elite levels.** Needs its design first. For example Horsemen, from the Warriors' House.
 - **Nobles' Court.** Needs its design first. Near the Palace.
 
-## Designs referred to
-
-- **Elite rework:** every elite keeps the population and consumption of the four Townhouses
-  it replaces, adds one consumption of its own, and comes with an annex across a road,
-  staffed from the labor pool, where the bonus is made.
-- **Scholars' House:** the second elite type, producing Works of Art.
