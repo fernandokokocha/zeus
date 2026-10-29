@@ -5,11 +5,12 @@ import { FOOD, loaf, sack } from './food';
 import { COLORS, box, cylinder, flat, scaled, sphere } from './kit';
 import { amphora } from './oil';
 import { polishedGold, sparkle } from './palace';
+import { SCROLLS, scroll } from './scrolls';
 
-export type Good = 'food' | 'fleece' | 'oil' | 'cloth';
+export type Good = 'food' | 'fleece' | 'oil' | 'cloth' | 'scrolls';
 
 export const MARKET = {
-  trim: { food: 0xc0643b, fleece: COLORS.aegean, oil: 0x7f8f2e, cloth: CLOTH.dyed } as Record<Good, number>,
+  trim: { food: 0xc0643b, fleece: COLORS.aegean, oil: 0x7f8f2e, cloth: CLOTH.dyed, scrolls: 0x6e4a86 } as Record<Good, number>,
   linen: 0xe6d6ae,
   tunic: COLORS.deepAegean,
   plank: 0xa07a4a,
@@ -44,6 +45,7 @@ function storedLoad(good: Good, x: number, z: number, i: number): THREE.Object3D
   if (good === 'food') return sack(x, z, turn);
   if (good === 'fleece') return fleeceBundle(x, z, turn);
   if (good === 'cloth') return clothBolt(x, BASE, z, turn);
+  if (good === 'scrolls') return scroll(x, BASE, z, turn + Math.PI / 2);
   return amphora(x, z);
 }
 
@@ -104,6 +106,8 @@ export function standGoods(good: Good, x: number, z0: number, z1: number): THREE
         for (let layer = 0; layer < 2; layer++) group.add(scaled(sphere(0.5, flat(MARKET.fleece), tx, top + 0.025 + layer * 0.04, z), 0.11, 0.06, 0.15));
       } else if (good === 'cloth') {
         for (let layer = 0; layer < 3; layer++) group.add(box(0.11, 0.022, 0.15, flat(FOLDED_CLOTH[(k + layer) % FOLDED_CLOTH.length]), tx, top + layer * 0.022, z));
+      } else if (good === 'scrolls') {
+        for (const dx of [-0.03, 0.03]) group.add(scroll(tx + dx, top, z, Math.PI / 2));
       } else if (tier === 0) {
         group.add(scaled(amphora(0, 0), 0.6, 0.6, 0.6).translateX(tx).translateY(top - BASE).translateZ(z));
       } else {
@@ -122,6 +126,7 @@ export function frontBaskets(good: Good, x: number, zs: number[]): THREE.Object3
     fleece: [MARKET.fleece],
     oil: [MARKET.olive, 0x6a7a3a, MARKET.olive],
     cloth: [CLOTH.dyed, CLOTH.band],
+    scrolls: [SCROLLS.sheet],
   };
   zs.forEach((z, i) => group.add(wickerBasket(x, z, fillings[good][i % fillings[good].length])));
   return group;
@@ -237,8 +242,16 @@ function emblemSymbol(good: Good, x: number, y: number, z: number, r: number): T
       bolt.position.set(x, y + dy * r, z);
       group.add(bolt);
     }
-  } else {
-    const jarShape = amphora(0, 0, 0);
+} else if (good === 'scrolls') {
+  const sheet = cylinder(r * 0.22, r * 0.22, r * 1.0, flat(SCROLLS.sheet), 0, 0, 0, 12);
+  const rod = cylinder(r * 0.08, r * 0.08, r * 1.4, polishedGold, 0, 0, 0, 8);
+  for (const part of [sheet, rod]) {
+    part.rotation.x = Math.PI / 2;
+    part.position.set(x, y, z);
+    group.add(part);
+  }
+} else {
+  const jarShape = amphora(0, 0, 0);
     jarShape.traverse((node) => node instanceof THREE.Mesh && (node.material = polishedGold));
     jarShape.scale.set(r, r * 3.2, r * 3.2);
     jarShape.position.set(x, y - r * 0.55, z);

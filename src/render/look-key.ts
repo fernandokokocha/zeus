@@ -45,6 +45,7 @@ const LOOKS: Record<BuildingType, Look> = {
   olivePress: (b) => [b.olives > 0, loads(b.oil)],
   oilVendor: vendor,
   clothVendor: vendor,
+  scrollVendor: vendor,
   weaver: (b) => [b.workers > 0, b.fleece > 0, loads(b.cloth)],
   scriptorium: (b) => [b.workers > 0, b.papyrus > 0, b.fleece > 0, loads(b.scrolls)],
   timberMill: (b) => [b.workers > 0, loads(b.wood)],
@@ -59,7 +60,7 @@ const LOOKS: Record<BuildingType, Look> = {
   tradersGuild: (b) => [b.residents > 0, isMissingNeed(b)],
   tradeYard: unchanging,
   scholarsHouse: (b) => [isMissingNeed(b)],
-  library: (b) => [Math.ceil(b.scrolls / UNITS_PER_LOAD)],
+  library: (b) => [b.workers > 0],
   ruins: (b, state) => [isBurning(state, b)],
 };
 

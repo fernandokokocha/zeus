@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { BUILDING_SPECS } from '../sim/buildings';
-import { UNITS_PER_LOAD } from '../sim/food';
 import type { Building } from '../sim/state';
 import { blueDoor, cube, frontWindow } from './kit/cottage';
 import { paving } from './kit/garden';
@@ -60,8 +59,7 @@ export function libraryModel(library: Building): THREE.Object3D {
   for (const x of evenly(x0 + 0.1, x0 + w - 0.1, 7)) group.add(marbleColumn(x, z0 + 0.1, columns, floor));
   group.add(entablature(x0, z0, w, d, floor + columns));
   pedimentRoof(group, x0, z0, w, d, floor + columns + ENTABLATURE_HEIGHT, 0.3, 'tiles');
-  const held = Math.ceil(library.scrolls / UNITS_PER_LOAD);
-  RACKS.forEach((x, i) => group.add(scrollRack(x, i < held ? 2 : 0)));
+  RACKS.forEach((x) => group.add(scrollRack(x, library.workers > 0 ? 2 : 0)));
   group.rotation.y = Math.PI;
   group.position.set(LIBRARY.W, 0, LIBRARY.D);
   const turned = new THREE.Group();

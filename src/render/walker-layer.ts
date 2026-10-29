@@ -260,7 +260,7 @@ scriptoriumFleeceBuyer: [
   ...body(PALETTE.scribeBuyerTunic),
   { geometry: new THREE.SphereGeometry(0.07, 8, 6).scale(1.3, 0.8, 1).translate(0, 0.26, -0.08), color: PALETTE.wool },
 ],
-libraryBuyer: [...body(PALETTE.scribeBuyerTunic), scrollPart(0.2, 0.2, -0.09)],
+scrollBuyer: [...body(PALETTE.scribeBuyerTunic), scrollPart(0.2, 0.2, -0.09)],
 scrollCart: cart([scrollPart(0, 0.17, 0.18), scrollPart(0, 0.17, 0.24), scrollPart(0, 0.21, 0.21)]),
 papyrusCart: cart([papyrusPart(0.17, 0.19), papyrusPart(0.17, 0.26)]),
   artisan: [...body(PALETTE.artisanTunic), ...tool(new THREE.BoxGeometry(0.08, 0.05, 0.05))],

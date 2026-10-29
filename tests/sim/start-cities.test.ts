@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { TICKS_PER_MONTH, TICKS_PER_YEAR } from '../../src/sim/clock';
 import { placeBuilding } from '../../src/sim/commands';
-import { annexOf } from '../../src/sim/elites';
 import { SCHOLARS_CITY, isStartCity, startCity } from '../../src/sim/start-cities';
 import type { GameState } from '../../src/sim/state';
 import { runTicks } from './helpers';
@@ -41,7 +40,7 @@ describe('the scholars start city', () => {
     runTicks(game, 2 * TICKS_PER_YEAR + TICKS_PER_MONTH);
     const scholars = game.buildings.find((b) => b.type === 'scholarsHouse');
     expect(scholars).toBeDefined();
-    expect(annexOf(game, scholars!).scrolls).toBeGreaterThan(0);
+    expect(scholars!.scrolls).toBeGreaterThan(0);
     expect(game.worksOfArt).toBe(2);
     expect(townhouses(game)).toBe(8);
   });

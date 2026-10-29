@@ -147,6 +147,7 @@ export const PALETTE = {
   columnFleece: 0xb08a5a,
   columnOil: 0x6f8a2f,
   columnCloth: 0x2f6ea5,
+  columnScrolls: 0x6e4a86,
   columnTax: 0xc9a227,
   ghostValid: 0x4caf50,
   ghostWarning: 0xf28c28,

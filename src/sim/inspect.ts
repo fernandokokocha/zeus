@@ -3,7 +3,7 @@ import { BUILDING_SPECS, vendorGood } from './buildings';
 import { MONTH_NAMES, TICKS_PER_MONTH } from './clock';
 import { MAX_CULTURE_POINTS, culturePoints, culturesPassed } from './culture';
 import { CARRIER_SPECS, carrierDestinations, carrierKindsSentBy, givesWayToAnother, keptBack, tripSharers } from './carriers';
-import { LIBRARY_SCROLL_CAPACITY, SCROLLS_READ_PER_YEAR, hasScrollToRead } from './scholars';
+import { PAGES_PER_WORK_OF_ART } from './scholars';
 import { PAGES_PER_SCROLL, SCRIPTORIUM_INPUT_CAPACITY, copyingTicks, hasScrollRoom, inputInUse } from './scrolls';
 import { WEAVER_FLEECE_CAPACITY, WEAVING_TICKS, canWeave } from './cloth';
 import { adjacentRoadTiles, agoraVendors, footprint } from './commands';
@@ -16,8 +16,8 @@ import { PARTNERS, TRADE_GOODS, routeOf, routeStatus } from './trade';
 import { GOOD_TITLES } from './production';
 import { caravansComing, ordersWaitingForMoney } from './imports';
 import { guildSiteOf } from './guild';
-import { eliteOfAnnex, eliteShortfalls, siteShortfalls, annexOf, type EliteSite } from './elites';
-import { type HouseLevel, type HouseNeed, type ResidentNeed, HOUSE_LEVELS, LEVEL_CHANGE_TICKS, SCHOLARS_HOUSE, TRADERS_GUILD, NEXT_LEVEL, PREVIOUS_LEVEL, houseCapacity, houseLevel, evolutionBlockers, houseName, lacksCulture, missingNeeds } from './housing';
+import { eliteOfAnnex, eliteShortfalls, siteShortfalls, annexOf, eliteType, type EliteSite } from './elites';
+import { type HouseLevel, type HouseNeed, type ResidentNeed, ELITE_HOUSING, HOUSE_LEVELS, LEVEL_CHANGE_TICKS, SCHOLARS_HOUSE, TRADERS_GUILD, NEXT_LEVEL, PREVIOUS_LEVEL, houseCapacity, houseLevel, evolutionBlockers, houseName, lacksCulture, missingNeeds } from './housing';
 import { ROAMER_SPECS, hasGoodsToSell, hasService, type RoamerSpec, roamerKindSentBy, serviceLeft } from './roamers';
 import { TRAINEE_SPECS, isPerforming, staffedVenues, traineeKindFor, traineeKindSentBy } from './schools';
 import {
@@ -264,7 +264,7 @@ const CARRIER_HOMES: Record<Carrier['kind'], string> = {
   papyrusBuyer: 'scriptorium',
   scriptoriumFleeceBuyer: 'scriptorium',
   scrollCart: 'scriptorium',
-  libraryBuyer: 'library',
+  scrollBuyer: 'stall',
   marbleSupply: 'storehouse',
   woodSupply: 'storehouse',
   sculptureSupply: 'storehouse',
@@ -390,13 +390,12 @@ function describeGuild(state: GameState, guild: Building): Description {
 
 function describeScholars(state: GameState, scholars: Building): Description {
   const missing = eliteShortfalls(state, scholars);
-  const library = annexOf(state, scholars);
   const lines = [
     `Tile ${scholars.x}, ${scholars.y}`,
     `Residents ${scholars.residents}/${houseCapacity(scholars)}`,
     `Appeal ${houseAppeal(state, scholars)}`,
     taxStatus(state, scholars),
-    `Reading: ${Math.floor((scholars.pages / UNITS_PER_LOAD) * 100)}% of the way to the next Work of Art`,
+    `Reading: ${Math.floor((scholars.pages / PAGES_PER_WORK_OF_ART) * 100)}% of the way to the next Work of Art`,
     missingStatus(scholars, missing),
   ];
   const needFor = (need: string): Need => (missing.includes(need) ? 'missing' : 'met');
@@ -406,29 +405,23 @@ function describeScholars(state: GameState, scholars: Building): Description {
     stockMeter(scholars, 'fleece', needFor('fleece')),
     stockMeter(scholars, 'oil', needFor('oil')),
     cultureMeter(state, scholars, culturePoints(state, scholars) < SCHOLARS_HOUSE.culture ? 'missing' : 'met'),
-    libraryMeter(library, needFor('scrolls')),
+    stockMeter(scholars, 'scrolls', needFor('scrolls')),
   ];
   return { title: BUILDING_SPECS.scholarsHouse.name, meters, lines };
-}
-
-function libraryMeter(library: Building, need: Need): Meter {
-  const label = 'Scrolls';
-  if (!hasScrollToRead(library)) return { label, fill: 0, value: 'None', need };
-  const years = library.scrolls / UNITS_PER_LOAD / SCROLLS_READ_PER_YEAR;
-  return { label, fill: library.scrolls / LIBRARY_SCROLL_CAPACITY, value: `${amount(library.scrolls / UNITS_PER_LOAD)} in the Library (${amount(years)} ${years === 1 ? 'year' : 'years'})`, need };
 }
 
 function describeLibrary(library: Building): Description {
   const lines = [
     `Tile ${library.x}, ${library.y}`,
     `Workers ${library.workers}/${BUILDING_SPECS.library.workers}`,
-    `Scrolls ${amount(library.scrolls / UNITS_PER_LOAD)} of ${LIBRARY_SCROLL_CAPACITY / UNITS_PER_LOAD}`,
   ];
-  if (library.workers === 0) lines.push('No workers: no scrolls are fetched');
+  if (library.workers === 0) lines.push('No workers: reading makes no Works of Art');
   return { title: BUILDING_SPECS.library.name, meters: [], lines };
 }
 
 function missingStatus(elite: Building, missing: string[]): string {
+  const { good } = ELITE_HOUSING[eliteType(elite)];
+  if (!elite.started) return `Waiting for its first ${good}: its needs count from then on`;
   return missing.length === 0 ? 'Fully supplied' : `Missing ${missing.join(', ')}: breaks up in ${amount((LEVEL_CHANGE_TICKS - elite.pendingTicks) / TICKS_PER_MONTH)} months`;
 }
 
@@ -527,6 +520,7 @@ function storageMeters(state: GameState, building: Building): Meter[] {
     case 'fleeceVendor':
     case 'oilVendor':
     case 'clothVendor':
+    case 'scrollVendor':
       return [vendorMeter(building, capitalized(vendorGood(building)))];
     case 'agora':
       return agoraVendors(state, building).map((vendor) => vendorMeter(vendor, BUILDING_SPECS[vendor.type].name));
@@ -613,6 +607,7 @@ case 'scriptorium':
     case 'fleeceVendor':
     case 'oilVendor':
     case 'clothVendor':
+    case 'scrollVendor':
       return [];
     case 'agora':
       return agoraVendors(state, building).length > 0 ? [] : ['No vendors yet: place one on a free spot'];

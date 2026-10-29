@@ -8,7 +8,6 @@ import { ELITE_HOUSING, ELITE_NAMES, ELITE_TYPES, LEVEL_CHANGE_TICKS, hasNeed, h
 import { postNotice } from './notices';
 import { rectBetween, tilesIn, type Point } from './point';
 import { routeOf } from './trade';
-import { hasScrollToRead } from './scholars';
 import { buildingById, inBounds, tileIndex, type Building, type Coverage, type GameState, type PeddledGood } from './state';
 
 export type AnnexType = 'tradeYard' | 'library';
@@ -27,7 +26,7 @@ export const ELITE_SITES: Record<EliteType, EliteSiteRule> = {
 
 export const NEIGHBOURHOOD_RANGE = 6;
 
-const ANNEX_TYPES = ELITE_TYPES.map((type) => ELITE_SITES[type].annex);
+const ANNEX_TYPES = Object.values(ELITE_SITES).map((site) => site.annex);
 const ROAD_NAMES: Record<RoadKind, string> = { mainRoad: 'Main Road', roads: 'road' };
 const ANNEX_CALLED: Record<AnnexType, string> = { tradeYard: 'yard', library: 'Library' };
 const CARRIED_GOODS: PeddledGood[] = ['food', 'fleece', 'oil', 'cloth'];
@@ -212,7 +211,6 @@ export function eliteShortfalls(state: GameState, elite: Building, map = appealM
   if (culture < housing.culture) missing.push(`culture ${housing.culture} (has ${culture})`);
   const appeal = houseAppeal(state, elite, map);
   if (appeal < housing.appeal) missing.push(`appeal ${housing.appeal} (has ${appeal})`);
-  if (elite.type === 'scholarsHouse' && !hasScrollToRead(annexOf(state, elite))) missing.push('scrolls');
   return missing;
 }
 
@@ -224,7 +222,7 @@ export function tickElites(state: GameState): void {
   const elites = state.buildings.filter((b) => isEliteType(b.type));
   if (elites.length === 0) return;
   const map = appealMap(state);
-  for (const elite of elites) {
+  for (const elite of elites.filter((e) => startIfSupplied(state, e))) {
     const missing = eliteShortfalls(state, elite, map);
     if (missing.length === 0) {
       if (elite.pendingTicks > 0) state.version++;
@@ -235,6 +233,15 @@ export function tickElites(state: GameState): void {
     elite.pendingTicks++;
     if (elite.pendingTicks >= LEVEL_CHANGE_TICKS) breakUp(state, elite, missing);
   }
+}
+
+function startIfSupplied(state: GameState, elite: Building): boolean {
+  if (elite.started) return true;
+  const { good } = ELITE_HOUSING[eliteType(elite)];
+  if (elite[good] <= 0) return false;
+  elite.started = true;
+  state.version++;
+  return true;
 }
 
 function breakUp(state: GameState, elite: Building, missing: string[]): void {

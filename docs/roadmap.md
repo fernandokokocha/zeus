@@ -10,10 +10,6 @@ anywhere.
 
 ## Items
 
-- **Elites start unstarted, and scrolls are peddled.** Needs its design first. A new elite house waits for its
-  special good (cloth, scrolls) before its need clock starts, so a far storehouse is no trap.
-  Scrolls reach scholars like cloth reaches traders: a Scroll Vendor at the Agora and peddlers; the
-  Library's role is then up for design. Part of: Scholars' House.
 - **Elite sites.** Site help for every elite type. Part of: Scholars' House. Spec: same.
 - **Upgrades.** Spending Works of Art. Part of: Scholars' House. Needs its own design first.
 - **Warriors' House.** Needs its design first. Near a Hospital. Charter: Healthy and well fed

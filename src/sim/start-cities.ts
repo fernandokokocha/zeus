@@ -8,7 +8,7 @@ import { MAP_SIZE } from './map';
 import type { Point } from './point';
 import { COVERAGE_MONTHS } from './roamers';
 import { PERFORMANCE_TICKS } from './schools';
-import { newGameState, tileIndex, type Building, type Coverage, type GameState, type HouseGood } from './state';
+import { newGameState, tileIndex, type Building, type Coverage, type GameState, type HouseGood, type PeddledGood } from './state';
 import type { Terrain } from './terrain';
 
 export const START_CITIES = ['scholars'] as const;
@@ -57,7 +57,7 @@ function road(state: GameState, from: Point, to: Point): void {
 }
 
 function layDistrictRoads(state: GameState): void {
-  road(state, { x: 10, y: 40 }, { x: 26, y: 40 });
+  road(state, { x: 10, y: 40 }, { x: 28, y: 40 });
   road(state, { x: 10, y: 45 }, { x: 24, y: 45 });
   road(state, { x: 10, y: 40 }, { x: 10, y: MAIN_ROAD_Y - 1 });
   road(state, { x: 24, y: 40 }, { x: 24, y: 45 });
@@ -86,20 +86,21 @@ function districtServices(state: GameState): void {
     ['fleeceVendor', 'fleece'],
     ['oilVendor', 'oil'],
   ]);
+  vendors(state, place(state, 'agora', 27, 34, 0), [['scrollVendor', 'scrolls']]);
   place(state, 'fountain', 17, 46);
   place(state, 'gymnasium', 24, 46);
   for (const venue of state.buildings.filter((b) => b.type === 'theater' || b.type === 'podium')) venue.performingUntil = PERFORMANCE_TICKS;
 }
 
-function vendors(state: GameState, agora: Building, stalls: [BuildingType, HouseGood][]): void {
+function vendors(state: GameState, agora: Building, stalls: [BuildingType, PeddledGood][]): void {
   const spots = new Map<number, Point>();
   for (const tile of footprint(agora)) {
     const spot = vendorSpotAt(state, tile);
     if (spot) spots.set(tileIndex(state, spot.x, spot.y), spot);
   }
-  [...spots.values()].forEach((spot, i) => {
-    const [type, good] = stalls[i];
-    place(state, type, spot.x, spot.y)[good] = VENDOR_CAPACITY;
+  const free = [...spots.values()];
+  stalls.forEach(([type, good], i) => {
+    place(state, type, free[i].x, free[i].y)[good] = VENDOR_CAPACITY;
   });
 }
 

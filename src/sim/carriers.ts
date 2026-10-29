@@ -10,7 +10,6 @@ import { exportCapacity } from './exports';
 import { GOODS } from './flows';
 import { PRESS_OLIVE_CAPACITY } from './olives';
 import { inputCapacity } from './scrolls';
-import { LIBRARY_SCROLL_CAPACITY } from './scholars';
 import { SANCTUARIES, isSanctuary, recordConstruction, stillNeeded, type Sanctuary } from './sanctuaries';
 import { acceptsGood, storehouseSpace } from './storehouse';
 import { NO_BUILDING, buildingById, type Building, type Carrier, type CarrierKind, type GameState, type Good, type TradeGood } from './state';
@@ -57,7 +56,7 @@ export const CARRIER_SPECS: Record<CarrierKind, CarrierSpec> = {
   papyrusBuyer: { name: 'Buyer', home: 'scriptorium', good: 'papyrus', stores: ['storehouse'], delivers: false, capacity: (home) => inputCapacity(home, 'papyrus') },
   scriptoriumFleeceBuyer: { name: 'Buyer', home: 'scriptorium', good: 'fleece', stores: ['storehouse'], delivers: false, capacity: (home) => inputCapacity(home, 'fleece') },
   scrollCart: { name: 'Cart Pusher', home: 'scriptorium', good: 'scrolls', stores: ['storehouse'], delivers: true, capacity: nothing },
-  libraryBuyer: { name: 'Buyer', home: 'library', good: 'scrolls', stores: ['storehouse'], delivers: false, capacity: () => LIBRARY_SCROLL_CAPACITY },
+  scrollBuyer: { name: 'Buyer', home: 'scrollVendor', good: 'scrolls', stores: ['storehouse'], delivers: false, capacity: () => VENDOR_CAPACITY },
   marbleSupply: { name: 'Cart Pusher', home: 'storehouse', good: 'marble', stores: SANCTUARIES, delivers: true, capacity: nothing },
   woodSupply: { name: 'Cart Pusher', home: 'storehouse', good: 'wood', stores: SANCTUARIES, delivers: true, capacity: nothing },
   sculptureSupply: { name: 'Cart Pusher', home: 'storehouse', good: 'sculptures', stores: SANCTUARIES, delivers: true, capacity: nothing },

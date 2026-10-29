@@ -644,6 +644,7 @@ const MODELS: Record<Exclude<BuildingType, 'house'>, (building: Building, state:
   olivePress: olivePressModel,
   oilVendor: vendorModel,
   clothVendor: vendorModel,
+  scrollVendor: vendorModel,
   weaver: weaverModel,
   scriptorium: scriptoriumModel,
   timberMill: timberMillModel,

@@ -9,7 +9,8 @@ import type { Building, GameState } from './state';
 export type HouseLevel = 'hut' | 'shack' | 'hovel' | 'homestead' | 'tenement' | 'apartment' | 'townhouse';
 
 export type HouseNeed = 'food' | 'water' | 'fleece' | 'oil';
-export type ResidentNeed = HouseNeed | 'cloth';
+export type EliteGood = 'cloth' | 'scrolls';
+export type ResidentNeed = HouseNeed | EliteGood;
 
 export interface HouseLevelSpec {
   name: string;
@@ -67,6 +68,7 @@ export const ELITE_NAMES: Record<EliteType, string> = {
 
 export interface EliteHousing {
   houses: number;
+  good: EliteGood;
   capacity: number;
   taxMultiplier: number;
   needs: ResidentNeed[];
@@ -76,20 +78,21 @@ export interface EliteHousing {
 
 const ELITE_HOUSES = 4;
 
-function eliteHousing(taxMultiplier: number, extraNeeds: ResidentNeed[]): EliteHousing {
+function eliteHousing(taxMultiplier: number, good: EliteGood): EliteHousing {
   return {
     houses: ELITE_HOUSES,
+    good,
     capacity: ELITE_HOUSES * HOUSE_LEVELS.townhouse.capacity,
     taxMultiplier,
-    needs: [...HOUSE_LEVELS.townhouse.needs, ...extraNeeds],
+    needs: [...HOUSE_LEVELS.townhouse.needs, good],
     culture: HOUSE_LEVELS.townhouse.culture,
     appeal: HOUSE_LEVELS.townhouse.appeal.devolve,
   };
 }
 
 export const ELITE_HOUSING: Record<EliteType, EliteHousing> = {
-  tradersGuild: eliteHousing(1, ['cloth']),
-  scholarsHouse: eliteHousing(HOUSE_LEVELS.townhouse.taxMultiplier, []),
+  tradersGuild: eliteHousing(1, 'cloth'),
+  scholarsHouse: eliteHousing(HOUSE_LEVELS.townhouse.taxMultiplier, 'scrolls'),
 };
 
 export const ELITE_TYPES = Object.keys(ELITE_HOUSING) as EliteType[];

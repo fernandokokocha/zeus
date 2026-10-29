@@ -4,7 +4,8 @@ import { CULTURES, CULTURE_POINTS, culturePoints } from './culture';
 import { taxPaidLastYear } from './economy';
 import { VENDOR_CAPACITY, houseStockTarget } from './food';
 import { guildSiteTiles, placeableGuildSites, siteSurroundings } from './guild';
-import { buildingName, houseLevel, isResidence } from './housing';
+import { ELITE_HOUSING, buildingName, houseLevel, isResidence } from './housing';
+import { isEliteType } from './elites';
 import { amount, drachmas } from './inspect';
 import { isUnderConstruction } from './sanctuaries';
 import { COVERAGE_MONTHS, serviceLeft } from './roamers';
@@ -55,7 +56,7 @@ export type WalkerKind = RoamerKind | CarrierKind | TraineeKind;
 
 export const SERVING_WALKERS: Record<Overlay, WalkerKind[]> = {
   water: ['waterCarrier'],
-  supplies: ['peddler', 'cartPusher', 'buyer', 'fleeceCart', 'fleeceBuyer', 'oilCart', 'oilBuyer', 'clothCart', 'clothBuyer'],
+  supplies: ['peddler', 'cartPusher', 'buyer', 'fleeceCart', 'fleeceBuyer', 'oilCart', 'oilBuyer', 'clothCart', 'clothBuyer', 'scrollBuyer'],
   culture: ['philosopher', 'athlete', 'actor', 'philosopherTrainee', 'actorTrainee'],
   appeal: [],
   risk: ['superintendent'],
@@ -112,10 +113,9 @@ function staffColumn(building: Building): Omit<Column, 'building'> | null {
 }
 
 const HOUSE_SUPPLIES: PeddledGood[] = ['food', 'fleece', 'oil'];
-const GUILD_SUPPLIES: PeddledGood[] = [...HOUSE_SUPPLIES, 'cloth'];
 
 function suppliesColumn(residence: Building): Omit<Column, 'building'> {
-  const goods = residence.type === 'tradersGuild' ? GUILD_SUPPLIES : HOUSE_SUPPLIES;
+  const goods = isEliteType(residence.type) ? [...HOUSE_SUPPLIES, ELITE_HOUSING[residence.type].good] : HOUSE_SUPPLIES;
   return {
     bars: goods.map((good) => [{ kind: good, share: Math.min(1, residence[good] / houseStockTarget(residence, good)) }]),
     details: goods.map((good) => `${capitalized(good)} ${amount(residence[good])} / ${amount(houseStockTarget(residence, good))}`),

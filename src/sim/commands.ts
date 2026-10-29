@@ -231,6 +231,7 @@ export function addBuilding(state: GameState, placement: Placement): Building {
     level: 'hut' as const,
     pendingLevel: null,
     pendingTicks: 0,
+    started: false,
     food: 0,
     fleece: 0,
     olives: 0,

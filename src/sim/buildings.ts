@@ -27,6 +27,7 @@ export type BuildingType =
   | 'olivePress'
   | 'oilVendor'
   | 'clothVendor'
+  | 'scrollVendor'
   | 'weaver'
   | 'scriptorium'
   | 'timberMill'
@@ -82,6 +83,7 @@ export const BUILDING_SPECS: Record<BuildingType, BuildingSpec> = {
   olivePress: { name: 'Olive Press', width: 2, height: 2, cost: 45, workers: 12, appeal: [-4, -4, -2, -2], needsRoad: true },
   oilVendor: { name: 'Oil Vendor', width: 2, height: 2, cost: 10, workers: 4, appeal: [], needsRoad: true },
   clothVendor: { name: 'Cloth Vendor', width: 2, height: 2, cost: 10, workers: 4, appeal: [], needsRoad: true },
+  scrollVendor: { name: 'Scroll Vendor', width: 2, height: 2, cost: 10, workers: 4, appeal: [], needsRoad: true },
   weaver: { name: 'Weaver', width: 2, height: 2, cost: 40, workers: 12, appeal: [-3, -2, -1], needsRoad: true },
   scriptorium: { name: 'Scriptorium', width: 2, height: 2, cost: 50, workers: 12, appeal: [-2, -1], needsRoad: true },
   timberMill: { name: 'Timber Mill', width: 2, height: 2, cost: 35, workers: 12, appeal: [-5, -4, -3, -2], needsRoad: true },
@@ -144,7 +146,7 @@ export function worldToLocal(building: Placement, p: Point): Point {
   ][building.rotation];
 }
 
-const VENDOR_GOODS: Partial<Record<BuildingType, PeddledGood>> = { foodVendor: 'food', fleeceVendor: 'fleece', oilVendor: 'oil', clothVendor: 'cloth' };
+const VENDOR_GOODS: Partial<Record<BuildingType, PeddledGood>> = { foodVendor: 'food', fleeceVendor: 'fleece', oilVendor: 'oil', clothVendor: 'cloth', scrollVendor: 'scrolls' };
 
 export function isAgoraVendor(type: BuildingType): boolean {
   return type in VENDOR_GOODS;

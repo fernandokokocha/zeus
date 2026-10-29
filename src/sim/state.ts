@@ -17,7 +17,7 @@ export type PlayingSpeed = Exclude<Speed, 0>;
 
 export type HouseGood = 'food' | 'fleece' | 'oil';
 export type Material = 'wood' | 'marble' | 'bronze';
-export type PeddledGood = HouseGood | 'cloth';
+export type PeddledGood = HouseGood | 'cloth' | 'scrolls';
 export type Good = HouseGood | 'olives' | Material | 'sculptures' | 'cloth' | 'papyrus' | 'scrolls';
 export type TradeGood = Exclude<Good, 'scrolls'>;
 export type Culture = 'philosophy' | 'athletics' | 'drama';
@@ -37,6 +37,7 @@ export interface Building {
   level: HouseLevel;
   pendingLevel: HouseLevel | null;
   pendingTicks: number;
+  started: boolean;
   food: number;
   fleece: number;
   olives: number;
@@ -151,7 +152,7 @@ export type CarrierKind =
   | 'papyrusBuyer'
   | 'scriptoriumFleeceBuyer'
   | 'scrollCart'
-  | 'libraryBuyer'
+  | 'scrollBuyer'
   | 'marbleSupply'
   | 'woodSupply'
   | 'sculptureSupply'

@@ -290,8 +290,38 @@ describe("a Traders' Guild's needs", () => {
   });
 });
 
+describe("a new Traders' Guild", () => {
+  it('stands unstarted, never breaking up, until its first cloth arrives', () => {
+    const { game, guild } = placedGuild();
+    expect(guild.started).toBe(false);
+    for (let i = 0; i < 12 * TICKS_PER_MONTH; i++) {
+      guild.fireRisk = 0;
+      tick(game);
+    }
+    expect(guildOf(game)).toBe(guild);
+    expect(guild.pendingTicks).toBe(0);
+  });
+
+  it('starts with its first cloth, then breaks up a month after the cloth runs out', () => {
+    const { game, guild } = placedGuild();
+    runTicks(game, 3 * TICKS_PER_MONTH);
+    guild.cloth = 1;
+    tick(game);
+    expect(guild.started).toBe(true);
+    guild.cloth = 0;
+    runTicks(game, LEVEL_CHANGE_TICKS);
+    expect(game.buildings.some((b) => b.type === 'tradersGuild')).toBe(false);
+  });
+
+  it('says in the inspector that it waits for its first cloth', () => {
+    const { game } = placedGuild();
+    tick(game);
+    expect(describeTile(game, 3, 12).lines).toContain('Waiting for its first cloth: its needs count from then on');
+  });
+});
+
 describe("a Traders' Guild's demotion", () => {
-  it('breaks it into four vacant lots a month after placement without cloth', () => {
+  it('breaks it into four vacant lots a month after its cloth runs out', () => {
     const { game, guild } = placedGuild();
     supplyGuild(guild);
     guild.cloth = 0;
@@ -306,6 +336,7 @@ describe("a Traders' Guild's demotion", () => {
 
   it('does not refund the lots or the permit', () => {
     const { game, guild } = placedGuild();
+    guild.started = true;
     const before = game.treasury;
     runTicks(game, LEVEL_CHANGE_TICKS);
     expect(game.buildings.some((b) => b.id === guild.id)).toBe(false);

@@ -87,7 +87,7 @@ export function placedGuild(): { game: GameState; guild: Building } {
 }
 
 export function supplyGuild(guild: Building): void {
-  Object.assign(guild, { food: 300, fleece: 24, oil: 24, cloth: 24 });
+  Object.assign(guild, { food: 300, fleece: 24, oil: 24, cloth: 24, started: true });
   Object.assign(guild.coveredUntil, { water: FOREVER, athletics: FOREVER, drama: FOREVER });
 }
 
@@ -155,8 +155,7 @@ export function placedScholars(): { game: GameState; scholars: Building; library
   return { game, scholars, library: annexOf(game, scholars) };
 }
 
-export function supplyScholars(scholars: Building, library: Building): void {
-  Object.assign(scholars, { food: 300, fleece: 24, oil: 24 });
+export function supplyScholars(scholars: Building): void {
+  Object.assign(scholars, { food: 300, fleece: 24, oil: 24, scrolls: 24, started: true });
   Object.assign(scholars.coveredUntil, { water: FOREVER, athletics: FOREVER, drama: FOREVER });
-  library.scrolls = 400;
 }

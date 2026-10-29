@@ -5,7 +5,7 @@ import { tickCaravans } from './exports';
 import { tickImports } from './imports';
 import { tickCloth } from './cloth';
 import { tickScrolls } from './scrolls';
-import { tickReading } from './scholars';
+import { readScrolls } from './scholars';
 import { settleMonth } from './economy';
 import { eat, growCrops, harvestIfDue } from './food';
 import { announceGuildSites } from './guild';
@@ -37,6 +37,7 @@ export function tick(state: GameState): void {
     harvestIfDue(state);
     tallyWellDressed(state);
     tallyLearnedCity(state);
+    readScrolls(state);
     eat(state);
   }
   tickSettlers(state);
@@ -49,7 +50,6 @@ export function tick(state: GameState): void {
   tickOlives(state);
   tickCloth(state);
   tickScrolls(state);
-  tickReading(state);
   tickMaterials(state);
   tickSanctuaries(state);
   evolveHouses(state);

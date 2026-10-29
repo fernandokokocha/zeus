@@ -136,29 +136,34 @@ The Scholars' House charter.
 | Needs | a Townhouse's needs ×4 (as the reworked guild), culture 45, appeal 25, plus **scrolls** |
 | Taxes | a Townhouse's (multiplier 2) |
 | Cost | 100 dr + 1 permit |
-| Demotion | any need missing for a month → four vacant lots, the Library and its scrolls are lost |
+| Demotion | any need missing for a month, once started → four vacant lots, and the Library is lost |
 
 - **Placing it** works like the guild: rotation, a preview showing the road column, the
   Library's ground clear, the four houses' stocks and coverage carried over.
 - **The Library** (4×2, no appeal, no fire, **8 workers** from the labor pool, **ours**)
-  holds up to **4 scrolls**. Its cart pusher fetches scrolls from storehouses until it is
-  full. It can't be demolished on its own, the same as the yard.
-- **Reading:** the house reads **1 scroll a year**, taken steadily from the Library (about
-  8 units a month). Each scroll finished becomes **1 Work of Art**, with a notice: "The
-  scholars at 31,18 completed a Work of Art". At most one a year, as agreed.
-- **Scrolls are a need.** If the Library holds no scroll to read from for a month, the house
-  demotes, the same way a guild without cloth does. An unstaffed Library therefore ends the
-  house in time. The inspector warns before that ("needs: scrolls").
-- **No grace at placement,** as with the guild and its cloth: the one-month clock starts when
-  the house is placed, so a scroll has to reach the Library within a month. The player
-  stockpiles scrolls first. A possible site lists "no scrolls in storage" as a warning that
-  does not block placement.
+  holds no scrolls. It is where reading becomes Works of Art, so its workers are the cost of
+  the house. It can't be demolished on its own, the same as the yard.
+- **Scrolls are peddled,** the way cloth reaches the guild. A **Scroll Vendor** on the Agora
+  (2×2, 4 workers, 10 dr, as the other vendors) has a buyer that fetches scrolls from
+  storehouses, and the Agora's peddler stocks the house with 3 months of them. Ordinary
+  houses take none. *(Changed in slice 38: the Library used to fetch and hold the scrolls.)*
+- **Reading:** the house reads **8 units a month** from its own stock, taken at month end with
+  its other goods, the same as the guild's cloth. Each unit read is a page at the Library's
+  staffing (a whole page with all 8 workers, none with an empty Library). **100 pages** make
+  **1 Work of Art**, with a notice: "The scholars at 31,18 completed a Work of Art".
+- **Scrolls are a need.** A house without scrolls for a month demotes, the same way a guild
+  without cloth does. An unstaffed Library makes no Works of Art but does not end the house.
+- **Unstarted at placement,** for every elite type *(slice 38, replacing "no grace")*: a new
+  elite's need clock waits for its first special good (cloth, scrolls). Until it arrives the
+  house never breaks up, so a far storehouse is no trap; its families live, work, pay taxes and
+  use their goods as usual. The inspector says "Waiting for its first scrolls". Once started,
+  it never goes back to unstarted.
 - **Works of Art** are a city count, not a stored good: a number in the top bar next to the
   treasury, and a line in the Ledger's Treasury chapter. They are kept when the house that
   made them demotes. Nothing spends them yet.
 - **Models:** placeholders that read as a richer 4×4 house (white and ochre, a lecture
   porch) and a Library (a colonnaded hall with scroll racks). Both get backlog entries:
-  supplied, missing a need, burning; Library empty / holding scrolls.
+  supplied, missing a need, burning; Library with and without workers.
 
 ## Elite sites
 
@@ -189,12 +194,14 @@ the upgrades when the time comes. Works of Art are its currency, and the first s
 - The Scriptorium's numbers (12 workers, 50 dr, 6 scrolls a year either recipe), and papyrus
   before fleece.
 - Elites count as Townhouses in both charters.
-- A Scholars' House gets no grace for its first scroll, the same as the guild's cloth.
+- Elites stand unstarted until their first special good (slice 38).
 - Learned city counts elites as Townhouses, and needs at least one Townhouse.
 - The Scholars' House can use any road, not only the Main Road.
 - Scholars' neighbourhood range: 6 tiles from the block.
 - Scholars' appeal is 25, the same as the guild's. An earlier idea of 40 was dropped with
   the traits.
-- The Library holds 4 scrolls and has 8 workers.
+- The Library has 8 workers and turns reading into Works of Art at its staffing; it holds no
+  scrolls (slice 38).
+- Scholars read 8 units a month, the guild's cloth amount (slice 38).
 - Works of Art are a count, not a stored good, and survive demotion.
 - Scholars are purple on the Elites map mode.
