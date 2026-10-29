@@ -95,7 +95,6 @@ export function hipRoof(x0: number, z0: number, w: number, d: number, eaves: num
     [[ax, eaves, az], [ax, eaves, bz], r1],
     [[bx, eaves, bz], [bx, eaves, az], r2],
   ], roofing));
-  if (r2[0] > r1[0]) group.add(box(r2[0] - r1[0] + 0.04, 0.035, 0.05, surface('whitewash'), (r1[0] + r2[0]) / 2, top - 0.02, zc));
   return group;
 }
 
