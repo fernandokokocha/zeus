@@ -10,9 +10,14 @@ anywhere.
 
 ## Items
 
+- **House redesign.** Redesign the houses, the Townhouse above all, in a round with the owner
+  (`docs/model-redesign.md`). The Storehouse and the Trade Yard (backlog #32) are redesigned in
+  the same round so the two look alike. The guild rework below builds on the new Townhouse.
 - **Traders' Guild model rework.** Now that the guild houses 240 residents, its model should
-  read as a house, not a workplace: grown out of the Townhouse, homes first, trade second.
-  A redesign round with the owner (`docs/model-redesign.md`). Part of: Elite rework.
+  read as a house, not a workplace: above all like the new Townhouse, somewhere between it and
+  the current exchange hall, with a paved court open to the road and a
+  cloth stall in it (a blue cloth tent with the agora emblem over chests of bolts). A redesign
+  round with the owner (`docs/model-redesign.md`). Part of: Elite rework.
 - **Well dressed.** Replaces Well fed as the Traders' Guild charter; permits per type.
   Part of: Elite rework. Spec: `docs/superpowers/specs/2026-10-29-elite-rework-scholars-design.md`.
 - **Papyrus and the Scriptorium.** Part of: Scholars' House. Spec: same.
