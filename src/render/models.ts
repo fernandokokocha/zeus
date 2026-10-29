@@ -9,7 +9,7 @@ import { isBurning } from '../sim/safety';
 import type { Building, GameState } from '../sim/state';
 import { PALETTE, tileHash } from './palette';
 import { bakedOnce } from './bake';
-import { wheatFarmModel } from './farm-models';
+import { farmModel } from './farm-models';
 import { maintenanceOfficeModel } from './maintenance-models';
 import { masonryShopModel } from './masonry-models';
 import { agoraModel, vendorModel } from './agora-models';
@@ -623,7 +623,8 @@ const MODELS: Record<Exclude<BuildingType, 'house'>, (building: Building, state:
   fountain: fountainModel,
   taxOffice: taxOfficeModel,
   palace: palaceModel,
-  wheatFarm: wheatFarmModel,
+  wheatFarm: farmModel,
+  carrotFarm: farmModel,
   granary: granaryModel,
   agora: agoraModel,
   foodVendor: vendorModel,

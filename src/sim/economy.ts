@@ -4,14 +4,17 @@ import { houseLevel, isResidence, taxMultiplier } from './housing';
 import { laborSummary } from './labor';
 import { hasService } from './roamers';
 import type { Building, GameState } from './state';
+import { upgraded } from './upgrades';
 import { TAX_RATE, WAGE_PER_WORKER_PER_YEAR, closeYear, collect, spend } from './treasury';
 
 export const TAX_PAID_MONTHS = MONTHS_PER_YEAR;
 const JANUARY = 0;
+export const PLUTOCRATIC_TAX_FACTOR = 1.25;
 
-export function houseTax(house: Building): number {
+export function houseTax(state: GameState, house: Building): number {
   const level = houseLevel(house);
-  return level ? taxMultiplier(house, level) * house.residents * TAX_RATE : 0;
+  const rate = TAX_RATE * upgraded(state, 'plutocracy', 1, PLUTOCRATIC_TAX_FACTOR);
+  return level ? taxMultiplier(house, level) * house.residents * rate : 0;
 }
 
 export function hasWorkingPalace(state: GameState): boolean {
@@ -26,7 +29,7 @@ function collectTaxes(state: GameState): number {
   const collecting = hasWorkingPalace(state);
   let taxes = 0;
   for (const house of state.buildings.filter(isResidence)) {
-    const paid = collecting && hasService(state, house, 'tax') ? houseTax(house) : 0;
+    const paid = collecting && hasService(state, house, 'tax') ? houseTax(state, house) : 0;
     house.taxPaid = [...house.taxPaid, paid].slice(-TAX_PAID_MONTHS);
     taxes += paid;
   }

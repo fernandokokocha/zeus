@@ -56,7 +56,7 @@ export type WalkerKind = RoamerKind | CarrierKind | TraineeKind;
 
 export const SERVING_WALKERS: Record<Overlay, WalkerKind[]> = {
   water: ['waterCarrier'],
-  supplies: ['peddler', 'cartPusher', 'buyer', 'fleeceCart', 'fleeceBuyer', 'oilCart', 'oilBuyer', 'clothCart', 'clothBuyer', 'scrollBuyer'],
+  supplies: ['peddler', 'cartPusher', 'carrotCart', 'buyer', 'fleeceCart', 'fleeceBuyer', 'oilCart', 'oilBuyer', 'clothCart', 'clothBuyer', 'scrollBuyer'],
   culture: ['philosopher', 'athlete', 'actor', 'philosopherTrainee', 'actorTrainee'],
   appeal: [],
   risk: ['superintendent'],

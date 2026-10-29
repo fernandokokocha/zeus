@@ -7,12 +7,12 @@ import { setImportSlot, tickImports } from '../../src/sim/imports';
 import { describeTile, type TradeYardView } from '../../src/sim/inspect';
 import type { ForeignCaravan, GameState, TradeGood } from '../../src/sim/state';
 import { PARTNER_CARAVANS, roundTripMonths, worldReport } from '../../src/sim/trade';
-import { emptyCity, placedGuild, runTicks, tradingTown, withStore, type Town } from './helpers';
+import { emptyCity, grassGame, placedGuild, runTicks, tradingTown, withStore, type Town } from './helpers';
 
 const STOREHOUSE = { x: 11, y: 8 };
 const GRANARY = { x: 11, y: 11 };
 const WALK_LIMIT = 2 * TICKS_PER_MONTH;
-const HALF_TRIP = (roundTripMonths('thebes') * TICKS_PER_MONTH) / 2;
+const HALF_TRIP = (roundTripMonths(grassGame(), 'thebes') * TICKS_PER_MONTH) / 2;
 const SIX_WOOD = 6 * 22;
 
 function importing(town: Town, slot: number, good: TradeGood, loads: number): void {

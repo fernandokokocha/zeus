@@ -39,16 +39,16 @@ describe('a storehouse', () => {
   });
 
   it('fills a slot before starting the next', () => {
-    const { storehouse } = woolTown();
-    expect(slotsUsed(storehouse)).toBe(0);
+    const { game, storehouse } = woolTown();
+    expect(slotsUsed(game, storehouse)).toBe(0);
     storehouse.fleece = 100;
-    expect(slotsUsed(storehouse)).toBe(1);
+    expect(slotsUsed(game, storehouse)).toBe(1);
     storehouse.fleece = 400;
-    expect(slotsUsed(storehouse)).toBe(1);
+    expect(slotsUsed(game, storehouse)).toBe(1);
     storehouse.fleece = 500;
-    expect(slotsUsed(storehouse)).toBe(2);
+    expect(slotsUsed(game, storehouse)).toBe(2);
     storehouse.fleece = STOREHOUSE_CAPACITY;
-    expect(slotsUsed(storehouse)).toBe(8);
+    expect(slotsUsed(game, storehouse)).toBe(8);
   });
 });
 
@@ -151,10 +151,10 @@ describe("an olive press's cart pusher", () => {
   });
 
   it('shares the 8 slots with fleece, a slot to a good', () => {
-    const { storehouse } = oilWorks();
+    const { game, storehouse } = oilWorks();
     storehouse.fleece = 500;
     storehouse.oil = 100;
-    expect(slotsUsed(storehouse)).toBe(3);
+    expect(slotsUsed(game, storehouse)).toBe(3);
   });
 
   it('waits while every slot holds another good', () => {
@@ -223,9 +223,9 @@ describe('olives in the storehouse', () => {
   });
 
   it('share the 8 slots with fleece and oil', () => {
-    const { storehouse } = oliveWorks();
+    const { game, storehouse } = oliveWorks();
     Object.assign(storehouse, { fleece: 100, olives: 500, oil: 100 });
-    expect(slotsUsed(storehouse)).toBe(4);
+    expect(slotsUsed(game, storehouse)).toBe(4);
   });
 
   it('are fetched by a press with room', () => {
@@ -295,9 +295,9 @@ describe('materials in the storehouse', () => {
   });
 
   it('share the 8 slots with every other good', () => {
-    const { storehouse } = works();
+    const { game, storehouse } = works();
     Object.assign(storehouse, { fleece: 100, oil: 100, wood: 500, marble: 100, bronze: 100, sculptures: 100 });
-    expect(slotsUsed(storehouse)).toBe(7);
+    expect(slotsUsed(game, storehouse)).toBe(7);
   });
 
   it('send bronze to a studio with room before a nearer storehouse', () => {

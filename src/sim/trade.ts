@@ -3,6 +3,7 @@ import { PLACES, roadKm, type Place } from './greece';
 import { postNotice } from './notices';
 import { findRoadPath } from './pathfinding';
 import { GOOD_TITLES } from './production';
+import { upgraded } from './upgrades';
 import { buildingById, type Building, type GameState, type Good, type TradeGood } from './state';
 
 export type Partner = Extract<Place, 'thebes' | 'corinth' | 'argos' | 'sparta'>;
@@ -25,9 +26,11 @@ export const PARTNERS: Record<Partner, PartnerSpec> = {
 };
 
 export const CARAVAN_KM_PER_MONTH = 40;
+export const MULE_KM_PER_MONTH = 60;
 
-export function roundTripMonths(partner: Partner): number {
-  return Math.round((2 * roadKm(PARTNERS[partner].road)) / CARAVAN_KM_PER_MONTH);
+export function roundTripMonths(state: GameState, partner: Partner): number {
+  const kmPerMonth = upgraded(state, 'packMules', CARAVAN_KM_PER_MONTH, MULE_KM_PER_MONTH);
+  return Math.round((2 * roadKm(PARTNERS[partner].road)) / kmPerMonth);
 }
 
 export interface TradeGoodSpec {
@@ -129,7 +132,7 @@ export function openRoute(state: GameState, guildId: number, partner: Partner): 
 export function routeStatus(state: GameState, guild: Building): { line: string; canOpen: boolean } {
   const route = routeOf(state, guild);
   if (route) {
-    return { line: `Trade route: ${PLACES[route.partner].name}, ${roundTripMonths(route.partner)}-month round trip`, canOpen: false };
+    return { line: `Trade route: ${PLACES[route.partner].name}, ${roundTripMonths(state, route.partner)}-month round trip`, canOpen: false };
   }
   if (state.routes.length === Object.keys(PARTNERS).length) return { line: `Trade route: none, ${NO_PARTNER_LEFT}`, canOpen: false };
   if (!palaceReachesMainRoad(state)) return { line: `Trade route: none, ${NEEDS_PALACE}`, canOpen: false };
@@ -151,7 +154,7 @@ export function worldReport(state: GameState): PartnerView[] {
     return {
       partner,
       name: PLACES[partner].name,
-      roundTripMonths: roundTripMonths(partner),
+      roundTripMonths: roundTripMonths(state, partner),
       buys: offers(buys, (spec) => spec.theyPay),
       sells: offers(sells, (spec) => spec.wePay),
       caravansHome: partnerCaravansHome(state, partner),

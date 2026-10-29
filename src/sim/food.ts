@@ -1,14 +1,16 @@
-import { BUILDING_SPECS } from './buildings';
+import { BUILDING_SPECS, type BuildingType } from './buildings';
 import { TICKS_PER_YEAR, monthOfYear } from './clock';
 import { recordFlow } from './flows';
 import { ELITE_HOUSING, isElite, residentNeeds, isResidence, type EliteType } from './housing';
 import type { Building, GameState, PeddledGood } from './state';
+import { upgraded } from './upgrades';
 
 export const UNITS_PER_LOAD = 100;
 export const WHEAT_LOADS_PER_YEAR = 8;
-export const HARVEST_MONTH = 6;
+export const ROTATED_LOADS_PER_YEAR = 10;
 export const CROP_STAGES = 4;
 export const GRANARY_CAPACITY = 32 * UNITS_PER_LOAD;
+export const AMPHORA_GRANARY_CAPACITY = 48 * UNITS_PER_LOAD;
 export const CART_LOAD = 4 * UNITS_PER_LOAD;
 export const BUYER_LOAD = 4 * UNITS_PER_LOAD;
 export const VENDOR_CAPACITY = 8 * UNITS_PER_LOAD;
@@ -22,22 +24,46 @@ export function wholeLoads(units: number): number {
   return Math.floor(units / UNITS_PER_LOAD) * UNITS_PER_LOAD;
 }
 
+export const HARVEST_MONTHS = { wheatFarm: 6, carrotFarm: 0 } as const;
+export type Farm = keyof typeof HARVEST_MONTHS;
+
+export function isFarm(type: BuildingType): type is Farm {
+  return type in HARVEST_MONTHS;
+}
+
+function farms(state: GameState): Building[] {
+  return state.buildings.filter((b) => isFarm(b.type));
+}
+
+export function farmLoadsPerYear(state: GameState): number {
+  return upgraded(state, 'cropRotation', WHEAT_LOADS_PER_YEAR, ROTATED_LOADS_PER_YEAR);
+}
+
+export function granaryCapacity(state: GameState): number {
+  return upgraded(state, 'amphoras', GRANARY_CAPACITY, AMPHORA_GRANARY_CAPACITY);
+}
+
 export function cropStage(farm: Building): number {
   return Math.floor(farm.growth * CROP_STAGES);
 }
 
 export function growCrops(state: GameState): void {
-  for (const farm of state.buildings.filter((b) => b.type === 'wheatFarm')) {
+  for (const farm of farms(state)) {
     const stage = cropStage(farm);
-    farm.growth += farm.workers / BUILDING_SPECS.wheatFarm.workers / TICKS_PER_YEAR;
+    farm.growth += farm.workers / BUILDING_SPECS[farm.type].workers / TICKS_PER_YEAR;
     if (cropStage(farm) !== stage) state.version++;
   }
 }
 
+export function harvestMonth(farm: Building): number {
+  return HARVEST_MONTHS[farm.type as Farm];
+}
+
 export function harvestIfDue(state: GameState): void {
-  if (monthOfYear(state.tick) !== HARVEST_MONTH) return;
-  for (const farm of state.buildings.filter((b) => b.type === 'wheatFarm')) {
-    const harvest = Math.round(farm.growth * WHEAT_LOADS_PER_YEAR) * UNITS_PER_LOAD;
+  const due = farms(state).filter((farm) => harvestMonth(farm) === monthOfYear(state.tick));
+  if (due.length === 0) return;
+  for (const farm of due) {
+    const harvest = Math.round(farm.growth * farmLoadsPerYear(state)) * UNITS_PER_LOAD;
     farm.food += harvest;
     recordFlow(state, 'made', 'food', harvest);
     farm.growth = 0;

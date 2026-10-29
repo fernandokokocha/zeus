@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import type { Building } from '../sim/state';
+import type { Building, GameState } from '../sim/state';
 import { type Bay, type StoredGood, baysOf } from '../sim/storehouse';
 import { bakedOnce } from './bake';
 import { handcart } from './kit/camp';
@@ -89,9 +89,9 @@ export function storeYard(staffed: boolean, bays: Bay[]): THREE.Object3D {
 const shells = { staffed: bakedOnce(() => yardShell(true)), idle: bakedOnce(() => yardShell(false)) };
 const bakedKeeper = bakedFigure(storekeeper);
 
-export function storehouseModel(storehouse: Building): THREE.Object3D {
+export function storehouseModel(storehouse: Building, state: GameState): THREE.Object3D {
   const staffed = storehouse.workers > 0;
   const shell = (staffed ? shells.staffed : shells.idle)();
-  stock(shell, YARD_BAYS, baysOf(storehouse));
+  stock(shell, YARD_BAYS, baysOf(state, storehouse));
   return staffed ? keeper(shell, YARD_KEEPER.x, YARD_FLOOR, YARD_KEEPER.z, staffPhase(storehouse), bakedKeeper()) : shell;
 }

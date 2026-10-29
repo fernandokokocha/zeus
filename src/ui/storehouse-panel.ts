@@ -1,5 +1,6 @@
+import { element } from './dom';
 import type { StorehouseBay, StorehouseOrder, StorehouseView } from '../sim/inspect';
-import { LOADS_PER_SLOT, type StoredGood } from '../sim/storehouse';
+import type { StoredGood } from '../sim/storehouse';
 import { GOOD_COLORS, GOOD_ICONS } from './good-icons';
 
 export interface StorehouseOrders {
@@ -9,13 +10,6 @@ export interface StorehouseOrders {
 
 export function storehousePanel(view: StorehouseView, orders: StorehouseOrders): HTMLElement[] {
   return [shelf(view.bays), summary(view), ordersHead(orders), ...view.orders.map((order) => orderRow(order, orders))];
-}
-
-function element<K extends keyof HTMLElementTagNameMap>(tag: K, className: string, ...children: (Node | string)[]): HTMLElementTagNameMap[K] {
-  const node = document.createElement(tag);
-  node.className = className;
-  node.append(...children);
-  return node;
 }
 
 function goodIcon(good: StoredGood | null): HTMLSpanElement {
@@ -41,7 +35,7 @@ function bay({ good, loads, refused }: StorehouseBay): HTMLDivElement {
     return empty;
   }
   const cell = element('div', `shelf-bay${refused ? ' shelf-bay-refused' : ''}`);
-  cell.title = `${good}: ${loads} of ${LOADS_PER_SLOT} loads${refused ? ', refused' : ''}`;
+  cell.title = `${good}: ${loads} ${loads === 1 ? 'load' : 'loads'}${refused ? ', refused' : ''}`;
   for (let i = 0; i < loads; i++) {
     const crate = element('span', 'shelf-crate');
     crate.style.background = GOOD_COLORS[good];

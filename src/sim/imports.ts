@@ -39,8 +39,8 @@ function importCost(good: TradeGood, loads: number): number {
   return loads * wePay;
 }
 
-function halfTrip(partner: Partner): number {
-  return (roundTripMonths(partner) * TICKS_PER_MONTH) / 2;
+function halfTrip(state: GameState, partner: Partner): number {
+  return (roundTripMonths(state, partner) * TICKS_PER_MONTH) / 2;
 }
 
 function isOnItsWay(caravan: ForeignCaravan): boolean {
@@ -82,7 +82,7 @@ function sendCaravan(state: GameState, yard: Building): void {
     yardId: yard.id,
     ...order,
     trip: 'coming',
-    dueAt: state.tick + halfTrip(route.partner),
+    dueAt: state.tick + halfTrip(state, route.partner),
     path: [state.entry],
     step: 0,
     progress: 0,
@@ -106,7 +106,7 @@ function moveCaravan(state: GameState, caravan: ForeignCaravan): void {
 }
 
 function turnBack(state: GameState, caravan: ForeignCaravan): void {
-  const travelled = state.tick - (caravan.dueAt - halfTrip(caravan.partner));
+  const travelled = state.tick - (caravan.dueAt - halfTrip(state, caravan.partner));
   caravan.trip = 'going';
   caravan.dueAt = state.tick + travelled;
   state.version++;
@@ -152,7 +152,7 @@ function arrive(state: GameState, caravan: ForeignCaravan): void {
     headWest(state, caravan);
   } else {
     caravan.trip = 'going';
-    caravan.dueAt = state.tick + halfTrip(caravan.partner);
+    caravan.dueAt = state.tick + halfTrip(state, caravan.partner);
     state.version++;
   }
 }

@@ -73,6 +73,7 @@ https://zeus.heavengames.com/gameinfo/appeal/. Fire/collapse are risk increments
 | Fountain | 2×2 | 4 | 16 | 4,4,2,2 | — | 8 |
 | Maintenance Office | 2×2 | 5 | 10 | 0 | — | — |
 | Wheat Farm (on meadow) | 3×3 | 10 | 20 | -3,-2,-1 | 5 | — |
+| Carrot Farm (on meadow) | 3×3 | 10 | 20 | -3,-2,-1 | 5 | — |
 | Granary | 4×4 | 18 | 50 | -12,-10,-8,-6 | 8 | 8 |
 | Storehouse | 3×3 | 12 | 25 | -2,-2,-2,-2 | 5 | — |
 | Agora (common) | 2×6 | — | 25 | 12,12,10,10,8,8 | — | 6 |
@@ -114,6 +115,7 @@ Source: https://zeus.heavengames.com/gameinfo/industry-production/
 | Building | Output per year | Notes |
 |---|---|---|
 | Wheat Farm | 8 loads | Harvest in July |
+| Carrot Farm | 8 loads | Harvest in January (**ours**; Zeus has carrots, month not found) |
 | Carding Shed | 7–8 loads fleece | Shears up to 8 sheep within 40 tiles |
 | Growers' Lodge | 20 loads olives | Harvests nearby olive trees; whole year's output in a few months |
 | Olive Press | 6 loads oil | 1 load olives → 1 load oil (**ours**) |
@@ -313,6 +315,10 @@ hold; its workers cart everything else to storehouses (granaries for food).
 - Library (**ours**, **8** workers): holds no scrolls. Each unit read is a page at the Library's
   staffing (a whole page at 8 of 8); **100** pages are **1 Work of Art**, a city count that survives
   demotion. An unstaffed Library makes no Works of Art but does not end the house.
+- Upgrades (**ours**): each costs **1** Work of Art. Lyceum: **75** pages a Work of Art. Crop
+  rotation: farms yield **10** loads. Open fields: a farm needs meadow on **1** tile. Pack mules:
+  caravans travel **60** km a month. Amphoras: oil and olive storehouse slots hold **6** loads,
+  granaries **48**. Democracy: **60%** of residents work. Plutocracy: taxes **×1.25**.
 - Cloth (spec, **ours**): a guild uses **8 units** a month; a cloth peddler fills it to **3 months**
   (24 units). Ordinary houses take no cloth.
 - Placing a guild keeps the four houses' food, fleece and oil, summed, their latest water and

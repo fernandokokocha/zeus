@@ -10,12 +10,14 @@ import { COVERAGE_MONTHS } from './roamers';
 import { PERFORMANCE_TICKS } from './schools';
 import { newGameState, tileIndex, type Building, type Coverage, type GameState, type HouseGood, type PeddledGood } from './state';
 import type { Terrain } from './terrain';
+import { UPGRADES } from './upgrades';
 
-export const START_CITIES = ['scholars'] as const;
+export const START_CITIES = ['scholars', 'upgrades'] as const;
 export type StartCity = (typeof START_CITIES)[number];
 
 const MAIN_ROAD_Y = 50;
 const STARTING_FUNDS = 50_000;
+const UPGRADES_CITY_WORKS_OF_ART = UPGRADES.length;
 const HOUSE_GOODS: HouseGood[] = ['food', 'fleece', 'oil'];
 
 export const SCHOLARS_CITY = {
@@ -32,7 +34,7 @@ export function startCity(name: StartCity): GameState {
   return START_CITY_BUILDERS[name]();
 }
 
-const START_CITY_BUILDERS: Record<StartCity, () => GameState> = { scholars: scholarsCity };
+const START_CITY_BUILDERS: Record<StartCity, () => GameState> = { scholars: scholarsCity, upgrades: upgradesCity };
 
 function flatMap(): GameState {
   const terrain = new Array<Terrain>(MAP_SIZE * MAP_SIZE).fill('grass');
@@ -49,6 +51,12 @@ function scholarsCity(): GameState {
   supplyChain(state);
   state.permits.scholarsHouse = 1;
   assignWorkers(state);
+  return state;
+}
+
+function upgradesCity(): GameState {
+  const state = scholarsCity();
+  state.worksOfArt = UPGRADES_CITY_WORKS_OF_ART;
   return state;
 }
 

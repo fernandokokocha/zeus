@@ -6,9 +6,10 @@ import { tradeReport } from '../sim/trade-ledger';
 import { treasuryReport } from '../sim/treasury';
 import { createCharterChapter } from './charters';
 import { byId } from './dom';
+import { createUpgradesChapter } from './upgrades';
 import { populationChapter, prioritiesChapter, productionChapter, tradeChapter, treasuryChapter } from './ledger-chapters';
 
-type ChapterId = 'population' | 'production' | 'priorities' | 'treasury' | 'trade' | 'charter';
+type ChapterId = 'population' | 'production' | 'priorities' | 'treasury' | 'trade' | 'charter' | 'upgrades';
 
 interface Chapter {
   title: string;
@@ -48,6 +49,7 @@ export function createLedger(state: GameState): { update(): void } {
   const page = byId('ledger-page');
   const charter = createCharterChapter(state);
   const priorities = createPrioritiesChapter(state);
+  const upgrades = createUpgradesChapter(state);
   const population = document.createElement('div');
   const production = document.createElement('div');
   const treasury = document.createElement('div');
@@ -60,6 +62,7 @@ export function createLedger(state: GameState): { update(): void } {
     treasury: { title: 'Treasury', body: treasury },
     trade: { title: 'Trade', body: trade },
     charter: { title: 'Charter', body: charter.body },
+    upgrades: { title: 'Upgrades', body: upgrades.body },
   };
 
   const tabs = (Object.keys(chapters) as ChapterId[]).map((id) => {
@@ -84,6 +87,10 @@ export function createLedger(state: GameState): { update(): void } {
   show('population');
   byId('ledger-button').addEventListener('click', toggle);
   byId('ledger-close').addEventListener('click', toggle);
+  byId('works-of-art').addEventListener('click', () => {
+    show('upgrades');
+    ledger.hidden = false;
+  });
   window.addEventListener('keydown', (e) => {
     if (e.key.toLowerCase() === 'l' && !e.repeat) toggle();
     if (e.key === 'Escape') ledger.hidden = true;
@@ -94,6 +101,7 @@ export function createLedger(state: GameState): { update(): void } {
       if (ledger.hidden) return;
       charter.update();
       priorities.update();
+      upgrades.update();
       population.replaceChildren(populationChapter(populationReport(state)));
       production.replaceChildren(productionChapter(productionReport(state)));
       treasury.replaceChildren(treasuryChapter(treasuryReport(state)));

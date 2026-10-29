@@ -183,7 +183,7 @@ function comeBack(state: GameState, caravan: Caravan): void {
 function arrive(state: GameState, caravan: Caravan): void {
   if (caravan.trip === 'out') {
     caravan.trip = 'away';
-    caravan.backAt = state.tick + roundTripMonths(caravan.partner) * TICKS_PER_MONTH;
+    caravan.backAt = state.tick + roundTripMonths(state, caravan.partner) * TICKS_PER_MONTH;
   } else if (caravan.trip === 'home') {
     collect(state, 'trade', caravan.drachmas);
     bookTrade(state, 'exports', caravan.good, caravan.loads, caravan.drachmas);

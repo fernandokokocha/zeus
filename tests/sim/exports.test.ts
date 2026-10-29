@@ -185,7 +185,7 @@ describe("a caravan's trip", () => {
     const caravan = onlyCaravan(town.game);
     expect(caravanLines(town.game, caravan)).toContain('Heading out to Thebes');
     advanceUntil(town.game, () => caravan.trip === 'away');
-    expect(caravan.backAt).toBe(town.game.tick + roundTripMonths('thebes') * TICKS_PER_MONTH);
+    expect(caravan.backAt).toBe(town.game.tick + roundTripMonths(town.game, 'thebes') * TICKS_PER_MONTH);
     expect(describeTile(town.game, WEST_EDGE.x, WEST_EDGE.y).title).toBe('Main Road');
   });
 

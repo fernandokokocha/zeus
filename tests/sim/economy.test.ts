@@ -24,8 +24,8 @@ function runToMonthStart(game: GameState): number {
 
 describe('houseTax', () => {
   it('is the tax multiplier × residents × 0.09 a month', () => {
-    const { house } = town();
-    expect(houseTax(house)).toBeCloseTo(8 * 0.09);
+    const { game, house } = town();
+    expect(houseTax(game, house)).toBeCloseTo(8 * 0.09);
   });
 });
 
@@ -49,8 +49,8 @@ describe('taxes', () => {
     const { game, house } = town();
     placeBuilding(game, 'palace', 6, 4);
     house.coveredUntil.tax = 2 * TICKS_PER_MONTH;
-    expect(runToMonthStart(game)).toBeCloseTo(houseTax(house));
-    expect(game.lastMonth.taxes).toBeCloseTo(houseTax(house));
+    expect(runToMonthStart(game)).toBeCloseTo(houseTax(game, house));
+    expect(game.lastMonth.taxes).toBeCloseTo(houseTax(game, house));
   });
 
   it('are not paid by a house no collector has passed recently', () => {
@@ -89,7 +89,7 @@ describe('tax paid', () => {
     runToMonthStart(game);
     house.coveredUntil.tax = game.tick + 2 * TICKS_PER_MONTH;
     runToMonthStart(game);
-    expect(house.taxPaid).toEqual([0, houseTax(house)]);
+    expect(house.taxPaid).toEqual([0, houseTax(game, house)]);
   });
 
   it('keeps only the last 12 months', () => {
@@ -99,7 +99,7 @@ describe('tax paid', () => {
     for (let month = 0; month < 13; month++) settleMonth(game);
     house.coveredUntil.tax = 0;
     settleMonth(game);
-    expect(house.taxPaid).toEqual([...new Array(11).fill(houseTax(house)), 0]);
+    expect(house.taxPaid).toEqual([...new Array(11).fill(houseTax(game, house)), 0]);
   });
 });
 

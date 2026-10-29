@@ -260,7 +260,7 @@ describe('walkers in the Zeus view', () => {
   });
 
   it('keep, for Supplies, the peddler and everyone carrying a good houses use', () => {
-    expect(SERVING_WALKERS.supplies).toEqual(['peddler', 'cartPusher', 'buyer', 'fleeceCart', 'fleeceBuyer', 'oilCart', 'oilBuyer', 'clothCart', 'clothBuyer', 'scrollBuyer']);
+    expect(SERVING_WALKERS.supplies).toEqual(['peddler', 'cartPusher', 'carrotCart', 'buyer', 'fleeceCart', 'fleeceBuyer', 'oilCart', 'oilBuyer', 'clothCart', 'clothBuyer', 'scrollBuyer']);
   });
 
   it('fade every walker in Staff and the tile modes', () => {

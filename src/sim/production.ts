@@ -3,7 +3,7 @@ import { MONTHS_PER_YEAR } from './clock';
 import { CLOTH_LOADS_PER_YEAR } from './cloth';
 import { isClosed, isIndustry, type Industry } from './industries';
 import { GOODS, emptyFlows, recordFlow, type GoodFlow } from './flows';
-import { UNITS_PER_LOAD, WHEAT_LOADS_PER_YEAR } from './food';
+import { UNITS_PER_LOAD, WHEAT_LOADS_PER_YEAR, farmLoadsPerYear, isFarm } from './food';
 import { BRONZE_PER_SCULPTURE, SCULPTURES_PER_YEAR, WORKSHOP_SPECS } from './materials';
 import { OIL_LOADS_PER_YEAR, OLIVES_PER_PICKING, PICKINGS_PER_YEAR } from './olives';
 import { PAGES_PER_LOAD, PAGES_PER_SCROLL, SCROLLS_PER_YEAR } from './scrolls';
@@ -23,6 +23,7 @@ interface IndustrySpec {
 
 const INDUSTRY_SPECS: Record<Industry, IndustrySpec> = {
   wheatFarm: { makes: { good: 'food', perYear: WHEAT_LOADS_PER_YEAR * UNITS_PER_LOAD }, takes: null },
+  carrotFarm: { makes: { good: 'food', perYear: WHEAT_LOADS_PER_YEAR * UNITS_PER_LOAD }, takes: null },
   cardingShed: { makes: { good: 'fleece', perYear: SHEARINGS_PER_YEAR * FLEECE_PER_SHEARING }, takes: null },
   growersLodge: { makes: { good: 'olives', perYear: PICKINGS_PER_YEAR * OLIVES_PER_PICKING }, takes: null },
   olivePress: {
@@ -79,7 +80,8 @@ export function closeProductionMonth(state: GameState): void {
   for (const building of state.buildings) {
     if (!isIndustry(building.type) || isClosed(state, building)) continue;
     const { makes, takes } = INDUSTRY_SPECS[building.type];
-    recordFlow(state, 'possible', makes.good, makes.perYear / MONTHS_PER_YEAR);
+    const perYear = isFarm(building.type) ? farmLoadsPerYear(state) * UNITS_PER_LOAD : makes.perYear;
+    recordFlow(state, 'possible', makes.good, perYear / MONTHS_PER_YEAR);
     if (takes) recordFlow(state, 'wanted', takes.good, takes.perYear / MONTHS_PER_YEAR);
   }
   state.flows.months = [...state.flows.months, state.flows.thisMonth].slice(-MONTHS_PER_YEAR);

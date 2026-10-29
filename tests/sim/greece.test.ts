@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { PLACES, roadKm } from '../../src/sim/greece';
 import { PARTNERS, roundTripMonths, type Partner } from '../../src/sim/trade';
+import { grassGame } from './helpers';
 
 const partners = Object.keys(PARTNERS) as Partner[];
 
@@ -37,7 +38,7 @@ describe('the roads of Greece', () => {
 
 describe('a round trip', () => {
   it('grows with the length of the road, in whole months', () => {
-    expect(partners.map((partner) => [partner, roundTripMonths(partner)])).toEqual([
+    expect(partners.map((partner) => [partner, roundTripMonths(grassGame(), partner)])).toEqual([
       ['thebes', 3],
       ['corinth', 4],
       ['argos', 6],

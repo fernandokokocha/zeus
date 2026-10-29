@@ -5,14 +5,14 @@ import type { DesignOption } from './options';
 
 type Build = (staffed: boolean, bays: Bay[]) => THREE.Object3D;
 
-const full = (good: Bay['good']): Bay => ({ good, loads: LOADS_PER_SLOT });
+const full = (good: Bay['good']): Bay => ({ good, loads: LOADS_PER_SLOT, capacity: LOADS_PER_SLOT });
 
 const MIXED: Bay[] = [
-  { good: 'fleece', loads: 3 },
-  { good: 'oil', loads: 4 },
-  { good: 'oil', loads: 1 },
-  { good: 'wood', loads: 2 },
-  { good: 'bronze', loads: 3 },
+  { good: 'fleece', loads: 3, capacity: LOADS_PER_SLOT },
+  { good: 'oil', loads: 4, capacity: LOADS_PER_SLOT },
+  { good: 'oil', loads: 1, capacity: LOADS_PER_SLOT },
+  { good: 'wood', loads: 2, capacity: LOADS_PER_SLOT },
+  { good: 'bronze', loads: 3, capacity: LOADS_PER_SLOT },
 ];
 
 const FULL: Bay[] = [full('fleece'), full('olives'), full('oil'), full('wood'), full('wood'), full('marble'), full('bronze'), full('sculptures')];

@@ -8,7 +8,7 @@ import { PAGES_PER_SCROLL, SCRIPTORIUM_INPUT_CAPACITY, copyingTicks, hasScrollRo
 import { WEAVER_FLEECE_CAPACITY, WEAVING_TICKS, canWeave } from './cloth';
 import { adjacentRoadTiles, agoraVendors, footprint } from './commands';
 import { hasWorkingPalace, houseTax } from './economy';
-import { GRANARY_CAPACITY, HARVEST_MONTH, UNITS_PER_LOAD, VENDOR_CAPACITY, houseStockTarget, monthlyUse } from './food';
+import { granaryCapacity, harvestMonth, UNITS_PER_LOAD, VENDOR_CAPACITY, houseStockTarget, monthlyUse } from './food';
 import { isClosed } from './industries';
 import { PLACES } from './greece';
 import { YARD_CART_PUSHERS, caravanLimit, caravansOf, slotHoldings, yardMerchants } from './exports';
@@ -52,7 +52,7 @@ import { ROAD_UPGRADE_SPECS, upgradeObstacle } from './road-upgrades';
 import { canBurn, canCollapse, isBurning, riskShare } from './safety';
 import { canSettlersReach } from './settlers';
 import { SHEARING_RANGE, SHED_CAPACITY, hasFullFleece, sheepTile, sheepToShear, shepherdAfter } from './sheep';
-import { STOREHOUSE_CAPACITY, STOREHOUSE_GOODS, STOREHOUSE_SLOTS, acceptsGood, baysOf, slotsUsed, type StoredGood } from './storehouse';
+import { STOREHOUSE_GOODS, STOREHOUSE_SLOTS, acceptsGood, baysOf, slotsUsed, storehouseCapacity, type StoredGood } from './storehouse';
 import {
   NO_BUILDING,
   buildingById,
@@ -246,6 +246,7 @@ const GOOD_NAMES: Record<Good, string> = {
 
 const CARRIER_HOMES: Record<Carrier['kind'], string> = {
   cartPusher: 'farm',
+  carrotCart: 'farm',
   buyer: 'stall',
   fleeceCart: 'shed',
   fleeceBuyer: 'stall',
@@ -489,7 +490,7 @@ function cultureMeter(state: GameState, house: Building, need: Need | null): Met
 function taxStatus(state: GameState, house: Building): string {
   if (!hasService(state, house, 'tax')) return 'No tax collector has passed';
   if (!hasWorkingPalace(state)) return 'No palace to collect its tax';
-  return `Pays ${drachmas(houseTax(house))} tax a month`;
+  return `Pays ${drachmas(houseTax(state, house))} tax a month`;
 }
 
 function settlementStatus(state: GameState, lot: Building): string {
@@ -503,7 +504,7 @@ function describeWorkplace(state: GameState, building: Building): Description {
   const spec = BUILDING_SPECS[building.type];
   const lines = [`Tile ${building.x}, ${building.y}`];
   const description: Description = { title: spec.name, meters: storageMeters(state, building), lines };
-  if (building.type === 'storehouse') description.storehouse = storehouseView(building);
+  if (building.type === 'storehouse') description.storehouse = storehouseView(state, building);
   if (!spec.needsRoad) {
     lines.push(`Appeal ${spec.appeal.join(', ')} by distance`, ...stockLines(state, building));
     return description;
@@ -537,7 +538,7 @@ function storageMeters(state: GameState, building: Building): Meter[] {
     case 'agora':
       return agoraVendors(state, building).map((vendor) => vendorMeter(vendor, BUILDING_SPECS[vendor.type].name));
     case 'granary':
-      return [{ label: 'Wheat', fill: building.food / GRANARY_CAPACITY, value: `${amount(building.food / UNITS_PER_LOAD)} of ${GRANARY_CAPACITY / UNITS_PER_LOAD} loads`, need: null }];
+      return [{ label: 'Wheat', fill: building.food / granaryCapacity(state), value: `${amount(building.food / UNITS_PER_LOAD)} of ${granaryCapacity(state) / UNITS_PER_LOAD} loads`, need: null }];
     default:
       return [];
   }
@@ -550,14 +551,14 @@ function vendorMeter(vendor: Building, label: string): Meter {
 
 const EMPTY_BAY: StorehouseBay = { good: null, loads: 0, refused: false };
 
-function storehouseView(storehouse: Building): StorehouseView {
-  const filled = baysOf(storehouse).map(({ good, loads }) => ({ good, loads, refused: !acceptsGood(storehouse, good) }));
+function storehouseView(state: GameState, storehouse: Building): StorehouseView {
+  const filled = baysOf(state, storehouse).map(({ good, loads }) => ({ good, loads, refused: !acceptsGood(storehouse, good) }));
   const stored = STOREHOUSE_GOODS.reduce((sum, good) => sum + storehouse[good], 0);
   return {
     id: storehouse.id,
     bays: [...filled, ...Array<StorehouseBay>(STOREHOUSE_SLOTS - filled.length).fill(EMPTY_BAY)],
-    loads: `${amount(stored / UNITS_PER_LOAD)} of ${STOREHOUSE_CAPACITY / UNITS_PER_LOAD} loads`,
-    free: freeSlots(STOREHOUSE_SLOTS - slotsUsed(storehouse)),
+    loads: `${amount(stored / UNITS_PER_LOAD)} of ${storehouseCapacity(state, storehouse) / UNITS_PER_LOAD} loads`,
+    free: freeSlots(STOREHOUSE_SLOTS - slotsUsed(state, storehouse)),
     orders: STOREHOUSE_GOODS.map((good) => ({ good, name: capitalized(GOOD_NAMES[good]), accepted: acceptsGood(storehouse, good) })),
   };
 }
@@ -569,8 +570,9 @@ function freeSlots(count: number): string {
 
 function stockLines(state: GameState, building: Building): string[] {
   switch (building.type) {
-    case 'wheatFarm': {
-      const crop = `Crop ${Math.round(building.growth * 100)}% grown, harvest in ${MONTH_NAMES[HARVEST_MONTH]}`;
+    case 'wheatFarm':
+    case 'carrotFarm': {
+      const crop = `Crop ${Math.round(building.growth * 100)}% grown, harvest in ${MONTH_NAMES[harvestMonth(building)]}`;
       return building.food > 0 ? [crop, `Harvest waiting: ${loads(building.food)}`] : [crop];
     }
     case 'granary':

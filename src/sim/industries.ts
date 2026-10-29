@@ -3,6 +3,7 @@ import type { Building, GameState } from './state';
 
 export const INDUSTRIES = [
   'wheatFarm',
+  'carrotFarm',
   'cardingShed',
   'growersLodge',
   'olivePress',

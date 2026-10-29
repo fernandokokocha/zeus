@@ -7,10 +7,10 @@ import { roundTripMonths } from '../../src/sim/trade';
 import { emptyTradeYear } from '../../src/sim/trade-books';
 import { tradeReport } from '../../src/sim/trade-ledger';
 import { closeYear } from '../../src/sim/treasury';
-import { tradingTown, type Town } from './helpers';
+import { grassGame, tradingTown, type Town } from './helpers';
 
 const WALK_LIMIT = 2 * TICKS_PER_MONTH;
-const THEBES_TRIP = roundTripMonths('thebes');
+const THEBES_TRIP = roundTripMonths(grassGame(), 'thebes');
 const SIX_FLEECE = { loads: 6, drachmas: 6 * 20 };
 const SIX_WOOD = { loads: 6, drachmas: 6 * 22 };
 const NOTHING = { loads: 0, drachmas: 0 };

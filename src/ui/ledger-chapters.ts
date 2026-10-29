@@ -1,3 +1,4 @@
+import { element } from './dom';
 import type { Accounts, TreasuryReport } from '../sim/treasury';
 import { UNITS_PER_LOAD } from '../sim/food';
 import type { PopulationReport } from '../sim/population';
@@ -38,13 +39,6 @@ export function madeShare(made: number, possible: number): number {
 export function net(accounts: Accounts): number {
   const sum = (keys: (keyof Accounts)[]) => keys.reduce((total, key) => total + accounts[key], 0);
   return sum(INCOME) - sum(SPENDING);
-}
-
-function element<K extends keyof HTMLElementTagNameMap>(tag: K, className = '', text = ''): HTMLElementTagNameMap[K] {
-  const node = document.createElement(tag);
-  if (className) node.className = className;
-  if (text) node.textContent = text;
-  return node;
 }
 
 function count(value: number): string {

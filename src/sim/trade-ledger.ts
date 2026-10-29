@@ -40,7 +40,7 @@ function routeRows(state: GameState): RouteRow[] {
   return state.routes.map(({ partner, guildId }) => {
     const guild = buildingById(state, guildId);
     if (guild === undefined) throw new Error(`The route to ${partner} has no guild`);
-    return { guild: `${BUILDING_SPECS.tradersGuild.name} at ${guild.x}, ${guild.y}`, partner: PLACES[partner].name, roundTripMonths: roundTripMonths(partner) };
+    return { guild: `${BUILDING_SPECS.tradersGuild.name} at ${guild.x}, ${guild.y}`, partner: PLACES[partner].name, roundTripMonths: roundTripMonths(state, partner) };
   });
 }
 

@@ -45,3 +45,12 @@ describe('the scholars start city', () => {
     expect(townhouses(game)).toBe(8);
   });
 });
+
+describe('the upgrades start city', () => {
+  it('is the scholars city with a Work of Art for every upgrade', () => {
+    const game = startCity('upgrades');
+    expect(game.worksOfArt).toBe(8);
+    expect(townhouses(game)).toBe(12);
+    expect(game.permits.scholarsHouse).toBe(1);
+  });
+});

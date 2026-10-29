@@ -1,6 +1,6 @@
 import type { BuildingType } from './buildings';
 import { adjacentRoadTiles } from './commands';
-import { BUYER_LOAD, CART_LOAD, GRANARY_CAPACITY, UNITS_PER_LOAD, VENDOR_CAPACITY, wholeLoads } from './food';
+import { BUYER_LOAD, CART_LOAD, granaryCapacity, UNITS_PER_LOAD, VENDOR_CAPACITY, wholeLoads } from './food';
 import { findRoadPath, nearestByRoad } from './pathfinding';
 import type { Point } from './point';
 import { exitTile } from './roamers';
@@ -38,6 +38,7 @@ function unloadCart(good: TradeGood, stores: Store[]): CarrierSpec {
 
 export const CARRIER_SPECS: Record<CarrierKind, CarrierSpec> = {
   cartPusher: { name: 'Cart Pusher', home: 'wheatFarm', good: 'food', stores: ['granary'], delivers: true, capacity: nothing },
+  carrotCart: { name: 'Cart Pusher', home: 'carrotFarm', good: 'food', stores: ['granary'], delivers: true, capacity: nothing },
   buyer: { name: 'Buyer', home: 'foodVendor', good: 'food', stores: ['granary'], delivers: false, capacity: () => VENDOR_CAPACITY },
   fleeceCart: { name: 'Cart Pusher', home: 'cardingShed', good: 'fleece', stores: ['storehouse'], delivers: true, capacity: nothing },
   fleeceBuyer: { name: 'Buyer', home: 'fleeceVendor', good: 'fleece', stores: ['storehouse'], delivers: false, capacity: () => VENDOR_CAPACITY },
@@ -110,29 +111,29 @@ function spareStock(kind: CarrierKind, store: Building): number {
   return Math.max(0, store[CARRIER_SPECS[kind].good] - keptBack(kind));
 }
 
-const STORE_SPACE: Record<Store, (stock: Record<Good, number>, good: Good) => number> = {
-  granary: (stock) => GRANARY_CAPACITY - stock.food,
+const STORE_SPACE: Record<Store, (state: GameState, stock: Record<Good, number>, good: Good) => number> = {
+  granary: (state, stock) => granaryCapacity(state) - stock.food,
   storehouse: storehouseSpace,
-  olivePress: (stock) => PRESS_OLIVE_CAPACITY - stock.olives,
-  sculptureStudio: (stock) => STUDIO_BRONZE_CAPACITY - stock.bronze,
-  demeterSanctuary: (stock, good) => stillNeeded('demeterSanctuary', stock, good),
-  athenaSanctuary: (stock, good) => stillNeeded('athenaSanctuary', stock, good),
-  hephaestusSanctuary: (stock, good) => stillNeeded('hephaestusSanctuary', stock, good),
+  olivePress: (_, stock) => PRESS_OLIVE_CAPACITY - stock.olives,
+  sculptureStudio: (_, stock) => STUDIO_BRONZE_CAPACITY - stock.bronze,
+  demeterSanctuary: (_, stock, good) => stillNeeded('demeterSanctuary', stock, good),
+  athenaSanctuary: (_, stock, good) => stillNeeded('athenaSanctuary', stock, good),
+  hephaestusSanctuary: (_, stock, good) => stillNeeded('hephaestusSanctuary', stock, good),
 };
 
 export function carrierKindsSentBy(type: BuildingType): CarrierKind[] {
   return (Object.keys(CARRIER_SPECS) as CarrierKind[]).filter((kind) => CARRIER_SPECS[kind].home === type);
 }
 
-function storeSpace(store: Building, stock: Record<Good, number>, good: Good): number {
+function storeSpace(state: GameState, store: Building, stock: Record<Good, number>, good: Good): number {
   if (!acceptsGood(store, good)) return 0;
-  return STORE_SPACE[store.type as Store](stock, good);
+  return STORE_SPACE[store.type as Store](state, stock, good);
 }
 
 export function storeRoom(state: GameState, store: Building, good: Good): number {
   const incoming = state.carriers.filter((c) => isBringing(c, store));
   const stock = Object.fromEntries(GOODS.map((g) => [g, incoming.reduce((sum, c) => sum + c[g], store[g])])) as Record<Good, number>;
-  return storeSpace(store, stock, good);
+  return storeSpace(state, store, stock, good);
 }
 
 function isBringing(carrier: Carrier, store: Building): boolean {
@@ -254,7 +255,7 @@ function arrive(state: GameState, carrier: Carrier, home: Building): void {
   const store = buildingById(state, carrier.destinationId);
   if (!store) throw new Error(`Carrier ${carrier.id} reached missing building ${carrier.destinationId}`);
   const moved = delivers
-    ? Math.min(carrier[good], storeSpace(store, store, good))
+    ? Math.min(carrier[good], storeSpace(state, store, store, good))
     : -wholeLoads(Math.min(BUYER_LOAD, spareStock(carrier.kind, store), Math.max(0, fetchRoom(state, carrier.kind, home))));
   store[good] += moved;
   carrier[good] -= moved;

@@ -4,13 +4,15 @@ import { isResidence } from './housing';
 import { INDUSTRIES, NO_PRIORITY, isClosed, isIndustry, type Industry, type Priority } from './industries';
 import { isUnderConstruction } from './sanctuaries';
 import type { Building, GameState } from './state';
+import { upgraded } from './upgrades';
 
 export const WORKING_SHARE = 0.52;
+export const DEMOCRATIC_WORKING_SHARE = 0.6;
 const UNPRIORITIZED_RANK = 4;
 
 export function workforce(state: GameState): number {
   const residents = state.buildings.filter(isResidence).reduce((sum, residence) => sum + residence.residents, 0);
-  return Math.floor(residents * WORKING_SHARE);
+  return Math.floor(residents * upgraded(state, 'democracy', WORKING_SHARE, DEMOCRATIC_WORKING_SHARE));
 }
 
 function canWork(state: GameState, building: Building): boolean {

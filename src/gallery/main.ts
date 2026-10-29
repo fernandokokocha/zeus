@@ -9,7 +9,7 @@ import { HOMESTEAD_OPTIONS } from './homestead-options';
 import { TENEMENT_OPTIONS } from './tenement-options';
 import { APARTMENT_OPTIONS } from './apartment-options';
 import { TOWNHOUSE_OPTIONS } from './townhouse-options';
-import { FARM_OPTIONS } from './farm-options';
+import { CARROT_FARM_OPTIONS, FARM_OPTIONS } from './farm-options';
 import { MAINTENANCE_OPTIONS } from './maintenance-options';
 import { MASONRY_OPTIONS } from './masonry-options';
 import { PALACE_OPTIONS } from './palace-options';
@@ -50,6 +50,7 @@ const SETS: Record<string, DesignSet> = {
   apartment: { title: 'Apartment', needs: 'Level 6 · 48 people · needs food, water, fleece and oil', options: APARTMENT_OPTIONS, chosen: 2, previous: TENEMENT_OPTIONS[2], strip: true },
   townhouse: { title: 'Townhouse', needs: 'Level 7 · 60 people · needs food, water, fleece, oil and top culture and appeal', options: TOWNHOUSE_OPTIONS, chosen: 1, previous: APARTMENT_OPTIONS[2], strip: true },
   wheatFarm: { title: 'Wheat Farm', needs: '3×3 · 10 workers · every growth stage, without and with workers', options: FARM_OPTIONS, chosen: 0, footprint: [3, 3], strip: true },
+  carrotFarm: { title: 'Carrot Farm', needs: '3×3 · 10 workers · every growth stage, without and with workers', options: CARROT_FARM_OPTIONS, chosen: 0, footprint: [3, 3], strip: true },
   maintenance: { title: 'Maintenance Office', needs: '2×2 · 5 workers · each option without and with workers', options: MAINTENANCE_OPTIONS, chosen: 1, strip: true },
   masonry: { title: 'Masonry Shop', needs: '2×2 · 15 workers · each option without and with workers, holding 3 loads of marble', options: MASONRY_OPTIONS, chosen: 1, strip: true },
   palace: { title: 'Palace', needs: '9×6 · no workers · always animated, guards at the gate', options: PALACE_OPTIONS, chosen: 2, footprint: [9, 6] },

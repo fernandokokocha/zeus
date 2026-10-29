@@ -21,6 +21,8 @@ import { BUILDABLE, TERRAIN_NAMES } from './terrain';
 import { emptyTradeSlots } from './exports';
 import { PALACE_DELIVERS } from './trade';
 import { ROADBLOCK_COST, ROAD_TILE_COST, SHEEP_COST, spend } from './treasury';
+import { isFarm } from './food';
+import { hasUpgrade } from './upgrades';
 import { walkerTile } from './walking';
 
 export type Result = { ok: true } | { ok: false; reason: string };
@@ -170,20 +172,26 @@ export function checkBuildingPlacement(
 
 const MEADOW_REASONS: Partial<Record<BuildingType, string>> = {
   wheatFarm: 'A wheat farm needs meadow',
+  carrotFarm: 'A carrot farm needs meadow',
   oliveTree: 'An olive tree needs meadow',
 };
 
 function placementObstacle(state: GameState, placement: Placement): string | null {
   const { type, x, y } = placement;
   if (type === 'palace' && state.buildings.some((b) => b.type === 'palace')) return 'Only one palace is allowed';
+  if (type === 'carrotFarm' && !hasUpgrade(state, 'carrots')) return 'Unlocked by the Carrots upgrade';
   if (isAgoraVendor(type)) return vendorObstacle(state, x, y);
   if (isEliteType(type)) return eliteObstacle(state, placement);
   if (isSanctuary(type)) return footprintObstacle(state, placement) ?? sanctuaryObstacle(state, type);
   const obstacle = footprintObstacle(state, placement);
   const meadowReason = MEADOW_REASONS[type];
   if (obstacle || !meadowReason) return obstacle;
-  const onMeadow = footprint(placement).every((p) => state.terrain[tileIndex(state, p.x, p.y)] === 'meadow');
-  return onMeadow ? null : meadowReason;
+  if (isFarm(type) && hasUpgrade(state, 'openFields')) return footprint(placement).some((p) => isMeadow(state, p)) ? null : `${meadowReason} on one of its tiles`;
+  return footprint(placement).every((p) => isMeadow(state, p)) ? null : meadowReason;
+}
+
+function isMeadow(state: GameState, p: Point): boolean {
+  return state.terrain[tileIndex(state, p.x, p.y)] === 'meadow';
 }
 
 function vendorObstacle(state: GameState, x: number, y: number): string | null {

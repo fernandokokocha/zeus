@@ -3,6 +3,7 @@ import { ROAD_UPGRADE_SPECS, type RoadUpgrade } from '../sim/road-upgrades';
 import { MONUMENT_NAMES, monumentsWaiting, type MonumentKind } from '../sim/monuments';
 import type { GameState } from '../sim/state';
 import { SANCTUARY_SPECS, type Sanctuary } from '../sim/sanctuaries';
+import { hasUpgrade } from '../sim/upgrades';
 import { ROADBLOCK_COST, ROAD_TILE_COST, SHEEP_COST } from '../sim/treasury';
 
 export type SingleBuilding = Exclude<BuildingType, 'house' | 'ruins' | 'tradeYard' | 'library' | 'monument'>;
@@ -40,6 +41,7 @@ export const TOOL_LABELS: Record<Tool, string> = {
   taxOffice: priced('taxOffice'),
   palace: priced('palace'),
   wheatFarm: priced('wheatFarm'),
+  carrotFarm: priced('carrotFarm'),
   granary: priced('granary'),
   agora: priced('agora'),
   foodVendor: priced('foodVendor'),
@@ -107,7 +109,7 @@ export interface ToolGroup {
 }
 
 export const TOOL_GROUPS: ToolGroup[] = [
-  { name: 'Husbandry', tileLabel: 'Husbandry', tools: ['wheatFarm', 'sheep', 'oliveTree', 'growersLodge'] },
+  { name: 'Husbandry', tileLabel: 'Husbandry', tools: ['wheatFarm', 'carrotFarm', 'sheep', 'oliveTree', 'growersLodge'] },
   { name: 'Industry', tileLabel: 'Industry', tools: ['cardingShed', 'weaver', 'scriptorium', 'olivePress', 'timberMill', 'masonryShop', 'foundry', 'sculptureStudio'] },
   { name: 'Distribution', tileLabel: 'Distribution', tools: ['granary', 'storehouse', 'fastRoad', 'agora', 'foodVendor', 'fleeceVendor', 'oilVendor', 'clothVendor', 'scrollVendor'] },
   { name: 'Hygiene & Safety', tileLabel: 'Hygiene', tools: ['fountain', 'maintenanceOffice'] },
@@ -123,5 +125,6 @@ export function toolLabel(tool: Tool, state: GameState): string {
 }
 
 export function toolEnabled(tool: Tool, state: GameState): boolean {
+  if (tool === 'carrotFarm') return hasUpgrade(state, 'carrots');
   return !isMonumentTool(tool) || monumentsWaiting(state, MONUMENT_TOOLS[tool]) > 0;
 }

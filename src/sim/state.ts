@@ -8,6 +8,7 @@ import { DEFAULT_SEED, MAP_SIZE, generateTerrain } from './map';
 import { clampPoint, type Point } from './point';
 import type { RoadUpgrade } from './road-upgrades';
 import type { Terrain } from './terrain';
+import type { Upgrade } from './upgrades';
 import type { Partner, Route } from './trade';
 import { emptyTradeYear, type TradeBooks } from './trade-books';
 import { STARTING_TREASURY, emptyAccounts, type Books } from './treasury';
@@ -134,6 +135,7 @@ export interface Artisan extends Walk {
 
 export type CarrierKind =
   | 'cartPusher'
+  | 'carrotCart'
   | 'buyer'
   | 'fleeceCart'
   | 'fleeceBuyer'
@@ -270,6 +272,7 @@ export interface GameState {
   permits: Record<EliteType, number>;
   monumentsToPlace: MonumentKind[];
   worksOfArt: number;
+  upgrades: Upgrade[];
   crowdedCityEarned: boolean;
   announcedEliteSites: Record<EliteType, number[]>;
   routes: Route[];
@@ -335,6 +338,7 @@ export function newGameState(size: number, terrain: Terrain[], mainRoad: Point[]
     permits: { tradersGuild: 0, scholarsHouse: 0 },
     monumentsToPlace: [],
     worksOfArt: 0,
+    upgrades: [],
     crowdedCityEarned: false,
     announcedEliteSites: { tradersGuild: [], scholarsHouse: [] },
     routes: [],

@@ -156,9 +156,9 @@ describe("a weaver's cart pusher", () => {
 
 describe('cloth in the storehouse', () => {
   it('takes its own slots, shared with every other good', () => {
-    const { storehouse } = clothTown();
+    const { game, storehouse } = clothTown();
     Object.assign(storehouse, { fleece: 100, oil: 100, cloth: 500 });
-    expect(slotsUsed(storehouse)).toBe(4);
+    expect(slotsUsed(game, storehouse)).toBe(4);
   });
 });
 

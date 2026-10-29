@@ -156,15 +156,15 @@ describe('prioritiesReport', () => {
     expect(report.workers).toBe(15);
     expect(report.jobs).toBe(28);
     expect(report.industries.map((row) => row.industry)).toEqual([
-      'wheatFarm', 'cardingShed', 'growersLodge', 'olivePress', 'weaver', 'scriptorium', 'timberMill', 'masonryShop', 'foundry', 'sculptureStudio',
+      'wheatFarm', 'carrotFarm', 'cardingShed', 'growersLodge', 'olivePress', 'weaver', 'scriptorium', 'timberMill', 'masonryShop', 'foundry', 'sculptureStudio',
     ]);
-    expect(report.industries[3]).toEqual({ industry: 'olivePress', name: 'Olive Press', buildings: 2, workers: 15, jobs: 24, priority: 2, open: true });
-    expect(report.industries[4]).toEqual({ industry: 'weaver', name: 'Weaver', buildings: 0, workers: 0, jobs: 0, priority: 0, open: false });
+    expect(report.industries[4]).toEqual({ industry: 'olivePress', name: 'Olive Press', buildings: 2, workers: 15, jobs: 24, priority: 2, open: true });
+    expect(report.industries[5]).toEqual({ industry: 'weaver', name: 'Weaver', buildings: 0, workers: 0, jobs: 0, priority: 0, open: false });
   });
 
   it('counts the full staff of a closed industry, so the player sees what opening it takes', () => {
     const game = cityWith(30, 'olivePress');
     setIndustryOpen(game, 'olivePress', false);
-    expect(prioritiesReport(game).industries[3]).toMatchObject({ workers: 0, jobs: 12 });
+    expect(prioritiesReport(game).industries[4]).toMatchObject({ workers: 0, jobs: 12 });
   });
 });

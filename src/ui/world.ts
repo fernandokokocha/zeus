@@ -2,7 +2,7 @@ import { PLACES, type Place } from '../sim/greece';
 import { buildingById, type GameState } from '../sim/state';
 import { PARTNERS, PARTNER_CARAVANS, openRoute, worldReport, type Partner, type PartnerView, type TradeOffer } from '../sim/trade';
 import { PARTNER_COLORS } from '../render/palette';
-import { byId } from './dom';
+import { byId, element } from './dom';
 import { GREECE_BOUNDS, GREECE_LAND } from './greece-land';
 
 const SVG = 'http://www.w3.org/2000/svg';
@@ -41,13 +41,6 @@ export interface World {
 function svg<K extends keyof SVGElementTagNameMap>(tag: K, attributes: Record<string, string | number>, text = ''): SVGElementTagNameMap[K] {
   const node = document.createElementNS(SVG, tag);
   for (const [name, value] of Object.entries(attributes)) node.setAttribute(name, String(value));
-  node.textContent = text;
-  return node;
-}
-
-function element<K extends keyof HTMLElementTagNameMap>(tag: K, className = '', text = ''): HTMLElementTagNameMap[K] {
-  const node = document.createElement(tag);
-  node.className = className;
   node.textContent = text;
   return node;
 }

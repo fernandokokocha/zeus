@@ -2,7 +2,7 @@
 
 Extends `2026-10-11-zeus-clone-design.md`, `2026-10-25-elite-housing-design.md` and
 `2026-10-27-trade-design.md`. Everything there still holds unless this document changes it.
-It covers the roadmap's first two elite milestones, as seven slices. Agreed with the
+It covers the roadmap's first two elite milestones, as eight slices. Agreed with the
 owner on 2026-10-29.
 
 ## Intent
@@ -32,12 +32,10 @@ The shared shape:
 - Elite sites (the inspector line, the map mode, the notice) work for every type, not only
   for the guild.
 - A Scholars' House can be planned for, placed, supplied and kept. It produces **Works of
-  Art**, the currency for a future upgrade tree.
+  Art**, which buy upgrades.
 
 ### Non-goals
 
-- The upgrade tree itself. Works of Art accumulate and are shown, but buying anything with
-  them waits for a later spec (see Upgrades).
 - Other sources of Works of Art (buying, Great People, plunder). Scholars' Houses are the
   only source for now.
 - Elite levels.
@@ -160,7 +158,7 @@ The Scholars' House charter.
   it never goes back to unstarted.
 - **Works of Art** are a city count, not a stored good: a number in the top bar next to the
   treasury, and a line in the Ledger's Treasury chapter. They are kept when the house that
-  made them demotes. Nothing spends them yet.
+  made them demotes. They are spent on upgrades.
 - **Models:** placeholders that read as a richer 4×4 house (white and ochre, a lecture
   porch) and a Library (a colonnaded hall with scroll racks). Both get backlog entries:
   supplied, missing a need, burning; Library with and without workers.
@@ -180,9 +178,37 @@ The guild's site help (slice 17) becomes every elite type's.
 
 ## Upgrades
 
-Placeholder slice, and the last of the seven. It needs its own design before it is built: the owner wants to choose
-the upgrades when the time comes. Works of Art are its currency, and the first sketch
-(ten upgrades in three branches, costing 1–4 each) is a starting point, not a decision.
+Agreed with the owner on 2026-10-29 (slice 40). Works of Art buy **upgrades**: a flat list,
+no tree and no exclusions, every one costing **1 Work of Art**. An upgrade is permanent and
+city-wide, and each changes one rule.
+
+| Upgrade | Rule |
+|---|---|
+| The Lyceum | A Work of Art takes **75 pages** instead of 100 |
+| Works and Days (crop rotation) | Farms (wheat and carrot) yield **10 loads** a year instead of 8 |
+| Demeter's Furrows (open fields) | A farm needs meadow on just **one** of its tiles |
+| Daukos (carrots) | Unlocks the **Carrot Farm** |
+| Arcadian Mules (pack mules) | Caravans travel **60 km** a month instead of 40 |
+| Kerameikos (amphoras) | A storehouse slot of oil or olives holds **6 loads** instead of 4; a granary holds **48** loads instead of 32 |
+| Ekklesia (democracy) | **60%** of residents work instead of 52% |
+| Laws of Solon (plutocracy) | Taxes **+25%** |
+
+- **Buying:** clicking the Works of Art counter in the top bar opens the Ledger at its
+  **Upgrades** chapter: each upgrade with its rule and a Buy button, or "Owned". Buying
+  needs a Work of Art and spends it. Each upgrade has a Greek name, a line saying what the
+  name means, and a round black-figure pottery medallion as its picture; an owned one gets a
+  gold rim.
+- **The Carrot Farm** is the Wheat Farm's twin (3×3, 10 workers, 20 dr, meadow, 8 loads a
+  year, fire 5, its cart takes food to a granary), but it harvests in **January** instead of
+  July, so a city with both has two harvests a year. Carrots are plain food. A later house
+  level may need two kinds of food, and carrots are its second kind. Until Carrots is
+  bought, the tool is greyed out.
+- **Pack mules** applies to caravans that set out after it is bought.
+- **Fast Roads** stay available from the start; they were considered as an upgrade and
+  rejected.
+- Rejected after discussion: an upgrade tree, exclusive choices (constitutions, land vs
+  sea), Great Minds, and roaming-range or coverage-length upgrades. Great Works (wonders
+  unlocked with Works of Art) are a roadmap item of their own.
 
 ## Decisions taken without the owner
 

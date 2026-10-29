@@ -7,6 +7,7 @@ export type BuildingType =
   | 'taxOffice'
   | 'palace'
   | 'wheatFarm'
+  | 'carrotFarm'
   | 'granary'
   | 'agora'
   | 'foodVendor'
@@ -63,6 +64,7 @@ export const BUILDING_SPECS: Record<BuildingType, BuildingSpec> = {
   taxOffice: { name: 'Tax Office', width: 2, height: 2, cost: 25, workers: 8, appeal: [-4, -3], needsRoad: true },
   palace: { name: 'Palace', width: 9, height: 6, cost: 125, workers: 0, appeal: [18, 18, 18, 15, 15, 15], needsRoad: true },
   wheatFarm: { name: 'Wheat Farm', width: 3, height: 3, cost: 20, workers: 10, appeal: [-3, -2, -1], needsRoad: true },
+  carrotFarm: { name: 'Carrot Farm', width: 3, height: 3, cost: 20, workers: 10, appeal: [-3, -2, -1], needsRoad: true },
   granary: { name: 'Granary', width: 4, height: 4, cost: 50, workers: 18, appeal: [-12, -10, -8, -6], needsRoad: true },
   agora: { name: 'Agora', width: 2, height: 6, cost: 25, workers: 0, appeal: [12, 12, 10, 10, 8, 8], needsRoad: true },
   foodVendor: { name: 'Food Vendor', width: 2, height: 2, cost: 10, workers: 4, appeal: [], needsRoad: true },
