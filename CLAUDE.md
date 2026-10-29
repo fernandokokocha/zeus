@@ -43,7 +43,8 @@ binding. In short:
 ## Session routine
 
 1. **Find the slice.** Pull `main`. Read the spec and the roadmap. The slice is the first
-   unchecked one. Fix any feedback in the session prompt first, in its own commits on
+   item. Its number is the next free one after the highest in `docs/slices/` and
+   `git log`. Fix any feedback in the session prompt first, in its own commits on
    `main`.
 2. **Get a plan.** If `docs/slices/NN-*.md` exists, execute it task by task and tick its
    boxes. Otherwise, write it first, in the same format as `docs/slices/01-foundation.md`.
@@ -51,7 +52,7 @@ binding. In short:
 4. **Look at the game.** Drive the dev server with a throwaway, uncommitted Playwright
    script that builds what the slice adds, screenshot it, and check that it looks right.
    New models are checked in the gallery (`docs/model-redesign.md`).
-5. **Ship it.** Tick the slice in `docs/roadmap.md`, squash the branch onto `main` as one
+5. **Ship it.** Delete the item from `docs/roadmap.md`, squash the branch onto `main` as one
    commit titled `Slice NN: Name`, and push. The commit body and the session's final
    report both carry:
    - **Playtest checklist:** concrete things to try and what should happen. The owner
