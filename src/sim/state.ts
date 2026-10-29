@@ -1,7 +1,7 @@
 import type { BuildingType, Rotation } from './buildings';
-import type { WellFed } from './charters';
+import type { WellDressed } from './charters';
 import { emptyFlows, type FlowBook } from './flows';
-import type { HouseLevel } from './housing';
+import type { EliteType, HouseLevel } from './housing';
 import type { MonumentKind } from './monuments';
 import { defaultIndustrySettings, type IndustrySettings } from './industries';
 import { DEFAULT_SEED, MAP_SIZE, generateTerrain } from './map';
@@ -253,8 +253,8 @@ export interface GameState {
   nextForeignCaravanId: number;
   notices: Notice[];
   nextNoticeId: number;
-  wellFed: WellFed;
-  guildPermits: number;
+  wellDressed: WellDressed;
+  permits: Record<EliteType, number>;
   monumentsToPlace: MonumentKind[];
   crowdedCityEarned: boolean;
   announcedGuildSites: number[];
@@ -316,8 +316,8 @@ export function newGameState(size: number, terrain: Terrain[], mainRoad: Point[]
     nextForeignCaravanId: 1,
     notices: [],
     nextNoticeId: 1,
-    wellFed: { months: 0, reset: null },
-    guildPermits: 0,
+    wellDressed: { months: 0, reset: null },
+    permits: { tradersGuild: 0 },
     monumentsToPlace: [],
     crowdedCityEarned: false,
     announcedGuildSites: [],

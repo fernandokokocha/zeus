@@ -533,6 +533,9 @@ button.active {
 
 .charter-chapter .charter-permits {
   margin-top: 10px;
+}
+
+.charter-chapter .charter-permits p {
   font-size: inherit;
   font-weight: bold;
 }

@@ -117,19 +117,19 @@ describe('the guild site notice', () => {
   it('is posted once per block, even when the block stops and starts qualifying', () => {
     const { game } = guildBlock();
     runTicks(game, 3);
-    game.guildPermits = 0;
+    game.permits.tradersGuild = 0;
     tick(game);
-    game.guildPermits = 1;
+    game.permits.tradersGuild = 1;
     runTicks(game, 3);
     expect(siteNotices(game)).toHaveLength(1);
   });
 
   it('waits for a permit', () => {
     const { game } = guildBlock();
-    game.guildPermits = 0;
+    game.permits.tradersGuild = 0;
     runTicks(game, 3);
     expect(siteNotices(game)).toEqual([]);
-    game.guildPermits = 1;
+    game.permits.tradersGuild = 1;
     tick(game);
     expect(siteNotices(game)).toHaveLength(1);
   });

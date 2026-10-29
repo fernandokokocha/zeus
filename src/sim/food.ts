@@ -55,7 +55,7 @@ const MONTHLY_NEED: Record<PeddledGood, (residence: Building) => number> = {
   cloth: (residence) => (residence.type === 'tradersGuild' ? CLOTH_PER_GUILD_PER_MONTH : 0),
 };
 
-const HOUSE_STOCK_MONTHS: Record<PeddledGood, number> = { food: 5, fleece: 3, oil: 3, cloth: 3 };
+const HOUSE_STOCK_MONTHS: Record<PeddledGood, number> = { food: 5, fleece: 5, oil: 5, cloth: 3 };
 
 const PEDDLED_GOODS = Object.keys(MONTHLY_NEED) as PeddledGood[];
 

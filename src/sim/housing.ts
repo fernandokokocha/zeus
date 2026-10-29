@@ -58,6 +58,8 @@ export const HOUSE_LEVELS: Record<HouseLevel, HouseLevelSpec> = {
   },
 };
 
+export type EliteType = 'tradersGuild';
+
 const ELITE_HOUSES = 4;
 
 export const TRADERS_GUILD = {

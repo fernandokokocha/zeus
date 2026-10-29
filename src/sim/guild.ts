@@ -67,7 +67,7 @@ const SHORTFALL_REASONS: Record<SiteShortfall, (site: GuildSite) => string> = {
   townhouses: () => "A Traders' Guild goes over four Townhouses forming a 4×4 block",
   mainRoad: () => "A Traders' Guild must line a straight 4-tile stretch of Main Road",
   yard: () => "The yard's ground across the Main Road isn't clear",
-  permit: () => "No Traders' Guild permit: complete the Well fed charter",
+  permit: () => "No Traders' Guild permit: complete the Well dressed charter",
   appeal: (site) => `Needs appeal ${TRADERS_GUILD.appeal} here (has ${site.appeal})`,
 };
 
@@ -102,7 +102,7 @@ export function placeableGuildSites(state: GameState, around = siteSurroundings(
 }
 
 export function announceGuildSites(state: GameState): void {
-  if (state.guildPermits === 0) return;
+  if (state.permits.tradersGuild === 0) return;
   for (const site of placeableGuildSites(state)) {
     const corner = tileIndex(state, site.x, site.y);
     if (state.announcedGuildSites.includes(corner)) continue;
@@ -186,7 +186,7 @@ export function surveyGuildSite(state: GameState, guild: Placement, around = sit
     }),
     alongMainRoad: along,
     yardClear: along && footprintObstacle(state, guildBlueprint(guild).yard) === null,
-    permit: state.guildPermits > 0,
+    permit: state.permits.tradersGuild > 0,
     appeal: houseAppeal(state, guild, around.appeal),
   };
 }
@@ -224,7 +224,7 @@ export function raiseGuild(state: GameState, placement: Placement): Building {
   for (const service of Object.keys(guild.coveredUntil) as Coverage[]) {
     guild.coveredUntil[service] = Math.max(...houses.map((h) => h.coveredUntil[service]));
   }
-  state.guildPermits--;
+  state.permits.tradersGuild--;
   return guild;
 }
 

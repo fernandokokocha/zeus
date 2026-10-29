@@ -302,7 +302,7 @@ describe("an agora's peddler", () => {
     expect(game.roamers).toEqual([]);
   });
 
-  it('fills the houses he passes from every stall: 5 months of food, 3 of fleece and oil', () => {
+  it('fills the houses he passes from every stall: 5 months of food, fleece and oil', () => {
     const { game, stalls } = market('foodVendor', 'fleeceVendor', 'oilVendor');
     const [food, fleece, oil] = stalls;
     const hut = fullHouse(game, 4, 8);
@@ -312,11 +312,11 @@ describe("an agora's peddler", () => {
     Object.assign(fleece, { fleece: 100 });
     Object.assign(oil, { oil: 100 });
     runTicks(game, ROAMER_REST_TICKS + ticksToWalk(10));
-    expect(hut).toMatchObject({ food: 8 * 0.25 * 5, fleece: 6, oil: 6 });
-    expect(shack).toMatchObject({ food: 16 * 0.25 * 5, fleece: 6, oil: 6 });
+    expect(hut).toMatchObject({ food: 8 * 0.25 * 5, fleece: 10, oil: 10 });
+    expect(shack).toMatchObject({ food: 16 * 0.25 * 5, fleece: 10, oil: 10 });
     expect(food.food).toBe(100 - hut.food - (shack.food - 2));
-    expect(fleece.fleece).toBe(100 - 12);
-    expect(oil.oil).toBe(100 - 12);
+    expect(fleece.fleece).toBe(100 - 20);
+    expect(oil.oil).toBe(100 - 20);
   });
 
   it('hands out no more than the stalls hold', () => {
@@ -337,6 +337,6 @@ describe("an agora's peddler", () => {
     expect(game.roamers.map((r) => r.kind)).toEqual(['peddler']);
     oil.oil = 100;
     runTicks(game, ticksToWalk(10));
-    expect(hut.oil).toBe(6);
+    expect(hut.oil).toBe(10);
   });
 });

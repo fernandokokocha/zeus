@@ -111,7 +111,7 @@ describe("placing a Traders' Guild", () => {
     expect(blockLots(game)).toEqual([]);
     expect(guildOf(game)).toMatchObject({ x: GUILD_BLOCK.x, y: GUILD_BLOCK.y, residents: 240 });
     expect(game.treasury).toBe(before - 100);
-    expect(game.guildPermits).toBe(0);
+    expect(game.permits.tradersGuild).toBe(0);
     expect(BUILDING_SPECS.tradersGuild).toMatchObject({ width: 4, height: 4, cost: 100 });
   });
 
@@ -146,10 +146,10 @@ describe("placing a Traders' Guild", () => {
 
   it('needs a permit', () => {
     const { game } = guildBlock();
-    game.guildPermits = 0;
+    game.permits.tradersGuild = 0;
     expect(placeBuilding(game, 'tradersGuild', GUILD_BLOCK.x, GUILD_BLOCK.y)).toEqual({
       ok: false,
-      reason: "No Traders' Guild permit: complete the Well fed charter",
+      reason: "No Traders' Guild permit: complete the Well dressed charter",
     });
   });
 
@@ -254,9 +254,9 @@ describe("a Traders' Guild's needs", () => {
     expect(guild).toMatchObject({ food: 40, fleece: 92, oil: 92, cloth: 92 });
   });
 
-  it('is stocked with 3 months of fleece and oil', () => {
+  it('is stocked with 5 months of fleece and oil', () => {
     const { guild } = placedGuild();
-    expect([houseStockTarget(guild, 'fleece'), houseStockTarget(guild, 'oil')]).toEqual([24, 24]);
+    expect([houseStockTarget(guild, 'fleece'), houseStockTarget(guild, 'oil')]).toEqual([40, 40]);
   });
 
   it('is stocked with 3 months of cloth by a cloth peddler', () => {
@@ -281,12 +281,12 @@ describe("a Traders' Guild's needs", () => {
     expect(guild.coveredUntil.water).toBeGreaterThan(game.tick);
   });
 
-  it('resets Well fed when it goes hungry', () => {
+  it('resets Well dressed when it runs out of oil', () => {
     const { game, guild } = placedGuild();
     supplyGuild(guild);
-    guild.food = 0;
+    guild.oil = 0;
     untilMonthEnd(game);
-    expect(game.wellFed.reset).toEqual({ tick: game.tick, house: "Traders' Guild at 3,12" });
+    expect(game.wellDressed.reset).toEqual({ tick: game.tick, cause: "Traders' Guild at 3,12 ran out of oil" });
   });
 });
 
@@ -310,7 +310,7 @@ describe("a Traders' Guild's demotion", () => {
     runTicks(game, LEVEL_CHANGE_TICKS);
     expect(game.buildings.some((b) => b.id === guild.id)).toBe(false);
     expect(game.treasury).toBe(before - game.lastMonth.wages);
-    expect(game.guildPermits).toBe(0);
+    expect(game.permits.tradersGuild).toBe(0);
   });
 
   it('is stopped by cloth arriving within the month', () => {

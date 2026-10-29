@@ -215,8 +215,8 @@ hold; its workers cart everything else to storehouses (granaries for food).
   next tile's appeal.
 - Cart pusher load: **4 loads** (one granary slot). Buyer load: **4 loads**. Agora vendor stock: **8 loads**.
 - House food stock: a peddler fills a house to **5 months** of eating (Huts are filled as if they ate).
-  Raised from 3 after a playtest: the Well fed charter counts a house as hungry once its stock
-  is down to one meal, so 3 months left only 2 between peddler visits, and a peddler round on a
+  Raised from 3 after a playtest: the Well fed charter (since replaced) counted a house as hungry once its stock
+  was down to one meal, so 3 months left only 2 between peddler visits, and a peddler round on a
   60-tile loop already takes up to 2.1.
 - Wheat grows all year in proportion to staffing; a full year at full staff gives the 8-load harvest.
 - Performance: a trainee (philosopher from a College, actor from a Drama School) keeps
@@ -230,8 +230,9 @@ hold; its workers cart everything else to storehouses (granaries for food).
 - Carding Shed: rests **1.5 months** between shearings at full staff (at most 8 loads a
   year, 7–8 with the walk), holds up to **4 loads** (one cart) and keeps its shepherd
   home while full.
-- House fleece stock: a fleece peddler fills a house to **3 months** of use (6 units),
-  like food.
+- House fleece stock: a fleece peddler fills a house to **5 months** of use (10 units),
+  like food. Raised from 3 with the Well dressed charter, which counts a house as running out
+  once its stock is down to one month's use, for the same reason as food.
 - Olive trees: a tree ripens a crop in **1 year**, and one picking gives **1 load**. A newly
   planted tree arrives bearing ripe olives.
 - Growers' Lodge: rests **0.6 months** between pickings at full staff (at most 20 loads a
@@ -245,7 +246,7 @@ hold; its workers cart everything else to storehouses (granaries for food).
   Houses don't use cloth.
 - Fleece for vendors first: a Weaver's buyer leaves **4 loads** of fleece (one vendor buyer's
   load) in every storehouse, so fleece vendors keep getting fleece while a Weaver competes.
-- House oil stock: an oil peddler fills a house to **3 months** of use (6 units), like
+- House oil stock: an oil peddler fills a house to **5 months** of use (10 units), like
   fleece.
 - Fire risk fills like collapse risk: it grows by the building's increment each month and
   is full at **60**. A building at full fire risk catches fire at random, **once a month on
@@ -273,8 +274,10 @@ hold; its workers cart everything else to storehouses (granaries for food).
   staff. A site hires nobody and radiates no appeal until finished.
 - Notices: the log keeps the **50** most recent. A new one shows under the top bar for
   **8 s** of real time and fades over **1 s**, at most **4** at once.
-- Well fed charter (spec): **24** months in a row with no house that eats going hungry
-  grants **1** Traders' Guild permit, then the count restarts.
+- Well dressed charter (spec): **24** months in a row with at least one Townhouse and no
+  Townhouse running out of fleece or oil (a guild counts as a Townhouse) grants **1** Traders'
+  Guild permit, then the count restarts. A month with no Townhouse resets a running count.
+  Permits are held per elite type.
 - Traders' Guild (spec): keeps every resident of its four Townhouses (capacity **240**), who
   join the labor pool, and settlers top it up; pays tax at multiplier **1** (**ours**, half a
   Townhouse's). Placed over four Townhouses in an exact 4×4 block whose front lines a straight **4**-tile
@@ -283,7 +286,7 @@ hold; its workers cart everything else to storehouses (granaries for food).
   vacant lots and the permit is lost.
 - A guild uses food per resident and four houses' fleece and oil (**8 units** each a month).
 - Cloth (spec, **ours**): a guild uses **8 units** a month; a cloth peddler fills it to **3 months**
-  (24 units), like other goods. Ordinary houses take no cloth.
+  (24 units). Ordinary houses take no cloth.
 - Placing a guild keeps the four houses' food, fleece and oil, summed, their latest water and
   culture coverage, and all their residents.
 - Guild sites (spec): a house shows the site of the 4×4 block it belongs to whose front lines the

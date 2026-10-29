@@ -69,7 +69,7 @@ export function guildBlock(mainRoadY = 16): { game: GameState; houses: Building[
   const houses = GUILD_LOTS.map((lot) => townhouse(game, lot));
   placeHouse(game, 20, 26);
   game.buildings[game.buildings.length - 1].residents = 40;
-  game.guildPermits = 1;
+  game.permits.tradersGuild = 1;
   return { game, houses };
 }
 

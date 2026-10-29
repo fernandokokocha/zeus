@@ -162,7 +162,7 @@ describe('the supplies column', () => {
       [{ kind: 'fleece', share: 0 }],
       [{ kind: 'oil', share: 1 }],
     ]);
-    expect(columnOf(game, 'supplies', house)!.details).toEqual(['Food 5 / 10', 'Fleece 0 / 6', 'Oil 6 / 6']);
+    expect(columnOf(game, 'supplies', house)!.details).toEqual(['Food 5 / 10', 'Fleece 0 / 10', 'Oil 10 / 10']);
   });
 
   it('never stands a bar above full', () => {
@@ -305,7 +305,7 @@ describe('the guild sites overlay', () => {
 
   it('does not highlight a block that lacks a permit', () => {
     const { game } = guildBlock();
-    game.guildPermits = 0;
+    game.permits.tradersGuild = 0;
     for (const [x, y] of [[3, 12], [3, 15], [3, 17]]) expect(readingAt(game, 'guildSites', x, y)).toBe(0);
   });
 });

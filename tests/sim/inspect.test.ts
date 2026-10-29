@@ -502,8 +502,8 @@ describe('describeTile for fleece', () => {
 
   it("shows how long a Homestead's fleece lasts and that a Shack does not need it yet", () => {
     const { game, house } = street();
-    Object.assign(house, { level: 'homestead', residents: 32, food: 50, fleece: 6 });
-    expect(meter(game, 2, 13, 'Fleece')).toEqual({ label: 'Fleece', fill: 1, value: '6 units (3 months)', need: 'met' });
+    Object.assign(house, { level: 'homestead', residents: 32, food: 50, fleece: 10 });
+    expect(meter(game, 2, 13, 'Fleece')).toEqual({ label: 'Fleece', fill: 1, value: '10 units (5 months)', need: 'met' });
     Object.assign(house, { level: 'shack', residents: 16, fleece: 0 });
     expect(meter(game, 2, 13, 'Fleece')).toEqual({ label: 'Fleece', fill: 0, value: 'None', need: null });
   });
@@ -1128,7 +1128,7 @@ describe('the inspector on a possible guild site', () => {
 
   it('names a missing permit', () => {
     const { game } = guildBlock();
-    game.guildPermits = 0;
+    game.permits.tradersGuild = 0;
     expect(siteLine(game, 3, 12)).toBe('Possible guild site at 3, 12: no permit');
   });
 
@@ -1142,7 +1142,7 @@ describe('the inspector on a possible guild site', () => {
     const { game, houses } = guildBlock();
     houses[0].level = 'apartment';
     houses[3].level = 'apartment';
-    game.guildPermits = 0;
+    game.permits.tradersGuild = 0;
     demolish(game, { x: 1, y: 13 }, { x: 1, y: 13 });
     expect(siteLine(game, 3, 12)).toBe(
       'Possible guild site at 3, 12: not a Townhouse yet, 1 of the other 3 houses not Townhouses, no permit, appeal 25 (has 22)',

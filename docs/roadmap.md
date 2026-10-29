@@ -10,9 +10,8 @@ anywhere.
 
 ## Items
 
-- **Well dressed.** Replaces Well fed as the Traders' Guild charter; permits per type.
-  Part of: Elite rework. Spec: `docs/superpowers/specs/2026-10-29-elite-rework-scholars-design.md`.
-- **Papyrus and the Scriptorium.** Part of: Scholars' House. Spec: same.
+- **Papyrus and the Scriptorium.** Part of: Scholars' House.
+  Spec: `docs/superpowers/specs/2026-10-29-elite-rework-scholars-design.md`.
 - **Learned city.** Part of: Scholars' House. Spec: same.
 - **Scholars' House and Library.** Part of: Scholars' House. Spec: same.
 - **Elite sites.** Site help for every elite type. Part of: Scholars' House. Spec: same.

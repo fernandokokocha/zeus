@@ -1,4 +1,4 @@
-import { tallyWellFed } from './charters';
+import { tallyWellDressed } from './charters';
 import { TICKS_PER_MONTH } from './clock';
 import { tickCarriers } from './carriers';
 import { tickCaravans } from './exports';
@@ -32,7 +32,7 @@ export function tick(state: GameState): void {
     settleMonth(state);
     recordPopulation(state);
     harvestIfDue(state);
-    tallyWellFed(state);
+    tallyWellDressed(state);
     eat(state);
   }
   tickSettlers(state);
