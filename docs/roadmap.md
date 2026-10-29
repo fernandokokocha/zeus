@@ -10,9 +10,6 @@ anywhere.
 
 ## Items
 
-- **Houses and Storehouse redesign.** Redesign the houses, the Townhouse above all, and the
-  Storehouse, in a round with the owner (`docs/model-redesign.md`). The guild rework below
-  builds on the new Townhouse.
 - **Traders' Guild model rework.** Now that the guild houses 240 residents, its model should
   read as a house, not a workplace: above all like the new Townhouse, somewhere between it and
   the current exchange hall, with a paved court open to the road and a

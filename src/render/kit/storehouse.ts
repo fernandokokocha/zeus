@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { type FigureParts, at, head, legs, torso } from './figure';
-import { COLORS, box, flat } from './kit';
+import { COLORS, box, flat, surface } from './kit';
 import { statue } from './luxury';
 import { MARKET, wickerBasket } from './market';
 import { marbleBlock } from './masonry';
@@ -16,7 +16,7 @@ export const STOREHOUSE = {
 
 export const LOT_3 = 3;
 const BASE = 0.03;
-const KERB = { height: 0.09, thickness: 0.035 };
+export const BAY_PAD = 0.035;
 const STACKED_LOGS = 0.7;
 const STATUE_SIZE = 1.25;
 
@@ -94,11 +94,6 @@ export function storekeeper(): FigureParts {
   return { legs: legs(), torso: upper, head: head('bare') };
 }
 
-export function bayKerb(x: number, z: number, size: number, floor: number): THREE.Object3D {
-  const group = new THREE.Group();
-  const half = size / 2;
-  const wood = flat(COLORS.timber);
-  group.add(box(size, KERB.height, KERB.thickness, wood, x, floor, z - half));
-  for (const side of [-1, 1]) group.add(box(KERB.thickness, KERB.height, size, wood, x + side * half, floor, z));
-  return group;
+export function bayPad(x: number, z: number, size: number, floor: number): THREE.Mesh {
+  return box(size, BAY_PAD, size, surface('ashlar'), x, floor, z);
 }

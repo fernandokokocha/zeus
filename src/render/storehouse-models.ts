@@ -10,7 +10,7 @@ import { sack } from './kit/food';
 import { surface } from './kit/kit';
 import { amphora } from './kit/oil';
 import { tiledRoof } from './kit/roofs';
-import { bayKerb, bronzeIngots, crated, fleeceBales, marbleBlocks, oilAmphorae, oliveBaskets, stackedLogs, storeGround, storekeeper } from './kit/storehouse';
+import { BAY_PAD, bayPad, bronzeIngots, crated, fleeceBales, marbleBlocks, oilAmphorae, oliveBaskets, stackedLogs, storeGround, storekeeper } from './kit/storehouse';
 import { tileHash } from './palette';
 import { bakedFigure, staffPhase } from './staff';
 
@@ -62,7 +62,7 @@ function cartLoad(): THREE.Object3D[] {
 const YARD_FLOOR = 0.03;
 const HALL = { x0: 0.18, z0: 0.18, w: 1.85, d: 0.72, top: 0.66, door: 1.1 };
 const YARD_KEEPER = { x: HALL.door, z: 1.06 };
-const YARD_BAYS: BaySpot[] = [1.5, 2.3].flatMap((z) => [0.5, 1.17, 1.84, 2.51].map((x): BaySpot => [x, YARD_FLOOR, z]));
+const YARD_BAYS: BaySpot[] = [1.5, 2.3].flatMap((z) => [0.5, 1.17, 1.84, 2.51].map((x): BaySpot => [x, YARD_FLOOR + BAY_PAD, z]));
 
 export function yardShell(staffed: boolean): THREE.Object3D {
   const group = new THREE.Group();
@@ -72,7 +72,7 @@ export function yardShell(staffed: boolean): THREE.Object3D {
   group.add(tiledRoof(x0 - 0.03, z0 - 0.05, w + 0.06, d + 0.1, top + 0.04, 0.24));
   group.add(blueDoor(door, z0 + d, DOOR_BASE, staffed ? OPEN : CLOSED));
   for (const x of [0.45, 1.65]) group.add(frontWindow(x, z0 + d, 0.36));
-  for (const [x, , z] of YARD_BAYS) group.add(bayKerb(x, z, BAY_SIZE, YARD_FLOOR));
+  for (const [x, , z] of YARD_BAYS) group.add(bayPad(x, z, BAY_SIZE, YARD_FLOOR));
   if (staffed) group.add(handcart(2.45, 0.55, 0.3, cartLoad()));
   return group;
 }
