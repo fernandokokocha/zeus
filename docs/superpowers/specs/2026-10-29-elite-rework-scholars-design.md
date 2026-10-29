@@ -195,9 +195,9 @@ city-wide, and each changes one rule.
 
 - **Buying:** clicking the Works of Art counter in the top bar opens the Ledger at its
   **Upgrades** chapter: each upgrade with its rule and a Buy button, or "Owned". Buying
-  needs a Work of Art and spends it. Each upgrade has a Greek name, a line saying what the
-  name means, and a round black-figure pottery medallion as its picture; an owned one gets a
-  gold rim.
+  needs a Work of Art and spends it. Each upgrade has a Greek name and a round black-figure
+  pottery medallion as its picture; an owned one gets a gold rim. The chapter fits without
+  scrolling, and buying doesn't move anything.
 - **The Carrot Farm** is the Wheat Farm's twin (3×3, 10 workers, 20 dr, meadow, 8 loads a
   year, fire 5, its cart takes food to a granary), but it harvests in **January** instead of
   July, so a city with both has two harvests a year. Carrots are plain food. A later house

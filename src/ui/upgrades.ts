@@ -12,24 +12,13 @@ import { upgradeArt } from './upgrade-art';
 const percent = (share: number) => `${Math.round(share * 100)}%`;
 const loads = (units: number) => units / UNITS_PER_LOAD;
 
-const GLOSSES: Record<Upgrade, string> = {
-  lyceum: "Aristotle's school",
-  cropRotation: "Hesiod's farming poem",
-  openFields: 'The grain goddess blesses poorer ground',
-  carrots: 'The Greek word for the carrot',
-  packMules: 'Sure-footed beasts of the hill country',
-  amphoras: "Athens' potters' quarter",
-  democracy: 'The assembly of all citizens',
-  plutocracy: 'Rank by wealth',
-};
-
 const RULES: Record<Upgrade, string> = {
   lyceum: `A Work of Art takes ${LYCEUM_PAGES_PER_WORK_OF_ART} pages instead of ${PAGES_PER_WORK_OF_ART}.`,
   cropRotation: `Farms yield ${ROTATED_LOADS_PER_YEAR} loads a year instead of ${WHEAT_LOADS_PER_YEAR}.`,
   openFields: 'A farm needs meadow on just one of its tiles.',
-  carrots: 'Unlocks the Carrot Farm. It harvests in January, half a year from the wheat.',
+  carrots: 'Unlocks the Carrot Farm, which harvests in January.',
   packMules: `Caravans travel ${MULE_KM_PER_MONTH} km a month instead of ${CARAVAN_KM_PER_MONTH}.`,
-  amphoras: `Storehouse slots of oil or olives hold ${AMPHORA_LOADS_PER_SLOT} loads instead of ${LOADS_PER_SLOT}. Granaries hold ${loads(AMPHORA_GRANARY_CAPACITY)} loads instead of ${loads(GRANARY_CAPACITY)}.`,
+  amphoras: `Oil and olive slots hold ${AMPHORA_LOADS_PER_SLOT} loads instead of ${LOADS_PER_SLOT}; granaries ${loads(AMPHORA_GRANARY_CAPACITY)} instead of ${loads(GRANARY_CAPACITY)}.`,
   democracy: `${percent(DEMOCRATIC_WORKING_SHARE)} of residents work instead of ${percent(WORKING_SHARE)}.`,
   plutocracy: `Houses pay ${percent(PLUTOCRATIC_TAX_FACTOR - 1)} more tax.`,
 };
@@ -40,20 +29,18 @@ function upgradeEntry(state: GameState, upgrade: Upgrade, bought: () => void): H
   const owned = hasUpgrade(state, upgrade);
   const art = element('div', 'upgrade-tondo');
   art.innerHTML = upgradeArt(upgrade);
-  const action = owned ? element('span', 'upgrade-owned', 'Owned') : element('button', 'upgrade-buy', `Buy for ${COST}`);
-  if (action instanceof HTMLButtonElement) {
-    action.disabled = state.worksOfArt < UPGRADE_COST;
-    if (action.disabled) action.title = 'Scholars make Works of Art';
-    action.addEventListener('click', () => {
-      buyUpgrade(state, upgrade);
-      bought();
-    });
-  }
+  const action = element('button', 'upgrade-action', owned ? 'Owned' : `Buy for ${COST}`);
+  action.disabled = owned || state.worksOfArt < UPGRADE_COST;
+  if (!owned && action.disabled) action.title = 'Scholars make Works of Art';
+  action.addEventListener('click', () => {
+    buyUpgrade(state, upgrade);
+    bought();
+  });
   return element(
     'article',
     `upgrade${owned ? ' upgrade-is-owned' : ''}`,
     art,
-    element('div', 'upgrade-text', element('h3', '', UPGRADE_NAMES[upgrade]), element('p', 'upgrade-gloss', GLOSSES[upgrade]), element('p', 'upgrade-rule', RULES[upgrade]), action),
+    element('div', 'upgrade-text', element('h3', '', UPGRADE_NAMES[upgrade]), element('p', 'upgrade-rule', RULES[upgrade]), action),
   );
 }
 

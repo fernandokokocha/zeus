@@ -30,7 +30,7 @@ definitions tables. The Carrot Farm shares the wheat farm's growth and harvest c
 6. **Buying posts no notice**: the player just did it.
 7. The storehouse functions take the state, for Amphoras: an interface change, held by the
    storehouse and carrier tests.
-8. **Names and art** (asked for mid-slice): Greek names with a gloss (The Lyceum, Works and
+8. **Names and art** (asked for mid-slice): Greek names (The Lyceum, Works and
    Days, Demeter's Furrows, Daukos, Arcadian Mules, Kerameikos, Ekklesia, Laws of Solon), and a
    black-figure pottery medallion each, drawn as inline SVG.
 9. **A start city for the playtest:** `?city=upgrades` is the scholars city with 8 Works of Art.

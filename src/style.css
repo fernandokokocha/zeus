@@ -866,22 +866,23 @@ button.active {
 .upgrade-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 14px 22px;
-  margin-top: 12px;
+  grid-auto-rows: 1fr;
+  gap: 8px 20px;
+  margin-top: 8px;
 }
 
 .upgrade {
   display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  padding-bottom: 12px;
+  gap: 10px;
+  align-items: center;
+  padding-bottom: 8px;
   border-bottom: 1px solid #e2d5ba;
 }
 
 .upgrade-tondo {
   flex-shrink: 0;
-  width: 88px;
-  height: 88px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   box-shadow: 0 2px 0 #b9a27c;
 }
@@ -896,36 +897,41 @@ button.active {
   box-shadow: 0 0 0 3px #d9b45a, 0 2px 0 3px #b9a27c;
 }
 
-.upgrade-text h3 {
-  margin: 2px 0 0;
-  font-size: 17px;
+.upgrade-text {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  gap: 2px;
 }
 
-.upgrade-gloss {
-  margin: 0 0 6px;
-  font-style: italic;
-  font-size: 12px;
-  color: #7a6146;
+.upgrade-text h3 {
+  margin: 0;
+  font-size: 15px;
 }
 
 .upgrade-rule {
-  margin: 0 0 8px;
+  flex: 1;
+  margin: 0;
   font-size: 13px;
-  line-height: 1.45;
+  line-height: 1.35;
 }
 
-.upgrade-buy {
-  padding: 3px 10px;
-  font-size: 13px;
+.upgrade-action {
+  align-self: flex-start;
+  padding: 2px 10px;
+  font-size: 12px;
 }
 
-.upgrade-buy:disabled {
+.upgrade-action:disabled {
   cursor: default;
   opacity: 0.55;
 }
 
-.upgrade-owned {
-  font-size: 13px;
+.upgrade-is-owned .upgrade-action:disabled {
+  opacity: 1;
+  border-color: transparent;
+  background: none;
+  padding-left: 0;
   font-style: italic;
   color: #8a6a1f;
 }
