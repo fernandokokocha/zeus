@@ -5,7 +5,7 @@ import { setExportSlot, slotHoldings } from '../../src/sim/exports';
 import { yardOf } from '../../src/sim/guild';
 import { setImportSlot, tickImports } from '../../src/sim/imports';
 import { describeTile, type TradeYardView } from '../../src/sim/inspect';
-import type { ForeignCaravan, GameState, Good } from '../../src/sim/state';
+import type { ForeignCaravan, GameState, TradeGood } from '../../src/sim/state';
 import { PARTNER_CARAVANS, roundTripMonths, worldReport } from '../../src/sim/trade';
 import { emptyCity, placedGuild, runTicks, tradingTown, withStore, type Town } from './helpers';
 
@@ -15,7 +15,7 @@ const WALK_LIMIT = 2 * TICKS_PER_MONTH;
 const HALF_TRIP = (roundTripMonths('thebes') * TICKS_PER_MONTH) / 2;
 const SIX_WOOD = 6 * 22;
 
-function importing(town: Town, slot: number, good: Good, loads: number): void {
+function importing(town: Town, slot: number, good: TradeGood, loads: number): void {
   const set = setImportSlot(town.game, town.yard.id, slot, good, loads);
   if (!set.ok) throw new Error(set.reason);
 }
@@ -113,6 +113,16 @@ describe("the yard's cart pushers", () => {
     runTicks(town.game, TICKS_PER_MONTH);
     expect(town.yard.wood).toBe(0);
     expect(store.wood).toBe(400);
+  });
+
+  it('store imported papyrus in the storehouses', () => {
+    const town = tradingTown('corinth');
+    const store = withStore(town, 'storehouse', STOREHOUSE);
+    importing(town, 0, 'papyrus', 4);
+    town.yard.papyrus = 400;
+    runTicks(town.game, TICKS_PER_MONTH);
+    expect(town.yard.papyrus).toBe(0);
+    expect(store.papyrus).toBe(400);
   });
 
   it('store imported food in the granaries', () => {

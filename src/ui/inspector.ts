@@ -1,7 +1,7 @@
 import { pauseForInspection, resumeAfterInspection } from '../sim/clock';
 import type { Description, Inspection, Meter } from '../sim/inspect';
 import type { Point } from '../sim/point';
-import { buildingById, type GameState, type Good } from '../sim/state';
+import { buildingById, type GameState, type TradeGood } from '../sim/state';
 import { setAllAccepted, setGoodAccepted } from '../sim/storehouse';
 import { byId } from './dom';
 import { setExportSlot } from '../sim/exports';
@@ -44,8 +44,8 @@ export function createInspector(state: GameState, highlight: { show(tiles: Point
     storehouse.hidden = !description.storehouse;
     const tradeYard = description.tradeYard;
     const slotActions = (id: number) => ({
-      setExport: (slot: number, good: Good | null) => setExportSlot(state, id, slot, good),
-      setImport: (slot: number, good: Good, loads: number) => setImportSlot(state, id, slot, good, loads),
+      setExport: (slot: number, good: TradeGood | null) => setExportSlot(state, id, slot, good),
+      setImport: (slot: number, good: TradeGood, loads: number) => setImportSlot(state, id, slot, good, loads),
     });
     yard.replaceChildren(...(tradeYard ? yardPanel(tradeYard, slotActions(tradeYard.id)) : []));
     yard.hidden = !tradeYard;

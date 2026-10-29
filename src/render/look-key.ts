@@ -46,6 +46,7 @@ const LOOKS: Record<BuildingType, Look> = {
   oilVendor: vendor,
   clothVendor: vendor,
   weaver: (b) => [b.workers > 0, b.fleece > 0, loads(b.cloth)],
+  scriptorium: (b) => [b.workers > 0, b.papyrus > 0, b.fleece > 0, loads(b.scrolls)],
   timberMill: (b) => [b.workers > 0, loads(b.wood)],
   masonryShop: (b) => [b.workers > 0, loads(b.marble)],
   foundry: (b) => [b.workers > 0, loads(b.bronze)],

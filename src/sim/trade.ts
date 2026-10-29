@@ -3,19 +3,19 @@ import { PLACES, roadKm, type Place } from './greece';
 import { postNotice } from './notices';
 import { findRoadPath } from './pathfinding';
 import { GOOD_TITLES } from './production';
-import { buildingById, type Building, type GameState, type Good } from './state';
+import { buildingById, type Building, type GameState, type Good, type TradeGood } from './state';
 
 export type Partner = Extract<Place, 'thebes' | 'corinth' | 'argos' | 'sparta'>;
 
 export interface PartnerSpec {
   road: Place[];
-  buys: Good[];
-  sells: Good[];
+  buys: TradeGood[];
+  sells: TradeGood[];
 }
 
 export const PARTNERS: Record<Partner, PartnerSpec> = {
   thebes: { road: ['athens', 'eleusis', 'eleutherae', 'thebes'], buys: ['fleece', 'olives'], sells: ['food', 'wood'] },
-  corinth: { road: ['athens', 'eleusis', 'megara', 'isthmus', 'corinth'], buys: ['oil', 'cloth', 'sculptures'], sells: ['bronze', 'wood'] },
+  corinth: { road: ['athens', 'eleusis', 'megara', 'isthmus', 'corinth'], buys: ['oil', 'cloth', 'sculptures'], sells: ['bronze', 'wood', 'papyrus'] },
   argos: { road: ['athens', 'eleusis', 'megara', 'isthmus', 'corinth', 'mycenae', 'argos'], buys: ['food', 'wood', 'marble'], sells: ['olives', 'oil', 'sculptures'] },
   sparta: {
     road: ['athens', 'eleusis', 'megara', 'isthmus', 'corinth', 'mycenae', 'argos', 'tegea', 'sparta'],
@@ -32,11 +32,11 @@ export function roundTripMonths(partner: Partner): number {
 
 export interface TradeGoodSpec {
   caravanLoad: number;
-  theyPay: number;
+  theyPay: number | null;
   wePay: number | null;
 }
 
-export const TRADE_GOODS: Record<Good, TradeGoodSpec> = {
+export const TRADE_GOODS: Record<TradeGood, TradeGoodSpec> = {
   food: { caravanLoad: 8, theyPay: 10, wePay: 15 },
   olives: { caravanLoad: 8, theyPay: 12, wePay: 18 },
   fleece: { caravanLoad: 6, theyPay: 20, wePay: 30 },
@@ -46,6 +46,7 @@ export const TRADE_GOODS: Record<Good, TradeGoodSpec> = {
   bronze: { caravanLoad: 4, theyPay: 35, wePay: 52 },
   cloth: { caravanLoad: 4, theyPay: 45, wePay: null },
   sculptures: { caravanLoad: 2, theyPay: 120, wePay: 180 },
+  papyrus: { caravanLoad: 4, theyPay: null, wePay: 60 },
 };
 
 export const PARTNER_CARAVANS = 2;
@@ -135,7 +136,7 @@ export function routeStatus(state: GameState, guild: Building): { line: string; 
   return { line: 'Trade route: none yet', canOpen: true };
 }
 
-function offers(goods: Good[], price: (spec: TradeGoodSpec) => number | null): TradeOffer[] {
+function offers(goods: TradeGood[], price: (spec: TradeGoodSpec) => number | null): TradeOffer[] {
   return goods.map((good) => {
     const paid = price(TRADE_GOODS[good]);
     if (paid === null) throw new Error(`${good} has no price`);

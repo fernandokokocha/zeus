@@ -7,6 +7,7 @@ export const INDUSTRIES = [
   'growersLodge',
   'olivePress',
   'weaver',
+  'scriptorium',
   'timberMill',
   'masonryShop',
   'foundry',

@@ -2,7 +2,8 @@ import { appealMap, houseAppeal } from './appeal';
 import { BUILDING_SPECS, vendorGood } from './buildings';
 import { MONTH_NAMES, TICKS_PER_MONTH } from './clock';
 import { MAX_CULTURE_POINTS, culturePoints, culturesPassed } from './culture';
-import { CARRIER_SPECS, carrierDestinations, carrierKindsSentBy, keptBack } from './carriers';
+import { CARRIER_SPECS, carrierDestinations, carrierKindsSentBy, givesWayToAnother, keptBack, tripSharers } from './carriers';
+import { PAGES_PER_SCROLL, SCRIPTORIUM_INPUT_CAPACITY, copyingTicks, hasScrollRoom, inputInUse } from './scrolls';
 import { WEAVER_FLEECE_CAPACITY, WEAVING_TICKS, canWeave } from './cloth';
 import { adjacentRoadTiles, agoraVendors, footprint } from './commands';
 import { hasWorkingPalace, houseTax } from './economy';
@@ -69,6 +70,7 @@ import {
   type Settler,
   type Sheep,
   type Shepherd,
+  type TradeGood,
   type Trainee,
   type Walk,
 } from './state';
@@ -104,8 +106,8 @@ export interface SlotView {
 
 export interface TradeYardView {
   id: number;
-  exports: { good: Good; name: string }[];
-  imports: { good: Good; name: string; load: number }[];
+  exports: { good: TradeGood; name: string }[];
+  imports: { good: TradeGood; name: string; load: number }[];
   slots: SlotView[];
 }
 
@@ -234,6 +236,8 @@ const GOOD_NAMES: Record<Good, string> = {
   bronze: 'bronze',
   sculptures: 'sculptures',
   cloth: 'cloth',
+  papyrus: 'papyrus',
+  scrolls: 'scrolls',
 };
 
 const CARRIER_HOMES: Record<Carrier['kind'], string> = {
@@ -253,6 +257,9 @@ const CARRIER_HOMES: Record<Carrier['kind'], string> = {
   weaverBuyer: 'weaver',
   clothCart: 'weaver',
   clothBuyer: 'stall',
+  papyrusBuyer: 'scriptorium',
+  scriptoriumFleeceBuyer: 'scriptorium',
+  scrollCart: 'scriptorium',
   marbleSupply: 'storehouse',
   woodSupply: 'storehouse',
   sculptureSupply: 'storehouse',
@@ -274,6 +281,7 @@ const CARRIER_HOMES: Record<Carrier['kind'], string> = {
   bronzeUnload: 'yard',
   sculptureUnload: 'yard',
   clothUnload: 'yard',
+  papyrusUnload: 'yard',
 };
 
 function describeHouse(state: GameState, house: Building): Description {
@@ -530,6 +538,14 @@ function stockLines(state: GameState, building: Building): string[] {
         ...(building.cloth > 0 ? [`Cloth waiting: ${loads(building.cloth)}`] : []),
         weavingStatus(building),
       ];
+case 'scriptorium':
+      return [
+        `Papyrus ${amount(building.papyrus / UNITS_PER_LOAD)}, fleece ${amount(building.fleece / UNITS_PER_LOAD)}: ` +
+          `${amount((building.papyrus + building.fleece) / UNITS_PER_LOAD)} of ${SCRIPTORIUM_INPUT_CAPACITY / UNITS_PER_LOAD} loads`,
+        `Next scroll: ${building.pages} of ${PAGES_PER_SCROLL} pages`,
+        ...(building.scrolls > 0 ? [`Scrolls waiting: ${amount(building.scrolls / UNITS_PER_LOAD)}`] : []),
+        copyingStatus(building),
+      ];
     case 'cardingShed':
       return building.fleece > 0 ? [`Fleece waiting: ${loads(building.fleece)}`] : [];
     case 'timberMill':
@@ -580,6 +596,13 @@ function weavingStatus(weaver: Building): string {
   return weaver.fleece < UNITS_PER_LOAD ? 'Waits for fleece' : 'Full of cloth: waits for its cart';
 }
 
+function copyingStatus(scriptorium: Building): string {
+  const good = inputInUse(scriptorium);
+  if (good === null) return 'Waits for papyrus or fleece';
+  if (!hasScrollRoom(scriptorium)) return 'Full of scrolls: waits for its cart';
+  return `Copying ${good}: ${Math.round((scriptorium.production / copyingTicks(good)) * 100)}% of a load`;
+}
+
 function venueLines(state: GameState, venue: Building): string[] {
   const kind = traineeKindFor(venue.type);
   if (!kind) return [];
@@ -603,6 +626,7 @@ function walkerLines(state: GameState, building: Building): string[] {
   if (building.type === 'artisansGuild') lines.push(artisanStatus(state, building));
   for (const kind of carrierKindsSentBy(building.type)) {
     if (supplies(kind) && !state.carriers.some((c) => c.homeId === building.id && c.kind === kind)) continue;
+    if (givesWayToAnother(kind)) continue;
     lines.push(carrierStatus(state, building, kind));
   }
   const traineeKind = traineeKindSentBy(building.type);
@@ -677,20 +701,27 @@ function withArticle(noun: string): string {
 
 function carrierStatus(state: GameState, building: Building, kind: Carrier['kind']): string {
   const { name, good, stores, delivers } = CARRIER_SPECS[kind];
-  const goodName = GOOD_NAMES[good];
   const storeName = withArticle(stores.map((store) => BUILDING_SPECS[store].name.toLowerCase()).join(' or '));
-  const carrier = state.carriers.find((c) => c.homeId === building.id && c.kind === kind);
   const atHome = `${name} at the ${CARRIER_HOMES[kind]}`;
   if (delivers) {
-    if (carrier) return `${name} out with a load`;
+    if (state.carriers.some((c) => c.homeId === building.id && c.kind === kind)) return `${name} out with a load`;
     if (building[good] > 0 && carrierDestinations(state, kind).length === 0) return `${name} waits for ${storeName} with room`;
     return atHome;
   }
-  if (carrier) return `${name} ${carrier.returning ? `bringing ${goodName} home` : `out fetching ${goodName}`}`;
-  const kept = keptBack(kind);
-  const enough = kept > 0 ? `more than ${loads(kept)} of ${goodName}` : goodName;
-  if (carrierDestinations(state, kind).length === 0) return `${name} waits for ${storeName} with ${enough}`;
+  const kinds = tripSharers(kind);
+  const carrier = state.carriers.find((c) => c.homeId === building.id && kinds.includes(c.kind));
+  if (carrier) {
+    const goodName = GOOD_NAMES[CARRIER_SPECS[carrier.kind].good];
+    return `${name} ${carrier.returning ? `bringing ${goodName} home` : `out fetching ${goodName}`}`;
+  }
+  if (kinds.every((k) => carrierDestinations(state, k).length === 0)) return `${name} waits for ${storeName} with ${kinds.map(enoughOf).join(' or ')}`;
   return atHome;
+}
+
+function enoughOf(kind: Carrier['kind']): string {
+  const goodName = GOOD_NAMES[CARRIER_SPECS[kind].good];
+  const kept = keptBack(kind);
+  return kept > 0 ? `more than ${loads(kept)} of ${goodName}` : goodName;
 }
 
 function riskLines(building: Building): string[] {

@@ -4,6 +4,7 @@ import { type Bay, type StoredGood, baysOf } from '../sim/storehouse';
 import { bakedOnce } from './bake';
 import { handcart } from './kit/camp';
 import { clothBolts } from './kit/cloth';
+import { storedPapyrus, storedScrolls } from './kit/scrolls';
 import { blueDoor, cube, frontWindow } from './kit/cottage';
 import { type FigureParts, posedFigure } from './kit/figure';
 import { sack } from './kit/food';
@@ -23,6 +24,8 @@ export const STORED_LOADS: Record<StoredGood, () => THREE.Object3D> = {
   bronze: bakedOnce(bronzeIngots),
   sculptures: bakedOnce(crated),
   cloth: bakedOnce(clothBolts),
+  papyrus: bakedOnce(storedPapyrus),
+  scrolls: bakedOnce(storedScrolls),
 };
 
 const LOAD_SPACING = 0.15;

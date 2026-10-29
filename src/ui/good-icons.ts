@@ -55,6 +55,15 @@ export const GOOD_ICONS: Record<StoredGood, string> = {
       '<ellipse cx="18" cy="13.5" rx="3" ry="5.5" fill="#4a8ac2"/></g>' +
       '<path d="M3 11.5h15M3 15.5h15" stroke="#f6f3ec" stroke-width="1.1"/>',
   ),
+  papyrus: icon(
+    `<g stroke="${INK}" stroke-width="1.1"><path d="M4 7l16 3v4L4 11z" fill="#c9b06a"/><path d="M4 13l16 3v4L4 17z" fill="#b9a05a"/></g>` +
+      '<path d="M9 8v4M15 9v4M9 14v4M15 15v4" stroke="#6f5a2e" stroke-width="1.4"/>',
+  ),
+  scrolls: icon(
+    `<g stroke="${INK}" stroke-width="1.2" stroke-linejoin="round"><path d="M6 5h12v14H6z" fill="#eadfbf"/>` +
+      '<rect x="3.5" y="3.5" width="17" height="3" rx="1.5" fill="#5a3a22"/><rect x="3.5" y="17.5" width="17" height="3" rx="1.5" fill="#5a3a22"/></g>' +
+      '<path d="M8.5 9.5h7M8.5 12h7M8.5 14.5h5" stroke="#8a7a5a" stroke-width="1"/>',
+  ),
 };
 
 export const GOOD_COLORS: Record<StoredGood, string> = {
@@ -66,4 +75,6 @@ export const GOOD_COLORS: Record<StoredGood, string> = {
   bronze: '#a8692f',
   sculptures: '#e7e0cf',
   cloth: '#2f6ea5',
+  papyrus: '#b9a05a',
+  scrolls: '#eadfbf',
 };

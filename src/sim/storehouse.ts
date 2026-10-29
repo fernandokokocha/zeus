@@ -5,7 +5,7 @@ export const STOREHOUSE_SLOTS = 8;
 export const LOADS_PER_SLOT = 4;
 export const SLOT_SIZE = LOADS_PER_SLOT * UNITS_PER_LOAD;
 export const STOREHOUSE_CAPACITY = STOREHOUSE_SLOTS * SLOT_SIZE;
-export const STOREHOUSE_GOODS = ['fleece', 'olives', 'oil', 'wood', 'marble', 'bronze', 'sculptures', 'cloth'] as const;
+export const STOREHOUSE_GOODS = ['fleece', 'olives', 'oil', 'wood', 'marble', 'bronze', 'sculptures', 'cloth', 'papyrus', 'scrolls'] as const;
 export type StoredGood = (typeof STOREHOUSE_GOODS)[number];
 
 export interface Bay {

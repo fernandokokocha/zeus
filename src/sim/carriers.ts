@@ -9,9 +9,10 @@ import { FLEECE_KEPT_FOR_VENDORS, WEAVER_FLEECE_CAPACITY } from './cloth';
 import { exportCapacity } from './exports';
 import { GOODS } from './flows';
 import { PRESS_OLIVE_CAPACITY } from './olives';
+import { inputCapacity } from './scrolls';
 import { SANCTUARIES, isSanctuary, recordConstruction, stillNeeded, type Sanctuary } from './sanctuaries';
 import { acceptsGood, storehouseSpace } from './storehouse';
-import { NO_BUILDING, buildingById, type Building, type Carrier, type CarrierKind, type GameState, type Good } from './state';
+import { NO_BUILDING, buildingById, type Building, type Carrier, type CarrierKind, type GameState, type Good, type TradeGood } from './state';
 import { isRoad, walkPath } from './walking';
 
 type Store = 'granary' | 'storehouse' | 'olivePress' | 'sculptureStudio' | Sanctuary;
@@ -27,11 +28,11 @@ export interface CarrierSpec {
 
 const nothing = () => 0;
 
-function exportCart(good: Good, stores: Store[]): CarrierSpec {
+function exportCart(good: TradeGood, stores: Store[]): CarrierSpec {
   return { name: 'Cart Pusher', home: 'tradeYard', good, stores, delivers: false, capacity: (yard) => exportCapacity(yard, good) };
 }
 
-function unloadCart(good: Good, stores: Store[]): CarrierSpec {
+function unloadCart(good: TradeGood, stores: Store[]): CarrierSpec {
   return { name: 'Cart Pusher', home: 'tradeYard', good, stores, delivers: true, capacity: (yard) => exportCapacity(yard, good) };
 }
 
@@ -52,6 +53,9 @@ export const CARRIER_SPECS: Record<CarrierKind, CarrierSpec> = {
   weaverBuyer: { name: 'Buyer', home: 'weaver', good: 'fleece', stores: ['storehouse'], delivers: false, capacity: () => WEAVER_FLEECE_CAPACITY },
   clothCart: { name: 'Cart Pusher', home: 'weaver', good: 'cloth', stores: ['storehouse'], delivers: true, capacity: nothing },
   clothBuyer: { name: 'Buyer', home: 'clothVendor', good: 'cloth', stores: ['storehouse'], delivers: false, capacity: () => VENDOR_CAPACITY },
+  papyrusBuyer: { name: 'Buyer', home: 'scriptorium', good: 'papyrus', stores: ['storehouse'], delivers: false, capacity: (home) => inputCapacity(home, 'papyrus') },
+  scriptoriumFleeceBuyer: { name: 'Buyer', home: 'scriptorium', good: 'fleece', stores: ['storehouse'], delivers: false, capacity: (home) => inputCapacity(home, 'fleece') },
+  scrollCart: { name: 'Cart Pusher', home: 'scriptorium', good: 'scrolls', stores: ['storehouse'], delivers: true, capacity: nothing },
   marbleSupply: { name: 'Cart Pusher', home: 'storehouse', good: 'marble', stores: SANCTUARIES, delivers: true, capacity: nothing },
   woodSupply: { name: 'Cart Pusher', home: 'storehouse', good: 'wood', stores: SANCTUARIES, delivers: true, capacity: nothing },
   sculptureSupply: { name: 'Cart Pusher', home: 'storehouse', good: 'sculptures', stores: SANCTUARIES, delivers: true, capacity: nothing },
@@ -73,9 +77,29 @@ export const CARRIER_SPECS: Record<CarrierKind, CarrierSpec> = {
   bronzeUnload: unloadCart('bronze', ['storehouse']),
   sculptureUnload: unloadCart('sculptures', ['storehouse']),
   clothUnload: unloadCart('cloth', ['storehouse']),
+  papyrusUnload: unloadCart('papyrus', ['storehouse']),
 };
 
-const KEPT_BACK: Partial<Record<CarrierKind, number>> = { weaverBuyer: FLEECE_KEPT_FOR_VENDORS };
+const KEPT_BACK: Partial<Record<CarrierKind, number>> = { weaverBuyer: FLEECE_KEPT_FOR_VENDORS, scriptoriumFleeceBuyer: FLEECE_KEPT_FOR_VENDORS };
+
+const GIVES_WAY_TO: Partial<Record<CarrierKind, CarrierKind>> = { scriptoriumFleeceBuyer: 'papyrusBuyer' };
+
+function sharesTrip(a: CarrierKind, b: CarrierKind): boolean {
+  return a === b || GIVES_WAY_TO[a] === b || GIVES_WAY_TO[b] === a;
+}
+
+export function givesWayToAnother(kind: CarrierKind): boolean {
+  return GIVES_WAY_TO[kind] !== undefined;
+}
+
+export function tripSharers(kind: CarrierKind): CarrierKind[] {
+  return (Object.keys(CARRIER_SPECS) as CarrierKind[]).filter((other) => sharesTrip(kind, other));
+}
+
+function givesWay(state: GameState, kind: CarrierKind): boolean {
+  const preferred = GIVES_WAY_TO[kind];
+  return preferred !== undefined && carrierDestinations(state, preferred).length > 0;
+}
 
 export function keptBack(kind: CarrierKind): number {
   return KEPT_BACK[kind] ?? 0;
@@ -149,7 +173,7 @@ export function tickCarriers(state: GameState): void {
 
 function sendCarrier(state: GameState, building: Building, kind: CarrierKind): void {
   if (building.workers === 0 || !wantsTrip(state, kind, building)) return;
-  if (state.carriers.some((c) => c.homeId === building.id && c.kind === kind)) return;
+  if (state.carriers.some((c) => c.homeId === building.id && sharesTrip(c.kind, kind)) || givesWay(state, kind)) return;
   const exit = exitTile(state, building);
   if (!exit) throw new Error(`Building ${building.id} has workers but no road to leave by`);
   const target = nearestByRoad(state, exit, carrierDestinations(state, kind));
@@ -171,6 +195,8 @@ function sendCarrier(state: GameState, building: Building, kind: CarrierKind): v
     bronze: 0,
     sculptures: 0,
     cloth: 0,
+    papyrus: 0,
+    scrolls: 0,
     [good]: load,
     returning: false,
     path: target.path,

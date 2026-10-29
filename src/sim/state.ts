@@ -18,7 +18,8 @@ export type PlayingSpeed = Exclude<Speed, 0>;
 export type HouseGood = 'food' | 'fleece' | 'oil';
 export type Material = 'wood' | 'marble' | 'bronze';
 export type PeddledGood = HouseGood | 'cloth';
-export type Good = HouseGood | 'olives' | Material | 'sculptures' | 'cloth';
+export type Good = HouseGood | 'olives' | Material | 'sculptures' | 'cloth' | 'papyrus' | 'scrolls';
+export type TradeGood = Exclude<Good, 'scrolls'>;
 export type Culture = 'philosophy' | 'athletics' | 'drama';
 export type Service = 'water' | 'tax' | 'goods' | Culture | 'maintenance';
 export type Coverage = Exclude<Service, 'goods' | 'maintenance'>;
@@ -45,9 +46,12 @@ export interface Building {
   bronze: number;
   sculptures: number;
   cloth: number;
+  papyrus: number;
+  scrolls: number;
   refused: Good[];
   growth: number;
   production: number;
+  pages: number;
   performingUntil: number;
   fireRisk: number;
   collapseRisk: number;
@@ -57,7 +61,7 @@ export interface Building {
   tradeSlots: TradeSlot[];
 }
 
-export type TradeSlot = { trade: 'export'; good: Good } | { trade: 'import'; good: Good; loads: number } | null;
+export type TradeSlot = { trade: 'export'; good: TradeGood } | { trade: 'import'; good: TradeGood; loads: number } | null;
 
 export interface Walk {
   path: Point[];
@@ -144,6 +148,9 @@ export type CarrierKind =
   | 'weaverBuyer'
   | 'clothCart'
   | 'clothBuyer'
+  | 'papyrusBuyer'
+  | 'scriptoriumFleeceBuyer'
+  | 'scrollCart'
   | 'marbleSupply'
   | 'woodSupply'
   | 'sculptureSupply'
@@ -164,7 +171,8 @@ export type CarrierKind =
   | 'marbleUnload'
   | 'bronzeUnload'
   | 'sculptureUnload'
-  | 'clothUnload';
+  | 'clothUnload'
+  | 'papyrusUnload';
 
 export interface Carrier extends Walk {
   id: number;
@@ -180,6 +188,8 @@ export interface Carrier extends Walk {
   bronze: number;
   sculptures: number;
   cloth: number;
+  papyrus: number;
+  scrolls: number;
   returning: boolean;
 }
 

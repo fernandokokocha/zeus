@@ -17,6 +17,7 @@ export const FIRE_RISK_INCREMENTS: Partial<Record<BuildingType, number>> = {
   cardingShed: 5,
   growersLodge: 5,
   weaver: 5,
+  scriptorium: 5,
   timberMill: 10,
   artisansGuild: 5,
 };

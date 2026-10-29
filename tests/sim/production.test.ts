@@ -6,6 +6,7 @@ import { UNITS_PER_LOAD } from '../../src/sim/food';
 import { CASTING_TICKS } from '../../src/sim/materials';
 import { PRESSING_TICKS, OIL_LOADS_PER_YEAR } from '../../src/sim/olives';
 import { WEAVING_TICKS } from '../../src/sim/cloth';
+import { copyingTicks } from '../../src/sim/scrolls';
 import { setIndustryOpen } from '../../src/sim/labor';
 import { productionReport, productionStatus, type GoodReport } from '../../src/sim/production';
 import { materialNeeded } from '../../src/sim/sanctuaries';
@@ -54,7 +55,7 @@ function row(game: GameState, good: Good): GoodReport {
 describe('the production report', () => {
   it('has a row per good, in the order goods are made', () => {
     expect(productionReport(grassGame()).goods.map(({ name }) => name)).toEqual([
-      'Food', 'Fleece', 'Olives', 'Oil', 'Fine cloth', 'Wood', 'Marble', 'Bronze', 'Sculptures',
+      'Food', 'Fleece', 'Olives', 'Oil', 'Fine cloth', 'Papyrus', 'Scrolls', 'Wood', 'Marble', 'Bronze', 'Sculptures',
     ]);
   });
 
@@ -127,7 +128,17 @@ describe('what was made', () => {
     expect(row(game, 'fleece').used).toBe(loads(1));
   });
 
-  it('counts the sculptures cast and the bronze they took', () => {
+it('counts the scrolls copied and the papyrus and fleece they took', () => {
+  const game = town();
+  const scriptorium = place(game, 'scriptorium', 10, 13);
+  Object.assign(scriptorium, { papyrus: loads(3), fleece: loads(10) });
+  runTicks(game, 3 * copyingTicks('papyrus') + 10 * copyingTicks('fleece'));
+  expect(row(game, 'scrolls').made).toBe(loads(1));
+  expect(row(game, 'papyrus').used).toBe(loads(3));
+  expect(row(game, 'fleece').used).toBe(loads(10));
+});
+
+it('counts the sculptures cast and the bronze they took', () => {
     const game = town();
     const studio = place(game, 'sculptureStudio', 10, 13);
     studio.bronze = loads(4);
@@ -165,6 +176,7 @@ describe('what the buildings could make', () => {
     ['growersLodge', 'olives', 20],
     ['olivePress', 'oil', 6],
     ['weaver', 'cloth', 6],
+    ['scriptorium', 'scrolls', 6],
     ['timberMill', 'wood', 13],
     ['masonryShop', 'marble', 12],
     ['foundry', 'bronze', 13],
@@ -194,10 +206,12 @@ describe('what was used and wanted', () => {
     place(game, 'olivePress', 10, 13);
     place(game, 'weaver', 14, 13);
     place(game, 'sculptureStudio', 18, 13);
+    place(game, 'scriptorium', 22, 13);
     runMaintained(game, 12);
     expect(row(game, 'olives')).toMatchObject({ used: 0, wanted: expect.closeTo(loads(6)) });
     expect(row(game, 'fleece')).toMatchObject({ used: 0, wanted: expect.closeTo(loads(6)) });
     expect(row(game, 'bronze')).toMatchObject({ used: 0, wanted: expect.closeTo(loads(24)) });
+    expect(row(game, 'papyrus')).toMatchObject({ used: 0, wanted: expect.closeTo(loads(24)) });
   });
 
   it('counts a sanctuary’s initial marble and its deliveries, and wants what it still needs', () => {

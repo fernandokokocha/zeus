@@ -117,7 +117,7 @@ it('redraws the city when a fire burns out', () => {
     placeBuilding(game, 'wheatFarm', 4, 4);
     game.carriers.push({
       id: 1, kind: 'cartPusher', homeId: game.buildings[0].id, destinationId: 0,
-      food: 400, fleece: 0, olives: 0, oil: 0, wood: 0, marble: 0, bronze: 0, sculptures: 0, cloth: 0, returning: false, path: [{ x: 3, y: 5 }], step: 0, progress: 0,
+      food: 400, fleece: 0, olives: 0, oil: 0, wood: 0, marble: 0, bronze: 0, sculptures: 0, cloth: 0, papyrus: 0, scrolls: 0, returning: false, path: [{ x: 3, y: 5 }], step: 0, progress: 0,
     });
     setOnFire(game, game.buildings[0]);
     expect(game.carriers).toEqual([]);

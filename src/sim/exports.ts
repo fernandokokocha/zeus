@@ -6,7 +6,7 @@ import { guildOfYard, yardOf } from './guild';
 import { postNotice } from './notices';
 import { findRoadPath } from './pathfinding';
 import type { Point } from './point';
-import { buildingById, type Building, type Caravan, type GameState, type Good, type TradeSlot } from './state';
+import { buildingById, type Building, type Caravan, type GameState, type Good, type TradeGood, type TradeSlot } from './state';
 import { PARTNERS, TRADE_GOODS, roundTripMonths, routeOf } from './trade';
 import { bookTrade } from './trade-books';
 import { collect } from './treasury';
@@ -17,7 +17,7 @@ export const CARAVAN_MERCHANTS = 5;
 export const YARD_CART_PUSHERS = 8;
 
 export interface SlotHolding {
-  good: Good | null;
+  good: TradeGood | null;
   units: number;
   capacity: number;
 }
@@ -26,7 +26,7 @@ export function emptyTradeSlots(): TradeSlot[] {
   return new Array<TradeSlot>(YARD_SLOTS).fill(null);
 }
 
-export function caravanUnits(good: Good): number {
+export function caravanUnits(good: TradeGood): number {
   return TRADE_GOODS[good].caravanLoad * UNITS_PER_LOAD;
 }
 
@@ -38,7 +38,7 @@ export function tradeYardById(state: GameState, yardId: number): Building {
   return yard;
 }
 
-export function setExportSlot(state: GameState, yardId: number, slot: number, good: Good | null): Result {
+export function setExportSlot(state: GameState, yardId: number, slot: number, good: TradeGood | null): Result {
   const yard = tradeYardById(state, yardId);
   const route = routeOf(state, guildOfYard(state, yard));
   if (route === null) return { ok: false, reason: NO_ROUTE };
@@ -50,7 +50,7 @@ export function setExportSlot(state: GameState, yardId: number, slot: number, go
   return { ok: true };
 }
 
-export function exportCapacity(yard: Building, good: Good): number {
+export function exportCapacity(yard: Building, good: TradeGood): number {
   const slots = yard.tradeSlots.filter((s) => s !== null && s.trade === 'export' && s.good === good).length;
   return slots * caravanUnits(good);
 }
@@ -100,14 +100,14 @@ function formCaravan(state: GameState, guild: Building): void {
   const toYard = findRoadPath(state, state.entry, adjacentRoadTiles(state, yard));
   if (toYard === null) throw new Error(`Trade Yard ${yard.id} has no road to the west edge`);
   yard[good] -= caravanUnits(good);
-  const { caravanLoad, theyPay } = TRADE_GOODS[good];
+  const { caravanLoad } = TRADE_GOODS[good];
   state.caravans.push({
     id: state.nextCaravanId++,
     guildId: guild.id,
     partner: route.partner,
     good,
     loads: caravanLoad,
-    drachmas: caravanLoad * theyPay,
+    drachmas: caravanLoad * exportPrice(good),
     trip: 'out',
     backAt: 0,
     waiting: false,
@@ -118,7 +118,13 @@ function formCaravan(state: GameState, guild: Building): void {
   state.version++;
 }
 
-function fullSlotGood(yard: Building): Good | null {
+function exportPrice(good: TradeGood): number {
+  const { theyPay } = TRADE_GOODS[good];
+  if (theyPay === null) throw new Error(`Nobody buys ${good}`);
+  return theyPay;
+}
+
+function fullSlotGood(yard: Building): TradeGood | null {
   const holdings = slotHoldings(yard);
   for (const [i, slot] of yard.tradeSlots.entries()) {
     if (slot !== null && slot.trade === 'export' && holdings[i].units === holdings[i].capacity) return slot.good;

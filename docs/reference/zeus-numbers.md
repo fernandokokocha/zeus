@@ -83,6 +83,7 @@ https://zeus.heavengames.com/gameinfo/appeal/. Fire/collapse are risk increments
 | Growers' Lodge | 2×2 | 12 | 25 | -3,-2 | 5 | — |
 | Olive Press | 2×2 | 12 | 45 | -4,-4,-2,-2 | — | 8 |
 | Weaver (**ours**, no Zeus building) | 2×2 | 12 | 40 | -3,-2,-1 | 5 | — |
+| Scriptorium (**ours**, no Zeus building) | 2×2 | 12 | 50 | -2,-1 | 5 | — |
 | Timber Mill | 2×2 | 12 | 35 | -5,-4,-3,-2 | 10 | — |
 | Masonry Shop (marble) | 2×2 | 15 | 75 | -6,-5,-4,-3 | — | 10 |
 | Foundry (bronze) | 2×2 | 15 | 60 | -10,-9,-8,-7,-6,-5 | — | 10 |
@@ -115,6 +116,7 @@ Source: https://zeus.heavengames.com/gameinfo/industry-production/
 | Growers' Lodge | 20 loads olives | Harvests nearby olive trees; whole year's output in a few months |
 | Olive Press | 6 loads oil | 1 load olives → 1 load oil (**ours**) |
 | Weaver | 6 loads fine cloth (**ours**) | 1 load fleece → 1 load cloth (**ours**) |
+| Scriptorium | 6 scrolls (**ours**) | 4 loads papyrus or 40 loads fleece → 1 scroll (**ours**) |
 | Timber Mill | 13 / 10 / 7–8 loads | Trees adjacent / within 10 / within 20 tiles |
 | Masonry Shop | 12 loads marble | Marble within 20 tiles |
 | Foundry | 13 / 10 / 7–8 loads bronze | Ore adjacent / within 10 / within 20 tiles |
@@ -157,7 +159,7 @@ rounded to whole months. Road length is the great-circle length of the road's se
 | partner | road from Athens | road length | round trip | buys from us | sells to us |
 |---|---|---|---|---|---|
 | Thebes | Eleusis, Eleutherae | 56 km | 3 months | fleece, olives | food, wood |
-| Corinth | Eleusis, Megara, Isthmus | 78 km | 4 months | oil, cloth, sculptures | bronze, wood |
+| Corinth | Eleusis, Megara, Isthmus | 78 km | 4 months | oil, cloth, sculptures | bronze, wood, papyrus |
 | Argos | … Corinth, Mycenae | 112 km | 6 months | food, wood, marble | olives, oil, sculptures |
 | Sparta | … Argos, Tegea | 187 km | 9 months | cloth, bronze, oil | marble, fleece |
 
@@ -175,6 +177,7 @@ carries, in loads.
 | bronze | 4 | 35 | 52 |
 | cloth | 4 | 45 | — |
 | sculptures | 2 | 120 | 180 |
+| papyrus | 4 | — | 60 |
 
 Exports (**ours**): a Trade Yard has **4** slots, each off or exporting one good its partner
 buys, and holding up to one caravan load of it. Its **8** workers fetch the goods from
@@ -244,7 +247,11 @@ hold; its workers cart everything else to storehouses (granaries for food).
 - Weaver: holds **4 loads** of fleece and **4 loads** of cloth; weaves a load in 2 months at full
   staff (6 a year). Its buyer fetches fleece from storehouses and its cart takes cloth back.
   Houses don't use cloth.
-- Fleece for vendors first: a Weaver's buyer leaves **4 loads** of fleece (one vendor buyer's
+- Scriptorium: a scroll is **40 pages**; a papyrus load copies **10** in half a month, a fleece load
+  **1** in a twentieth of one, so 6 scrolls a year either way at full staff. Papyrus is used
+  before fleece. It holds **4 loads** of papyrus and fleece together and **4 scrolls**. Its one
+  buyer fetches papyrus while any storehouse has some, otherwise fleece. 1 scroll = 1 load.
+- Fleece for vendors first: a Weaver's or Scriptorium's buyer leaves **4 loads** of fleece (one vendor buyer's
   load) in every storehouse, so fleece vendors keep getting fleece while a Weaver competes.
 - House oil stock: an oil peddler fills a house to **5 months** of use (10 units), like
   fleece.

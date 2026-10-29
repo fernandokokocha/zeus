@@ -25,6 +25,7 @@ type Figure =
   | CaravanFigure
   | ForeignFigure
   | TraineeKind
+  | 'papyrusCart'
   | 'shepherd'
   | 'shepherdWithFleece'
   | 'grower'
@@ -62,6 +63,8 @@ const YARD_CARTS: Record<Good, Figure> = {
   bronze: 'bronzeCart',
   sculptures: 'sculptureCart',
   cloth: 'clothCart',
+  papyrus: 'papyrusCart',
+  scrolls: 'scrollCart',
 };
 
 function carrierFigure(kind: CarrierKind): Figure {
@@ -202,6 +205,16 @@ const clothBoltPart = (y: number, z: number): Part => ({
   color: PALETTE.cloth,
 });
 
+const scrollPart = (x: number, y: number, z: number): Part => ({
+  geometry: new THREE.CylinderGeometry(0.025, 0.025, 0.16, 8).rotateZ(Math.PI / 2).translate(x, y, z),
+  color: PALETTE.scrollSheet,
+});
+
+const papyrusPart = (y: number, z: number): Part => ({
+  geometry: new THREE.CylinderGeometry(0.035, 0.035, 0.2, 8).rotateZ(Math.PI / 2).translate(0, y, z),
+  color: PALETTE.papyrusReed,
+});
+
 const smallAmphora = (x: number, y: number, z: number): Part => ({ geometry: jar.clone().translate(x, y, z), color: PALETTE.terracotta });
 
 const FIGURES: Record<Figure, Part[]> = {
@@ -241,7 +254,14 @@ const FIGURES: Record<Figure, Part[]> = {
   marbleSupply: marbleCart,
   sculptureSupply: sculptureCart,
   bronzeBuyer: [...body(PALETTE.bronzeBuyerTunic), ingot(0.1, 0.12, 0.02)],
-  clothBuyer: [...body(PALETTE.clothBuyerTunic), clothBoltPart(0.2, -0.09)],
+clothBuyer: [...body(PALETTE.clothBuyerTunic), clothBoltPart(0.2, -0.09)],
+papyrusBuyer: [...body(PALETTE.scribeBuyerTunic), papyrusPart(0.2, -0.09)],
+scriptoriumFleeceBuyer: [
+  ...body(PALETTE.scribeBuyerTunic),
+  { geometry: new THREE.SphereGeometry(0.07, 8, 6).scale(1.3, 0.8, 1).translate(0, 0.26, -0.08), color: PALETTE.wool },
+],
+scrollCart: cart([scrollPart(0, 0.17, 0.18), scrollPart(0, 0.17, 0.24), scrollPart(0, 0.21, 0.21)]),
+papyrusCart: cart([papyrusPart(0.17, 0.19), papyrusPart(0.17, 0.26)]),
   artisan: [...body(PALETTE.artisanTunic), ...tool(new THREE.BoxGeometry(0.08, 0.05, 0.05))],
   shepherd,
   shepherdWithFleece: [

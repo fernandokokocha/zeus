@@ -6,6 +6,7 @@ import { GOODS, emptyFlows, recordFlow, type GoodFlow } from './flows';
 import { UNITS_PER_LOAD, WHEAT_LOADS_PER_YEAR } from './food';
 import { BRONZE_PER_SCULPTURE, SCULPTURES_PER_YEAR, WORKSHOP_SPECS } from './materials';
 import { OIL_LOADS_PER_YEAR, OLIVES_PER_PICKING, PICKINGS_PER_YEAR } from './olives';
+import { PAGES_PER_LOAD, PAGES_PER_SCROLL, SCROLLS_PER_YEAR } from './scrolls';
 import { SANCTUARY_MATERIALS, isSanctuary, stillNeeded } from './sanctuaries';
 import { FLEECE_PER_SHEARING, SHEARINGS_PER_YEAR } from './sheep';
 import type { GameState, Good } from './state';
@@ -32,6 +33,10 @@ const INDUSTRY_SPECS: Record<Industry, IndustrySpec> = {
     makes: { good: 'cloth', perYear: CLOTH_LOADS_PER_YEAR * UNITS_PER_LOAD },
     takes: { good: 'fleece', perYear: CLOTH_LOADS_PER_YEAR * UNITS_PER_LOAD },
   },
+  scriptorium: {
+    makes: { good: 'scrolls', perYear: SCROLLS_PER_YEAR * UNITS_PER_LOAD },
+    takes: { good: 'papyrus', perYear: (SCROLLS_PER_YEAR * PAGES_PER_SCROLL * UNITS_PER_LOAD) / PAGES_PER_LOAD.papyrus },
+  },
   timberMill: { makes: { good: 'wood', perYear: WORKSHOP_SPECS.timberMill.loadsPerYear * UNITS_PER_LOAD }, takes: null },
   masonryShop: { makes: { good: 'marble', perYear: WORKSHOP_SPECS.masonryShop.loadsPerYear * UNITS_PER_LOAD }, takes: null },
   foundry: { makes: { good: 'bronze', perYear: WORKSHOP_SPECS.foundry.loadsPerYear * UNITS_PER_LOAD }, takes: null },
@@ -51,6 +56,8 @@ export const GOOD_TITLES: Record<Good, string> = {
   marble: 'Marble',
   bronze: 'Bronze',
   sculptures: 'Sculptures',
+  papyrus: 'Papyrus',
+  scrolls: 'Scrolls',
 };
 
 const STOCK_HOLDERS: BuildingType[] = ['granary', 'storehouse'];

@@ -5,7 +5,7 @@ import { raiseGuild } from '../../src/sim/guild';
 import { LEVEL_CHANGE_TICKS } from '../../src/sim/housing';
 import { describeTile } from '../../src/sim/inspect';
 import { catchFire } from '../../src/sim/safety';
-import type { Building, GameState } from '../../src/sim/state';
+import type { Building, GameState, Good } from '../../src/sim/state';
 import {
   PALACE_DELIVERS,
   PARTNERS,
@@ -39,11 +39,20 @@ function guildLines(game: GameState, guild: Building): string[] {
 }
 
 describe('the partner cities', () => {
-  it('buy every good the city makes, except that cloth is bought from no one', () => {
+  it('buy every good the city makes but papyrus and scrolls, and nobody sells cloth', () => {
     const partners = Object.values(PARTNERS);
-    expect(GOODS.filter((good) => !partners.some((p) => p.buys.includes(good)))).toEqual([]);
+    expect(GOODS.filter((good) => !partners.some((p) => (p.buys as Good[]).includes(good)))).toEqual(['papyrus', 'scrolls']);
     expect(partners.filter((p) => p.sells.includes('cloth'))).toEqual([]);
     expect(TRADE_GOODS.cloth.wePay).toBeNull();
+  });
+
+  it('sell papyrus only from Corinth, 4 loads a caravan at 60 dr a load', () => {
+    expect(Object.values(PARTNERS).filter((p) => p.sells.includes('papyrus'))).toEqual([PARTNERS.corinth]);
+    expect(TRADE_GOODS.papyrus).toEqual({ caravanLoad: 4, theyPay: null, wePay: 60 });
+  });
+
+  it('never deal in scrolls', () => {
+    expect(Object.keys(TRADE_GOODS)).not.toContain('scrolls');
   });
 
   it('sell what their lands are known for', () => {
@@ -55,7 +64,7 @@ describe('the partner cities', () => {
 
   it('price every good they buy and sell', () => {
     for (const partner of Object.values(PARTNERS)) {
-      for (const good of partner.sells) expect(TRADE_GOODS[good].wePay).toBeGreaterThan(TRADE_GOODS[good].theyPay);
+      for (const good of partner.sells) expect(TRADE_GOODS[good].wePay).toBeGreaterThan(TRADE_GOODS[good].theyPay ?? 0);
     }
   });
 });

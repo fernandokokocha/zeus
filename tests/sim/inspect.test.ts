@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { demolish, placeBuilding, placeOliveTrees, placeRoad, placeRoadblock, placeSheep } from '../../src/sim/commands';
 import { WEAVING_TICKS } from '../../src/sim/cloth';
+import { copyingTicks } from '../../src/sim/scrolls';
 import { gatheringRestTicks } from '../../src/sim/materials';
 import { PICKING_REST_TICKS } from '../../src/sim/olives';
 import { SHEARING_REST_TICKS, sheepTile } from '../../src/sim/sheep';
@@ -530,6 +531,8 @@ it('describes a storehouse by its shelf of 8 bays and its orders', () => {
       { good: 'bronze', name: 'Bronze', accepted: true },
       { good: 'sculptures', name: 'Sculptures', accepted: true },
       { good: 'cloth', name: 'Cloth', accepted: true },
+      { good: 'papyrus', name: 'Papyrus', accepted: true },
+      { good: 'scrolls', name: 'Scrolls', accepted: true },
     ],
   });
   storehouse.fleece = 600;
@@ -755,6 +758,51 @@ it('describes olives in a storehouse and a press buyer fetching them', () => {
     expect(describeTile(game, 6, 13).lines).toEqual(
       expect.arrayContaining(['Cloth waiting: 4 loads', 'Full of cloth: waits for its cart', 'Cart Pusher waits for a storehouse with room']),
     );
+  });
+
+  it('describes a scriptorium by what it holds, its next scroll and its one buyer', () => {
+    const { game } = street();
+    placeBuilding(game, 'scriptorium', 6, 13);
+    const scriptorium = lastBuilding(game);
+    runTicks(game, 1);
+    expect(describeTile(game, 6, 13)).toEqual({
+      title: 'Scriptorium',
+      meters: [],
+      lines: [
+        'Tile 6, 13',
+        'Workers 12/12',
+        'Papyrus 0, fleece 0: 0 of 4 loads',
+        'Next scroll: 0 of 40 pages',
+        'Waits for papyrus or fleece',
+        'Buyer waits for a storehouse with papyrus or more than 4 loads of fleece',
+        'Cart Pusher at the scriptorium',
+        'Fire risk 0%',
+      ],
+    });
+    Object.assign(scriptorium, { papyrus: 200, fleece: 100, pages: 12, production: copyingTicks('papyrus') / 2 });
+    expect(describeTile(game, 6, 13).lines).toEqual(
+      expect.arrayContaining(['Papyrus 2, fleece 1: 3 of 4 loads', 'Next scroll: 12 of 40 pages', 'Copying papyrus: 50% of a load']),
+    );
+    Object.assign(scriptorium, { papyrus: 0, production: copyingTicks('fleece') / 5 });
+    expect(describeTile(game, 6, 13).lines).toContain('Copying fleece: 20% of a load');
+    scriptorium.scrolls = 400;
+    expect(describeTile(game, 6, 13).lines).toEqual(
+      expect.arrayContaining(['Scrolls waiting: 4', 'Full of scrolls: waits for its cart', 'Cart Pusher waits for a storehouse with room']),
+    );
+  });
+
+  it('names the good the scriptorium buyer is out for', () => {
+    const { game } = street();
+    placeBuilding(game, 'storehouse', 10, 12);
+    lastBuilding(game).fleece = 1000;
+    placeBuilding(game, 'scriptorium', 20, 13);
+    runTicks(game, 1);
+    expect(describeTile(game, 20, 13).lines).toContain('Buyer out fetching fleece');
+    game.carriers = [];
+    game.buildings[game.buildings.length - 2].papyrus = 100;
+    expect(describeTile(game, 20, 13).lines).toContain('Buyer at the scriptorium');
+    runTicks(game, 1);
+    expect(describeTile(game, 20, 13).lines).toContain('Buyer out fetching papyrus');
   });
 
   it('describes cloth in a storehouse and the cart bringing it', () => {

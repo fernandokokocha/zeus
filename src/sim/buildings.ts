@@ -28,6 +28,7 @@ export type BuildingType =
   | 'oilVendor'
   | 'clothVendor'
   | 'weaver'
+  | 'scriptorium'
   | 'timberMill'
   | 'masonryShop'
   | 'foundry'
@@ -80,6 +81,7 @@ export const BUILDING_SPECS: Record<BuildingType, BuildingSpec> = {
   oilVendor: { name: 'Oil Vendor', width: 2, height: 2, cost: 10, workers: 4, appeal: [], needsRoad: true },
   clothVendor: { name: 'Cloth Vendor', width: 2, height: 2, cost: 10, workers: 4, appeal: [], needsRoad: true },
   weaver: { name: 'Weaver', width: 2, height: 2, cost: 40, workers: 12, appeal: [-3, -2, -1], needsRoad: true },
+  scriptorium: { name: 'Scriptorium', width: 2, height: 2, cost: 50, workers: 12, appeal: [-2, -1], needsRoad: true },
   timberMill: { name: 'Timber Mill', width: 2, height: 2, cost: 35, workers: 12, appeal: [-5, -4, -3, -2], needsRoad: true },
   masonryShop: { name: 'Masonry Shop', width: 2, height: 2, cost: 75, workers: 15, appeal: [-6, -5, -4, -3], needsRoad: true },
   foundry: { name: 'Foundry', width: 2, height: 2, cost: 60, workers: 15, appeal: [-10, -9, -8, -7, -6, -5], needsRoad: true },

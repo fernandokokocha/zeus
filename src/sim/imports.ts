@@ -6,7 +6,7 @@ import { PLACES } from './greece';
 import { guildOfYard } from './guild';
 import { findRoadPath } from './pathfinding';
 import type { Point } from './point';
-import { buildingById, type Building, type ForeignCaravan, type GameState, type Good } from './state';
+import { buildingById, type Building, type ForeignCaravan, type GameState, type TradeGood } from './state';
 import { PARTNERS, TRADE_GOODS, partnerCaravansHome, roundTripMonths, routeOf, type Partner } from './trade';
 import { bookTrade } from './trade-books';
 import { spend } from './treasury';
@@ -14,12 +14,12 @@ import { walkPath } from './walking';
 
 export interface ImportOrder {
   slot: number;
-  good: Good;
+  good: TradeGood;
   loads: number;
   cost: number;
 }
 
-export function setImportSlot(state: GameState, yardId: number, slot: number, good: Good, loads: number): Result {
+export function setImportSlot(state: GameState, yardId: number, slot: number, good: TradeGood, loads: number): Result {
   const yard = tradeYardById(state, yardId);
   const route = routeOf(state, guildOfYard(state, yard));
   if (route === null) return { ok: false, reason: NO_ROUTE };
@@ -33,7 +33,7 @@ export function setImportSlot(state: GameState, yardId: number, slot: number, go
   return { ok: true };
 }
 
-function importCost(good: Good, loads: number): number {
+function importCost(good: TradeGood, loads: number): number {
   const { wePay } = TRADE_GOODS[good];
   if (wePay === null) throw new Error(`${good} can't be bought`);
   return loads * wePay;
