@@ -26,4 +26,7 @@ anywhere.
   the roster.
 - **Elite levels.** Needs its design first. For example Horsemen, from the Warriors' House.
 - **Nobles' Court.** Needs its design first. Near the Palace.
+- **Great Works.** Needs its design first. Wonders built like sanctuaries, over time and
+  from materials, each unlocked first with Works of Art, each with a huge bonus. Ideas:
+  Hippodrome, Observatory, Lighthouse, Oracle of Delphi.
 
