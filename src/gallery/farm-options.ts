@@ -1,5 +1,3 @@
-// sim/food sits in an import cycle with sim/materials; loading materials first is the order the game uses
-import '../sim/materials';
 import { CROP_STAGES } from '../sim/food';
 import { wheatFarm } from '../render/farm-models';
 import type { DesignOption } from './options';

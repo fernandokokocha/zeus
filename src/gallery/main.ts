@@ -1,3 +1,5 @@
+// The sim has import cycles; loading commands first is an order in which every module initialises
+import '../sim/commands';
 import * as THREE from 'three';
 import { PALETTE, TERRAIN_COLORS } from '../render/palette';
 import { HUT_OPTIONS } from './hut-options';
