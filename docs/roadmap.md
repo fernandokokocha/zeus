@@ -1,55 +1,44 @@
 # Roadmap
 
-Everything still to build, in order: milestones and ad-hoc requests mixed.
+Everything still to build, in order. One flat list: reorder by moving lines, add an item
+anywhere.
 
-- A **milestone** is a heading. Once its spec is written, its slices are listed under it.
-  A milestone with nothing listed still needs its spec.
-- An **ad-hoc request** is an item of its own, placed where it should happen.
 - The next thing to build is the first item. It gets its slice number when work starts, and
   it is deleted from here in the commit that delivers it.
+- An item may name the larger design it belongs to (**Part of**) and its spec. An item
+  whose design isn't written yet says so; its first step is that design, with the owner.
 
-## Elite rework
+## Items
 
-Every elite keeps the population and consumption of the four Townhouses it replaces, adds
-one consumption of its own, and comes with an annex across a road. The annex is staffed
-from the labor pool and is where the bonus is made.
+- **Traders' Guild model rework.** Now that the guild houses 240 residents, its model should
+  read as a house, not a workplace: grown out of the Townhouse, homes first, trade second.
+  A redesign round with the owner (`docs/model-redesign.md`). Part of: Elite rework.
+- **Well dressed.** Replaces Well fed as the Traders' Guild charter; permits per type.
+  Part of: Elite rework. Spec: `docs/superpowers/specs/2026-10-29-elite-rework-scholars-design.md`.
+- **Papyrus and the Scriptorium.** Part of: Scholars' House. Spec: same.
+- **Learned city.** Part of: Scholars' House. Spec: same.
+- **Scholars' House and Library.** Part of: Scholars' House. Spec: same.
+- **Elite sites.** Site help for every elite type. Part of: Scholars' House. Spec: same.
+- **Upgrades.** Spending Works of Art. Part of: Scholars' House. Needs its own design first.
+- **Warriors' House.** Needs its design first. Near a Hospital. Charter: Healthy and well fed
+  (24 months), which brings sickness. Consumes armor (bronze → Armory). Annex: Drill Ground.
+  Bonus: hoplites on the army roster.
+- **Athletes' House.** Needs its design first. Near a Stadium. Charter: full Gymnasium
+  coverage with a Stadium built (24 months). Consumes double oil. Annex: Bathhouse, which
+  raises appeal. Bonus: the city enters the Olympics every 4 years, with its chance of
+  winning in the Ledger.
+- **Merchant Mariners.** Needs its design first. Near the shore. Charter: Watching the Waves
+  (fishermen at sea, 24 months), which brings fishing. Consumes wood and cloth to build the
+  ship, then for repairs. Low taxes. Annex: Dock. Bonus: a sea route.
+- **Trireme Crew.** Needs its design first. Near the shore. Charter: the Warriors' one, and
+  its permit fits either house. Consumes wood and armor. Annex: Dock. Bonus: a warship on
+  the roster.
+- **Elite levels.** Needs its design first. For example Horsemen, from the Warriors' House.
+- **Nobles' Court.** Needs its design first. Near the Palace.
 
-Spec: `docs/superpowers/specs/2026-10-29-elite-rework-scholars-design.md`.
+## Designs referred to
 
-- Well dressed
-
-## Scholars' House
-
-Spec: `docs/superpowers/specs/2026-10-29-elite-rework-scholars-design.md`.
-
-- Papyrus and the Scriptorium
-- Learned city
-- Scholars' House and Library
-- Elite sites
-- Upgrades (needs its own design first)
-
-## Warriors' House
-
-Near a Hospital. Charter: Healthy and well fed (24 months), which brings sickness. Consumes
-armor (bronze → Armory). Annex: Drill Ground. Bonus: hoplites on the army roster.
-
-## Athletes' House
-
-Near a Stadium. Charter: full Gymnasium coverage with a Stadium built (24 months). Consumes
-double oil. Annex: Bathhouse, which raises appeal. Bonus: the city enters the Olympics
-every 4 years, with its chance of winning in the Ledger.
-
-## Merchant Mariners
-
-Near the shore. Charter: Watching the Waves (fishermen at sea, 24 months), which brings
-fishing. Consumes wood and cloth to build the ship, then for repairs. Low taxes. Annex:
-Dock. Bonus: a sea route.
-
-## Trireme Crew
-
-Near the shore. Charter: the Warriors' one, and its permit fits either house. Consumes wood
-and armor. Annex: Dock. Bonus: a warship on the roster.
-
-## Later
-
-Elite levels (Horsemen), Nobles' Court near the Palace.
+- **Elite rework:** every elite keeps the population and consumption of the four Townhouses
+  it replaces, adds one consumption of its own, and comes with an annex across a road,
+  staffed from the labor pool, where the bonus is made.
+- **Scholars' House:** the second elite type, producing Works of Art.
