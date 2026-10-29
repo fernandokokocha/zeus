@@ -1,17 +1,16 @@
 import * as THREE from 'three';
 import { handcart, hideTent, journeyLoad, leanToHut, tripodPot } from './kit/camp';
-import { blueDoor, frontWindow, poorCube, roughWall, terraceBlock, tidyWalls, whiteCottage, windowHole, woodenBalcony } from './kit/cottage';
+import { blueDoor, frontWindow, poorCube, roughWall, sideWindow, terraceBlock, tidyWalls, whiteCottage, windowHole } from './kit/cottage';
 import { goat, grainBasket, hen, plankOnStones, raisedGranary, sack, threshingFloor } from './kit/food';
 import {
   COLORS, basket, cylinder, flat, lotGround, path, scaled, shrubAt, sphere, surface, tippedJar, wattleFence, woodpile,
 } from './kit/kit';
 import { bucket, cistern, wateredBeds } from './kit/water';
 import { fleece, fleeceBalcony, woolBasket } from './kit/wool';
-import { BLOOM, flowerPot, herm, paving, portico } from './kit/garden';
-import { cypress } from './kit/luxury';
-import { steps, volume, windowsFront, windowsSide } from './kit/blocks';
-import { amphora, amphoraRow } from './kit/oil';
-import { tiledRoof, tiledRoofAlongZ } from './kit/roofs';
+import { BLOOM, blueColumns, flowerPot, herm, paving, portico } from './kit/garden';
+import { cypress, statue } from './kit/luxury';
+import { amphora, amphoraRow, oliveTree } from './kit/oil';
+import { hipRoof, hipRoofAlongZ, leanToRoof } from './kit/roofs';
 
 export function hutModel(): THREE.Object3D {
   const group = new THREE.Group();
@@ -134,50 +133,78 @@ export function tenementModel(): THREE.Object3D {
   return group;
 }
 
+const EAVES = 0.03;
+const PORTICO_HEIGHT = 0.42;
+const RIGHT_PORTICO: [number, number][] = [[1.12, 0.88], [1.46, 0.88], [1.8, 0.88]];
+const LEFT_PORTICO: [number, number][] = [[0.78, 1.0], [0.78, 1.38], [0.78, 1.74]];
+const APARTMENT = { main: 1.0, rightWing: 0.92, leftWing: 0.5 };
+
 export function apartmentModel(): THREE.Object3D {
   const group = new THREE.Group();
   group.add(lotGround());
-  group.add(terraceBlock(0.14, 0.14, 0.94, 0.7, 1.0));
+  group.add(terraceBlock(0.14, 0.14, 0.94, 0.7, APARTMENT.main));
   group.add(blueDoor(0.84, 0.84, 0.12, 0.5));
   for (const x of [0.4, 0.82]) group.add(frontWindow(x, 0.84, 0.72));
-  group.add(tiledRoof(0.14, 0.14, 0.94, 0.7, 0.97, 0.26, 'blueTiles'));
-  group.add(terraceBlock(1.14, 0.14, 0.72, 0.56, 0.92));
-  for (const x of [1.3, 1.7]) group.add(frontWindow(x, 0.7, 0.62));
-  group.add(tiledRoof(1.14, 0.14, 0.72, 0.56, 0.89, 0.22, 'blueTiles'));
-  group.add(terraceBlock(0.14, 0.9, 0.46, 0.9, 0.92));
-  group.add(tiledRoofAlongZ(0.14, 0.9, 0.46, 0.9, 0.89, 0.2, 'blueTiles'));
-  group.add(portico(1.04, 0.7, 1.86, 0.92, 0.42, [[1.12, 0.88], [1.46, 0.88], [1.8, 0.88]]));
-  group.add(portico(0.6, 0.92, 0.82, 1.8, 0.42, [[0.78, 1.0], [0.78, 1.38], [0.78, 1.74]]));
+  group.add(hipRoof(0.14, 0.14, 0.94, 0.7, APARTMENT.main + EAVES, 0.22, 'blueTiles'));
+
+  group.add(terraceBlock(1.14, 0.14, 0.72, 0.56, APARTMENT.rightWing));
+  for (const x of [1.3, 1.7]) group.add(frontWindow(x, 0.7, 0.66));
+  group.add(hipRoof(1.14, 0.14, 0.72, 0.56, APARTMENT.rightWing + EAVES, 0.18, 'blueTiles'));
+  group.add(blueColumns(RIGHT_PORTICO, PORTICO_HEIGHT));
+  group.add(leanToRoof(1.08, 0.7, 1.86, 0.94, 0.47, 0.6, 'south'));
+
+  group.add(terraceBlock(0.14, 0.9, 0.46, 0.9, APARTMENT.leftWing));
+  group.add(portico(0.6, 0.92, 0.82, 1.8, PORTICO_HEIGHT, LEFT_PORTICO));
+  group.add(fleece(0.34, 1.3, 0.9, 0.52), fleece(0.66, 1.4, 1.6, 0.48));
+
   group.add(paving(0.82, 0.92, 1.04, 0.94));
   group.add(cistern(1.32, 1.36, 0.42, 0.42));
+  group.add(herm(1.32, 1.12));
   group.add(bucket(1.04, 0.04, 1.36, true));
   group.add(plankOnStones(1.32, 1.76, 0, 3));
   group.add(woolBasket(0.7, 1.2), sack(0.7, 1.5, 0.4));
+  group.add(flowerPot(1.0, 0.04, 1.66, BLOOM.yellow), flowerPot(1.66, 0.04, 1.66, BLOOM.red));
   group.add(tidyWalls(0.92, 1.1, 0.92));
   group.add(amphoraRow(1.2, 0.78, 1.72, 0.78, 5));
-  group.add(herm(1.32, 1.12));
   group.add(amphora(1.0, 1.06), amphora(1.66, 1.06));
-  group.add(flowerPot(1.0, 0.04, 1.66, BLOOM.yellow), flowerPot(1.66, 0.04, 1.66, BLOOM.red));
   return group;
 }
+
+const TOWNHOUSE = { main: 1.05, wing: 0.9, column: 0.5, leanLow: 0.55, leanHigh: 0.68, wall: 0.36, gate: 1.01 };
 
 export function townhouseModel(): THREE.Object3D {
   const group = new THREE.Group();
   group.add(lotGround());
-  volume(group, 0.16, 0.16, 0.76, 0.84, 1.5);
-  windowsFront(group, [0.36, 0.72], 1.0, [0.72, 1.12]);
-  group.add(woodenBalcony(0.2, 0.88, 1.0, 0.95));
-  volume(group, 1.04, 0.3, 0.8, 0.76, 1.24);
-  windowsFront(group, [1.26, 1.62], 1.06, [0.66, 0.98]);
-  windowsSide(group, 1.84, [0.5, 0.86], [0.66, 0.98]);
-  volume(group, 0.5, 1.0, 1.0, 0.64, 0.62);
-  group.add(blueDoor(1.0, 1.64, 0.1, 0.4));
-  windowsFront(group, [0.68, 1.32], 1.64, [0.3]);
-  windowsSide(group, 1.5, [1.32], [0.3]);
-  steps(group, 1.0, 1.64, 0.32);
+  group.add(terraceBlock(0.14, 0.14, 0.94, 0.7, TOWNHOUSE.main));
+  group.add(blueDoor(0.84, 0.84, 0.12, 0.5));
+  group.add(frontWindow(0.4, 0.84, 0.76));
+  group.add(hipRoof(0.14, 0.14, 0.94, 0.7, TOWNHOUSE.main + EAVES, 0.22, 'blueTiles'));
 
-  group.add(flowerPot(0.3, 0.04, 1.2, BLOOM.red), flowerPot(0.3, 0.04, 1.5, BLOOM.yellow), flowerPot(1.66, 0.04, 1.22, BLOOM.pink));
-  group.add(amphora(1.66, 1.5), amphora(1.78, 1.44));
-  group.add(cypress(0.24, 1.78, 0.4), cypress(1.78, 1.78, 0.4));
+  group.add(terraceBlock(1.14, 0.14, 0.72, 0.56, TOWNHOUSE.wing));
+  group.add(sideWindow(1.86, 0.42, 0.6));
+  group.add(hipRoof(1.14, 0.14, 0.72, 0.56, TOWNHOUSE.wing + EAVES, 0.18, 'blueTiles'));
+  group.add(blueColumns([[1.14, 0.9], [1.5, 0.9], [1.84, 0.9]], TOWNHOUSE.column));
+  group.add(leanToRoof(1.08, 0.7, 1.86, 0.94, TOWNHOUSE.leanLow, TOWNHOUSE.leanHigh, 'south'));
+
+  group.add(terraceBlock(0.14, 0.9, 0.46, 0.9, TOWNHOUSE.wing));
+  group.add(frontWindow(0.37, 1.8, 0.6));
+  group.add(hipRoofAlongZ(0.14, 0.9, 0.46, 0.9, TOWNHOUSE.wing + EAVES, 0.16, 'blueTiles'));
+  group.add(blueColumns([[0.8, 1.0], [0.8, 1.37], [0.8, 1.74]], TOWNHOUSE.column));
+  group.add(leanToRoof(0.6, 0.9, 0.84, 1.78, TOWNHOUSE.leanLow, TOWNHOUSE.leanHigh, 'east'));
+
+  group.add(terraceBlock(0.6, 1.8, TOWNHOUSE.gate - 0.74, 0.08, TOWNHOUSE.wall));
+  group.add(terraceBlock(TOWNHOUSE.gate + 0.14, 1.8, 1.72 - TOWNHOUSE.gate, 0.08, TOWNHOUSE.wall));
+  group.add(terraceBlock(1.78, 0.94, 0.08, 0.86, TOWNHOUSE.wall));
+  group.add(blueColumns([[0.87, 1.92], [1.15, 1.92]], 0.42));
+  group.add(blueDoor(TOWNHOUSE.gate, 1.82, 0.03, 0.4));
+  group.add(hipRoof(0.82, 1.74, 0.38, 0.22, 0.48, 0.1, 'blueTiles'));
+
+  group.add(paving(0.84, 0.94, 1.02, 0.86));
+  group.add(cistern(1.06, 1.26, 0.3, 0.3));
+  group.add(oliveTree(1.6, 1.5, 1.1));
+  group.add(statue(1.36, 1.12, -0.6));
+  group.add(cypress(1.76, 1.04, 0.42), cypress(1.0, 1.66, 0.36));
+  group.add(flowerPot(1.3, 0.04, 1.66, BLOOM.red), flowerPot(1.76, 0.04, 1.72, BLOOM.yellow));
+  group.add(amphoraRow(1.24, 0.78, 1.7, 0.78, 4));
   return group;
 }

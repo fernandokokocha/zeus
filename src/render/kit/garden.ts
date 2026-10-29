@@ -30,12 +30,18 @@ export function paving(x0: number, z0: number, w: number, d: number): THREE.Obje
   return group;
 }
 
-export function portico(x0: number, z0: number, x1: number, z1: number, height: number, posts: [number, number][]): THREE.Object3D {
+export function blueColumns(posts: [number, number][], height: number): THREE.Object3D {
   const group = new THREE.Group();
   for (const [x, z] of posts) {
     group.add(cylinder(0.022, 0.026, height, flat(COLORS.aegean), x, 0.03, z, 8));
     group.add(box(0.06, 0.02, 0.06, surface('whitewash'), x, 0.03 + height - 0.02, z));
   }
+  return group;
+}
+
+export function portico(x0: number, z0: number, x1: number, z1: number, height: number, posts: [number, number][]): THREE.Object3D {
+  const group = new THREE.Group();
+  group.add(blueColumns(posts, height));
   group.add(box(x1 - x0, 0.05, z1 - z0, surface('whitewash'), (x0 + x1) / 2, 0.03 + height, (z0 + z1) / 2));
   return group;
 }

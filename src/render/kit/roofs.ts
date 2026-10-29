@@ -98,3 +98,19 @@ export function hipRoof(x0: number, z0: number, w: number, d: number, eaves: num
   if (r2[0] > r1[0]) group.add(box(r2[0] - r1[0] + 0.04, 0.035, 0.05, surface('whitewash'), (r1[0] + r2[0]) / 2, top - 0.02, zc));
   return group;
 }
+
+export function hipRoofAlongZ(x0: number, z0: number, w: number, d: number, eaves: number, rise: number, roofing: Surface): THREE.Object3D {
+  return turnedToZ(x0, z0, w, d, (a, b, c, e) => hipRoof(a, b, c, e, eaves, rise, roofing));
+}
+
+export type Fall = 'north' | 'south' | 'east' | 'west';
+
+export function leanToRoof(x0: number, z0: number, x1: number, z1: number, low: number, high: number, fall: Fall, roofing: Surface = 'blueTiles'): THREE.Object3D {
+  const [ax, az, bx, bz] = [x0 - OVERHANG / 2, z0 - OVERHANG / 2, x1 + OVERHANG / 2, z1 + OVERHANG / 2];
+  const height = (x: number, z: number): number => {
+    const onLowEdge = { north: z === az, south: z === bz, east: x === bx, west: x === ax }[fall];
+    return onLowEdge ? low : high;
+  };
+  const corner = (x: number, z: number): Corner => [x, height(x, z), z];
+  return sloped([[corner(ax, az), corner(bx, az), corner(bx, bz), corner(ax, bz)]], roofing);
+}
