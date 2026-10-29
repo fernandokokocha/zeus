@@ -1,6 +1,6 @@
 import { CULTURES } from './culture';
 import { monthlyUse } from './food';
-import { ELITE_NAMES, buildingName, houseLevel, type EliteType } from './housing';
+import { ELITE_NAMES, buildingName, houseLevel, isElite, type EliteType } from './housing';
 import { postNotice } from './notices';
 import { hasService } from './roamers';
 import type { Building, GameState, PeddledGood } from './state';
@@ -78,7 +78,7 @@ function reset(state: GameState, charter: Charter, cause: string): void {
 }
 
 function countsAsTownhouse(building: Building): boolean {
-  return building.type === 'tradersGuild' || (building.type === 'house' && houseLevel(building) === 'townhouse');
+  return isElite(building) || (building.type === 'house' && houseLevel(building) === 'townhouse');
 }
 
 function firstMiss(state: GameState, charter: Charter, townhouses: Building[]): string | null {

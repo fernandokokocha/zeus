@@ -2,7 +2,7 @@ import { TICKS_PER_MONTH } from './clock';
 import { adjacentRoadTiles, type Result } from './commands';
 import { UNITS_PER_LOAD } from './food';
 import { PLACES } from './greece';
-import { guildOfYard, yardOf } from './guild';
+import { eliteOfAnnex, annexOf } from './elites';
 import { postNotice } from './notices';
 import { findRoadPath } from './pathfinding';
 import type { Point } from './point';
@@ -40,7 +40,7 @@ export function tradeYardById(state: GameState, yardId: number): Building {
 
 export function setExportSlot(state: GameState, yardId: number, slot: number, good: TradeGood | null): Result {
   const yard = tradeYardById(state, yardId);
-  const route = routeOf(state, guildOfYard(state, yard));
+  const route = routeOf(state, eliteOfAnnex(state, yard));
   if (route === null) return { ok: false, reason: NO_ROUTE };
   if (good !== null && !PARTNERS[route.partner].buys.includes(good)) {
     return { ok: false, reason: `${PLACES[route.partner].name} doesn't buy ${good}` };
@@ -83,7 +83,7 @@ export function caravanLimit(yard: Building): number {
 }
 
 function merchantsHome(state: GameState, guild: Building): number {
-  return yardMerchants(yardOf(state, guild)) - CARAVAN_MERCHANTS * caravansOf(state, guild).length;
+  return yardMerchants(annexOf(state, guild)) - CARAVAN_MERCHANTS * caravansOf(state, guild).length;
 }
 
 export function tickCaravans(state: GameState): void {
@@ -94,7 +94,7 @@ export function tickCaravans(state: GameState): void {
 function formCaravan(state: GameState, guild: Building): void {
   const route = routeOf(state, guild);
   if (route === null || merchantsHome(state, guild) < CARAVAN_MERCHANTS) return;
-  const yard = yardOf(state, guild);
+  const yard = annexOf(state, guild);
   const good = fullSlotGood(yard);
   if (good === null) return;
   const toYard = findRoadPath(state, state.entry, adjacentRoadTiles(state, yard));

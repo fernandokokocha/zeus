@@ -101,6 +101,8 @@ https://zeus.heavengames.com/gameinfo/appeal/. Fire/collapse are risk increments
 | Any sanctuary | see below | | | 20,18,16,14,12,10 | — | — |
 | Traders' Guild (**ours**, elite house) | 4×4 | — (240 residents, in the labor pool) | 100 + 1 permit | — | 8 | — |
 | Trade Yard (spec, placed with its guild) | 4×2 | 28: 8 cart pushers, then 20 merchants (**ours**) | part of the guild's 100 | — | — | — |
+| Scholars' House (**ours**, elite house) | 4×4 | — (240 residents, in the labor pool) | 100 + 1 permit | — | 8 | — |
+| Library (spec, placed with its Scholars' House) | 4×2 | 8 (**ours**) | part of the house's 100 | — | — | — |
 
 - Collapse timing: 60 ÷ risk increment = months until collapse without maintenance.
 - Sculpture Studio workers: 12 on the industry page, 18 on the model-data page. Use 12.
@@ -296,6 +298,16 @@ hold; its workers cart everything else to storehouses (granaries for food).
   **45** and appeal **25**. Any need missing for **1 month** breaks it into four
   vacant lots and the permit is lost.
 - A guild uses food per resident and four houses' fleece and oil (**8 units** each a month).
+- Scholars' House (spec): keeps every resident of its four Townhouses (capacity **240**), in the
+  labor pool; pays a Townhouse's tax (multiplier **2**). Placed over four Townhouses in an exact
+  4×4 block whose front lines a straight **4**-tile stretch of any road, with its **4×2** Library
+  across it on clear ground, a Theater, a Gymnasium and a Podium each within **6** tiles of the
+  block (**ours**), and block appeal at least **25**. Needs a Townhouse's needs ×4, culture **45**,
+  appeal **25**, and a scroll in its Library; any need missing for **1 month** breaks it into four
+  vacant lots, and the Library and its scrolls are lost.
+- Library (spec, **ours**): holds up to **4** scrolls, fetched from storehouses by its buyer. The
+  house reads **1 scroll a year** (1 unit every **36** ticks), staffed or not; each scroll read
+  is **1 Work of Art**, a city count that survives demotion.
 - Cloth (spec, **ours**): a guild uses **8 units** a month; a cloth peddler fills it to **3 months**
   (24 units). Ordinary houses take no cloth.
 - Placing a guild keeps the four houses' food, fleece and oil, summed, their latest water and

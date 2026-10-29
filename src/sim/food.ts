@@ -1,7 +1,7 @@
 import { BUILDING_SPECS } from './buildings';
 import { TICKS_PER_YEAR, monthOfYear } from './clock';
 import { recordFlow } from './flows';
-import { TRADERS_GUILD, residentNeeds, isResidence } from './housing';
+import { ELITE_HOUSING, isElite, residentNeeds, isResidence, type EliteType } from './housing';
 import type { Building, GameState, PeddledGood } from './state';
 
 export const UNITS_PER_LOAD = 100;
@@ -45,7 +45,7 @@ export function harvestIfDue(state: GameState): void {
 }
 
 function housesIn(residence: Building): number {
-  return residence.type === 'tradersGuild' ? TRADERS_GUILD.houses : 1;
+  return isElite(residence) ? ELITE_HOUSING[residence.type as EliteType].houses : 1;
 }
 
 const MONTHLY_NEED: Record<PeddledGood, (residence: Building) => number> = {

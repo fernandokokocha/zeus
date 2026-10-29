@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { BUILDING_SPECS } from '../sim/buildings';
 import { slotHoldings } from '../sim/exports';
 import { UNITS_PER_LOAD } from '../sim/food';
-import { guildOfYard } from '../sim/guild';
+import { eliteOfAnnex } from '../sim/elites';
 import type { Building, GameState, Good } from '../sim/state';
 import { routeOf } from '../sim/trade';
 import { bakedOnce } from './bake';
@@ -100,7 +100,7 @@ export function tentedBays(staffed: boolean, bays: (YardBay | null)[]): THREE.Ob
 }
 
 function importFlag(state: GameState, yard: Building): number {
-  const route = routeOf(state, guildOfYard(state, yard));
+  const route = routeOf(state, eliteOfAnnex(state, yard));
   if (route === null) throw new Error(`Trade Yard ${yard.id} imports without a route`);
   return PARTNER_COLORS[route.partner];
 }

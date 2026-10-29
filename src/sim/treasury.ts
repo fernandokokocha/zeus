@@ -38,6 +38,7 @@ export interface YearAccounts {
 
 export interface TreasuryReport {
   treasury: number;
+  worksOfArt: number;
   thisYear: YearAccounts;
   lastYear: YearAccounts | null;
 }
@@ -72,6 +73,7 @@ export function treasuryReport(state: GameState): TreasuryReport {
   const labels = yearLabels(state);
   return {
     treasury: state.treasury,
+    worksOfArt: state.worksOfArt,
     thisYear: { label: labels.thisYear, accounts: state.accounts.thisYear },
     lastYear: labels.lastYear === null ? null : { label: labels.lastYear, accounts: state.accounts.lastYear },
   };

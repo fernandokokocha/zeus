@@ -100,6 +100,7 @@ describe('treasuryReport', () => {
     game.treasury = 1234;
     expect(treasuryReport(game)).toEqual({
       treasury: 1234,
+      worksOfArt: 0,
       thisYear: { label: 'Year 1, so far', accounts: game.accounts.thisYear },
       lastYear: null,
     });

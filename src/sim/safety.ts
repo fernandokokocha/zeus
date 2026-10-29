@@ -10,6 +10,7 @@ import { NO_BUILDING, inBounds, tileIndex, type Building, type GameState } from 
 export const FIRE_RISK_INCREMENTS: Partial<Record<BuildingType, number>> = {
   house: 8,
   tradersGuild: 8,
+  scholarsHouse: 8,
   taxOffice: 5,
   wheatFarm: 5,
   granary: 8,

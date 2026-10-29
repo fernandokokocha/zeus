@@ -1,6 +1,6 @@
 import type { BuildingType } from '../sim/buildings';
 import { cropStage, UNITS_PER_LOAD } from '../sim/food';
-import { isMissingNeed } from '../sim/guild';
+import { isMissingNeed } from '../sim/elites';
 import { houseLevel } from '../sim/housing';
 import { isRipe } from '../sim/olives';
 import { isBurning } from '../sim/safety';
@@ -58,6 +58,8 @@ const LOOKS: Record<BuildingType, Look> = {
   hephaestusSanctuary: sanctuary,
   tradersGuild: (b) => [b.residents > 0, isMissingNeed(b)],
   tradeYard: unchanging,
+  scholarsHouse: (b) => [isMissingNeed(b)],
+  library: (b) => [Math.ceil(b.scrolls / UNITS_PER_LOAD)],
   ruins: (b, state) => [isBurning(state, b)],
 };
 

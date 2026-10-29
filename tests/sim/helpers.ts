@@ -1,5 +1,5 @@
 import { placeBuilding, placeHouses, placeRoad, type Result } from '../../src/sim/commands';
-import { yardOf } from '../../src/sim/guild';
+import { annexOf } from '../../src/sim/elites';
 import { HOUSE_LEVELS } from '../../src/sim/housing';
 import { assignWorkers } from '../../src/sim/labor';
 import type { Point } from '../../src/sim/point';
@@ -105,7 +105,7 @@ export function tradingTown(partner: Partner = 'thebes'): Town {
   const opened = openRoute(game, guild.id, partner);
   if (!opened.ok) throw new Error(opened.reason);
   assignWorkers(game);
-  return { game, guild, yard: yardOf(game, guild) };
+  return { game, guild, yard: annexOf(game, guild) };
 }
 
 export function withStore(town: Town, type: 'storehouse' | 'granary', at: { x: number; y: number }): Building {
@@ -120,4 +120,43 @@ export function withStore(town: Town, type: 'storehouse' | 'granary', at: { x: n
 export function emptyCity(state: GameState): void {
   for (const residence of state.buildings) residence.residents = 0;
   state.roads[tileIndex(state, state.entry.x, state.entry.y)] = false;
+}
+
+export const SCHOLARS_ROAD_Y = 16;
+export const SCHOLARS_NEIGHBOURS = [
+  { type: 'theater', x: 10, y: 10 },
+  { type: 'gymnasium', x: 10, y: 17 },
+  { type: 'podium', x: 7, y: 17 },
+] as const;
+
+export function scholarsBlock(neighbours = SCHOLARS_NEIGHBOURS.map((n) => n.type)): { game: GameState; houses: Building[] } {
+  const { game, houses } = guildBlock(25);
+  game.permits.tradersGuild = 0;
+  game.permits.scholarsHouse = 1;
+  placeRoad(game, { x: 0, y: SCHOLARS_ROAD_Y }, { x: 12, y: SCHOLARS_ROAD_Y });
+  for (const n of SCHOLARS_NEIGHBOURS.filter((n) => neighbours.includes(n.type))) {
+    const placed = placeBuilding(game, n.type, n.x, n.y);
+    if (!placed.ok) throw new Error(placed.reason);
+  }
+  return { game, houses };
+}
+
+export function scholarsOf(state: GameState): Building {
+  const scholars = state.buildings.find((b) => b.type === 'scholarsHouse');
+  if (!scholars) throw new Error("No Scholars' House");
+  return scholars;
+}
+
+export function placedScholars(): { game: GameState; scholars: Building; library: Building } {
+  const { game } = scholarsBlock();
+  const placed = placeBuilding(game, 'scholarsHouse', GUILD_BLOCK.x, GUILD_BLOCK.y);
+  if (!placed.ok) throw new Error(placed.reason);
+  const scholars = scholarsOf(game);
+  return { game, scholars, library: annexOf(game, scholars) };
+}
+
+export function supplyScholars(scholars: Building, library: Building): void {
+  Object.assign(scholars, { food: 300, fleece: 24, oil: 24 });
+  Object.assign(scholars.coveredUntil, { water: FOREVER, athletics: FOREVER, drama: FOREVER });
+  library.scrolls = 400;
 }

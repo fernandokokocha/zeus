@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { footprint } from '../../src/sim/commands';
-import { guildBlueprint } from '../../src/sim/guild';
+import { eliteBlueprint } from '../../src/sim/elites';
 import { MAP_SIZE, ORIENTATIONS, generateTerrain, orientMap } from '../../src/sim/map';
 import type { Point } from '../../src/sim/point';
 import { BUILDABLE, type Terrain } from '../../src/sim/terrain';
@@ -70,10 +70,10 @@ function blueprintGrounds(road: Point[]): Point[][] {
   const onRoad = new Set(road.map(index));
   return road.flatMap((corner) =>
     ROTATIONS.flatMap((rotation) => {
-      const [offset] = guildBlueprint({ type: 'tradersGuild', x: 0, y: 0, rotation }).road;
+      const [offset] = eliteBlueprint({ type: 'tradersGuild', x: 0, y: 0, rotation }).road;
       const guild = { type: 'tradersGuild', x: corner.x - offset.x, y: corner.y - offset.y, rotation } as const;
-      const blueprint = guildBlueprint(guild);
-      const ground = [...footprint(guild), ...footprint(blueprint.yard)];
+      const blueprint = eliteBlueprint(guild);
+      const ground = [...footprint(guild), ...footprint(blueprint.annex)];
       const fits = blueprint.road.every((p) => inMap(p) && onRoad.has(index(p))) && ground.every((p) => inMap(p) && !onRoad.has(index(p)));
       return fits ? [ground] : [];
     }),

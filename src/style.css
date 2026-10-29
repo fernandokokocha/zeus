@@ -43,6 +43,7 @@ body {
 
 #population,
 #treasury,
+#works-of-art,
 #labor {
   white-space: nowrap;
   font-variant-numeric: tabular-nums;

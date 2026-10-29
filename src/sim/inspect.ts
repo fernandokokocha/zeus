@@ -3,6 +3,7 @@ import { BUILDING_SPECS, vendorGood } from './buildings';
 import { MONTH_NAMES, TICKS_PER_MONTH } from './clock';
 import { MAX_CULTURE_POINTS, culturePoints, culturesPassed } from './culture';
 import { CARRIER_SPECS, carrierDestinations, carrierKindsSentBy, givesWayToAnother, keptBack, tripSharers } from './carriers';
+import { LIBRARY_SCROLL_CAPACITY, SCROLLS_READ_PER_YEAR, hasScrollToRead } from './scholars';
 import { PAGES_PER_SCROLL, SCRIPTORIUM_INPUT_CAPACITY, copyingTicks, hasScrollRoom, inputInUse } from './scrolls';
 import { WEAVER_FLEECE_CAPACITY, WEAVING_TICKS, canWeave } from './cloth';
 import { adjacentRoadTiles, agoraVendors, footprint } from './commands';
@@ -14,8 +15,9 @@ import { YARD_CART_PUSHERS, caravanLimit, caravansOf, slotHoldings, yardMerchant
 import { PARTNERS, TRADE_GOODS, routeOf, routeStatus } from './trade';
 import { GOOD_TITLES } from './production';
 import { caravansComing, ordersWaitingForMoney } from './imports';
-import { guildOfYard, guildShortfalls, guildSiteOf, siteShortfalls, yardOf, type GuildSite } from './guild';
-import { type HouseLevel, type HouseNeed, type ResidentNeed, HOUSE_LEVELS, LEVEL_CHANGE_TICKS, TRADERS_GUILD, NEXT_LEVEL, PREVIOUS_LEVEL, houseCapacity, houseLevel, evolutionBlockers, houseName, lacksCulture, missingNeeds } from './housing';
+import { guildSiteOf } from './guild';
+import { eliteOfAnnex, eliteShortfalls, siteShortfalls, annexOf, type EliteSite } from './elites';
+import { type HouseLevel, type HouseNeed, type ResidentNeed, HOUSE_LEVELS, LEVEL_CHANGE_TICKS, SCHOLARS_HOUSE, TRADERS_GUILD, NEXT_LEVEL, PREVIOUS_LEVEL, houseCapacity, houseLevel, evolutionBlockers, houseName, lacksCulture, missingNeeds } from './housing';
 import { ROAMER_SPECS, hasGoodsToSell, hasService, type RoamerSpec, roamerKindSentBy, serviceLeft } from './roamers';
 import { TRAINEE_SPECS, isPerforming, staffedVenues, traineeKindFor, traineeKindSentBy } from './schools';
 import {
@@ -184,6 +186,8 @@ function describeBuildingKind(state: GameState, building: Building): Description
   if (building.type === 'house') return describeHouse(state, building);
   if (building.type === 'tradersGuild') return describeGuild(state, building);
   if (building.type === 'tradeYard') return describeYard(state, building);
+  if (building.type === 'scholarsHouse') return describeScholars(state, building);
+  if (building.type === 'library') return describeLibrary(building);
   return describeWorkplace(state, building);
 }
 
@@ -260,6 +264,7 @@ const CARRIER_HOMES: Record<Carrier['kind'], string> = {
   papyrusBuyer: 'scriptorium',
   scriptoriumFleeceBuyer: 'scriptorium',
   scrollCart: 'scriptorium',
+  libraryBuyer: 'library',
   marbleSupply: 'storehouse',
   woodSupply: 'storehouse',
   sculptureSupply: 'storehouse',
@@ -302,7 +307,7 @@ function describeHouse(state: GameState, house: Building): Description {
   return { title: houseName(house), meters: supplyMeters(state, house, next ?? level), lines };
 }
 
-function guildSiteStatus(site: GuildSite, house: Building): string {
+function guildSiteStatus(site: EliteSite, house: Building): string {
   const at = `${site.origin.x}, ${site.origin.y}`;
   const shortfalls = siteShortfalls(site);
   if (shortfalls.length === 0) return `Guild site at ${at}: a Traders' Guild can be placed now`;
@@ -310,14 +315,14 @@ function guildSiteStatus(site: GuildSite, house: Building): string {
   const missing: string[] = [];
   if (houseLevel(house) !== 'townhouse') missing.push('not a Townhouse yet');
   if (others > 0) missing.push(`${others === 3 ? 'the other' : `${others} of the other`} 3 houses not Townhouses`);
-  if (shortfalls.includes('yard')) missing.push("the yard's ground across the Main Road isn't clear");
+  if (shortfalls.includes('annex')) missing.push("the yard's ground across the Main Road isn't clear");
   if (shortfalls.includes('permit')) missing.push('no permit');
   if (shortfalls.includes('appeal')) missing.push(`appeal ${TRADERS_GUILD.appeal} (has ${site.appeal})`);
   return `Possible guild site at ${at}: ${missing.join(', ')}`;
 }
 
 function describeYard(state: GameState, yard: Building): Description {
-  const guild = guildOfYard(state, yard);
+  const guild = eliteOfAnnex(state, yard);
   const route = routeOf(state, guild);
   const merchantPosts = BUILDING_SPECS.tradeYard.workers - YARD_CART_PUSHERS;
   const lines = [
@@ -360,7 +365,7 @@ export function caravanCargo(caravan: Caravan | ForeignCaravan): string {
 }
 
 function describeGuild(state: GameState, guild: Building): Description {
-  const missing = guildShortfalls(state, guild);
+  const missing = eliteShortfalls(state, guild);
   const route = routeStatus(state, guild);
   const lines = [
     `Tile ${guild.x}, ${guild.y}`,
@@ -368,8 +373,8 @@ function describeGuild(state: GameState, guild: Building): Description {
     `Appeal ${houseAppeal(state, guild)}`,
     taxStatus(state, guild),
     route.line,
-    ...(routeOf(state, guild) ? [`Caravans out ${caravansOf(state, guild).length} of ${caravanLimit(yardOf(state, guild))}`] : []),
-    missing.length === 0 ? 'Fully supplied' : `Missing ${missing.join(', ')}: breaks up in ${amount((LEVEL_CHANGE_TICKS - guild.pendingTicks) / TICKS_PER_MONTH)} months`,
+    ...(routeOf(state, guild) ? [`Caravans out ${caravansOf(state, guild).length} of ${caravanLimit(annexOf(state, guild))}`] : []),
+    missingStatus(guild, missing),
   ];
   const needFor = (need: ResidentNeed): Need => (missing.includes(need) ? 'missing' : 'met');
   const meters = [
@@ -381,6 +386,50 @@ function describeGuild(state: GameState, guild: Building): Description {
     stockMeter(guild, 'cloth', needFor('cloth')),
   ];
   return { title: BUILDING_SPECS.tradersGuild.name, meters, lines, ...(route.canOpen ? { openRoute: guild.id } : {}) };
+}
+
+function describeScholars(state: GameState, scholars: Building): Description {
+  const missing = eliteShortfalls(state, scholars);
+  const library = annexOf(state, scholars);
+  const lines = [
+    `Tile ${scholars.x}, ${scholars.y}`,
+    `Residents ${scholars.residents}/${houseCapacity(scholars)}`,
+    `Appeal ${houseAppeal(state, scholars)}`,
+    taxStatus(state, scholars),
+    `Reading: ${Math.floor((scholars.pages / UNITS_PER_LOAD) * 100)}% of the way to the next Work of Art`,
+    missingStatus(scholars, missing),
+  ];
+  const needFor = (need: string): Need => (missing.includes(need) ? 'missing' : 'met');
+  const meters = [
+    stockMeter(scholars, 'food', needFor('food')),
+    waterMeter(state, scholars, needFor('water')),
+    stockMeter(scholars, 'fleece', needFor('fleece')),
+    stockMeter(scholars, 'oil', needFor('oil')),
+    cultureMeter(state, scholars, culturePoints(state, scholars) < SCHOLARS_HOUSE.culture ? 'missing' : 'met'),
+    libraryMeter(library, needFor('scrolls')),
+  ];
+  return { title: BUILDING_SPECS.scholarsHouse.name, meters, lines };
+}
+
+function libraryMeter(library: Building, need: Need): Meter {
+  const label = 'Scrolls';
+  if (!hasScrollToRead(library)) return { label, fill: 0, value: 'None', need };
+  const years = library.scrolls / UNITS_PER_LOAD / SCROLLS_READ_PER_YEAR;
+  return { label, fill: library.scrolls / LIBRARY_SCROLL_CAPACITY, value: `${amount(library.scrolls / UNITS_PER_LOAD)} in the Library (${amount(years)} ${years === 1 ? 'year' : 'years'})`, need };
+}
+
+function describeLibrary(library: Building): Description {
+  const lines = [
+    `Tile ${library.x}, ${library.y}`,
+    `Workers ${library.workers}/${BUILDING_SPECS.library.workers}`,
+    `Scrolls ${amount(library.scrolls / UNITS_PER_LOAD)} of ${LIBRARY_SCROLL_CAPACITY / UNITS_PER_LOAD}`,
+  ];
+  if (library.workers === 0) lines.push('No workers: no scrolls are fetched');
+  return { title: BUILDING_SPECS.library.name, meters: [], lines };
+}
+
+function missingStatus(elite: Building, missing: string[]): string {
+  return missing.length === 0 ? 'Fully supplied' : `Missing ${missing.join(', ')}: breaks up in ${amount((LEVEL_CHANGE_TICKS - elite.pendingTicks) / TICKS_PER_MONTH)} months`;
 }
 
 function supplyMeters(state: GameState, house: Building, target: HouseLevel): Meter[] {

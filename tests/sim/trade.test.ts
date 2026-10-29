@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { demolish, placeRoad } from '../../src/sim/commands';
 import { GOODS } from '../../src/sim/flows';
-import { raiseGuild } from '../../src/sim/guild';
+import { raiseElite } from '../../src/sim/elites';
 import { LEVEL_CHANGE_TICKS } from '../../src/sim/housing';
 import { describeTile } from '../../src/sim/inspect';
 import { catchFire } from '../../src/sim/safety';
@@ -84,7 +84,7 @@ describe('opening a route', () => {
   it('earns nothing when a route to that partner was opened before', () => {
     const { game, guild } = opened('corinth');
     demolish(game, guild, guild);
-    const second = raiseGuild(game, SECOND_GUILD);
+    const second = raiseElite(game, SECOND_GUILD);
     expect(openRoute(game, second.id, 'corinth')).toEqual({ ok: true });
     expect(game.monumentsToPlace).toEqual(['tradeRoute']);
     expect(game.notices.at(-1)?.text).toBe('Trade route to Corinth opened');
@@ -104,7 +104,7 @@ describe('opening a route', () => {
 
   it('gives a partner one guild only', () => {
     const { game } = opened('argos');
-    const second = raiseGuild(game, SECOND_GUILD);
+    const second = raiseElite(game, SECOND_GUILD);
     expect(openRoute(game, second.id, 'argos')).toEqual({ ok: false, reason: 'Argos already trades with a guild' });
   });
 
@@ -187,7 +187,7 @@ describe("the guild's route", () => {
   it('says when every partner already trades', () => {
     const { game } = tradingTown();
     game.routes = (Object.keys(PARTNERS) as Partner[]).map((partner) => ({ partner, guildId: 999 }));
-    const second = raiseGuild(game, SECOND_GUILD);
+    const second = raiseElite(game, SECOND_GUILD);
     expect(routeStatus(game, second)).toEqual({ line: 'Trade route: none, every partner already trades with a guild', canOpen: false });
   });
 });

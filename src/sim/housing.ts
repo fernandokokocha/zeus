@@ -62,19 +62,47 @@ export type EliteType = 'tradersGuild' | 'scholarsHouse';
 
 export const ELITE_NAMES: Record<EliteType, string> = {
   tradersGuild: BUILDING_SPECS.tradersGuild.name,
-  scholarsHouse: "Scholars' House",
+  scholarsHouse: BUILDING_SPECS.scholarsHouse.name,
 };
+
+export interface EliteHousing {
+  houses: number;
+  capacity: number;
+  taxMultiplier: number;
+  needs: ResidentNeed[];
+  culture: number;
+  appeal: number;
+}
 
 const ELITE_HOUSES = 4;
 
-export const TRADERS_GUILD = {
-  houses: ELITE_HOUSES,
-  capacity: ELITE_HOUSES * HOUSE_LEVELS.townhouse.capacity,
-  taxMultiplier: 1,
-  needs: [...HOUSE_LEVELS.townhouse.needs, 'cloth'] as ResidentNeed[],
-  culture: HOUSE_LEVELS.townhouse.culture,
-  appeal: HOUSE_LEVELS.townhouse.appeal.devolve,
+function eliteHousing(taxMultiplier: number, extraNeeds: ResidentNeed[]): EliteHousing {
+  return {
+    houses: ELITE_HOUSES,
+    capacity: ELITE_HOUSES * HOUSE_LEVELS.townhouse.capacity,
+    taxMultiplier,
+    needs: [...HOUSE_LEVELS.townhouse.needs, ...extraNeeds],
+    culture: HOUSE_LEVELS.townhouse.culture,
+    appeal: HOUSE_LEVELS.townhouse.appeal.devolve,
+  };
+}
+
+export const ELITE_HOUSING: Record<EliteType, EliteHousing> = {
+  tradersGuild: eliteHousing(1, ['cloth']),
+  scholarsHouse: eliteHousing(HOUSE_LEVELS.townhouse.taxMultiplier, []),
 };
+
+export const ELITE_TYPES = Object.keys(ELITE_HOUSING) as EliteType[];
+export const TRADERS_GUILD = ELITE_HOUSING.tradersGuild;
+export const SCHOLARS_HOUSE = ELITE_HOUSING.scholarsHouse;
+
+export function isElite(building: Building): boolean {
+  return building.type in ELITE_HOUSING;
+}
+
+function eliteHousingOf(elite: Building): EliteHousing {
+  return ELITE_HOUSING[elite.type as EliteType];
+}
 
 export const NEXT_LEVEL: Record<HouseLevel, HouseLevel | null> = {
   hut: 'shack',
@@ -104,12 +132,12 @@ export function houseLevel(house: Building): HouseLevel | null {
 }
 
 export function houseCapacity(house: Building): number {
-  if (house.type === 'tradersGuild') return TRADERS_GUILD.capacity;
+  if (isElite(house)) return eliteHousingOf(house).capacity;
   return HOUSE_LEVELS[houseLevel(house) ?? 'hut'].capacity;
 }
 
 export function taxMultiplier(residence: Building, level: HouseLevel): number {
-  return residence.type === 'tradersGuild' ? TRADERS_GUILD.taxMultiplier : HOUSE_LEVELS[level].taxMultiplier;
+  return isElite(residence) ? eliteHousingOf(residence).taxMultiplier : HOUSE_LEVELS[level].taxMultiplier;
 }
 
 export function houseName(house: Building): string {
@@ -118,11 +146,11 @@ export function houseName(house: Building): string {
 }
 
 export function isResidence(building: Building): boolean {
-  return building.type === 'house' || building.type === 'tradersGuild';
+  return building.type === 'house' || isElite(building);
 }
 
 export function residentNeeds(residence: Building): ResidentNeed[] {
-  if (residence.type === 'tradersGuild') return TRADERS_GUILD.needs;
+  if (isElite(residence)) return eliteHousingOf(residence).needs;
   const level = houseLevel(residence);
   return level ? HOUSE_LEVELS[level].needs : [];
 }

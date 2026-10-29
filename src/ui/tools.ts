@@ -5,7 +5,7 @@ import type { GameState } from '../sim/state';
 import { SANCTUARY_SPECS, type Sanctuary } from '../sim/sanctuaries';
 import { ROADBLOCK_COST, ROAD_TILE_COST, SHEEP_COST } from '../sim/treasury';
 
-export type SingleBuilding = Exclude<BuildingType, 'house' | 'ruins' | 'tradeYard' | 'monument'>;
+export type SingleBuilding = Exclude<BuildingType, 'house' | 'ruins' | 'tradeYard' | 'library' | 'monument'>;
 export const UPGRADE_TOOLS = { ornateRoad: 'ornate', fastRoad: 'fast' } as const satisfies Record<string, RoadUpgrade>;
 export type UpgradeTool = keyof typeof UPGRADE_TOOLS;
 export const MONUMENT_TOOLS = { crowdedCityMonument: 'crowdedCity', tradeRouteMonument: 'tradeRoute' } as const satisfies Record<string, MonumentKind>;
@@ -22,6 +22,8 @@ export function isMonumentTool(tool: Tool): tool is MonumentTool {
 export type Tool = 'road' | UpgradeTool | 'roadblock' | 'house' | SingleBuilding | MonumentTool | 'sheep' | 'demolish';
 
 const priced = (type: BuildingType) => `${BUILDING_SPECS[type].name} (${BUILDING_SPECS[type].cost} dr)`;
+
+const permitted = (type: BuildingType) => `${BUILDING_SPECS[type].name} (${BUILDING_SPECS[type].cost} dr + permit)`;
 
 const sanctuaryLabel = (type: Sanctuary) =>
   `${BUILDING_SPECS[type].name} (${BUILDING_SPECS[type].cost} dr + ${SANCTUARY_SPECS[type].initialMarbleLoads} marble)`;
@@ -59,7 +61,8 @@ export const TOOL_LABELS: Record<Tool, string> = {
   olivePress: priced('olivePress'),
   oilVendor: priced('oilVendor'),
   clothVendor: priced('clothVendor'),
-  tradersGuild: `${BUILDING_SPECS.tradersGuild.name} (${BUILDING_SPECS.tradersGuild.cost} dr + permit)`,
+  tradersGuild: permitted('tradersGuild'),
+  scholarsHouse: permitted('scholarsHouse'),
   weaver: priced('weaver'),
   scriptorium: priced('scriptorium'),
   timberMill: priced('timberMill'),
@@ -111,7 +114,7 @@ export const TOOL_GROUPS: ToolGroup[] = [
   { name: 'Mythology', tileLabel: 'Mythology', tools: ['artisansGuild', 'demeterSanctuary', 'athenaSanctuary', 'hephaestusSanctuary'] },
   { name: 'Culture', tileLabel: 'Culture', tools: ['college', 'podium', 'gymnasium', 'dramaSchool', 'theater'] },
   { name: 'Aesthetics', tileLabel: 'Aesthetics', tools: ['park', 'column', 'flowerGarden', 'crowdedCityMonument', 'tradeRouteMonument', 'ornateRoad'] },
-  { name: 'Elite', tileLabel: 'Elite', tools: ['tradersGuild'] },
+  { name: 'Elite', tileLabel: 'Elite', tools: ['tradersGuild', 'scholarsHouse'] },
 ];
 
 export function toolLabel(tool: Tool, state: GameState): string {

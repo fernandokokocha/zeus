@@ -40,6 +40,8 @@ export type BuildingType =
   | 'hephaestusSanctuary'
   | 'tradersGuild'
   | 'tradeYard'
+  | 'scholarsHouse'
+  | 'library'
   | 'ruins';
 
 export interface BuildingSpec {
@@ -93,6 +95,8 @@ export const BUILDING_SPECS: Record<BuildingType, BuildingSpec> = {
   hephaestusSanctuary: { name: 'Forge of Hephaestus', width: 13, height: 8, cost: 760, workers: 60, appeal: SANCTUARY_APPEAL, needsRoad: true },
   tradersGuild: { name: "Traders' Guild", width: 4, height: 4, cost: 100, workers: 0, appeal: [], needsRoad: true },
   tradeYard: { name: 'Trade Yard', width: 4, height: 2, cost: 0, workers: 28, appeal: [], needsRoad: true },
+  scholarsHouse: { name: "Scholars' House", width: 4, height: 4, cost: 100, workers: 0, appeal: [], needsRoad: true },
+  library: { name: 'Library', width: 4, height: 2, cost: 0, workers: 8, appeal: [], needsRoad: true },
   ruins: { name: 'Ruins', width: 1, height: 1, cost: 0, workers: 0, appeal: [], needsRoad: false },
 };
 

@@ -3,7 +3,7 @@ import { adjacentRoadTiles, type Result } from './commands';
 import { NO_ROUTE, slotHoldings, tradeYardById } from './exports';
 import { UNITS_PER_LOAD } from './food';
 import { PLACES } from './greece';
-import { guildOfYard } from './guild';
+import { eliteOfAnnex } from './elites';
 import { findRoadPath } from './pathfinding';
 import type { Point } from './point';
 import { buildingById, type Building, type ForeignCaravan, type GameState, type TradeGood } from './state';
@@ -21,7 +21,7 @@ export interface ImportOrder {
 
 export function setImportSlot(state: GameState, yardId: number, slot: number, good: TradeGood, loads: number): Result {
   const yard = tradeYardById(state, yardId);
-  const route = routeOf(state, guildOfYard(state, yard));
+  const route = routeOf(state, eliteOfAnnex(state, yard));
   if (route === null) return { ok: false, reason: NO_ROUTE };
   if (!PARTNERS[route.partner].sells.includes(good)) return { ok: false, reason: `${PLACES[route.partner].name} doesn't sell ${good}` };
   const { caravanLoad } = TRADE_GOODS[good];
@@ -61,7 +61,7 @@ export function pendingOrders(state: GameState, yard: Building): ImportOrder[] {
 }
 
 export function ordersWaitingForMoney(state: GameState, yard: Building): ImportOrder[] {
-  const route = routeOf(state, guildOfYard(state, yard));
+  const route = routeOf(state, eliteOfAnnex(state, yard));
   if (route === null || partnerCaravansHome(state, route.partner) === 0) return [];
   return pendingOrders(state, yard).filter((order) => order.cost > state.treasury);
 }
@@ -72,7 +72,7 @@ export function tickImports(state: GameState): void {
 }
 
 function sendCaravan(state: GameState, yard: Building): void {
-  const route = routeOf(state, guildOfYard(state, yard));
+  const route = routeOf(state, eliteOfAnnex(state, yard));
   if (route === null || partnerCaravansHome(state, route.partner) === 0) return;
   const order = pendingOrders(state, yard).find((o) => o.cost <= state.treasury);
   if (order === undefined) return;

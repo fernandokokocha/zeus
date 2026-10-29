@@ -12,7 +12,7 @@ import {
   type Rotation,
 } from './buildings';
 import { rectBetween, tilesIn, type Point } from './point';
-import { guildObstacle, raiseGuild, yardOf } from './guild';
+import { annexOf, eliteObstacle, isAnnexType, isEliteType, raiseElite } from './elites';
 import { RIPE_CROP } from './olives';
 import { isSanctuary, sanctuaryObstacle, takeInitialMarble } from './sanctuaries';
 import { GRAZE_PAUSE_TICKS, isPasture } from './sheep';
@@ -177,7 +177,7 @@ function placementObstacle(state: GameState, placement: Placement): string | nul
   const { type, x, y } = placement;
   if (type === 'palace' && state.buildings.some((b) => b.type === 'palace')) return 'Only one palace is allowed';
   if (isAgoraVendor(type)) return vendorObstacle(state, x, y);
-  if (type === 'tradersGuild') return guildObstacle(state, placement);
+  if (isEliteType(type)) return eliteObstacle(state, placement);
   if (isSanctuary(type)) return footprintObstacle(state, placement) ?? sanctuaryObstacle(state, type);
   const obstacle = footprintObstacle(state, placement);
   const meadowReason = MEADOW_REASONS[type];
@@ -199,7 +199,7 @@ export function placeBuilding(state: GameState, type: BuildingType, x: number, y
   const obstacle = placementObstacle(state, placement);
   if (obstacle) return fail(obstacle);
   const agora = isAgoraVendor(type) ? agoraAt(state, placement) : null;
-  const building = type === 'tradersGuild' ? raiseGuild(state, placement) : build(state, agora ? { ...placement, rotation: agora.rotation } : placement);
+  const building = isEliteType(type) ? raiseElite(state, placement) : build(state, agora ? { ...placement, rotation: agora.rotation } : placement);
   if (isSanctuary(type)) takeInitialMarble(state, building);
   state.version++;
   return OK;
@@ -311,7 +311,7 @@ export function demolish(state: GameState, from: Point, to: Point): Result {
     if (state.terrain[i] === 'forest') state.terrain[i] = 'grass';
     if (state.buildingIdAt[i] !== NO_BUILDING) doomed.add(state.buildingIdAt[i]);
   }
-  for (const yard of state.buildings.filter((b) => b.type === 'tradeYard')) doomed.delete(yard.id);
+  for (const annex of state.buildings.filter((b) => isAnnexType(b.type))) doomed.delete(annex.id);
   const palace = state.buildings.find((b) => b.type === 'palace');
   const sparesPalace = palace !== undefined && doomed.has(palace.id) && state.routes.length > 0;
   if (sparesPalace) doomed.delete(palace.id);
@@ -321,7 +321,7 @@ export function demolish(state: GameState, from: Point, to: Point): Result {
 }
 
 export function removeBuildings(state: GameState, doomed: Set<number>): void {
-  for (const guild of state.buildings.filter((b) => b.type === 'tradersGuild' && doomed.has(b.id))) doomed.add(yardOf(state, guild).id);
+  for (const elite of state.buildings.filter((b) => isEliteType(b.type) && doomed.has(b.id))) doomed.add(annexOf(state, elite).id);
   const agoraOfVendor = new Map<number, number>();
   for (const vendor of state.buildings.filter((b) => isAgoraVendor(b.type))) {
     const agoraId = roadSite(state, vendor).id;

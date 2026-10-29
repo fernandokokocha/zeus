@@ -210,6 +210,7 @@ export function treasuryChapter(report: TreasuryReport): HTMLElement {
   ];
   body.append(
     element('p', 'ledger-summary', `Treasury now: ${drachmas(report.treasury)}`),
+    element('p', 'ledger-summary', `Works of Art: ${report.worksOfArt}`),
     section('Income and spending', table(['', thisYear.label, lastYear ? lastYear.label : 'Last year'], rows)),
   );
   return body;

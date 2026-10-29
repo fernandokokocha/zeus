@@ -6,7 +6,7 @@ import { demolish, placeBuilding, placeRoad } from '../../src/sim/commands';
 import { houseStockTarget } from '../../src/sim/food';
 import { LEVEL_CHANGE_TICKS, TRADERS_GUILD } from '../../src/sim/housing';
 import { laborSummary } from '../../src/sim/labor';
-import { guildBlueprint } from '../../src/sim/guild';
+import { eliteBlueprint } from '../../src/sim/elites';
 import { describeTile } from '../../src/sim/inspect';
 import { canBurn, canCollapse, catchFire } from '../../src/sim/safety';
 import { population } from '../../src/sim/settlers';
@@ -44,21 +44,21 @@ describe("a Traders' Guild's blueprint", () => {
   const along = (xs: number[], ys: number[]) => xs.flatMap((x) => ys.map((y) => ({ x, y })));
 
   it('lays the Main Road along its front and the yard across it, turning with the rotation', () => {
-    expect(guildBlueprint({ ...at, rotation: 0 })).toEqual({
+    expect(eliteBlueprint({ ...at, rotation: 0 })).toEqual({
       road: along([10, 11, 12, 13], [14]),
-      yard: { type: 'tradeYard', x: 10, y: 15, rotation: 0 },
+      annex: { type: 'tradeYard', x: 10, y: 15, rotation: 0 },
     });
-    expect(guildBlueprint({ ...at, rotation: 1 })).toEqual({
+    expect(eliteBlueprint({ ...at, rotation: 1 })).toEqual({
       road: along([9], [10, 11, 12, 13]),
-      yard: { type: 'tradeYard', x: 7, y: 10, rotation: 1 },
+      annex: { type: 'tradeYard', x: 7, y: 10, rotation: 1 },
     });
-    expect(guildBlueprint({ ...at, rotation: 2 })).toEqual({
+    expect(eliteBlueprint({ ...at, rotation: 2 })).toEqual({
       road: along([10, 11, 12, 13], [9]),
-      yard: { type: 'tradeYard', x: 10, y: 7, rotation: 2 },
+      annex: { type: 'tradeYard', x: 10, y: 7, rotation: 2 },
     });
-    expect(guildBlueprint({ ...at, rotation: 3 })).toEqual({
+    expect(eliteBlueprint({ ...at, rotation: 3 })).toEqual({
       road: along([14], [10, 11, 12, 13]),
-      yard: { type: 'tradeYard', x: 15, y: 10, rotation: 3 },
+      annex: { type: 'tradeYard', x: 15, y: 10, rotation: 3 },
     });
   });
 });

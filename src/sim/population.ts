@@ -1,6 +1,6 @@
 import { appealMap, houseAppeal } from './appeal';
 import { BUILDING_SPECS } from './buildings';
-import { HOUSE_LEVELS, NEXT_LEVEL, evolutionBlockers, houseLevel, type EvolutionBlocker, type HouseLevel } from './housing';
+import { ELITE_TYPES, HOUSE_LEVELS, NEXT_LEVEL, evolutionBlockers, houseLevel, type EvolutionBlocker, type HouseLevel } from './housing';
 import { population } from './settlers';
 import type { GameState } from './state';
 
@@ -20,9 +20,11 @@ function housingLevels(state: GameState): PopulationReport['levels'] {
     const atLevel = houses.filter((house) => houseLevel(house) === level);
     return { name: HOUSE_LEVELS[level].name, houses: atLevel.length, people: atLevel.reduce((sum, house) => sum + house.residents, 0) };
   });
-  const guilds = state.buildings.filter((b) => b.type === 'tradersGuild');
-  const guildPeople = guilds.reduce((sum, guild) => sum + guild.residents, 0);
-  return [...levels, { name: BUILDING_SPECS.tradersGuild.name, houses: guilds.length, people: guildPeople }];
+  const elites = ELITE_TYPES.map((type) => {
+    const elitesOfType = state.buildings.filter((b) => b.type === type);
+    return { name: BUILDING_SPECS[type].name, houses: elitesOfType.length, people: elitesOfType.reduce((sum, elite) => sum + elite.residents, 0) };
+  });
+  return [...levels, ...elites];
 }
 
 function blockerReason(blocker: EvolutionBlocker): string {

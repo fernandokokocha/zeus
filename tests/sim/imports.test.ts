@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { TICKS_PER_MONTH } from '../../src/sim/clock';
 import { demolish } from '../../src/sim/commands';
 import { setExportSlot, slotHoldings } from '../../src/sim/exports';
-import { yardOf } from '../../src/sim/guild';
+import { annexOf } from '../../src/sim/elites';
 import { setImportSlot, tickImports } from '../../src/sim/imports';
 import { describeTile, type TradeYardView } from '../../src/sim/inspect';
 import type { ForeignCaravan, GameState, TradeGood } from '../../src/sim/state';
@@ -78,7 +78,7 @@ describe('an import slot', () => {
 
   it('waits for a route', () => {
     const { game, guild } = placedGuild();
-    expect(setImportSlot(game, yardOf(game, guild).id, 0, 'wood', 6)).toEqual({ ok: false, reason: 'Open a trade route first' });
+    expect(setImportSlot(game, annexOf(game, guild).id, 0, 'wood', 6)).toEqual({ ok: false, reason: 'Open a trade route first' });
   });
 
   it('takes no amount beyond a caravan load, and at least one load', () => {

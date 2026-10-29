@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { BUILDING_SPECS, type BuildingType } from '../sim/buildings';
 import { UNITS_PER_LOAD } from '../sim/food';
-import { isMissingNeed } from '../sim/guild';
+import { isMissingNeed } from '../sim/elites';
 import { houseLevel, type HouseLevel } from '../sim/housing';
 import { SANCTUARY_STAGES, builtStages, isFinished, materialNeeded, type Sanctuary, type SanctuaryMaterial } from '../sim/sanctuaries';
 import { isPerforming } from '../sim/schools';
@@ -26,6 +26,7 @@ import { artisansGuildModel } from './guild-models';
 import { weaverModel } from './weaver-models';
 import { scriptoriumModel } from './scriptorium-models';
 import { tradeYardModel } from './trade-yard-models';
+import { libraryModel, scholarsHouseModel } from './scholars-models';
 import { tradersGuildModel } from './traders-guild-models';
 import { collegeModel } from './college-models';
 import { dramaSchoolModel } from './drama-school-models';
@@ -656,6 +657,8 @@ const MODELS: Record<Exclude<BuildingType, 'house'>, (building: Building, state:
   hephaestusSanctuary: sanctuaryModel,
   tradersGuild: (b) => tradersGuildModel(b.residents > 0, isMissingNeed(b)),
   tradeYard: tradeYardModel,
+  scholarsHouse: (b) => scholarsHouseModel(isMissingNeed(b)),
+  library: libraryModel,
   ruins: (b, state) => ruinsModel(b, isBurning(state, b)),
 };
 

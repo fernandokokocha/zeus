@@ -3,7 +3,7 @@ import { TICKS_PER_MONTH } from '../../src/sim/clock';
 import { demolish, placeRoad } from '../../src/sim/commands';
 import { BUILDING_SPECS } from '../../src/sim/buildings';
 import { CARAVAN_MERCHANTS, YARD_CART_PUSHERS, YARD_SLOTS, setExportSlot, slotHoldings, tickCaravans } from '../../src/sim/exports';
-import { yardOf } from '../../src/sim/guild';
+import { annexOf } from '../../src/sim/elites';
 import { describeTile } from '../../src/sim/inspect';
 import type { Caravan, GameState } from '../../src/sim/state';
 import { roundTripMonths } from '../../src/sim/trade';
@@ -72,7 +72,7 @@ describe("the yard's slots", () => {
 
   it('wait for a route', () => {
     const { game, guild } = placedGuild();
-    expect(setExportSlot(game, yardOf(game, guild).id, 0, 'fleece')).toEqual({ ok: false, reason: 'Open a trade route first' });
+    expect(setExportSlot(game, annexOf(game, guild).id, 0, 'fleece')).toEqual({ ok: false, reason: 'Open a trade route first' });
   });
 
   it('hold the pool of a good in slot order, a caravan load each', () => {
@@ -294,7 +294,7 @@ describe("the yard's inspector", () => {
 
   it('has no slots to set before a route opens', () => {
     const { game, guild } = placedGuild();
-    const yard = yardOf(game, guild);
+    const yard = annexOf(game, guild);
     expect(describeTile(game, yard.x, yard.y).tradeYard).toBeUndefined();
   });
 });

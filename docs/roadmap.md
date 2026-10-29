@@ -10,8 +10,6 @@ anywhere.
 
 ## Items
 
-- **Scholars' House and Library.** Part of: Scholars' House.
-  Spec: `docs/superpowers/specs/2026-10-29-elite-rework-scholars-design.md`.
 - **Elite sites.** Site help for every elite type. Part of: Scholars' House. Spec: same.
 - **Upgrades.** Spending Works of Art. Part of: Scholars' House. Needs its own design first.
 - **Warriors' House.** Needs its design first. Near a Hospital. Charter: Healthy and well fed

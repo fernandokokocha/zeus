@@ -151,6 +151,7 @@ export type CarrierKind =
   | 'papyrusBuyer'
   | 'scriptoriumFleeceBuyer'
   | 'scrollCart'
+  | 'libraryBuyer'
   | 'marbleSupply'
   | 'woodSupply'
   | 'sculptureSupply'
@@ -267,6 +268,7 @@ export interface GameState {
   learnedCity: CharterCount;
   permits: Record<EliteType, number>;
   monumentsToPlace: MonumentKind[];
+  worksOfArt: number;
   crowdedCityEarned: boolean;
   announcedGuildSites: number[];
   routes: Route[];
@@ -331,6 +333,7 @@ export function newGameState(size: number, terrain: Terrain[], mainRoad: Point[]
     learnedCity: { months: 0, reset: null },
     permits: { tradersGuild: 0, scholarsHouse: 0 },
     monumentsToPlace: [],
+    worksOfArt: 0,
     crowdedCityEarned: false,
     announcedGuildSites: [],
     routes: [],
