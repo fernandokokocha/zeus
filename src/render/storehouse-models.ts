@@ -14,7 +14,7 @@ import { BAY_PAD, bayPad, bronzeIngots, crated, fleeceBales, marbleBlocks, oilAm
 import { tileHash } from './palette';
 import { bakedFigure, staffPhase } from './staff';
 
-const LOADS: Record<StoredGood, () => THREE.Object3D> = {
+export const STORED_LOADS: Record<StoredGood, () => THREE.Object3D> = {
   fleece: bakedOnce(fleeceBales),
   olives: bakedOnce(oliveBaskets),
   oil: bakedOnce(oilAmphorae),
@@ -40,7 +40,7 @@ function stock(group: THREE.Object3D, spots: BaySpot[], bays: Bay[]): void {
   bays.forEach(({ good, loads }, slot) => {
     const [x, floor, z] = spots[slot];
     LOAD_SPOTS.slice(0, loads).forEach(([dx, dz], i) => {
-      const load = LOADS[good]();
+      const load = STORED_LOADS[good]();
       load.position.set(x + dx * LOAD_SPACING, floor, z + dz * LOAD_SPACING);
       load.rotation.y = (tileHash(slot, i) - 0.5) * LOAD_JITTER;
       group.add(load);

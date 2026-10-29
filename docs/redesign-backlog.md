@@ -33,7 +33,6 @@ Old models live in `src/render/models.ts`, each wired in `MODELS`.
 | 15 | Podium | 2×2 · 4 | idle / performing (`isPerforming`) | Philosophers speak here. |
 | 17 | Sanctuary building stages | 13×8 to 18×12 · 60 | stages 0–4 (`builtStages`), then finished | Shared by all three gods: staked outline, platform, columns, cella and beams, roof, scaffolding, material piles. |
 | 18 | Sanctuary precincts | as above | finished | Each god's garden: Demeter, Athena, Hephaestus (`PRECINCT_GARDENS`). One agent per god. |
-| 32 | Trade Yard | 4×2 · 8 | empty; export slots full; import slots full; a caravan loading or unloading in front of it | Redesigned with the Traders' Guild rework; it should look like the Storehouse (raised stone bays), crossed with an agora. Yard placeholder in `src/render/trade-yard-models.ts`: paving, a hitching rail on the road side, crates, amphorae and sacks under a striped awning. Direction: an open, paved market court with stacked goods, awnings and pack-animal rails facing the road. The guild and the yard frame the Main Road between them, so either model may dress its side of that stretch. |
 | 19 | Ruins and vacant lot | 1×1 / 2×2 | ruins smouldering / burning; vacant lot | Ruins are left by fire or collapse; the vacant lot is a house plot nobody has moved into. |
 
 ## People and animals

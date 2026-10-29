@@ -3,7 +3,7 @@ import { GOODS } from './flows';
 import { PLACES } from './greece';
 import { caravanCargo, drachmas, months } from './inspect';
 import { GOOD_TITLES } from './production';
-import { buildingById, type Caravan, type CaravanTrip, type ForeignCaravan, type ForeignTrip, type GameState, type Good } from './state';
+import { buildingById, type Caravan, type CaravanTrip, type ForeignCaravan, type ForeignTrip, type GameState } from './state';
 import { roundTripMonths } from './trade';
 import type { Tally, TradeDirection } from './trade-books';
 import { yearLabels, type YearLabels } from './treasury';

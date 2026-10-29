@@ -653,7 +653,7 @@ const MODELS: Record<Exclude<BuildingType, 'house'>, (building: Building, state:
   athenaSanctuary: sanctuaryModel,
   hephaestusSanctuary: sanctuaryModel,
   tradersGuild: (b) => tradersGuildModel(b.residents > 0, isMissingNeed(b)),
-  tradeYard: bakedOnce(tradeYardModel),
+  tradeYard: tradeYardModel,
   ruins: (b, state) => ruinsModel(b, isBurning(state, b)),
 };
 

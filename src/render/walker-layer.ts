@@ -71,7 +71,7 @@ function carrierFigure(kind: CarrierKind): Figure {
 
 const CARRIER_FIGURES = [...new Set((Object.keys(CARRIER_SPECS) as CarrierKind[]).map(carrierFigure))];
 
-function donkey(load: Part[]): Part[] {
+export function donkey(load: Part[]): Part[] {
   const leg = (x: number, z: number): Part => ({ geometry: new THREE.CylinderGeometry(0.014, 0.012, 0.12, 6).translate(x, 0.06, z), color: PALETTE.donkey });
   return [
     { geometry: new THREE.BoxGeometry(0.1, 0.1, 0.24).translate(0.14, 0.17, -0.06), color: PALETTE.donkey },
@@ -87,7 +87,7 @@ function donkey(load: Part[]): Part[] {
   ];
 }
 
-function merchantIn(cloak: number): Part[] {
+export function merchantIn(cloak: number): Part[] {
   return [
     ...body(PALETTE.merchantTunic),
     { geometry: new THREE.CylinderGeometry(0.065, 0.095, 0.16, 8, 1, true, Math.PI, Math.PI).translate(0, 0.18, 0), color: cloak },
@@ -96,7 +96,7 @@ function merchantIn(cloak: number): Part[] {
 
 const merchant = merchantIn(PALETTE.merchantCloak);
 
-const packSacks: Part[] = [
+export const packSacks: Part[] = [
   { geometry: new THREE.SphereGeometry(0.05, 8, 6).scale(0.8, 1, 1.2).translate(0.075, 0.2, -0.06), color: PALETTE.sack },
   { geometry: new THREE.SphereGeometry(0.05, 8, 6).scale(0.8, 1, 1.2).translate(0.205, 0.2, -0.06), color: PALETTE.sack },
   { geometry: new THREE.BoxGeometry(0.09, 0.06, 0.1).translate(0.14, 0.25, -0.06), color: PALETTE.merchantCloak },
