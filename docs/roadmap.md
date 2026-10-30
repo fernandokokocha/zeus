@@ -10,9 +10,16 @@ anywhere.
 
 ## Items
 
-- **Warriors' House.** Needs its design first. Near a Hospital. Charter: Healthy and well fed
-  (24 months), which brings sickness. Consumes armor (bronze → Armory). Annex: Drill Ground.
-  Bonus: hoplites on the army roster.
+- **Warriors' models.** Redesign the Infirmary, the Warriors' House and the Drill Ground in a
+  round with the owner (`docs/model-redesign.md`), before the slices that add them. Part of:
+  Warriors' House. Spec: `docs/superpowers/specs/2026-10-30-warriors-house-design.md`.
+- **Sickness and the Infirmary.** Disease risk, plague, healers, the Disease map mode. Part of:
+  Warriors' House. Spec: same.
+- **Healthy and well fed.** The Warriors' House charter. Part of: Warriors' House. Spec: same.
+- **Armor and the Armory.** With the Arms Vendor. Part of: Warriors' House. Spec: same.
+- **Warriors' House and Drill Ground.** With its elite sites. Part of: Warriors' House.
+  Spec: same.
+- **Hoplites and the army roster.** Part of: Warriors' House. Spec: same.
 - **Athletes' House.** Needs its design first. Near a Stadium. Charter: full Gymnasium
   coverage with a Stadium built (24 months). Consumes double oil. Annex: Bathhouse, which
   raises appeal. Bonus: the city enters the Olympics every 4 years, with its chance of

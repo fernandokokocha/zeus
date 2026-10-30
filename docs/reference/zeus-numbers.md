@@ -49,6 +49,7 @@ Roaming range (tiles walked before turning home by the shortest route):
 | Walker | From | Range |
 |---|---|---|
 | Water carrier | Fountain | 27 |
+| Healer | Infirmary | 27 |
 | Tax clerk | Tax Office | 35 |
 | Philosopher, athlete, actor | Podium, Gymnasium, Theater | 35 |
 | Peddler | Agora | 44 |
@@ -104,6 +105,11 @@ https://zeus.heavengames.com/gameinfo/appeal/. Fire/collapse are risk increments
 | Trade Yard (spec, placed with its guild) | 4×2 | 28: 8 cart pushers, then 20 merchants (**ours**) | part of the guild's 100 | — | — | — |
 | Scholars' House (**ours**, elite house) | 4×4 | — (240 residents, in the labor pool) | 100 + 1 permit | — | 8 | — |
 | Library (spec, placed with its Scholars' House) | 4×2 | 8 (**ours**) | part of the house's 100 | — | — | — |
+| Infirmary (spec) | 4×4 | 11 | 35 | -2,-2,-2,-2 | 5 | 5 |
+| Armory (spec) | 2×2 | 18 | 40 | -8,-7,-6,-5 | 8 | — |
+| Arms Vendor (spec), placed on an agora | 2×2 | 4 | 10 | — | — | — |
+| Warriors' House (spec, **ours**, elite house) | 4×4 | — (240 residents, in the labor pool) | 100 + 1 permit | — | 8 | — |
+| Drill Ground (spec, placed with its Warriors' House) | 4×2 | 8 (**ours**) | part of the house's 100 | — | — | — |
 
 - Collapse timing: 60 ÷ risk increment = months until collapse without maintenance.
 - Sculpture Studio workers: 12 on the industry page, 18 on the model-data page. Use 12.
@@ -125,6 +131,17 @@ Source: https://zeus.heavengames.com/gameinfo/industry-production/
 | Masonry Shop | 12 loads marble | Marble within 20 tiles |
 | Foundry | 13 / 10 / 7–8 loads bronze | Ore adjacent / within 10 / within 20 tiles |
 | Sculpture Studio | 6 sculptures | 4 bronze → 1 sculpture |
+| Armory | 6 loads armor | 1 bronze → 1 armor (**ours**) |
+
+## Disease
+
+Source: https://zeus.heavengames.com/gameinfo/housinglevels/ (disease risk increment, Beginner)
+
+| Hut | Shack | Hovel | Homestead | Tenement | Apartment | Townhouse | Elite house |
+|---|---|---|---|---|---|---|---|
+| 20 | 15 | 15 | 10 | 10 | 5 | 5 | 5 (**ours**; Zeus 0) |
+
+- Spread and effects are not documented; see "Sickness (spec)" under our choices.
 
 ## Culture
 
@@ -328,3 +345,20 @@ hold; its workers cart everything else to storehouses (granaries for food).
   needs at least one of its neighbours within **6** tiles before it shows. "A Traders' Guild (Scholars'
   House) can now be placed at …" is posted **once per block per type**, named by its corner, the first
   time the block qualifies.
+- Sickness (spec, **ours**): disease risk fills like fire risk, full at **60**. A house at full risk
+  falls sick at random **once a month on average**, at once next to a sick house. A sick house loses
+  **a quarter** of its residents (rounded up) each month end, takes no settlers and adds **60** risk a
+  month to houses within **1** tile, until a healer passes or it is empty. A healer resets risk and
+  cures, with the usual 2-tile reach.
+- Healthy and well fed charter (spec): **24** months in a row with at least one Townhouse and no
+  Townhouse going without food or falling sick (elites count as Townhouses) grants **1** Warriors'
+  House permit, then the count restarts.
+- Armor (spec, **ours**): Armory holds **4** loads of bronze and **4** of armor. A Warriors' House
+  wears **8 units** a month; a peddler fills it to **3 months** (24 units) from an Arms Vendor.
+  Ordinary houses take none. Armor is not traded.
+- Warriors' House (spec): placed like the Scholars' House, but with an Infirmary within **6** tiles
+  of the block and no appeal test; needs a Townhouse's needs ×4, culture **45** and armor, no appeal.
+  Taxes at multiplier **2**.
+- Drill Ground (**ours**, **8** workers): trains **1** hoplite every **2** months at full staff while its
+  house is started and has armor; a company holds at most **8**. Hoplites count among the house's
+  residents and are lost when it demotes.
