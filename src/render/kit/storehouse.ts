@@ -95,6 +95,6 @@ export function storekeeper(): FigureParts {
   return { legs: legs(), torso: upper, head: head('bare') };
 }
 
-export function bayPad(x: number, z: number, w: number, d: number, floor: number): THREE.Mesh {
-  return box(w, BAY_PAD, d, surface('ashlar'), x, floor, z);
+export function bayPad(x: number, z: number, size: number, floor: number): THREE.Mesh {
+  return box(size, BAY_PAD, size, surface('ashlar'), x, floor, z);
 }

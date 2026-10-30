@@ -28,8 +28,8 @@ export const STORED_LOADS: Record<StoredGood, () => THREE.Object3D> = {
   scrolls: bakedOnce(storedScrolls),
 };
 
-const LOAD_SPACING = 0.15;
-const LOAD_SPOTS = [[-1, -1], [1, -1], [-1, 1], [1, 1]];
+const ROWS_BY_LOADS = { 4: [-1, 1], 6: [-1, 0, 1] };
+const LOAD_COLUMNS = [-1, 1];
 const LOAD_JITTER = 0.4;
 const CLOSED = 0;
 const OPEN = 1.2;
@@ -38,12 +38,19 @@ const FACING_ROAD = -Math.PI / 2;
 
 type BaySpot = [number, number, number];
 
-function stock(group: THREE.Object3D, spots: BaySpot[], bays: Bay[]): void {
-  bays.forEach(({ good, loads }, slot) => {
-    const [x, floor, z] = spots[slot];
-    LOAD_SPOTS.slice(0, loads).forEach(([dx, dz], i) => {
+function loadSpots(capacity: number): [number, number][] {
+  const rows = ROWS_BY_LOADS[capacity as keyof typeof ROWS_BY_LOADS];
+  const across = BAY_SIZE / 4;
+  const deep = BAY_SIZE / (rows.length + 1);
+  return rows.flatMap((row) => LOAD_COLUMNS.map((column): [number, number] => [column * across, row * deep]));
+}
+
+function stock(group: THREE.Object3D, bays: Bay[]): void {
+  bays.forEach(({ good, loads, capacity }, slot) => {
+    const [x, floor, z] = YARD_BAYS[slot];
+    loadSpots(capacity).slice(0, loads).forEach(([dx, dz], i) => {
       const load = STORED_LOADS[good]();
-      load.position.set(x + dx * LOAD_SPACING, floor, z + dz * LOAD_SPACING);
+      load.position.set(x + dx, floor, z + dz);
       load.rotation.y = (tileHash(slot, i) - 0.5) * LOAD_JITTER;
       group.add(load);
     });
@@ -67,11 +74,14 @@ const YARD_KEEPER = { x: HALL.door, z: 1.06 };
 const BAY_GAP = 0.03;
 const BAYS_ACROSS = 4;
 const BAYS_DEEP = 2;
-const YARD = { x0: GROUND_EDGE, x1: LOT_3 - GROUND_EDGE, z0: 1.18, z1: LOT_3 - GROUND_EDGE };
-const BAY_W = (YARD.x1 - YARD.x0 - (BAYS_ACROSS - 1) * BAY_GAP) / BAYS_ACROSS;
-const BAY_D = (YARD.z1 - YARD.z0 - (BAYS_DEEP - 1) * BAY_GAP) / BAYS_DEEP;
-const bayCentres = (start: number, size: number, count: number) => Array.from({ length: count }, (_, i) => start + size / 2 + i * (size + BAY_GAP));
-const YARD_BAYS: BaySpot[] = bayCentres(YARD.z0, BAY_D, BAYS_DEEP).flatMap((z) => bayCentres(YARD.x0, BAY_W, BAYS_ACROSS).map((x): BaySpot => [x, YARD_FLOOR + BAY_PAD, z]));
+const YARD = { x0: GROUND_EDGE, x1: LOT_3 - GROUND_EDGE, z1: LOT_3 - GROUND_EDGE };
+const BAY_SIZE = (YARD.x1 - YARD.x0 - (BAYS_ACROSS - 1) * BAY_GAP) / BAYS_ACROSS;
+
+const bayCentres = (start: number, count: number) => Array.from({ length: count }, (_, i) => start + BAY_SIZE / 2 + i * (BAY_SIZE + BAY_GAP));
+
+const YARD_BAYS: BaySpot[] = bayCentres(YARD.z1 - BAYS_DEEP * BAY_SIZE - (BAYS_DEEP - 1) * BAY_GAP, BAYS_DEEP).flatMap((z) =>
+  bayCentres(YARD.x0, BAYS_ACROSS).map((x): BaySpot => [x, YARD_FLOOR + BAY_PAD, z]),
+);
 
 export function yardShell(staffed: boolean): THREE.Object3D {
   const group = new THREE.Group();
@@ -81,14 +91,14 @@ export function yardShell(staffed: boolean): THREE.Object3D {
   group.add(tiledRoof(x0 - 0.03, z0 - 0.05, w + 0.06, d + 0.1, top + 0.04, 0.24));
   group.add(blueDoor(door, z0 + d, DOOR_BASE, staffed ? OPEN : CLOSED));
   for (const x of [0.45, 1.65]) group.add(frontWindow(x, z0 + d, 0.36));
-  for (const [x, , z] of YARD_BAYS) group.add(bayPad(x, z, BAY_W, BAY_D, YARD_FLOOR));
+  for (const [x, , z] of YARD_BAYS) group.add(bayPad(x, z, BAY_SIZE, YARD_FLOOR));
   if (staffed) group.add(handcart(2.45, 0.55, 0.3, cartLoad()));
   return group;
 }
 
 export function storeYard(staffed: boolean, bays: Bay[]): THREE.Object3D {
   const shell = yardShell(staffed);
-  stock(shell, YARD_BAYS, bays);
+  stock(shell, bays);
   return staffed ? keeper(shell, YARD_KEEPER.x, YARD_FLOOR, YARD_KEEPER.z, 0, storekeeper()) : shell;
 }
 
@@ -98,6 +108,6 @@ const bakedKeeper = bakedFigure(storekeeper);
 export function storehouseModel(storehouse: Building, state: GameState): THREE.Object3D {
   const staffed = storehouse.workers > 0;
   const shell = (staffed ? shells.staffed : shells.idle)();
-  stock(shell, YARD_BAYS, baysOf(state, storehouse));
+  stock(shell, baysOf(state, storehouse));
   return staffed ? keeper(shell, YARD_KEEPER.x, YARD_FLOOR, YARD_KEEPER.z, staffPhase(storehouse), bakedKeeper()) : shell;
 }
