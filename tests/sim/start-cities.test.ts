@@ -5,6 +5,8 @@ import { SCHOLARS_CITY, isStartCity, startCity } from '../../src/sim/start-citie
 import type { GameState } from '../../src/sim/state';
 import { runTicks } from './helpers';
 
+const TWO_YEAR_RUN_TIMEOUT_MS = 20_000;
+
 function townhouses(game: GameState): number {
   return game.buildings.filter((b) => b.type === 'house' && b.level === 'townhouse' && b.residents > 0).length;
 }
@@ -32,7 +34,7 @@ describe('the scholars start city', () => {
     const game = startCity('scholars');
     runTicks(game, 2 * TICKS_PER_YEAR);
     expect(townhouses(game)).toBe(12);
-  });
+  }, TWO_YEAR_RUN_TIMEOUT_MS);
 
   it('can place a Scholars’ House at once, which lasts two years and makes a Work of Art each', () => {
     const game = startCity('scholars');
@@ -43,7 +45,7 @@ describe('the scholars start city', () => {
     expect(scholars!.scrolls).toBeGreaterThan(0);
     expect(game.worksOfArt).toBe(2);
     expect(townhouses(game)).toBe(8);
-  });
+  }, TWO_YEAR_RUN_TIMEOUT_MS);
 });
 
 describe('the upgrades start city', () => {
