@@ -310,6 +310,10 @@ hold; its workers cart everything else to storehouses (granaries for food).
   Townhouse covered by philosophy, athletics and drama at month end (elite houses count as
   Townhouses) grants **1** Scholars' House permit, then the count restarts. A month with no
   Townhouse resets a running count.
+- Healthy and well fed charter (spec): **24** months in a row with at least one Townhouse, no
+  Townhouse running out of food and none falling sick (elite houses count as Townhouses) grants
+  **1** Warriors' House permit, then the count restarts. An onset counts even if a healer cures
+  it before month end. A month with no Townhouse resets a running count.
 - Traders' Guild (spec): keeps every resident of its four Townhouses (capacity **240**), who
   join the labor pool, and settlers top it up; pays tax at multiplier **1** (**ours**, half a
   Townhouse's). Placed over four Townhouses in an exact 4×4 block whose front lines a straight **4**-tile

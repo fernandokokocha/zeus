@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { LEARNED_CITY_MONTHS, WELL_DRESSED_MONTHS, tallyLearnedCity, tallyWellDressed } from '../../src/sim/charters';
-import { FLEECE_PER_HOUSE_PER_MONTH, OIL_PER_HOUSE_PER_MONTH } from '../../src/sim/food';
+import { HEALTHY_AND_WELL_FED_MONTHS, LEARNED_CITY_MONTHS, WELL_DRESSED_MONTHS, tallyHealthyAndWellFed, tallyLearnedCity, tallyWellDressed } from '../../src/sim/charters';
+import { FLEECE_PER_HOUSE_PER_MONTH, OIL_PER_HOUSE_PER_MONTH, monthlyUse } from '../../src/sim/food';
 import { HOUSE_LEVELS } from '../../src/sim/housing';
 import { TICKS_PER_MONTH } from '../../src/sim/clock';
 import { tick } from '../../src/sim/tick';
 import type { Building, GameState } from '../../src/sim/state';
-import { grassGame, placeHouse, placedGuild, supplyGuild } from './helpers';
+import { fallSick, heal } from '../../src/sim/sickness';
+import { grassGame, placeHouse, placedGuild, placedScholars, supplyGuild } from './helpers';
 
 const PLENTY = 10;
 
@@ -217,5 +218,123 @@ it("is tallied at the end of every month", () => {
     house.coveredUntil.drama = 0;
     tallyWellDressed(game);
     expect(game.wellDressed).toEqual({ months: 1, reset: null });
+  });
+});
+
+function fedCity(): { game: GameState; house: Building } {
+  const { game, house } = cityWithTownhouse();
+  house.food = PLENTY * monthlyUse(house, 'food');
+  return { game, house };
+}
+
+describe('the Healthy and well fed charter', () => {
+  it('starts at zero months, with no reset and no permit', () => {
+    const game = grassGame();
+    expect(game.healthyAndWellFed).toEqual({ months: 0, reset: null });
+    expect(game.permits.warriorsHouse).toBe(0);
+  });
+
+  it('counts a month in which every Townhouse keeps food and stays healthy', () => {
+    const { game } = fedCity();
+    tallyHealthyAndWellFed(game);
+    tallyHealthyAndWellFed(game);
+    expect(game.healthyAndWellFed).toEqual({ months: 2, reset: null });
+  });
+
+  it(`grants a Warriors' House permit after ${HEALTHY_AND_WELL_FED_MONTHS} months and starts again`, () => {
+    const { game } = fedCity();
+    game.healthyAndWellFed.months = HEALTHY_AND_WELL_FED_MONTHS - 1;
+    tallyHealthyAndWellFed(game);
+    expect(game.permits).toEqual({ tradersGuild: 0, scholarsHouse: 0, warriorsHouse: 1 });
+    expect(game.healthyAndWellFed).toEqual({ months: 0, reset: null });
+    expect(game.notices).toEqual([
+      { id: 1, tick: 0, text: "Charter complete: Healthy and well fed. A Warriors' House permit is granted", at: null },
+    ]);
+  });
+
+  it('resets when a Townhouse runs out of food, naming it', () => {
+    const { game, house } = fedCity();
+    game.tick = 90;
+    game.healthyAndWellFed.months = 10;
+    house.food = monthlyUse(house, 'food');
+    tallyHealthyAndWellFed(game);
+    expect(game.healthyAndWellFed).toEqual({ months: 0, reset: { tick: 90, cause: 'Townhouse at 4,4 ran out of food' } });
+  });
+
+  it('resets when a Townhouse falls sick', () => {
+    const { game, house } = fedCity();
+    game.healthyAndWellFed.months = 10;
+    fallSick(game, house);
+    tallyHealthyAndWellFed(game);
+    expect(game.healthyAndWellFed).toEqual({ months: 0, reset: { tick: 0, cause: 'Townhouse at 4,4 fell sick' } });
+  });
+
+  it('resets for a Townhouse that fell sick this month even if a healer cured it', () => {
+    const { game, house } = fedCity();
+    game.tick = TICKS_PER_MONTH;
+    fallSick(game, house);
+    heal(house);
+    game.tick = 2 * TICKS_PER_MONTH;
+    tallyHealthyAndWellFed(game);
+    expect(game.healthyAndWellFed.reset).toEqual({ tick: game.tick, cause: 'Townhouse at 4,4 fell sick' });
+  });
+
+  it('does not count again a cured onset from before the last tally', () => {
+    const { game, house } = fedCity();
+    game.tick = TICKS_PER_MONTH - 1;
+    fallSick(game, house);
+    heal(house);
+    game.tick = 2 * TICKS_PER_MONTH;
+    tallyHealthyAndWellFed(game);
+    expect(game.healthyAndWellFed).toEqual({ months: 1, reset: null });
+  });
+
+  it('resets every month a Townhouse stays sick', () => {
+    const { game, house } = fedCity();
+    fallSick(game, house);
+    game.tick = 5 * TICKS_PER_MONTH;
+    tallyHealthyAndWellFed(game);
+    expect(game.healthyAndWellFed.reset).toEqual({ tick: game.tick, cause: 'Townhouse at 4,4 fell sick' });
+  });
+
+  it('names food first when a Townhouse is both hungry and sick', () => {
+    const { game, house } = fedCity();
+    house.food = 0;
+    fallSick(game, house);
+    tallyHealthyAndWellFed(game);
+    expect(game.healthyAndWellFed.reset?.cause).toBe('Townhouse at 4,4 ran out of food');
+  });
+
+  it('is not reset by lower houses that are hungry or sick', () => {
+    const { game } = fedCity();
+    placeHouse(game, 8, 4);
+    const apartment = game.buildings[1];
+    Object.assign(apartment, { level: 'apartment', residents: 40, food: 0 });
+    fallSick(game, apartment);
+    tallyHealthyAndWellFed(game);
+    expect(game.healthyAndWellFed).toEqual({ months: 1, reset: null });
+  });
+
+  it('resets a running count in a month with no Townhouse', () => {
+    const game = grassGame();
+    game.healthyAndWellFed.months = 10;
+    tallyHealthyAndWellFed(game);
+    expect(game.healthyAndWellFed).toEqual({ months: 0, reset: { tick: 0, cause: 'no Townhouse in the city' } });
+  });
+
+  it("counts a Scholars' House as a Townhouse, and is reset by it falling sick", () => {
+    const { game, scholars } = placedScholars();
+    scholars.food = PLENTY * monthlyUse(scholars, 'food');
+    tallyHealthyAndWellFed(game);
+    expect(game.healthyAndWellFed).toEqual({ months: 1, reset: null });
+    fallSick(game, scholars);
+    tallyHealthyAndWellFed(game);
+    expect(game.healthyAndWellFed.reset?.cause).toBe(`Scholars' House at ${scholars.x},${scholars.y} fell sick`);
+  });
+
+  it('is tallied at the end of every month', () => {
+    const { game } = fedCity();
+    for (let i = 0; i < TICKS_PER_MONTH; i++) tick(game);
+    expect(game.healthyAndWellFed).toEqual({ months: 1, reset: null });
   });
 });

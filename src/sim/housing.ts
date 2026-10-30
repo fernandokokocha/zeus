@@ -66,6 +66,10 @@ export const ELITE_NAMES: Record<EliteType, string> = {
   scholarsHouse: BUILDING_SPECS.scholarsHouse.name,
 };
 
+export type PermitType = EliteType | 'warriorsHouse';
+
+export const PERMIT_NAMES: Record<PermitType, string> = { ...ELITE_NAMES, warriorsHouse: "Warriors' House" };
+
 export interface EliteHousing {
   houses: number;
   good: EliteGood;

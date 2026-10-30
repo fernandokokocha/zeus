@@ -1,7 +1,7 @@
 import type { BuildingType, Rotation } from './buildings';
 import type { CharterCount } from './charters';
 import { emptyFlows, type FlowBook } from './flows';
-import type { EliteType, HouseLevel } from './housing';
+import type { EliteType, HouseLevel, PermitType } from './housing';
 import type { MonumentKind } from './monuments';
 import { defaultIndustrySettings, type IndustrySettings } from './industries';
 import { DEFAULT_SEED, MAP_SIZE, generateTerrain } from './map';
@@ -59,6 +59,7 @@ export interface Building {
   collapseRisk: number;
   diseaseRisk: number;
   sick: boolean;
+  fellSickAt: number | null;
   burningUntil: number;
   taxPaid: number[];
   monument: MonumentKind | null;
@@ -271,7 +272,8 @@ export interface GameState {
   nextNoticeId: number;
   wellDressed: CharterCount;
   learnedCity: CharterCount;
-  permits: Record<EliteType, number>;
+  healthyAndWellFed: CharterCount;
+  permits: Record<PermitType, number>;
   monumentsToPlace: MonumentKind[];
   worksOfArt: number;
   upgrades: Upgrade[];
@@ -338,7 +340,8 @@ export function newGameState(size: number, terrain: Terrain[], mainRoad: Point[]
     nextNoticeId: 1,
     wellDressed: { months: 0, reset: null },
     learnedCity: { months: 0, reset: null },
-    permits: { tradersGuild: 0, scholarsHouse: 0 },
+    healthyAndWellFed: { months: 0, reset: null },
+    permits: { tradersGuild: 0, scholarsHouse: 0, warriorsHouse: 0 },
     monumentsToPlace: [],
     worksOfArt: 0,
     upgrades: [],

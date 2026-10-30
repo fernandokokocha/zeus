@@ -104,9 +104,9 @@ describe("placing a Scholars' House", () => {
 
   it('uses its own permit, not the guild’s', () => {
     const { game } = scholarsBlock();
-    game.permits = { tradersGuild: 1, scholarsHouse: 0 };
+    game.permits = { tradersGuild: 1, scholarsHouse: 0, warriorsHouse: 0 };
     expect(place(game).ok).toBe(false);
-    game.permits = { tradersGuild: 0, scholarsHouse: 1 };
+    game.permits = { tradersGuild: 0, scholarsHouse: 1, warriorsHouse: 0 };
     expect(place(game).ok).toBe(true);
   });
 });

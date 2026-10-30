@@ -1,11 +1,12 @@
-import { CHARTERS, LEARNED_CITY_MONTHS, WELL_DRESSED_MONTHS, type Charter, type CharterCount } from '../sim/charters';
+import { CHARTERS, HEALTHY_AND_WELL_FED_MONTHS, LEARNED_CITY_MONTHS, WELL_DRESSED_MONTHS, type Charter, type CharterCount } from '../sim/charters';
 import { TICKS_PER_MONTH } from '../sim/clock';
-import { ELITE_NAMES, type EliteType } from '../sim/housing';
+import { PERMIT_NAMES, type PermitType } from '../sim/housing';
 import type { GameState } from '../sim/state';
 
 const GOALS: Record<Charter['progress'], string> = {
   wellDressed: `The city has a Townhouse, and no Townhouse runs out of fleece or oil, for ${WELL_DRESSED_MONTHS} months in a row. Elite houses count as Townhouses. Grants a Traders' Guild permit.`,
   learnedCity: `The city has a Townhouse, and every Townhouse has philosophy, athletics and drama, for ${LEARNED_CITY_MONTHS} months in a row. Elite houses count as Townhouses. Grants a Scholars' House permit.`,
+  healthyAndWellFed: `The city has a Townhouse, and no Townhouse runs out of food or falls sick, for ${HEALTHY_AND_WELL_FED_MONTHS} months in a row. Elite houses count as Townhouses. Grants a Warriors' House permit.`,
 };
 
 export function charterText(charter: Charter, { months, reset }: CharterCount, tick: number): string {
@@ -20,8 +21,8 @@ function monthsAgo(ticks: number): string {
   return `${months} ${months === 1 ? 'month' : 'months'} ago`;
 }
 
-export function permitLines(permits: Record<EliteType, number>): string[] {
-  return (Object.keys(permits) as EliteType[]).map((type) => `${ELITE_NAMES[type]} permits: ${permits[type]}`);
+export function permitLines(permits: Record<PermitType, number>): string[] {
+  return (Object.keys(permits) as PermitType[]).map((type) => `${PERMIT_NAMES[type]} permits: ${permits[type]}`);
 }
 
 export function createCharterChapter(state: GameState): { body: HTMLElement; update(): void } {

@@ -260,6 +260,7 @@ export function addBuilding(state: GameState, placement: Placement): Building {
     collapseRisk: 0,
     diseaseRisk: 0,
     sick: false,
+    fellSickAt: null,
     burningUntil: 0,
     taxPaid: [],
     monument: null,

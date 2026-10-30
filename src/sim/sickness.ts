@@ -66,6 +66,7 @@ function isWithin(a: Building, b: Building, reach: number): boolean {
 
 export function fallSick(state: GameState, residence: Building): void {
   residence.sick = true;
+  residence.fellSickAt = state.tick;
   postNotice(state, `Plague at ${residence.x},${residence.y}`, residence);
 }
 

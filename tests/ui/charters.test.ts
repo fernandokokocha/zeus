@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { TICKS_PER_MONTH } from '../../src/sim/clock';
 import { placeBuilding } from '../../src/sim/commands';
-import { LEARNED_CITY, WELL_DRESSED } from '../../src/sim/charters';
+import { HEALTHY_AND_WELL_FED, LEARNED_CITY, WELL_DRESSED } from '../../src/sim/charters';
 import { charterText, permitLines } from '../../src/ui/charters';
 import { GUILD_BLOCK, guildBlock } from '../sim/helpers';
 
@@ -31,17 +31,32 @@ describe('charterText', () => {
       'Learned city: 3 / 24 months, reset 3 months ago (Townhouse at 31,18 missed drama)',
     );
   });
+
+  it('shows Healthy and well fed and what reset it', () => {
+    const reset = { tick: month(40), cause: 'Townhouse at 40,22 fell sick' };
+    expect(charterText(HEALTHY_AND_WELL_FED, { months: 1, reset }, month(41))).toBe(
+      'Healthy and well fed: 1 / 24 months, reset 1 month ago (Townhouse at 40,22 fell sick)',
+    );
+  });
 });
 
 describe('permitLines', () => {
   it('lists the permits of every elite type', () => {
-    expect(permitLines({ tradersGuild: 1, scholarsHouse: 2 })).toEqual(["Traders' Guild permits: 1", "Scholars' House permits: 2"]);
+    expect(permitLines({ tradersGuild: 1, scholarsHouse: 2, warriorsHouse: 3 })).toEqual([
+      "Traders' Guild permits: 1",
+      "Scholars' House permits: 2",
+      "Warriors' House permits: 3",
+    ]);
   });
 
   it('counts only the unspent ones once a guild is placed', () => {
     const { game } = guildBlock();
     game.permits.tradersGuild = 2;
     placeBuilding(game, 'tradersGuild', GUILD_BLOCK.x, GUILD_BLOCK.y);
-    expect(permitLines(game.permits)).toEqual(["Traders' Guild permits: 1", "Scholars' House permits: 0"]);
+    expect(permitLines(game.permits)).toEqual([
+      "Traders' Guild permits: 1",
+      "Scholars' House permits: 0",
+      "Warriors' House permits: 0",
+    ]);
   });
 });

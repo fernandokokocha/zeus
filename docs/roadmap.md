@@ -10,7 +10,6 @@ anywhere.
 
 ## Items
 
-- **Healthy and well fed.** The Warriors' House charter. Part of: Warriors' House. Spec: same.
 - **Armor and the Armory.** With the Arms Vendor. Part of: Warriors' House. Spec: same.
 - **Warriors' House and Drill Ground.** With its elite sites. Part of: Warriors' House.
   Spec: same.
