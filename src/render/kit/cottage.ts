@@ -169,13 +169,13 @@ export function whiteCottage(x0: number, z0: number, w: number, d: number, doorX
   return group;
 }
 
-export function terraceBlock(x0: number, z0: number, w: number, d: number, wallTop: number): THREE.Object3D {
+export function terraceBlock(x0: number, z0: number, w: number, d: number, wallTop: number, band = COLORS.aegean): THREE.Object3D {
   const group = new THREE.Group();
   const cx = x0 + w / 2;
   const cz = z0 + d / 2;
   group.add(box(w + 0.05, PLINTH, d + 0.05, surface('rubble'), cx, 0.03, cz));
   group.add(box(w, wallTop - 0.03 - PLINTH, d, surface('whitewash'), cx, 0.03 + PLINTH, cz));
-  group.add(box(w + 0.02, 0.05, d + 0.02, flat(COLORS.aegean), cx, wallTop - 0.1, cz));
+  group.add(box(w + 0.02, 0.05, d + 0.02, flat(band), cx, wallTop - 0.1, cz));
   group.add(box(w + 0.06, 0.06, d + 0.06, surface('whitewash'), cx, wallTop - 0.03, cz));
   group.add(box(w - 0.06, 0.01, d - 0.06, flat(0xe8e4dc), cx, wallTop + 0.02, cz));
   return group;

@@ -39,6 +39,9 @@ import { FAST_ROAD_OPTIONS } from './fast-road-options';
 import { MONUMENT_OPTIONS } from './monument-options';
 import { SCHOLARS_HOUSE_OPTIONS } from './scholars-house-options';
 import { LIBRARY_OPTIONS } from './library-options';
+import { INFIRMARY_OPTIONS } from './infirmary-options';
+import { WARRIORS_HOUSE_OPTIONS } from './warriors-house-options';
+import { DRILL_GROUND_OPTIONS } from './drill-ground-options';
 import { bake } from '../render/bake';
 import type { Animate } from '../render/kit/figure';
 import type { DesignSet } from './options';
@@ -82,6 +85,9 @@ const SETS: Record<string, DesignSet> = {
   monument: { title: 'Monument', needs: '3×3 · no workers · earned, never bought · beside a Fast Road crossroads, one emblem per achievement on a shared body', options: MONUMENT_OPTIONS, chosen: [0, 1, 2], footprint: [5, 5] },
   scholarsHouse: { title: "Scholars' House", needs: '4×4 · 240 residents · supplied and missing a need (burning turns its tiles into ruins)', options: SCHOLARS_HOUSE_OPTIONS, chosen: 0, footprint: [4, 4] },
   library: { title: 'Library', needs: '4×2 · 8 workers · across the road from its Scholars\' House · without and with workers', options: LIBRARY_OPTIONS, chosen: 0, footprint: [4, 2] },
+  infirmary: { title: 'Infirmary', needs: '4×4 · 11 workers · a healing sanctuary of Asclepius · without and with workers', options: INFIRMARY_OPTIONS, chosen: 0, footprint: [4, 4] },
+  warriorsHouse: { title: "Warriors' House", needs: '4×4 · 240 residents · supplied and missing a need (burning turns its tiles into ruins)', options: WARRIORS_HOUSE_OPTIONS, chosen: 0, footprint: [4, 4] },
+  drillGround: { title: 'Drill Ground', needs: "4×2 · 8 workers · across the road from its Warriors' House · without and with workers", options: DRILL_GROUND_OPTIONS, chosen: 0, footprint: [4, 2] },
 };
 
 const footprint = (set: DesignSet): [number, number] => set.footprint ?? [2, 2];

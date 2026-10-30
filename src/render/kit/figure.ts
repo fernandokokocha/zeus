@@ -31,10 +31,12 @@ const LECTURE_TEMPO = 0.9;
 const LECTURE_GLANCE = 0.35;
 const WRITE_STROKE = 7;
 const WRITE_LINE = 0.6;
+const DRILL_TEMPO = 3;
+const DRILL_LUNGE = 0.07;
 
 export type Animate = (seconds: number) => void;
 export type Hat = 'straw' | 'pilos' | 'helmet' | 'bare';
-export type Motion = 'rest' | 'lookout' | 'hammer' | 'patrol' | 'throw' | 'sprint' | 'saw' | 'declaim' | 'lecture' | 'write';
+export type Motion = 'rest' | 'drill' | 'lookout' | 'hammer' | 'patrol' | 'throw' | 'sprint' | 'saw' | 'declaim' | 'lecture' | 'write';
 
 export interface FigureParts {
   legs: THREE.Object3D;
@@ -104,6 +106,12 @@ const MOTIONS: Record<Motion, (pose: { torso: THREE.Object3D; neck: THREE.Object
     torso.rotation.x = Math.sin(t * 0.8) * 0.025;
     neck.rotation.y = Math.sin(t * 0.45) * 0.7;
     neck.rotation.z = Math.sin(t * 0.7) * 0.06;
+  },
+  drill: ({ torso, neck, body }, t) => {
+    const thrust = Math.max(Math.sin(t * DRILL_TEMPO), 0);
+    body.position.x = thrust * DRILL_LUNGE;
+    torso.rotation.z = -0.08 - thrust * 0.3;
+    neck.rotation.z = thrust * 0.25;
   },
   lookout: ({ torso, neck, body }, t) => {
     body.rotation.y = Math.sin(t * 0.25) * 1.2;
