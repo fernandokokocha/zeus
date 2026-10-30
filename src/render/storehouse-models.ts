@@ -11,7 +11,7 @@ import { sack } from './kit/food';
 import { surface } from './kit/kit';
 import { amphora } from './kit/oil';
 import { tiledRoof } from './kit/roofs';
-import { BAY_PAD, bayPad, bronzeIngots, crated, fleeceBales, marbleBlocks, oilAmphorae, oliveBaskets, stackedLogs, storeGround, storekeeper } from './kit/storehouse';
+import { BAY_PAD, GROUND_EDGE, LOT_3, bayPad, bronzeIngots, crated, fleeceBales, marbleBlocks, oilAmphorae, oliveBaskets, stackedLogs, storeGround, storekeeper } from './kit/storehouse';
 import { tileHash } from './palette';
 import { bakedFigure, staffPhase } from './staff';
 
@@ -31,7 +31,6 @@ export const STORED_LOADS: Record<StoredGood, () => THREE.Object3D> = {
 const LOAD_SPACING = 0.15;
 const LOAD_SPOTS = [[-1, -1], [1, -1], [-1, 1], [1, 1]];
 const LOAD_JITTER = 0.4;
-const BAY_SIZE = 0.64;
 const CLOSED = 0;
 const OPEN = 1.2;
 const DOOR_BASE = 0.12;
@@ -65,7 +64,14 @@ function cartLoad(): THREE.Object3D[] {
 const YARD_FLOOR = 0.03;
 const HALL = { x0: 0.18, z0: 0.18, w: 1.85, d: 0.72, top: 0.66, door: 1.1 };
 const YARD_KEEPER = { x: HALL.door, z: 1.06 };
-const YARD_BAYS: BaySpot[] = [1.5, 2.3].flatMap((z) => [0.5, 1.17, 1.84, 2.51].map((x): BaySpot => [x, YARD_FLOOR + BAY_PAD, z]));
+const BAY_GAP = 0.03;
+const BAYS_ACROSS = 4;
+const BAYS_DEEP = 2;
+const YARD = { x0: GROUND_EDGE, x1: LOT_3 - GROUND_EDGE, z0: 1.18, z1: LOT_3 - GROUND_EDGE };
+const BAY_W = (YARD.x1 - YARD.x0 - (BAYS_ACROSS - 1) * BAY_GAP) / BAYS_ACROSS;
+const BAY_D = (YARD.z1 - YARD.z0 - (BAYS_DEEP - 1) * BAY_GAP) / BAYS_DEEP;
+const bayCentres = (start: number, size: number, count: number) => Array.from({ length: count }, (_, i) => start + size / 2 + i * (size + BAY_GAP));
+const YARD_BAYS: BaySpot[] = bayCentres(YARD.z0, BAY_D, BAYS_DEEP).flatMap((z) => bayCentres(YARD.x0, BAY_W, BAYS_ACROSS).map((x): BaySpot => [x, YARD_FLOOR + BAY_PAD, z]));
 
 export function yardShell(staffed: boolean): THREE.Object3D {
   const group = new THREE.Group();
@@ -75,7 +81,7 @@ export function yardShell(staffed: boolean): THREE.Object3D {
   group.add(tiledRoof(x0 - 0.03, z0 - 0.05, w + 0.06, d + 0.1, top + 0.04, 0.24));
   group.add(blueDoor(door, z0 + d, DOOR_BASE, staffed ? OPEN : CLOSED));
   for (const x of [0.45, 1.65]) group.add(frontWindow(x, z0 + d, 0.36));
-  for (const [x, , z] of YARD_BAYS) group.add(bayPad(x, z, BAY_SIZE, YARD_FLOOR));
+  for (const [x, , z] of YARD_BAYS) group.add(bayPad(x, z, BAY_W, BAY_D, YARD_FLOOR));
   if (staffed) group.add(handcart(2.45, 0.55, 0.3, cartLoad()));
   return group;
 }

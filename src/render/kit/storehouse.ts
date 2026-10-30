@@ -16,12 +16,13 @@ export const STOREHOUSE = {
 
 export const LOT_3 = 3;
 const BASE = 0.03;
+export const GROUND_EDGE = 0.05;
 export const BAY_PAD = 0.035;
 const STACKED_LOGS = 0.7;
 const STATUE_SIZE = 1.25;
 
 export function storeGround(material: THREE.Material): THREE.Mesh {
-  return box(LOT_3 - 0.1, BASE, LOT_3 - 0.1, material, LOT_3 / 2, 0, LOT_3 / 2);
+  return box(LOT_3 - 2 * GROUND_EDGE, BASE, LOT_3 - 2 * GROUND_EDGE, material, LOT_3 / 2, 0, LOT_3 / 2);
 }
 
 function bale(y: number, turn: number): THREE.Object3D {
@@ -94,6 +95,6 @@ export function storekeeper(): FigureParts {
   return { legs: legs(), torso: upper, head: head('bare') };
 }
 
-export function bayPad(x: number, z: number, size: number, floor: number): THREE.Mesh {
-  return box(size, BAY_PAD, size, surface('ashlar'), x, floor, z);
+export function bayPad(x: number, z: number, w: number, d: number, floor: number): THREE.Mesh {
+  return box(w, BAY_PAD, d, surface('ashlar'), x, floor, z);
 }
