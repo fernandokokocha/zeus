@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { blueDoor, frontWindow, terraceBlock } from './kit/cottage';
-import { posedFigure } from './kit/figure';
+import type { Building } from '../sim/state';
+import { bakedOnce } from './bake';
+import { type FigureParts, posedFigure } from './kit/figure';
 import { paving } from './kit/garden';
 import { COLORS } from './kit/kit';
 import { cypress, lawn } from './kit/luxury';
@@ -9,6 +11,7 @@ import { tholos } from './kit/college';
 import { leanToRoof, tiledRoof } from './kit/roofs';
 import { wellHead } from './kit/water';
 import { asclepiusStaff, healer, herbBasket, herbBed, sickbed } from './kit/warriors';
+import { bakedFigure, staffPhase } from './staff';
 
 const W = 4;
 const D = 4;
@@ -23,7 +26,7 @@ function path(x0: number, z0: number, w: number, d: number): THREE.Object3D {
 
 const ABATON = { x0: 1.85, z0: 0.18, w: 1.95, d: 0.9, top: 0.82 };
 
-export function tholosAndAbaton(staffed: boolean): THREE.Object3D {
+function tholosShell(staffed: boolean): THREE.Object3D {
   const group = new THREE.Group();
   group.add(lawn(0.08, 0.08, W - 0.16, D - 0.16));
   group.add(path(0.2, 1.3, 1.9, 2.5));
@@ -42,10 +45,24 @@ export function tholosAndAbaton(staffed: boolean): THREE.Object3D {
   group.add(herbBed(2.2, 2.9, 0.7, 0.75), herbBed(3.05, 2.9, 0.7, 0.75));
   group.add(asclepiusStaff(2.0, 3.75, 0.75));
   group.add(cypress(1.35, 0.5, 0.65), cypress(0.3, 1.5, 0.55));
-  if (staffed) {
-    group.add(herbBasket(2.95, 0.03, 2.8));
-    group.add(posedFigure(2.9, 2.75, ALONG_X, 0, healer(), 'rest'));
-  }
+  if (staffed) group.add(herbBasket(2.95, 0.03, 2.8));
   return group;
+}
+
+function withHealer(shell: THREE.Object3D, phase: number, parts: FigureParts): THREE.Object3D {
+  shell.add(posedFigure(2.9, 2.75, ALONG_X, phase, parts, 'rest'));
+  return shell;
+}
+
+export function tholosAndAbaton(staffed: boolean): THREE.Object3D {
+  return staffed ? withHealer(tholosShell(true), 0, healer()) : tholosShell(false);
+}
+
+const shells = { staffed: bakedOnce(() => tholosShell(true)), empty: bakedOnce(() => tholosShell(false)) };
+const bakedHealer = bakedFigure(healer);
+
+export function infirmaryModel(infirmary: Building): THREE.Object3D {
+  if (infirmary.workers === 0) return shells.empty();
+  return withHealer(shells.staffed(), staffPhase(infirmary), bakedHealer());
 }
 

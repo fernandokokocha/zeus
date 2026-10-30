@@ -55,6 +55,7 @@ const LOOKS: Record<BuildingType, Look> = {
   sculptureStudio: (b) => [b.workers > 0, loads(b.bronze), loads(b.sculptures)],
   artisansGuild: staffed,
   maintenanceOffice: staffed,
+  infirmary: staffed,
   demeterSanctuary: sanctuary,
   athenaSanctuary: sanctuary,
   hephaestusSanctuary: sanctuary,

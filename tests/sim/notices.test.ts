@@ -8,7 +8,7 @@ import { RISK_LIMIT, catchFire } from '../../src/sim/safety';
 import { SANCTUARY_WORK } from '../../src/sim/sanctuaries';
 import type { GameState } from '../../src/sim/state';
 import { tick } from '../../src/sim/tick';
-import { SCHOLARS_NEIGHBOURS, guildBlock, grassGame, placeHouse, runTicks, scholarsBlock } from './helpers';
+import { SCHOLARS_NEIGHBOURS, guildBlock, grassGame, placeHouse, runTicks, runTicksWithoutSickness, scholarsBlock } from './helpers';
 
 const loads = (count: number) => count * UNITS_PER_LOAD;
 
@@ -92,7 +92,7 @@ describe('notices', () => {
     placeBuilding(game, 'artisansGuild', 8, 28);
     const site = game.buildings[2];
     Object.assign(site, { marble: loads(48), wood: loads(14), sculptures: loads(6), production: SANCTUARY_WORK - 1 });
-    runTicks(game, 4 * TICKS_PER_MONTH);
+    runTicksWithoutSickness(game, 4 * TICKS_PER_MONTH);
     expect(game.notices).toMatchObject([{ text: 'The Forge of Hephaestus is finished', at: { x: 20, y: 31 } }]);
   });
 

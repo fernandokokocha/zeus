@@ -22,8 +22,8 @@ export type PeddledGood = HouseGood | 'cloth' | 'scrolls';
 export type Good = HouseGood | 'olives' | Material | 'sculptures' | 'cloth' | 'papyrus' | 'scrolls';
 export type TradeGood = Exclude<Good, 'scrolls'>;
 export type Culture = 'philosophy' | 'athletics' | 'drama';
-export type Service = 'water' | 'tax' | 'goods' | Culture | 'maintenance';
-export type Coverage = Exclude<Service, 'goods' | 'maintenance'>;
+export type Service = 'water' | 'tax' | 'goods' | Culture | 'maintenance' | 'health';
+export type Coverage = Exclude<Service, 'goods' | 'maintenance' | 'health'>;
 
 export interface Building {
   id: number;
@@ -57,6 +57,8 @@ export interface Building {
   performingUntil: number;
   fireRisk: number;
   collapseRisk: number;
+  diseaseRisk: number;
+  sick: boolean;
   burningUntil: number;
   taxPaid: number[];
   monument: MonumentKind | null;
@@ -77,7 +79,7 @@ export interface Settler extends Walk {
   people: number;
 }
 
-export type RoamerKind = 'waterCarrier' | 'taxCollector' | 'peddler' | 'philosopher' | 'athlete' | 'actor' | 'superintendent';
+export type RoamerKind = 'waterCarrier' | 'taxCollector' | 'peddler' | 'philosopher' | 'athlete' | 'actor' | 'superintendent' | 'healer';
 
 export interface Roamer extends Walk {
   id: number;
@@ -281,6 +283,7 @@ export interface GameState {
   entry: Point;
   treasury: number;
   accounts: Books;
+  plagueDeaths: { thisYear: number; lastYear: number };
   tradeBooks: TradeBooks;
   populationHistory: number[];
   flows: FlowBook;
@@ -347,6 +350,7 @@ export function newGameState(size: number, terrain: Terrain[], mainRoad: Point[]
     entry: mainRoad[0],
     treasury: STARTING_TREASURY,
     accounts: { thisYear: emptyAccounts(), lastYear: emptyAccounts() },
+    plagueDeaths: { thisYear: 0, lastYear: 0 },
     tradeBooks: { thisYear: emptyTradeYear(), lastYear: emptyTradeYear() },
     populationHistory: [0],
     flows: { thisMonth: emptyFlows(), months: [] },

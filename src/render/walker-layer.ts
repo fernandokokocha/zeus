@@ -224,6 +224,11 @@ const FIGURES: Record<Figure, Part[]> = {
     { geometry: new THREE.CylinderGeometry(0.05, 0.04, 0.08, 10).translate(0.1, 0.1, 0), color: PALETTE.bronze },
     { geometry: new THREE.CylinderGeometry(0.045, 0.045, 0.005, 10).translate(0.1, 0.14, 0), color: PALETTE.water },
   ],
+  healer: [
+    ...body(PALETTE.healerRobe),
+    { geometry: new THREE.CylinderGeometry(0.05, 0.04, 0.05, 10).translate(0.1, 0.12, 0), color: PALETTE.reed },
+    { geometry: new THREE.SphereGeometry(0.04, 8, 6).translate(0.1, 0.16, 0), color: PALETTE.herbs },
+  ],
   grower,
   growerWithOlives: [...grower, oliveHeap(0.1, 0.16, 0, 0.9)],
   oliveCart: cart([oliveHeap(0, 0.16, 0.22, 1.4)]),

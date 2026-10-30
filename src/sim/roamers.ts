@@ -8,6 +8,7 @@ import { samePoint, type Point } from './point';
 import { nextRandom } from './rng';
 import { isPerforming, traineeKindFor } from './schools';
 import { maintain } from './safety';
+import { heal } from './sickness';
 import { buildingById, inBounds, tileIndex, type Building, type GameState, type Roamer, type Coverage, type RoamerKind, type Service } from './state';
 import { isRoad, walkerSpeed } from './walking';
 
@@ -26,6 +27,7 @@ export const ROAMER_SPECS: Record<RoamerKind, RoamerSpec> = {
   athlete: { name: 'Athlete', home: 'gymnasium', range: 35, service: 'athletics' },
   actor: { name: 'Actor', home: 'theater', range: 35, service: 'drama' },
   superintendent: { name: 'Superintendent', home: 'maintenanceOffice', range: 44, service: 'maintenance' },
+  healer: { name: 'Healer', home: 'infirmary', range: 27, service: 'health' },
 };
 
 export const SERVICE_REACH = 2;
@@ -173,6 +175,10 @@ function serveAround(state: GameState, roamer: Roamer): void {
     return;
   }
   const houses = state.buildings.filter((b) => isResidence(b) && footprintDistance(b, tile) <= SERVICE_REACH);
+  if (service === 'health') {
+    for (const house of houses) heal(house);
+    return;
+  }
   if (service === 'goods') {
     const agora = buildingById(state, roamer.homeId);
     if (!agora) throw new Error(`Peddler ${roamer.id} sells for missing agora ${roamer.homeId}`);

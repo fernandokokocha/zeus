@@ -117,10 +117,16 @@ export function populationChapter(report: PopulationReport): HTMLElement {
     ['Not evolving because', 'Houses'],
     report.blockers.map(({ reason, houses }) => [reason, count(houses)]),
   );
+  const { thisYear, lastYear } = report.plagueDeaths;
+  const plague = table(
+    ['Year', 'Deaths'],
+    [thisYear, ...(lastYear ? [lastYear] : [])].map(({ label, deaths }) => [label, count(deaths)]),
+  );
   body.append(
     section('Population by month', populationGraph(report.history)),
     section('Housing', housing),
     section('What holds houses back', blockers),
+    section('Deaths by plague', plague),
   );
   return body;
 }

@@ -6,14 +6,14 @@ import { VENDOR_CAPACITY, houseStockTarget } from './food';
 import { eliteSiteTiles, guildRange, placeableEliteSites } from './elite-sites';
 import { ELITE_HOUSING, buildingName, houseLevel, isResidence, type EliteType } from './housing';
 import { isEliteType } from './elites';
-import { amount, drachmas } from './inspect';
+import { SICK_LINE, amount, drachmas } from './inspect';
 import { isUnderConstruction } from './sanctuaries';
 import { COVERAGE_MONTHS, serviceLeft } from './roamers';
 import { canBurn, canCollapse, riskShare } from './safety';
 import type { Point } from './point';
 import { NO_BUILDING, buildingById, inBounds, tileIndex, type Building, type CarrierKind, type Culture, type GameState, type PeddledGood, type RoamerKind, type TraineeKind } from './state';
 
-export const OVERLAYS = ['water', 'supplies', 'culture', 'appeal', 'risk', 'tax', 'staffing', 'eliteSites'] as const;
+export const OVERLAYS = ['water', 'supplies', 'culture', 'appeal', 'risk', 'disease', 'tax', 'staffing', 'eliteSites'] as const;
 
 export type Overlay = (typeof OVERLAYS)[number];
 export type TintOverlay = 'appeal' | 'eliteSites';
@@ -21,7 +21,7 @@ export type ColumnOverlay = Exclude<Overlay, TintOverlay>;
 
 export type Reading = number | null;
 
-export type ColumnKind = 'water' | PeddledGood | Culture | 'fire' | 'collapse' | 'tax' | 'staff';
+export type ColumnKind = 'water' | PeddledGood | Culture | 'fire' | 'collapse' | 'disease' | 'plague' | 'tax' | 'staff';
 
 export interface ColumnPart {
   kind: ColumnKind;
@@ -47,6 +47,7 @@ const SERVERS: Record<Overlay, BuildingType[]> = {
   culture: ['college', 'podium', 'gymnasium', 'dramaSchool', 'theater'],
   appeal: [],
   risk: ['maintenanceOffice'],
+  disease: ['infirmary'],
   tax: ['taxOffice', 'palace'],
   staffing: [],
   eliteSites: [],
@@ -60,6 +61,7 @@ export const SERVING_WALKERS: Record<Overlay, WalkerKind[]> = {
   culture: ['philosopher', 'athlete', 'actor', 'philosopherTrainee', 'actorTrainee'],
   appeal: [],
   risk: ['superintendent'],
+  disease: ['healer'],
   tax: ['taxCollector'],
   staffing: [],
   eliteSites: [],
@@ -104,6 +106,13 @@ function riskColumn(building: Building): Omit<Column, 'building'> | null {
   if (risks.length === 0) return null;
   const higher = risks.reduce((high, risk) => (risk.share > high.share ? risk : high));
   return { bars: [[{ kind: higher.kind, share: higher.share }]], details: risks.map((risk) => `${risk.name} ${percent(risk.share)}`) };
+}
+
+function diseaseColumn(residence: Building): Omit<Column, 'building'> {
+  const share = riskShare(residence.diseaseRisk);
+  const risk = `Disease risk ${percent(share)}`;
+  if (residence.sick) return { bars: [[{ kind: 'plague', share: 1 }]], details: [risk, SICK_LINE] };
+  return { bars: [[{ kind: 'disease', share }]], details: [risk] };
 }
 
 function staffColumn(building: Building): Omit<Column, 'building'> | null {
@@ -156,6 +165,7 @@ const COLUMN_READERS: Record<ColumnOverlay, ColumnReader> = {
   supplies: (state, building) => (isAgoraVendor(building.type) ? vendorColumn(building) : residenceSupplies(state, building)),
   culture: occupiedResidence(cultureColumn),
   risk: (_, building) => riskColumn(building),
+  disease: occupiedResidence((_, residence) => diseaseColumn(residence)),
   tax: occupiedResidence(taxColumn),
   staffing: (_, building) => staffColumn(building),
 };

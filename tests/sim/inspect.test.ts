@@ -114,6 +114,7 @@ describe('describeTile', () => {
         'Appeal 0',
         'No tax collector has passed',
         'Needs for Shack: food',
+        'Disease risk 2%',
         'Fire risk 1%',
       ],
     });
@@ -150,6 +151,7 @@ describe('describeTile for services', () => {
       'Appeal 16',
       'Pays 0.72 dr tax a month',
       'Needs for Shack: food',
+      'Disease risk 0%',
       'Fire risk 0%',
     ]);
     expect(meter(game, 2, 8, 'Water')).toEqual({ label: 'Water', fill: 0.25, value: '25% left', need: null });
@@ -1130,6 +1132,7 @@ describe("the inspector on a Traders' Guild", () => {
         'No tax collector has passed',
         'Trade route: none, needs a Palace with a road to the Main Road',
         'Fully supplied',
+        'Disease risk 0%',
         'Fire risk 0%',
       ],
     });
@@ -1142,7 +1145,7 @@ describe("the inspector on a Traders' Guild", () => {
     guild.cloth = 0;
     guild.coveredUntil.athletics = 0;
     runTicks(game, TICKS_PER_MONTH / 2);
-    expect(describeTile(game, 4, 13).lines.at(-2)).toBe('Missing cloth, culture 45 (has 25): breaks up in 0.5 months');
+    expect(describeTile(game, 4, 13).lines.at(-3)).toBe('Missing cloth, culture 45 (has 25): breaks up in 0.5 months');
     expect(needs(game)).toEqual([['Food', 'met'], ['Water', 'met'], ['Fleece', 'met'], ['Oil', 'met'], ['Culture', 'missing'], ['Cloth', 'missing']]);
   });
 

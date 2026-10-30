@@ -6,7 +6,7 @@ import { LEVEL_CHANGE_TICKS, houseCapacity } from '../../src/sim/housing';
 import { SETTLER_SPAWN_INTERVAL_TICKS } from '../../src/sim/settlers';
 import type { Building, GameState } from '../../src/sim/state';
 import { tick } from '../../src/sim/tick';
-import { grassGame, placeHouse, runTicks, setMeadow } from './helpers';
+import { grassGame, placeHouse, runTicks, runTicksWithoutSickness, setMeadow } from './helpers';
 
 function street(): { game: GameState; house: Building } {
   const game = grassGame();
@@ -99,9 +99,9 @@ describe('a city with the whole food chain', () => {
     placeBuilding(game, 'maintenanceOffice', 4, 16);
     const houses = game.buildings.filter((b) => b.type === 'house');
 
-    runTicks(game, 6 * TICKS_PER_MONTH);
+    runTicksWithoutSickness(game, 6 * TICKS_PER_MONTH);
     expect(houses.every((h) => h.level === 'hut')).toBe(true);
-    runTicks(game, 2 * TICKS_PER_MONTH + LEVEL_CHANGE_TICKS);
+    runTicksWithoutSickness(game, 2 * TICKS_PER_MONTH + LEVEL_CHANGE_TICKS);
     expect(houses.filter((h) => h.level === 'shack').length).toBeGreaterThanOrEqual(6);
   });
 });
@@ -213,9 +213,9 @@ describe('a city with food, water and athletes', () => {
     placeBuilding(game, 'gymnasium', 6, 21);
     const houses = game.buildings.filter((b) => b.type === 'house');
 
-    runTicks(game, 6 * TICKS_PER_MONTH);
+    runTicksWithoutSickness(game, 6 * TICKS_PER_MONTH);
     expect(houses.some((h) => h.level === 'hovel')).toBe(false);
-    runTicks(game, 4 * TICKS_PER_MONTH + LEVEL_CHANGE_TICKS);
+    runTicksWithoutSickness(game, 4 * TICKS_PER_MONTH + LEVEL_CHANGE_TICKS);
     expect(houses.filter((h) => h.level === 'hovel').length).toBeGreaterThanOrEqual(4);
   });
 });

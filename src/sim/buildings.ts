@@ -37,6 +37,7 @@ export type BuildingType =
   | 'sculptureStudio'
   | 'artisansGuild'
   | 'maintenanceOffice'
+  | 'infirmary'
   | 'demeterSanctuary'
   | 'athenaSanctuary'
   | 'hephaestusSanctuary'
@@ -94,6 +95,7 @@ export const BUILDING_SPECS: Record<BuildingType, BuildingSpec> = {
   sculptureStudio: { name: 'Sculpture Studio', width: 2, height: 2, cost: 100, workers: 12, appeal: [-2, -1], needsRoad: true },
   artisansGuild: { name: "Artisans' Guild", width: 2, height: 2, cost: 35, workers: 25, appeal: [-6, -6, -5], needsRoad: true },
   maintenanceOffice: { name: 'Maintenance Office', width: 2, height: 2, cost: 10, workers: 5, appeal: [], needsRoad: true },
+  infirmary: { name: 'Infirmary', width: 4, height: 4, cost: 35, workers: 11, appeal: [-2, -2, -2, -2], needsRoad: true },
   demeterSanctuary: { name: 'Garden of Demeter', width: 18, height: 12, cost: 840, workers: 60, appeal: SANCTUARY_APPEAL, needsRoad: true },
   athenaSanctuary: { name: 'Arbor of Athena', width: 16, height: 12, cost: 2160, workers: 60, appeal: SANCTUARY_APPEAL, needsRoad: true },
   hephaestusSanctuary: { name: 'Forge of Hephaestus', width: 13, height: 8, cost: 760, workers: 60, appeal: SANCTUARY_APPEAL, needsRoad: true },

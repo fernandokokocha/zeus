@@ -27,6 +27,7 @@ import { weaverModel } from './weaver-models';
 import { scriptoriumModel } from './scriptorium-models';
 import { tradeYardModel } from './trade-yard-models';
 import { libraryModel } from './library-models';
+import { infirmaryModel } from './infirmary-models';
 import { scholarsHouseModel } from './scholars-models';
 import { tradersGuildModel } from './traders-guild-models';
 import { collegeModel } from './college-models';
@@ -655,6 +656,7 @@ const MODELS: Record<Exclude<BuildingType, 'house'>, (building: Building, state:
   sculptureStudio: sculptureStudioModel,
   artisansGuild: artisansGuildModel,
   maintenanceOffice: maintenanceOfficeModel,
+  infirmary: infirmaryModel,
   demeterSanctuary: sanctuaryModel,
   athenaSanctuary: sanctuaryModel,
   hephaestusSanctuary: sanctuaryModel,

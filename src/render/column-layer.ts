@@ -21,6 +21,8 @@ const PART_COLORS: Record<ColumnKind, number> = {
   drama: PALETTE.columnDrama,
   fire: PALETTE.columnFire,
   collapse: PALETTE.columnCollapse,
+  disease: PALETTE.columnDisease,
+  plague: PALETTE.columnPlague,
   staff: PALETTE.columnStaff,
   food: PALETTE.columnFood,
   fleece: PALETTE.columnFleece,
@@ -31,7 +33,7 @@ const PART_COLORS: Record<ColumnKind, number> = {
 };
 
 function partColor({ kind, share }: ColumnPart): number {
-  const isRisk = kind === 'fire' || kind === 'collapse';
+  const isRisk = kind === 'fire' || kind === 'collapse' || kind === 'disease';
   return isRisk && share >= RISK_WARNING_SHARE ? PALETTE.columnDanger : PART_COLORS[kind];
 }
 

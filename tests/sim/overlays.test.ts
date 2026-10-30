@@ -76,8 +76,8 @@ describe('hovering a tile', () => {
 });
 
 describe('map modes', () => {
-  it('are eight: Supplies merges Food and Supply, Risk merges Fire and Collapse, and Houses is gone', () => {
-    expect(OVERLAYS).toEqual(['water', 'supplies', 'culture', 'appeal', 'risk', 'tax', 'staffing', 'eliteSites']);
+  it('are nine: Supplies merges Food and Supply, Risk merges Fire and Collapse, Disease follows Risk, and Houses is gone', () => {
+    expect(OVERLAYS).toEqual(['water', 'supplies', 'culture', 'appeal', 'risk', 'disease', 'tax', 'staffing', 'eliteSites']);
   });
 });
 

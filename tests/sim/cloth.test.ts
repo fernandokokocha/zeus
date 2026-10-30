@@ -235,6 +235,7 @@ describe('fleece wanted by a weaver and a fleece vendor', () => {
     let stallStocked = false;
     for (let i = 0; i < 3 * TICKS_PER_YEAR && storehouse.cloth === 0; i++) {
       house.fireRisk = 0;
+      house.diseaseRisk = 0;
       tick(game);
       if (vendor.fleece > 0) stallStocked = true;
     }

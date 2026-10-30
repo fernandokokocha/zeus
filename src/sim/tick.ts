@@ -19,6 +19,7 @@ import { recordPopulation } from './population';
 import { closeProductionMonth } from './production';
 import { tickSanctuaries } from './sanctuaries';
 import { tickSafety } from './safety';
+import { plagueMonth, tickSickness } from './sickness';
 import { tickRoamers } from './roamers';
 import { tickSchools } from './schools';
 import { tickSettlers } from './settlers';
@@ -33,6 +34,7 @@ export function tick(state: GameState): void {
   growCrops(state);
   if (monthEnds) {
     settleMonth(state);
+    plagueMonth(state);
     recordPopulation(state);
     harvestIfDue(state);
     tallyWellDressed(state);
@@ -56,5 +58,6 @@ export function tick(state: GameState): void {
   tickElites(state);
   announceEliteSites(state);
   tickSafety(state);
+  tickSickness(state);
   if (monthEnds) closeProductionMonth(state);
 }

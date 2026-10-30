@@ -4,7 +4,7 @@ import { placeBuilding, placeRoad } from '../../src/sim/commands';
 import { eat } from '../../src/sim/food';
 import type { GameState } from '../../src/sim/state';
 import { tick } from '../../src/sim/tick';
-import { grassGame, placeHouse, runTicks, setMeadow } from './helpers';
+import { grassGame, placeHouse, runTicks, runTicksWithoutSickness, setMeadow } from './helpers';
 
 function farmGame(people: number): GameState {
   const game = grassGame(30);
@@ -38,7 +38,7 @@ describe('a wheat farm', () => {
   it('harvests on the first of July: half of 8 loads after half a year', () => {
     const game = farmGame(20);
     const farm = game.buildings[1];
-    runTicks(game, 6 * TICKS_PER_MONTH - 1);
+    runTicksWithoutSickness(game, 6 * TICKS_PER_MONTH - 1);
     expect(farm.food).toBe(0);
     tick(game);
     expect(farm.food).toBeCloseTo(400);

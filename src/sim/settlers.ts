@@ -14,6 +14,7 @@ export function population(state: GameState): number {
 }
 
 export function roomFor(state: GameState, house: Building): number {
+  if (house.sick) return 0;
   const incoming = state.settlers
     .filter((s) => s.destinationId === house.id)
     .reduce((sum, s) => sum + s.people, 0);

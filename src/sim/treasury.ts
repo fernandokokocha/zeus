@@ -61,6 +61,7 @@ export function collect(state: GameState, category: Income, amount: number): voi
 
 export function closeYear(state: GameState): void {
   state.accounts = { thisYear: emptyAccounts(), lastYear: state.accounts.thisYear };
+  state.plagueDeaths = { thisYear: 0, lastYear: state.plagueDeaths.thisYear };
   closeTradeYear(state);
 }
 

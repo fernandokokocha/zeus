@@ -45,7 +45,7 @@ Drawn in `src/render/walker-layer.ts` as `Part` lists; see "Walkers and animals"
 
 | # | group | figures |
 |---|---|---|
-| 20 | Service walkers | water carrier, tax collector, superintendent |
+| 20 | Service walkers | water carrier, tax collector, superintendent, healer (placeholder: a pale robe with a herb basket; the Infirmary model has a finer one, `healer` in `src/render/kit/warriors.ts`) |
 | 21 | Peddlers | food, fleece, oil and cloth peddlers |
 | 22 | Culture walkers | philosopher, athlete, actor, philosopher trainee, actor trainee |
 | 23 | Cart pushers | cart pusher, and the fleece, olive, oil, wood, marble, bronze, sculpture, cloth, scroll and papyrus carts and supplies |

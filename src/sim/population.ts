@@ -3,11 +3,18 @@ import { BUILDING_SPECS } from './buildings';
 import { ELITE_TYPES, HOUSE_LEVELS, NEXT_LEVEL, evolutionBlockers, houseLevel, type EvolutionBlocker, type HouseLevel } from './housing';
 import { population } from './settlers';
 import type { GameState } from './state';
+import { yearLabels } from './treasury';
 
 export interface PopulationReport {
   history: number[];
   levels: { name: string; houses: number; people: number }[];
   blockers: { reason: string; houses: number }[];
+  plagueDeaths: { thisYear: YearDeaths; lastYear: YearDeaths | null };
+}
+
+export interface YearDeaths {
+  label: string;
+  deaths: number;
 }
 
 export function recordPopulation(state: GameState): void {
@@ -47,6 +54,15 @@ function heldBack(state: GameState): PopulationReport['blockers'] {
   return [...counts].map(([reason, houses]) => ({ reason, houses })).sort((a, b) => b.houses - a.houses);
 }
 
+function plagueDeaths(state: GameState): PopulationReport['plagueDeaths'] {
+  const labels = yearLabels(state);
+  const { thisYear, lastYear } = state.plagueDeaths;
+  return {
+    thisYear: { label: labels.thisYear, deaths: thisYear },
+    lastYear: labels.lastYear === null ? null : { label: labels.lastYear, deaths: lastYear },
+  };
+}
+
 export function populationReport(state: GameState): PopulationReport {
-  return { history: state.populationHistory, levels: housingLevels(state), blockers: heldBack(state) };
+  return { history: state.populationHistory, levels: housingLevels(state), blockers: heldBack(state), plagueDeaths: plagueDeaths(state) };
 }

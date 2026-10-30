@@ -12,6 +12,7 @@ export const OVERLAY_NAMES: Record<Overlay, string> = {
   culture: 'Culture',
   appeal: 'Appeal',
   risk: 'Risk',
+  disease: 'Disease',
   tax: 'Tax',
   staffing: 'Staff',
   eliteSites: 'Elites',

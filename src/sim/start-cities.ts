@@ -97,6 +97,7 @@ function districtServices(state: GameState): void {
   vendors(state, place(state, 'agora', 27, 34, 0), [['scrollVendor', 'scrolls']]);
   place(state, 'fountain', 17, 46);
   place(state, 'gymnasium', 24, 46);
+  place(state, 'infirmary', 29, 38);
   for (const venue of state.buildings.filter((b) => b.type === 'theater' || b.type === 'podium')) venue.performingUntil = PERFORMANCE_TICKS;
 }
 

@@ -50,6 +50,7 @@ import {
 import type { Point } from './point';
 import { ROAD_UPGRADE_SPECS, upgradeObstacle } from './road-upgrades';
 import { canBurn, canCollapse, isBurning, riskShare } from './safety';
+import { canFallSick } from './sickness';
 import { canSettlersReach } from './settlers';
 import { SHEARING_RANGE, SHED_CAPACITY, hasFullFleece, sheepTile, sheepToShear, shepherdAfter } from './sheep';
 import { STOREHOUSE_GOODS, STOREHOUSE_SLOTS, acceptsGood, baysOf, slotsUsed, storehouseCapacity, type StoredGood } from './storehouse';
@@ -782,9 +783,13 @@ function enoughOf(kind: Carrier['kind']): string {
   return kept > 0 ? `more than ${loads(kept)} of ${goodName}` : goodName;
 }
 
+export const SICK_LINE = 'Sick with plague';
+
 function riskLines(building: Building): string[] {
   const percent = (risk: number) => `${Math.round(riskShare(risk) * 100)}%`;
   const lines: string[] = [];
+  if (canFallSick(building)) lines.push(`Disease risk ${percent(building.diseaseRisk)}`);
+  if (building.sick) lines.push(SICK_LINE);
   if (canBurn(building)) lines.push(`Fire risk ${percent(building.fireRisk)}`);
   if (canCollapse(building)) lines.push(`Collapse risk ${percent(building.collapseRisk)}`);
   return lines;

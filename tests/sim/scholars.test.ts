@@ -309,7 +309,7 @@ describe("the inspector on a Scholars' House and its Library", () => {
     scholars.scrolls = 0;
     tick(game);
     const description = describeTile(game, 3, 12);
-    expect(description.lines.at(-2)).toMatch(/^Missing scrolls: breaks up in 1 months$/);
+    expect(description.lines).toContain('Missing scrolls: breaks up in 1 months');
     expect(description.meters.at(-1)).toEqual({ label: 'Scrolls', fill: 0, value: 'None', need: 'missing' });
   });
 

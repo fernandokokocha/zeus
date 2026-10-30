@@ -33,6 +33,13 @@ export function runTicks(state: GameState, count: number): void {
   for (let i = 0; i < count; i++) tick(state);
 }
 
+export function runTicksWithoutSickness(state: GameState, count: number): void {
+  for (let i = 0; i < count; i++) {
+    for (const building of state.buildings) building.diseaseRisk = 0;
+    tick(state);
+  }
+}
+
 export function setMeadow(state: GameState, x: number, y: number, width: number, height: number): void {
   for (let dy = 0; dy < height; dy++) for (let dx = 0; dx < width; dx++) setTerrain(state, x + dx, y + dy, 'meadow');
 }
