@@ -11,6 +11,7 @@ import { sack } from './kit/food';
 import { surface } from './kit/kit';
 import { amphora } from './kit/oil';
 import { tiledRoof } from './kit/roofs';
+import { storedArmor } from './kit/warriors';
 import { BAY_PAD, GROUND_EDGE, LOT_3, bayPad, bronzeIngots, crated, fleeceBales, marbleBlocks, oilAmphorae, oliveBaskets, stackedLogs, storeGround, storekeeper } from './kit/storehouse';
 import { tileHash } from './palette';
 import { bakedFigure, staffPhase } from './staff';
@@ -26,6 +27,7 @@ export const STORED_LOADS: Record<StoredGood, () => THREE.Object3D> = {
   cloth: bakedOnce(clothBolts),
   papyrus: bakedOnce(storedPapyrus),
   scrolls: bakedOnce(storedScrolls),
+  armor: bakedOnce(storedArmor),
 };
 
 const ROWS_BY_LOADS = { 4: [-1, 1], 6: [-1, 0, 1] };

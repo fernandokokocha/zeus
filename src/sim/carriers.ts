@@ -10,6 +10,7 @@ import { exportCapacity } from './exports';
 import { GOODS } from './flows';
 import { PRESS_OLIVE_CAPACITY } from './olives';
 import { inputCapacity } from './scrolls';
+import { ARMORY_BRONZE_CAPACITY } from './armor';
 import { SANCTUARIES, isSanctuary, recordConstruction, stillNeeded, type Sanctuary } from './sanctuaries';
 import { acceptsGood, storehouseSpace } from './storehouse';
 import { NO_BUILDING, buildingById, type Building, type Carrier, type CarrierKind, type GameState, type Good, type TradeGood } from './state';
@@ -58,6 +59,9 @@ export const CARRIER_SPECS: Record<CarrierKind, CarrierSpec> = {
   scriptoriumFleeceBuyer: { name: 'Buyer', home: 'scriptorium', good: 'fleece', stores: ['storehouse'], delivers: false, capacity: (home) => inputCapacity(home, 'fleece') },
   scrollCart: { name: 'Cart Pusher', home: 'scriptorium', good: 'scrolls', stores: ['storehouse'], delivers: true, capacity: nothing },
   scrollBuyer: { name: 'Buyer', home: 'scrollVendor', good: 'scrolls', stores: ['storehouse'], delivers: false, capacity: () => VENDOR_CAPACITY },
+  armoryBuyer: { name: 'Buyer', home: 'armory', good: 'bronze', stores: ['storehouse'], delivers: false, capacity: () => ARMORY_BRONZE_CAPACITY },
+  armorCart: { name: 'Cart Pusher', home: 'armory', good: 'armor', stores: ['storehouse'], delivers: true, capacity: nothing },
+  armorBuyer: { name: 'Buyer', home: 'armsVendor', good: 'armor', stores: ['storehouse'], delivers: false, capacity: () => VENDOR_CAPACITY },
   marbleSupply: { name: 'Cart Pusher', home: 'storehouse', good: 'marble', stores: SANCTUARIES, delivers: true, capacity: nothing },
   woodSupply: { name: 'Cart Pusher', home: 'storehouse', good: 'wood', stores: SANCTUARIES, delivers: true, capacity: nothing },
   sculptureSupply: { name: 'Cart Pusher', home: 'storehouse', good: 'sculptures', stores: SANCTUARIES, delivers: true, capacity: nothing },
@@ -199,6 +203,7 @@ function sendCarrier(state: GameState, building: Building, kind: CarrierKind): v
     cloth: 0,
     papyrus: 0,
     scrolls: 0,
+    armor: 0,
     [good]: load,
     returning: false,
     path: target.path,

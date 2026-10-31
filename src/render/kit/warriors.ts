@@ -264,3 +264,18 @@ export function plainWall(x0: number, z0: number, x1: number, z1: number, height
 export function sandYard(x0: number, z0: number, w: number, d: number): THREE.Mesh {
   return box(w, 0.016, d, flat(PALETTE.sand), x0 + w / 2, BASE, z0 + d / 2);
 }
+
+export function marketShield(x: number, y: number, z: number, radius: number, turn = 0): THREE.Object3D {
+  const shield = hopliteShield(radius);
+  shield.position.set(x, y + radius, z);
+  shield.rotation.y = turn;
+  return shield;
+}
+
+export function storedArmor(): THREE.Object3D {
+  const group = new THREE.Group();
+  group.add(box(0.22, 0.03, 0.2, flat(COLORS.timber), 0, 0, 0));
+  group.add(stackedShields(-0.05, 0.02, 3));
+  group.add(crestedHelmet(0.06, BASE + 0.06, -0.04));
+  return group;
+}

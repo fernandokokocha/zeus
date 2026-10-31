@@ -81,14 +81,15 @@ const MONTHLY_NEED: Record<PeddledGood, (residence: Building) => number> = {
   oil: (residence) => housesIn(residence) * OIL_PER_HOUSE_PER_MONTH,
   cloth: (residence) => (residence.type === 'tradersGuild' ? CLOTH_PER_GUILD_PER_MONTH : 0),
   scrolls: (residence) => (residence.type === 'scholarsHouse' ? SCROLLS_PER_SCHOLARS_PER_MONTH : 0),
+  armor: () => 0,
 };
 
-const HOUSE_STOCK_MONTHS: Record<PeddledGood, number> = { food: 5, fleece: 5, oil: 5, cloth: 3, scrolls: 3 };
+const HOUSE_STOCK_MONTHS: Record<PeddledGood, number> = { food: 5, fleece: 5, oil: 5, cloth: 3, scrolls: 3, armor: 3 };
 
 const PEDDLED_GOODS = Object.keys(MONTHLY_NEED) as PeddledGood[];
 
 export function monthlyUse(residence: Building, good: PeddledGood): number {
-  return residentNeeds(residence).includes(good) ? MONTHLY_NEED[good](residence) : 0;
+  return residentNeeds(residence).some((need) => need === good) ? MONTHLY_NEED[good](residence) : 0;
 }
 
 export function eat(state: GameState): void {

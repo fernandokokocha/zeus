@@ -18,9 +18,9 @@ export type PlayingSpeed = Exclude<Speed, 0>;
 
 export type HouseGood = 'food' | 'fleece' | 'oil';
 export type Material = 'wood' | 'marble' | 'bronze';
-export type PeddledGood = HouseGood | 'cloth' | 'scrolls';
-export type Good = HouseGood | 'olives' | Material | 'sculptures' | 'cloth' | 'papyrus' | 'scrolls';
-export type TradeGood = Exclude<Good, 'scrolls'>;
+export type PeddledGood = HouseGood | 'cloth' | 'scrolls' | 'armor';
+export type Good = HouseGood | 'olives' | Material | 'sculptures' | 'cloth' | 'papyrus' | 'scrolls' | 'armor';
+export type TradeGood = Exclude<Good, 'scrolls' | 'armor'>;
 export type Culture = 'philosophy' | 'athletics' | 'drama';
 export type Service = 'water' | 'tax' | 'goods' | Culture | 'maintenance' | 'health';
 export type Coverage = Exclude<Service, 'goods' | 'maintenance' | 'health'>;
@@ -50,6 +50,7 @@ export interface Building {
   cloth: number;
   papyrus: number;
   scrolls: number;
+  armor: number;
   refused: Good[];
   growth: number;
   production: number;
@@ -158,6 +159,9 @@ export type CarrierKind =
   | 'scriptoriumFleeceBuyer'
   | 'scrollCart'
   | 'scrollBuyer'
+  | 'armoryBuyer'
+  | 'armorCart'
+  | 'armorBuyer'
   | 'marbleSupply'
   | 'woodSupply'
   | 'sculptureSupply'
@@ -197,6 +201,7 @@ export interface Carrier extends Walk {
   cloth: number;
   papyrus: number;
   scrolls: number;
+  armor: number;
   returning: boolean;
 }
 

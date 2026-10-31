@@ -359,7 +359,9 @@ hold; its workers cart everything else to storehouses (granaries for food).
   House permit, then the count restarts.
 - Armor (spec, **ours**): Armory holds **4** loads of bronze and **4** of armor. A Warriors' House
   wears **8 units** a month; a peddler fills it to **3 months** (24 units) from an Arms Vendor.
-  Ordinary houses take none. Armor is not traded.
+  Ordinary houses take none. Armor is not traded. A load takes **2 months** at full staff. Its
+  buyer takes bronze from storehouses only, keeping none back; Foundry carts still prefer a
+  Sculpture Studio with room. The Arms Vendor holds **8** loads and its buyer fetches **4**.
 - Warriors' House (spec): placed like the Scholars' House, but with an Infirmary within **6** tiles
   of the block and no appeal test; needs a Townhouse's needs ×4, culture **45** and armor, no appeal.
   Taxes at multiplier **2**.

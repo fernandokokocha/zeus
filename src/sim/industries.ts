@@ -13,6 +13,7 @@ export const INDUSTRIES = [
   'masonryShop',
   'foundry',
   'sculptureStudio',
+  'armory',
 ] as const satisfies readonly BuildingType[];
 
 export type Industry = (typeof INDUSTRIES)[number];

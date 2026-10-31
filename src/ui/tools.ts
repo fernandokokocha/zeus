@@ -64,6 +64,8 @@ export const TOOL_LABELS: Record<Tool, string> = {
   oilVendor: priced('oilVendor'),
   clothVendor: priced('clothVendor'),
   scrollVendor: priced('scrollVendor'),
+  armsVendor: priced('armsVendor'),
+  armory: priced('armory'),
   tradersGuild: permitted('tradersGuild'),
   scholarsHouse: permitted('scholarsHouse'),
   weaver: priced('weaver'),
@@ -111,8 +113,8 @@ export interface ToolGroup {
 
 export const TOOL_GROUPS: ToolGroup[] = [
   { name: 'Husbandry', tileLabel: 'Husbandry', tools: ['wheatFarm', 'carrotFarm', 'sheep', 'oliveTree', 'growersLodge'] },
-  { name: 'Industry', tileLabel: 'Industry', tools: ['cardingShed', 'weaver', 'scriptorium', 'olivePress', 'timberMill', 'masonryShop', 'foundry', 'sculptureStudio'] },
-  { name: 'Distribution', tileLabel: 'Distribution', tools: ['granary', 'storehouse', 'fastRoad', 'agora', 'foodVendor', 'fleeceVendor', 'oilVendor', 'clothVendor', 'scrollVendor'] },
+  { name: 'Industry', tileLabel: 'Industry', tools: ['cardingShed', 'weaver', 'scriptorium', 'olivePress', 'timberMill', 'masonryShop', 'foundry', 'sculptureStudio', 'armory'] },
+  { name: 'Distribution', tileLabel: 'Distribution', tools: ['granary', 'storehouse', 'fastRoad', 'agora', 'foodVendor', 'fleeceVendor', 'oilVendor', 'clothVendor', 'scrollVendor', 'armsVendor'] },
   { name: 'Hygiene & Safety', tileLabel: 'Hygiene', tools: ['fountain', 'maintenanceOffice', 'infirmary'] },
   { name: 'Administration', tileLabel: 'Admin', tools: ['palace', 'taxOffice'] },
   { name: 'Mythology', tileLabel: 'Mythology', tools: ['artisansGuild', 'demeterSanctuary', 'athenaSanctuary', 'hephaestusSanctuary'] },

@@ -64,6 +64,10 @@ export const GOOD_ICONS: Record<StoredGood, string> = {
       '<rect x="3.5" y="3.5" width="17" height="3" rx="1.5" fill="#5a3a22"/><rect x="3.5" y="17.5" width="17" height="3" rx="1.5" fill="#5a3a22"/></g>' +
       '<path d="M8.5 9.5h7M8.5 12h7M8.5 14.5h5" stroke="#8a7a5a" stroke-width="1"/>',
   ),
+  armor: icon(
+    `<g stroke="${INK}" stroke-width="1.2"><circle cx="12" cy="12" r="8.5" fill="#b07a3a"/><circle cx="12" cy="12" r="6.3" fill="#a8322a"/></g>` +
+      '<circle cx="12" cy="12" r="1.8" fill="#d49856"/>',
+  ),
 };
 
 export const GOOD_COLORS: Record<StoredGood, string> = {
@@ -77,4 +81,5 @@ export const GOOD_COLORS: Record<StoredGood, string> = {
   cloth: '#2f6ea5',
   papyrus: '#b9a05a',
   scrolls: '#eadfbf',
+  armor: '#b07a3a',
 };

@@ -1,3 +1,4 @@
+import { ARMOR_LOADS_PER_YEAR } from './armor';
 import type { BuildingType } from './buildings';
 import { MONTHS_PER_YEAR } from './clock';
 import { CLOTH_LOADS_PER_YEAR } from './cloth';
@@ -45,6 +46,10 @@ const INDUSTRY_SPECS: Record<Industry, IndustrySpec> = {
     makes: { good: 'sculptures', perYear: SCULPTURES_PER_YEAR * UNITS_PER_LOAD },
     takes: { good: 'bronze', perYear: SCULPTURES_PER_YEAR * BRONZE_PER_SCULPTURE },
   },
+  armory: {
+    makes: { good: 'armor', perYear: ARMOR_LOADS_PER_YEAR * UNITS_PER_LOAD },
+    takes: { good: 'bronze', perYear: ARMOR_LOADS_PER_YEAR * UNITS_PER_LOAD },
+  },
 };
 
 export const GOOD_TITLES: Record<Good, string> = {
@@ -59,6 +64,7 @@ export const GOOD_TITLES: Record<Good, string> = {
   sculptures: 'Sculptures',
   papyrus: 'Papyrus',
   scrolls: 'Scrolls',
+  armor: 'Armor',
 };
 
 const STOCK_HOLDERS: BuildingType[] = ['granary', 'storehouse'];

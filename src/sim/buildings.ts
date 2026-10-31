@@ -29,12 +29,14 @@ export type BuildingType =
   | 'oilVendor'
   | 'clothVendor'
   | 'scrollVendor'
+  | 'armsVendor'
   | 'weaver'
   | 'scriptorium'
   | 'timberMill'
   | 'masonryShop'
   | 'foundry'
   | 'sculptureStudio'
+  | 'armory'
   | 'artisansGuild'
   | 'maintenanceOffice'
   | 'infirmary'
@@ -87,12 +89,14 @@ export const BUILDING_SPECS: Record<BuildingType, BuildingSpec> = {
   oilVendor: { name: 'Oil Vendor', width: 2, height: 2, cost: 10, workers: 4, appeal: [], needsRoad: true },
   clothVendor: { name: 'Cloth Vendor', width: 2, height: 2, cost: 10, workers: 4, appeal: [], needsRoad: true },
   scrollVendor: { name: 'Scroll Vendor', width: 2, height: 2, cost: 10, workers: 4, appeal: [], needsRoad: true },
+  armsVendor: { name: 'Arms Vendor', width: 2, height: 2, cost: 10, workers: 4, appeal: [], needsRoad: true },
   weaver: { name: 'Weaver', width: 2, height: 2, cost: 40, workers: 12, appeal: [-3, -2, -1], needsRoad: true },
   scriptorium: { name: 'Scriptorium', width: 2, height: 2, cost: 50, workers: 12, appeal: [-2, -1], needsRoad: true },
   timberMill: { name: 'Timber Mill', width: 2, height: 2, cost: 35, workers: 12, appeal: [-5, -4, -3, -2], needsRoad: true },
   masonryShop: { name: 'Masonry Shop', width: 2, height: 2, cost: 75, workers: 15, appeal: [-6, -5, -4, -3], needsRoad: true },
   foundry: { name: 'Foundry', width: 2, height: 2, cost: 60, workers: 15, appeal: [-10, -9, -8, -7, -6, -5], needsRoad: true },
   sculptureStudio: { name: 'Sculpture Studio', width: 2, height: 2, cost: 100, workers: 12, appeal: [-2, -1], needsRoad: true },
+  armory: { name: 'Armory', width: 2, height: 2, cost: 40, workers: 18, appeal: [-8, -7, -6, -5], needsRoad: true },
   artisansGuild: { name: "Artisans' Guild", width: 2, height: 2, cost: 35, workers: 25, appeal: [-6, -6, -5], needsRoad: true },
   maintenanceOffice: { name: 'Maintenance Office', width: 2, height: 2, cost: 10, workers: 5, appeal: [], needsRoad: true },
   infirmary: { name: 'Infirmary', width: 4, height: 4, cost: 35, workers: 11, appeal: [-2, -2, -2, -2], needsRoad: true },
@@ -150,7 +154,7 @@ export function worldToLocal(building: Placement, p: Point): Point {
   ][building.rotation];
 }
 
-const VENDOR_GOODS: Partial<Record<BuildingType, PeddledGood>> = { foodVendor: 'food', fleeceVendor: 'fleece', oilVendor: 'oil', clothVendor: 'cloth', scrollVendor: 'scrolls' };
+const VENDOR_GOODS: Partial<Record<BuildingType, PeddledGood>> = { foodVendor: 'food', fleeceVendor: 'fleece', oilVendor: 'oil', clothVendor: 'cloth', scrollVendor: 'scrolls', armsVendor: 'armor' };
 
 export function isAgoraVendor(type: BuildingType): boolean {
   return type in VENDOR_GOODS;

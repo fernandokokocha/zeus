@@ -23,6 +23,7 @@ export const FIRE_RISK_INCREMENTS: Partial<Record<BuildingType, number>> = {
   timberMill: 10,
   artisansGuild: 5,
   infirmary: 5,
+  armory: 8,
 };
 
 export const COLLAPSE_RISK_INCREMENTS: Partial<Record<BuildingType, number>> = {

@@ -10,7 +10,6 @@ anywhere.
 
 ## Items
 
-- **Armor and the Armory.** With the Arms Vendor. Part of: Warriors' House. Spec: same.
 - **Warriors' House and Drill Ground.** With its elite sites. Part of: Warriors' House.
   Spec: same.
 - **Hoplites and the army roster.** Part of: Warriors' House. Spec: same.

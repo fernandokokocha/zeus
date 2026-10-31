@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { demolish, placeBuilding, placeOliveTrees, placeRoad, placeRoadblock, placeSheep } from '../../src/sim/commands';
 import { WEAVING_TICKS } from '../../src/sim/cloth';
 import { copyingTicks } from '../../src/sim/scrolls';
+import { ARMOR_TICKS } from '../../src/sim/armor';
 import { gatheringRestTicks } from '../../src/sim/materials';
 import { PICKING_REST_TICKS } from '../../src/sim/olives';
 import { SHEARING_REST_TICKS, sheepTile } from '../../src/sim/sheep';
@@ -535,6 +536,7 @@ it('describes a storehouse by its shelf of 8 bays and its orders', () => {
       { good: 'cloth', name: 'Cloth', accepted: true },
       { good: 'papyrus', name: 'Papyrus', accepted: true },
       { good: 'scrolls', name: 'Scrolls', accepted: true },
+      { good: 'armor', name: 'Armor', accepted: true },
     ],
   });
   storehouse.fleece = 600;
@@ -793,6 +795,32 @@ it('describes olives in a storehouse and a press buyer fetching them', () => {
     );
   });
 
+  it('describes an armory by its bronze, armor and forging', () => {
+    const { game } = street();
+    placeBuilding(game, 'armory', 6, 13);
+    const armory = lastBuilding(game);
+    runTicks(game, 1);
+    expect(describeTile(game, 6, 13)).toEqual({
+      title: 'Armory',
+      meters: [],
+      lines: [
+        'Tile 6, 13',
+        'Workers 18/18',
+        'Bronze: 0 of 4 loads',
+        'Waits for bronze',
+        'Buyer waits for a storehouse with bronze',
+        'Cart Pusher at the armory',
+        'Fire risk 0%',
+      ],
+    });
+    Object.assign(armory, { bronze: 200, production: ARMOR_TICKS / 2 });
+    expect(describeTile(game, 6, 13).lines).toEqual(expect.arrayContaining(['Bronze: 2 of 4 loads', 'Forging: 50% of a load']));
+    armory.armor = 400;
+    expect(describeTile(game, 6, 13).lines).toEqual(
+      expect.arrayContaining(['Armor waiting: 4 loads', 'Full of armor: waits for its cart', 'Cart Pusher waits for a storehouse with room']),
+    );
+  });
+
   it('names the good the scriptorium buyer is out for', () => {
     const { game } = street();
     placeBuilding(game, 'storehouse', 10, 12);
@@ -921,6 +949,18 @@ it('describes olives in a storehouse and a press buyer fetching them', () => {
       title: 'Cloth Vendor',
       meters: [{ label: 'Cloth', fill: 0, value: '0 of 8 loads', need: null }],
       lines: ['Tile 10, 16', 'Workers 4/4', 'Buyer waits for a storehouse with cloth'],
+    });
+  });
+
+  it('describes an arms vendor', () => {
+    const { game } = street();
+    placeBuilding(game, 'agora', 10, 16);
+    placeBuilding(game, 'armsVendor', 10, 16);
+    runTicks(game, 1);
+    expect(describeTile(game, 10, 17)).toEqual({
+      title: 'Arms Vendor',
+      meters: [{ label: 'Armor', fill: 0, value: '0 of 8 loads', need: null }],
+      lines: ['Tile 10, 16', 'Workers 4/4', 'Buyer waits for a storehouse with armor'],
     });
   });
 });

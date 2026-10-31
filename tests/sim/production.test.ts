@@ -55,7 +55,7 @@ function row(game: GameState, good: Good): GoodReport {
 describe('the production report', () => {
   it('has a row per good, in the order goods are made', () => {
     expect(productionReport(grassGame()).goods.map(({ name }) => name)).toEqual([
-      'Food', 'Fleece', 'Olives', 'Oil', 'Fine cloth', 'Papyrus', 'Scrolls', 'Wood', 'Marble', 'Bronze', 'Sculptures',
+      'Food', 'Fleece', 'Olives', 'Oil', 'Fine cloth', 'Papyrus', 'Scrolls', 'Wood', 'Marble', 'Bronze', 'Sculptures', 'Armor',
     ]);
   });
 
@@ -181,6 +181,7 @@ describe('what the buildings could make', () => {
     ['masonryShop', 'marble', 12],
     ['foundry', 'bronze', 13],
     ['sculptureStudio', 'sculptures', 6],
+    ['armory', 'armor', 6],
   ])('is %s: %s, %i loads a year', (type, good, perYear) => {
     const game = meadowGame(40);
     placeRoad(game, { x: 0, y: 15 }, { x: 39, y: 15 });

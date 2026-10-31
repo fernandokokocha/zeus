@@ -65,6 +65,7 @@ const YARD_CARTS: Record<Good, Figure> = {
   cloth: 'clothCart',
   papyrus: 'papyrusCart',
   scrolls: 'scrollCart',
+  armor: 'armorCart',
 };
 
 function carrierFigure(kind: CarrierKind): Figure {
@@ -210,6 +211,11 @@ const scrollPart = (x: number, y: number, z: number): Part => ({
   color: PALETTE.scrollSheet,
 });
 
+const shieldPart = (y: number, z: number): Part => ({
+  geometry: new THREE.CylinderGeometry(0.07, 0.07, 0.02, 12).rotateX(Math.PI / 2).translate(0, y, z),
+  color: PALETTE.armorShield,
+});
+
 const papyrusPart = (y: number, z: number): Part => ({
   geometry: new THREE.CylinderGeometry(0.035, 0.035, 0.2, 8).rotateZ(Math.PI / 2).translate(0, y, z),
   color: PALETTE.papyrusReed,
@@ -268,6 +274,9 @@ scriptoriumFleeceBuyer: [
 scrollBuyer: [...body(PALETTE.scribeBuyerTunic), scrollPart(0.2, 0.2, -0.09)],
 scrollCart: cart([scrollPart(0, 0.17, 0.18), scrollPart(0, 0.17, 0.24), scrollPart(0, 0.21, 0.21)]),
 papyrusCart: cart([papyrusPart(0.17, 0.19), papyrusPart(0.17, 0.26)]),
+armoryBuyer: [...body(PALETTE.armoryBuyerTunic), ingot(0.1, 0.12, 0.02)],
+armorCart: cart([shieldPart(0.19, 0.18), shieldPart(0.19, 0.26)]),
+armorBuyer: [...body(PALETTE.armorBuyerTunic), shieldPart(0.24, -0.1)],
   artisan: [...body(PALETTE.artisanTunic), ...tool(new THREE.BoxGeometry(0.08, 0.05, 0.05))],
   shepherd,
   shepherdWithFleece: [

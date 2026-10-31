@@ -15,7 +15,7 @@ export interface FlowBook {
   months: Flows[];
 }
 
-export const GOODS: Good[] = ['food', 'fleece', 'olives', 'oil', 'cloth', 'papyrus', 'scrolls', 'wood', 'marble', 'bronze', 'sculptures'];
+export const GOODS: Good[] = ['food', 'fleece', 'olives', 'oil', 'cloth', 'papyrus', 'scrolls', 'wood', 'marble', 'bronze', 'sculptures', 'armor'];
 
 export function emptyFlows(): Flows {
   return Object.fromEntries(GOODS.map((good) => [good, { made: 0, possible: 0, used: 0, wanted: 0 }])) as Flows;

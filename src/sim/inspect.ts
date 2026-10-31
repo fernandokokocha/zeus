@@ -5,6 +5,7 @@ import { MAX_CULTURE_POINTS, culturePoints, culturesPassed } from './culture';
 import { CARRIER_SPECS, carrierDestinations, carrierKindsSentBy, givesWayToAnother, keptBack, tripSharers } from './carriers';
 import { PAGES_PER_WORK_OF_ART } from './scholars';
 import { PAGES_PER_SCROLL, SCRIPTORIUM_INPUT_CAPACITY, copyingTicks, hasScrollRoom, inputInUse } from './scrolls';
+import { ARMORY_BRONZE_CAPACITY, ARMOR_TICKS, canForge } from './armor';
 import { WEAVER_FLEECE_CAPACITY, WEAVING_TICKS, canWeave } from './cloth';
 import { adjacentRoadTiles, agoraVendors, footprint } from './commands';
 import { hasWorkingPalace, houseTax } from './economy';
@@ -243,6 +244,7 @@ const GOOD_NAMES: Record<Good, string> = {
   cloth: 'cloth',
   papyrus: 'papyrus',
   scrolls: 'scrolls',
+  armor: 'armor',
 };
 
 const CARRIER_HOMES: Record<Carrier['kind'], string> = {
@@ -267,6 +269,9 @@ const CARRIER_HOMES: Record<Carrier['kind'], string> = {
   scriptoriumFleeceBuyer: 'scriptorium',
   scrollCart: 'scriptorium',
   scrollBuyer: 'stall',
+  armoryBuyer: 'armory',
+  armorCart: 'armory',
+  armorBuyer: 'stall',
   marbleSupply: 'storehouse',
   woodSupply: 'storehouse',
   sculptureSupply: 'storehouse',
@@ -535,6 +540,7 @@ function storageMeters(state: GameState, building: Building): Meter[] {
     case 'oilVendor':
     case 'clothVendor':
     case 'scrollVendor':
+    case 'armsVendor':
       return [vendorMeter(building, capitalized(vendorGood(building)))];
     case 'agora':
       return agoraVendors(state, building).map((vendor) => vendorMeter(vendor, BUILDING_SPECS[vendor.type].name));
@@ -604,6 +610,12 @@ case 'scriptorium':
         ...(building.scrolls > 0 ? [`Scrolls waiting: ${amount(building.scrolls / UNITS_PER_LOAD)}`] : []),
         copyingStatus(building),
       ];
+    case 'armory':
+      return [
+        `Bronze: ${amount(building.bronze / UNITS_PER_LOAD)} of ${ARMORY_BRONZE_CAPACITY / UNITS_PER_LOAD} loads`,
+        ...(building.armor > 0 ? [`Armor waiting: ${loads(building.armor)}`] : []),
+        forgingStatus(building),
+      ];
     case 'cardingShed':
       return building.fleece > 0 ? [`Fleece waiting: ${loads(building.fleece)}`] : [];
     case 'timberMill':
@@ -623,6 +635,7 @@ case 'scriptorium':
     case 'oilVendor':
     case 'clothVendor':
     case 'scrollVendor':
+    case 'armsVendor':
       return [];
     case 'agora':
       return agoraVendors(state, building).length > 0 ? [] : ['No vendors yet: place one on a free spot'];
@@ -653,6 +666,11 @@ function pressStatus(press: Building): string {
 function weavingStatus(weaver: Building): string {
   if (canWeave(weaver)) return `Weaving: ${Math.round((weaver.production / WEAVING_TICKS) * 100)}% of a load`;
   return weaver.fleece < UNITS_PER_LOAD ? 'Waits for fleece' : 'Full of cloth: waits for its cart';
+}
+
+function forgingStatus(armory: Building): string {
+  if (canForge(armory)) return `Forging: ${Math.round((armory.production / ARMOR_TICKS) * 100)}% of a load`;
+  return armory.bronze < UNITS_PER_LOAD ? 'Waits for bronze' : 'Full of armor: waits for its cart';
 }
 
 function copyingStatus(scriptorium: Building): string {

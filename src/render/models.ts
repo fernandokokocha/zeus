@@ -24,6 +24,7 @@ import { foundryModel } from './foundry-models';
 import { sculptureStudioModel } from './sculpture-models';
 import { artisansGuildModel } from './guild-models';
 import { weaverModel } from './weaver-models';
+import { armoryModel } from './armory-models';
 import { scriptoriumModel } from './scriptorium-models';
 import { tradeYardModel } from './trade-yard-models';
 import { libraryModel } from './library-models';
@@ -648,6 +649,8 @@ const MODELS: Record<Exclude<BuildingType, 'house'>, (building: Building, state:
   oilVendor: vendorModel,
   clothVendor: vendorModel,
   scrollVendor: vendorModel,
+  armsVendor: vendorModel,
+  armory: armoryModel,
   weaver: weaverModel,
   scriptorium: scriptoriumModel,
   timberMill: timberMillModel,

@@ -8,7 +8,7 @@ export const SLOT_SIZE = LOADS_PER_SLOT * UNITS_PER_LOAD;
 export const STOREHOUSE_CAPACITY = STOREHOUSE_SLOTS * SLOT_SIZE;
 export const AMPHORA_GOODS: readonly Good[] = ['oil', 'olives'];
 export const AMPHORA_LOADS_PER_SLOT = 6;
-export const STOREHOUSE_GOODS = ['fleece', 'olives', 'oil', 'wood', 'marble', 'bronze', 'sculptures', 'cloth', 'papyrus', 'scrolls'] as const;
+export const STOREHOUSE_GOODS = ['fleece', 'olives', 'oil', 'wood', 'marble', 'bronze', 'sculptures', 'cloth', 'papyrus', 'scrolls', 'armor'] as const;
 export type StoredGood = (typeof STOREHOUSE_GOODS)[number];
 
 export interface Bay {

@@ -29,6 +29,7 @@ const PART_COLORS: Record<ColumnKind, number> = {
   oil: PALETTE.columnOil,
   cloth: PALETTE.columnCloth,
   scrolls: PALETTE.columnScrolls,
+  armor: PALETTE.columnArmor,
   tax: PALETTE.columnTax,
 };
 

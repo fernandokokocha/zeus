@@ -156,7 +156,7 @@ describe('prioritiesReport', () => {
     expect(report.workers).toBe(15);
     expect(report.jobs).toBe(28);
     expect(report.industries.map((row) => row.industry)).toEqual([
-      'wheatFarm', 'carrotFarm', 'cardingShed', 'growersLodge', 'olivePress', 'weaver', 'scriptorium', 'timberMill', 'masonryShop', 'foundry', 'sculptureStudio',
+      'wheatFarm', 'carrotFarm', 'cardingShed', 'growersLodge', 'olivePress', 'weaver', 'scriptorium', 'timberMill', 'masonryShop', 'foundry', 'sculptureStudio', 'armory',
     ]);
     expect(report.industries[4]).toEqual({ industry: 'olivePress', name: 'Olive Press', buildings: 2, workers: 15, jobs: 24, priority: 2, open: true });
     expect(report.industries[5]).toEqual({ industry: 'weaver', name: 'Weaver', buildings: 0, workers: 0, jobs: 0, priority: 0, open: false });

@@ -31,6 +31,8 @@ Old models live in `src/render/models.ts`, each wired in `MODELS`.
 | 29 | Weaver | 2×2 · 12 | no workers / with workers; fleece in, cloth out (0–4 bolts) | Placeholder in `src/render/weaver-models.ts`: workshop, blue lean-to, an upright loom with blue weave, bolts by the road. Fine cloth is the Traders' Guild's luxury, so it should look precious, not like the Carding Shed. Also redo the stored-cloth load in storehouse bays (`clothBolts` in `src/render/kit/cloth.ts`). |
 | 34 | Scriptorium | 2×2 · 12 | no workers / with workers; papyrus or fleece in, scrolls out (0–4) | Placeholder in `src/render/scriptorium-models.ts`: a whitewashed hall with a columned porch, a writing desk, a papyrus bundle or fleece by the door, scrolls by the road. Scrolls are what the scholars read, so it should look learned, not industrial. Also redo stored papyrus and scrolls in storehouse bays (`storedPapyrus`, `storedScrolls` in `src/render/kit/scrolls.ts`). |
 | 37 | Scroll Vendor | 2×2 · 4 | no workers / with workers; scroll stock 0–8 loads | Placeholder: the agora emblem stall (`src/render/agora-models.ts`, `src/render/kit/market.ts`) in scholars' purple, with scrolls on the stand and as stock, and a gold scroll on the emblem. Keep the emblem-tent look of the other stalls. |
+| 39 | Armory | 2×2 · 18 | no workers / with workers; bronze in (0–4 ingot piles), armor out (0–4 stands) | Placeholder in `src/render/armory-models.ts`: a tiled workshop with a red door and two hung shields, a lit shaft furnace and an anvil, ingot piles and armor stands (`armorStand` from `src/render/kit/warriors.ts`) in the yard. Ugly industry (appeal -8) that warriors don't mind: smoky and martial, not a copy of the Foundry. Also redo stored armor in storehouse bays (`storedArmor` in `src/render/kit/warriors.ts`). |
+| 40 | Arms Vendor | 2×2 · 4 | no workers / with workers; armor stock 0–8 loads | Placeholder: the agora emblem stall (`src/render/agora-models.ts`, `src/render/kit/market.ts`) in warriors' red, with small hoplite shields on the stand and as stock, and a shield on the emblem. Keep the emblem-tent look of the other stalls. |
 | 31 | Cloth Vendor | 2×2 · 4 | no workers / with workers; cloth stock 0–8 loads | Placeholder: the agora emblem stall (`src/render/agora-models.ts`, `src/render/kit/market.ts`) in dyed blue, with folded cloth on the stand and bolts as stock. Keep the chosen emblem-tent look of the other stalls, but make it look precious beside them. |
 | 38 | Carrot Farm | 3×3 · 10 | growth stages 0–3; no workers / with workers | Placeholder in `src/render/farm-models.ts` and `carrotRow` in `src/render/kit/farm.ts`: the Wheat Farm's farmhouse with rows of green leaf boxes, orange crowns when ripe. Keep the chosen Wheat Farm's farmhouse, but make the beds read as a vegetable garden, not a cornfield. |
 | 15 | Podium | 2×2 · 4 | idle / performing (`isPerforming`) | Philosophers speak here. |
@@ -48,8 +50,8 @@ Drawn in `src/render/walker-layer.ts` as `Part` lists; see "Walkers and animals"
 | 20 | Service walkers | water carrier, tax collector, superintendent, healer (placeholder: a pale robe with a herb basket; the Infirmary model has a finer one, `healer` in `src/render/kit/warriors.ts`) |
 | 21 | Peddlers | food, fleece, oil and cloth peddlers |
 | 22 | Culture walkers | philosopher, athlete, actor, philosopher trainee, actor trainee |
-| 23 | Cart pushers | cart pusher, and the fleece, olive, oil, wood, marble, bronze, sculpture, cloth, scroll and papyrus carts and supplies |
-| 24 | Buyers | food, fleece, olive, oil, cloth and bronze buyers, the Weaver's fleece buyer, the Scriptorium's papyrus and fleece buyers, and the Scroll Vendor's buyer |
+| 23 | Cart pushers | cart pusher, and the fleece, olive, oil, wood, marble, bronze, sculpture, cloth, scroll and papyrus carts and supplies, and the armor cart (placeholder: two bronze shields) |
+| 24 | Buyers | food, fleece, olive, oil, cloth and bronze buyers, the Weaver's fleece buyer, the Scriptorium's papyrus and fleece buyers, the Scroll Vendor's buyer, the Armory's bronze buyer and the Arms Vendor's buyer (placeholder: a red tunic with a shield) |
 | 25 | Gatherers | lumberjack (with log), quarryman (with block), miner (with ore), olive grower |
 | 26 | Townsfolk | settler, artisan, shepherd |
 | 27 | Sheep | shorn, half-grown, woolly |
@@ -61,7 +63,7 @@ superintendent (Maintenance Office). Match them.
 
 ## Suggested batches
 
-- **Easy:** 7, 8, 9, 15, 19, 28, 29, 31, 34 — small, few states.
+- **Easy:** 7, 8, 9, 15, 19, 28, 29, 31, 34, 39, 40 — small, few states.
 - **Medium:** 5, 1, 2.
 - **Hard:** 17, 18 (big footprints, many stages), and the walker groups 20–27, which need the
   walker gallery set-up first.

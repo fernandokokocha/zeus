@@ -39,9 +39,9 @@ function guildLines(game: GameState, guild: Building): string[] {
 }
 
 describe('the partner cities', () => {
-  it('buy every good the city makes but papyrus and scrolls, and nobody sells cloth', () => {
+  it('buy every good the city makes but papyrus, scrolls and armor, and nobody sells cloth', () => {
     const partners = Object.values(PARTNERS);
-    expect(GOODS.filter((good) => !partners.some((p) => (p.buys as Good[]).includes(good)))).toEqual(['papyrus', 'scrolls']);
+    expect(GOODS.filter((good) => !partners.some((p) => (p.buys as Good[]).includes(good)))).toEqual(['papyrus', 'scrolls', 'armor']);
     expect(partners.filter((p) => p.sells.includes('cloth'))).toEqual([]);
     expect(TRADE_GOODS.cloth.wePay).toBeNull();
   });
@@ -53,6 +53,10 @@ describe('the partner cities', () => {
 
   it('never deal in scrolls', () => {
     expect(Object.keys(TRADE_GOODS)).not.toContain('scrolls');
+  });
+
+  it('never deal in armor', () => {
+    expect(Object.keys(TRADE_GOODS)).not.toContain('armor');
   });
 
   it('sell what their lands are known for', () => {
