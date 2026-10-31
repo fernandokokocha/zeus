@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { at, rod } from './figure';
-import { COLORS, box, cylinder, flat, sphere } from './kit';
+import { COLORS, box, cone, cylinder, flat, sphere } from './kit';
 import { PALACE, polishedGold } from './palace';
 import { SCULPTURE } from './sculpture';
 
@@ -114,7 +114,7 @@ function carvedShip(panel: THREE.Group, x: number, y: number, size: number): voi
   panel.add(carved(size * 0.5, size * 0.36, x, y + size * 0.3));
 }
 
-function tradeRelief(width: number, height: number): THREE.Object3D {
+function seaRelief(width: number, height: number): THREE.Object3D {
   const panel = reliefPanel(width, height);
   const rows = Math.max(1, Math.round(height / (RELIEF_ROW * 2)));
   const rowHeight = (height - 0.04) / rows;
@@ -130,7 +130,7 @@ function tradeRelief(width: number, height: number): THREE.Object3D {
 
 const SHIP = { length: 0.5, beam: 0.14, hull: 0.08 };
 
-function tradeCrown(): THREE.Object3D {
+function shipCrown(): THREE.Object3D {
   const group = emblemDrum();
   const ship = new THREE.Group();
   ship.add(box(SHIP.length, SHIP.hull, SHIP.beam, polishedGold, 0, 0, 0));
@@ -148,7 +148,93 @@ function tradeCrown(): THREE.Object3D {
   return group;
 }
 
-export const TRADE_ROUTE: Emblem = { crown: tradeCrown, relief: tradeRelief };
+export const SEA_ROUTE: Emblem = { crown: shipCrown, relief: seaRelief };
+
+function road(panel: THREE.Group, width: number, y: number): void {
+  panel.add(carved(width - 0.06, 0.018, 0, y));
+  for (let x = -width / 2 + 0.07; x < width / 2 - 0.05; x += 0.1) panel.add(carved(0.04, 0.008, x, y - 0.012));
+}
+
+function carvedDonkey(panel: THREE.Group, x: number, y: number, size: number): void {
+  const legs = size * 0.32;
+  for (const dx of [-0.24, -0.14, 0.14, 0.24]) panel.add(carved(size * 0.05, legs, x + dx * size, y));
+  panel.add(carved(size * 0.62, size * 0.22, x, y + legs));
+  const neck = carved(size * 0.09, size * 0.26, x + size * 0.33, y + legs + size * 0.12);
+  neck.rotation.z = -0.5;
+  panel.add(neck);
+  panel.add(carved(size * 0.18, size * 0.1, x + size * 0.44, y + legs + size * 0.3));
+  panel.add(carved(size * 0.035, size * 0.1, x + size * 0.39, y + legs + size * 0.4));
+  panel.add(sphere(size * 0.13, flat(PALACE.marble), x - size * 0.05, y + legs + size * 0.3, FRONT));
+}
+
+function carvedDriver(panel: THREE.Group, x: number, y: number, size: number): void {
+  panel.add(carved(size * 0.14, size * 0.5, x, y));
+  panel.add(sphere(size * 0.08, flat(PALACE.marble), x, y + size * 0.6, FRONT));
+  const staff = carved(size * 0.025, size * 0.7, x + size * 0.12, y);
+  staff.rotation.z = -0.2;
+  panel.add(staff);
+}
+
+function landRelief(width: number, height: number): THREE.Object3D {
+  const panel = reliefPanel(width, height);
+  const rows = Math.max(1, Math.round(height / (RELIEF_ROW * 2)));
+  const rowHeight = (height - 0.04) / rows;
+  for (let row = 0; row < rows; row++) {
+    const y = 0.02 + row * rowHeight;
+    road(panel, width, y + rowHeight * 0.1);
+    const size = rowHeight * 0.85;
+    const pairs = Math.max(1, Math.floor(width / (size * 1.25)));
+    for (let p = 0; p < pairs; p++) {
+      const x = -width / 2 + (width / pairs) * (p + 0.5);
+      carvedDonkey(panel, x - size * 0.12, y + rowHeight * 0.13, size);
+      carvedDriver(panel, x + size * 0.5, y + rowHeight * 0.13, size * 0.9);
+    }
+  }
+  return panel;
+}
+
+const DONKEY = { length: 0.3, girth: 0.11, legs: 0.12 };
+
+function goldDonkey(): THREE.Group {
+  const group = new THREE.Group();
+  const { length, girth, legs } = DONKEY;
+  for (const x of [-length * 0.38, length * 0.38]) for (const z of [-girth * 0.3, girth * 0.3]) group.add(cylinder(0.016, 0.014, legs, polishedGold, x, 0, z, 6));
+  group.add(box(length, girth, girth, polishedGold, 0, legs, 0));
+  const neck = box(0.06, 0.15, 0.06, polishedGold, 0, 0, 0);
+  neck.position.set(length * 0.5, legs + girth * 0.95, 0);
+  neck.rotation.z = -0.55;
+  group.add(neck);
+  group.add(box(0.12, 0.06, 0.06, polishedGold, length * 0.62, legs + girth + 0.06, 0));
+  for (const z of [-0.018, 0.018]) group.add(cone(0.012, 0.06, polishedGold, length * 0.56, legs + girth + 0.11, z, 5));
+  for (const side of [-1, 1]) {
+    group.add(cylinder(0.035, 0.03, 0.09, flat(PALACE.marble), -0.01, legs - 0.02, side * (girth / 2 + 0.035), 10));
+    group.add(cylinder(0.012, 0.035, 0.025, flat(PALACE.marble), -0.01, legs + 0.07, side * (girth / 2 + 0.035), 10));
+  }
+  group.add(box(0.13, 0.025, girth + 0.02, flat(COLORS.aegean), -0.01, legs + girth, 0));
+  return group;
+}
+
+const CARAVAN_SCALE = 1.3;
+
+function caravanCrown(): THREE.Object3D {
+  const group = emblemDrum();
+  const caravan = new THREE.Group();
+  const donkey = goldDonkey();
+  donkey.position.x = -0.05;
+  caravan.add(donkey);
+  const driver = bronzeCitizen(0.3, false);
+  driver.position.set(0.2, 0, 0.05);
+  driver.rotation.y = Math.PI / 2;
+  caravan.add(driver);
+  caravan.add(rod(at(0.24, 0, 0.11), at(0.26, 0.34, 0.11), 0.01, COLORS.timber));
+  caravan.position.y = DRUM.height;
+  caravan.scale.setScalar(CARAVAN_SCALE);
+  caravan.rotation.y = Math.PI / 4;
+  group.add(caravan);
+  return group;
+}
+
+export const TRADE_ROUTE: Emblem = { crown: caravanCrown, relief: landRelief };
 
 export function friezeAround(emblem: Emblem, cx: number, cz: number, w: number, d: number, y: number, height: number): THREE.Group {
   const group = new THREE.Group();

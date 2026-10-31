@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { CROWDED_CITY, type Emblem, TRADE_ROUTE } from '../render/kit/monument';
+import { CROWDED_CITY, type Emblem, SEA_ROUTE, TRADE_ROUTE } from '../render/kit/monument';
 import { choregic, greatAltar, mausoleum } from '../render/monument-models';
 import { fastRoadMeshes } from '../render/road-looks';
 import { newGameState } from '../sim/state';
@@ -32,6 +32,7 @@ function option(name: string, body: (emblem: Emblem) => THREE.Object3D): DesignO
     variants: [
       { label: '1,000 citizens', build: atCrossroads(body, CROWDED_CITY) },
       { label: 'Trade route, same body', build: atCrossroads(body, TRADE_ROUTE) },
+      { label: 'Sea route (future), same body', build: atCrossroads(body, SEA_ROUTE) },
     ],
   };
 }
