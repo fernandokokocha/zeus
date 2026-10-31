@@ -1194,7 +1194,7 @@ describe("the inspector on a Traders' Guild", () => {
   });
 });
 
-describe('the inspector on a possible guild site', () => {
+describe('the inspector on a guild site', () => {
   const siteLine = (game: GameState, x: number, y: number) => describeTile(game, x, y).lines.find((line) => /guild site/i.test(line));
 
   it("says a Traders' Guild can be placed on a ready block", () => {
@@ -1203,67 +1203,22 @@ describe('the inspector on a possible guild site', () => {
     expect(siteLine(game, 5, 14)).toBe("Guild site at 3, 12: a Traders' Guild can be placed now");
   });
 
-  it('names a house that is not a Townhouse yet', () => {
+  it('says nothing about a block that is not ready', () => {
     const { game, houses } = guildBlock();
-    houses[3].level = 'apartment';
-    expect(siteLine(game, 5, 14)).toBe('Possible guild site at 3, 12: not a Townhouse yet');
-  });
-
-  it('counts the other houses of the block that are not Townhouses', () => {
-    const { game, houses } = guildBlock();
-    houses[3].level = 'apartment';
-    expect(siteLine(game, 3, 12)).toBe('Possible guild site at 3, 12: 1 of the other 3 houses not Townhouses');
-  });
-
-  it('names a missing permit', () => {
-    const { game } = guildBlock();
-    game.permits.tradersGuild = 0;
-    expect(siteLine(game, 3, 12)).toBe('Possible guild site at 3, 12: no permit');
-  });
-
-  it('names appeal that is too low', () => {
-    const { game } = guildBlock();
-    demolish(game, { x: 1, y: 13 }, { x: 1, y: 13 });
-    expect(siteLine(game, 3, 12)).toBe('Possible guild site at 3, 12: appeal 25 (has 22)');
-  });
-
-  it('names everything still missing, in order', () => {
-    const { game, houses } = guildBlock();
-    houses[0].level = 'apartment';
     houses[3].level = 'apartment';
     game.permits.tradersGuild = 0;
-    demolish(game, { x: 1, y: 13 }, { x: 1, y: 13 });
-    expect(siteLine(game, 3, 12)).toBe(
-      'Possible guild site at 3, 12: not a Townhouse yet, 1 of the other 3 houses not Townhouses, no permit, appeal 25 (has 22)',
-    );
+    expect(siteLine(game, 3, 12)).toBeUndefined();
+    expect(siteLine(game, 5, 14)).toBeUndefined();
   });
 
-  it("shows on a vacant lot in range, from the lot's own corner", () => {
+  it('says nothing on a vacant lot', () => {
     const { game } = guildBlock();
     placeHouse(game, 12, 12);
-    expect(siteLine(game, 12, 12)).toMatch(/^Possible guild site at 12, 12: not a Townhouse yet, the other 3 houses not Townhouses/);
-  });
-
-  it("names a yard whose ground across the Main Road isn't clear", () => {
-    const { game } = guildBlock();
-    placeBuilding(game, 'park', 4, 18);
-    expect(siteLine(game, 3, 12)).toBe("Possible guild site at 3, 12: the yard's ground across the Main Road isn't clear");
-  });
-
-it('prefers, among equally short blocks, the one already made of houses', () => {
-    const { game } = guildBlock();
-    for (const [x, y] of [[12, 12], [14, 12], [12, 14], [14, 14]]) placeHouse(game, x, y);
-    expect(siteLine(game, 14, 14)).toMatch(/^Possible guild site at 12, 12: /);
-  });
-
-  it('shows only for blocks whose front lines the Main Road', () => {
-    const { game } = guildBlock(18);
-    expect(siteLine(game, 3, 12)).toBeUndefined();
-    expect(siteLine(game, 3, 14)).toMatch(/^Possible guild site at 3, 14: 2 of the other 3 houses not Townhouses/);
+    expect(siteLine(game, 12, 12)).toBeUndefined();
   });
 });
 
-describe("the inspector on a possible Scholars' House site", () => {
+describe("the inspector on a Scholars' House site", () => {
   const siteLine = (game: GameState, x: number, y: number) => describeTile(game, x, y).lines.find((line) => /Scholars' House site/.test(line));
 
   it("says a Scholars' House can be placed on a ready block", () => {
@@ -1271,27 +1226,15 @@ describe("the inspector on a possible Scholars' House site", () => {
     expect(siteLine(game, 5, 14)).toBe("Scholars' House site at 3, 12: a Scholars' House can be placed now");
   });
 
-  it("names each neighbour missing within 6 tiles", () => {
+  it("says nothing about a block missing a neighbour, a clear Library ground or a permit", () => {
     const { game } = scholarsBlock(['gymnasium']);
-    expect(siteLine(game, 3, 12)).toBe("Possible Scholars' House site at 3, 12: no Theater within 6 tiles, no Podium within 6 tiles");
-  });
-
-  it("shows nowhere without any of its neighbours", () => {
-    const { game } = scholarsBlock([]);
     expect(siteLine(game, 3, 12)).toBeUndefined();
-  });
-
-  it("names a Library whose ground across the road isn't clear", () => {
-    const { game } = scholarsBlock();
-    placeBuilding(game, 'park', 4, 18);
-    expect(siteLine(game, 3, 12)).toBe("Possible Scholars' House site at 3, 12: the Library's ground across the road isn't clear");
-  });
-
-  it("names a house not a Townhouse yet and a missing permit", () => {
-    const { game, houses } = scholarsBlock();
-    houses[3].level = 'apartment';
-    game.permits.scholarsHouse = 0;
-    expect(siteLine(game, 5, 14)).toBe("Possible Scholars' House site at 3, 12: not a Townhouse yet, no permit");
+    const blocked = scholarsBlock().game;
+    placeBuilding(blocked, 'park', 4, 18);
+    expect(siteLine(blocked, 3, 12)).toBeUndefined();
+    const unpermitted = scholarsBlock().game;
+    unpermitted.permits.scholarsHouse = 0;
+    expect(siteLine(unpermitted, 3, 12)).toBeUndefined();
   });
 
   it("shows beside the guild's line on a block that could take either", () => {

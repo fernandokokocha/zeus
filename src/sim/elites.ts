@@ -25,7 +25,7 @@ export const ELITE_SITES: Record<EliteType, EliteSiteRule> = {
   warriorsHouse: { annex: 'drillGround', road: 'roads', neighbours: ['infirmary'] },
 };
 
-export const NEIGHBOURHOOD_RANGE = 6;
+const NEIGHBOURHOOD_RANGE = 6;
 
 const ANNEX_TYPES = Object.values(ELITE_SITES).map((site) => site.annex);
 const ROAD_NAMES: Record<RoadKind, string> = { mainRoad: 'Main Road', roads: 'road' };
@@ -62,9 +62,7 @@ export interface EliteBlueprint {
 
 export interface EliteSite {
   type: EliteType;
-  origin: Point;
-  rotation: Placement['rotation'];
-  quarters: { at: Point; house: boolean; townhouse: boolean }[];
+  townhouses: boolean;
   alongRoad: boolean;
   annexClear: boolean;
   missingNeighbours: BuildingType[];
@@ -102,7 +100,7 @@ const SHORTFALL_REASONS: Record<SiteShortfall, (site: EliteSite) => string> = {
   appeal: (site) => `Needs appeal ${ELITE_HOUSING[site.type].appeal} here (has ${site.appeal})`,
 };
 
-export function annexGround(type: EliteType): string {
+function annexGround(type: EliteType): string {
   const { annex, road } = ELITE_SITES[type];
   return `${ANNEX_CALLED[annex]}'s ground across the ${ROAD_NAMES[road]}`;
 }
@@ -117,9 +115,9 @@ function charterFor(type: EliteType): string {
   return charter.name;
 }
 
-export function siteShortfalls(site: EliteSite): SiteShortfall[] {
+function siteShortfalls(site: EliteSite): SiteShortfall[] {
   const shortfalls: SiteShortfall[] = [];
-  if (!site.quarters.every((q) => q.townhouse)) shortfalls.push('townhouses');
+  if (!site.townhouses) shortfalls.push('townhouses');
   if (!site.alongRoad) shortfalls.push('road');
   else if (!site.annexClear) shortfalls.push('annex');
   if (site.missingNeighbours.length > 0) shortfalls.push('neighbours');
@@ -148,12 +146,9 @@ export function surveyEliteSite(state: GameState, elite: Placement, appeal = app
   const along = alongRoad(state, elite);
   return {
     type,
-    origin: { x: elite.x, y: elite.y },
-    rotation: elite.rotation,
-    quarters: BLOCK_QUARTERS.map((q) => {
-      const at = { x: elite.x + q.x, y: elite.y + q.y };
-      const house = houseAt(state, at);
-      return { at, house: house !== null, townhouse: house !== null && houseLevel(house) === 'townhouse' };
+    townhouses: BLOCK_QUARTERS.every((q) => {
+      const house = houseAt(state, { x: elite.x + q.x, y: elite.y + q.y });
+      return house !== null && houseLevel(house) === 'townhouse';
     }),
     alongRoad: along,
     annexClear: along && footprintObstacle(state, eliteBlueprint(elite).annex) === null,

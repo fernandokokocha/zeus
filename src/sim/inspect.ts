@@ -17,8 +17,8 @@ import { YARD_CART_PUSHERS, caravanLimit, caravansOf, slotHoldings, yardMerchant
 import { PARTNERS, TRADE_GOODS, routeOf, routeStatus } from './trade';
 import { GOOD_TITLES } from './production';
 import { caravansComing, ordersWaitingForMoney } from './imports';
-import { eliteSiteOf } from './elite-sites';
-import { NEIGHBOURHOOD_RANGE, annexGround, eliteOfAnnex, eliteShortfalls, siteShortfalls, annexOf, eliteType, type EliteSite } from './elites';
+import { placeableEliteSiteOf } from './elite-sites';
+import { eliteOfAnnex, eliteShortfalls, annexOf, eliteType } from './elites';
 import { type HouseLevel, type HouseNeed, type ResidentNeed, ELITE_HOUSING, ELITE_NAMES, ELITE_TYPES, type EliteType, HOUSE_LEVELS, LEVEL_CHANGE_TICKS, NEXT_LEVEL, PREVIOUS_LEVEL, houseCapacity, houseLevel, evolutionBlockers, houseName, lacksCulture, missingNeeds } from './housing';
 import { ROAMER_SPECS, hasGoodsToSell, hasService, type RoamerSpec, roamerKindSentBy, serviceLeft } from './roamers';
 import { TRAINEE_SPECS, isPerforming, staffedVenues, traineeKindFor, traineeKindSentBy } from './schools';
@@ -317,30 +317,14 @@ function describeHouse(state: GameState, house: Building): Description {
   return { title: houseName(house), meters: supplyMeters(state, house, next ?? level), lines };
 }
 
-const SITE_CALLED: Record<EliteType, string> = { tradersGuild: 'guild site', scholarsHouse: "Scholars' House site", warriorsHouse: "Warriors' House site" };
+const SITE_CALLED: Record<EliteType, string> = { tradersGuild: 'Guild site', scholarsHouse: "Scholars' House site", warriorsHouse: "Warriors' House site" };
 
 function eliteSiteLines(state: GameState, house: Building): string[] {
   const appeal = appealMap(state);
   return ELITE_TYPES.flatMap((type) => {
-    const site = eliteSiteOf(state, house, type, appeal);
-    return site ? [eliteSiteStatus(site, house)] : [];
+    const site = placeableEliteSiteOf(state, house, type, appeal);
+    return site ? [`${SITE_CALLED[type]} at ${site.x}, ${site.y}: a ${ELITE_NAMES[type]} can be placed now`] : [];
   });
-}
-
-function eliteSiteStatus(site: EliteSite, house: Building): string {
-  const at = `${site.origin.x}, ${site.origin.y}`;
-  const called = SITE_CALLED[site.type];
-  const shortfalls = siteShortfalls(site);
-  if (shortfalls.length === 0) return `${capitalized(called)} at ${at}: a ${ELITE_NAMES[site.type]} can be placed now`;
-  const others = site.quarters.filter((q) => !(q.at.x === house.x && q.at.y === house.y) && !q.townhouse).length;
-  const missing: string[] = [];
-  if (houseLevel(house) !== 'townhouse') missing.push('not a Townhouse yet');
-  if (others > 0) missing.push(`${others === 3 ? 'the other' : `${others} of the other`} 3 houses not Townhouses`);
-  if (shortfalls.includes('annex')) missing.push(`the ${annexGround(site.type)} isn't clear`);
-  for (const neighbour of site.missingNeighbours) missing.push(`no ${BUILDING_SPECS[neighbour].name} within ${NEIGHBOURHOOD_RANGE} tiles`);
-  if (shortfalls.includes('permit')) missing.push('no permit');
-  if (shortfalls.includes('appeal')) missing.push(`appeal ${ELITE_HOUSING[site.type].appeal} (has ${site.appeal})`);
-  return `Possible ${called} at ${at}: ${missing.join(', ')}`;
 }
 
 function describeYard(state: GameState, yard: Building): Description {

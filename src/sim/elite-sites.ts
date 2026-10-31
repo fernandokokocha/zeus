@@ -1,7 +1,7 @@
 import { appealMap } from './appeal';
 import type { Placement, Rotation } from './buildings';
 import { footprint } from './commands';
-import { BLOCK_QUARTERS, ELITE_SITES, alongRoad, eliteBlueprint, siteObstacle, siteShortfalls, surveyEliteSite, type EliteSite } from './elites';
+import { BLOCK_QUARTERS, alongRoad, eliteBlueprint, siteObstacle, surveyEliteSite } from './elites';
 import { ELITE_NAMES, ELITE_TYPES, houseLevel, type EliteType } from './housing';
 import { postNotice } from './notices';
 import type { Point } from './point';
@@ -9,12 +9,11 @@ import { inBounds, tileIndex, type Building, type GameState } from './state';
 
 const ROTATIONS: Rotation[] = [0, 1, 2, 3];
 
-export function eliteSiteOf(state: GameState, house: Building, type: EliteType, appeal = appealMap(state)): EliteSite | null {
-  const sites = BLOCK_QUARTERS.map((q) => ({ x: house.x - q.x, y: house.y - q.y }))
+export function placeableEliteSiteOf(state: GameState, house: Building, type: EliteType, appeal = appealMap(state)): Placement | null {
+  const elites = BLOCK_QUARTERS.map((q) => ({ x: house.x - q.x, y: house.y - q.y }))
     .filter((origin) => blockInMap(state, origin))
-    .flatMap((origin) => rotationsAlongRoad(state, type, origin).map((rotation) => surveyEliteSite(state, eliteAt(type, origin, rotation), appeal)))
-    .filter(inNeighbourhood);
-  return sites.reduce<EliteSite | null>((best, site) => (best === null || closerToPlaceable(site, best) ? site : best), null);
+    .flatMap((origin) => rotationsAlongRoad(state, type, origin).map((rotation) => eliteAt(type, origin, rotation)));
+  return elites.find((elite) => siteObstacle(surveyEliteSite(state, elite, appeal)) === null) ?? null;
 }
 
 export function placeableEliteSites(state: GameState, type: EliteType, appeal = appealMap(state)): Placement[] {
@@ -40,26 +39,6 @@ function announceSites(state: GameState, type: EliteType): void {
 
 export function eliteSiteTiles(elite: Placement): Point[] {
   return [...footprint(elite), ...footprint(eliteBlueprint(elite).annex)];
-}
-
-function inNeighbourhood(site: EliteSite): boolean {
-  const { neighbours } = ELITE_SITES[site.type];
-  return neighbours.length === 0 || site.missingNeighbours.length < neighbours.length;
-}
-
-function closerToPlaceable(site: EliteSite, than: EliteSite): boolean {
-  const distance = distanceFromPlaceable(site) - distanceFromPlaceable(than);
-  return distance < 0 || (distance === 0 && quartersWithoutHouse(site) < quartersWithoutHouse(than));
-}
-
-function quartersWithoutHouse(site: EliteSite): number {
-  return site.quarters.filter((q) => !q.house).length;
-}
-
-function distanceFromPlaceable(site: EliteSite): number {
-  const missingTownhouses = site.quarters.filter((q) => !q.townhouse).length;
-  const otherShortfalls = siteShortfalls(site).filter((s) => s !== 'townhouses' && s !== 'neighbours').length;
-  return otherShortfalls + missingTownhouses + site.missingNeighbours.length;
 }
 
 function blockInMap(state: GameState, origin: Point): boolean {

@@ -238,11 +238,10 @@ describe("the Warriors' House site", () => {
     expect(siteLine(warriorsBlock(null).game, 3, 12)).toBeUndefined();
   });
 
-  it("names the Drill Ground's ground and a missing permit", () => {
+  it("says nothing when the Drill Ground's ground isn't clear", () => {
     const { game } = warriorsBlock();
     placeBuilding(game, 'park', 4, 18);
-    game.permits.warriorsHouse = 0;
-    expect(siteLine(game, 3, 12)).toBe("Possible Warriors' House site at 3, 12: the Drill Ground's ground across the road isn't clear, no permit");
+    expect(siteLine(game, 3, 12)).toBeUndefined();
   });
 
   it('colours the block and its Drill Ground in the Elites map mode', () => {
