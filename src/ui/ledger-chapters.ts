@@ -6,6 +6,7 @@ import type { ProductionReport } from '../sim/production';
 import { NO_PRIORITY, type Industry, type Priority } from '../sim/industries';
 import type { PrioritiesReport } from '../sim/labor';
 import type { Tally } from '../sim/trade-books';
+import type { ArmyReport } from '../sim/army';
 import type { GoodRow, TradeReport } from '../sim/trade-ledger';
 
 const MIN_AXIS_TOP = 10;
@@ -242,6 +243,16 @@ export function tradeChapter(report: TradeReport): HTMLElement {
     section('Caravans', tableOrNote(['Partner', 'Trade', 'Goods', 'Value', 'Where'], caravans, 'No caravans out')),
     section('Exports', goodsTable(report.exports, report.years, 'No exports yet')),
     section('Imports', goodsTable(report.imports, report.years, 'No imports yet')),
+  );
+  return body;
+}
+
+export function armyChapter(report: ArmyReport): HTMLElement {
+  const body = element('div');
+  const companies = report.companies.map(({ name, hoplites, of }) => [name, `${count(hoplites)} / ${count(of)}`]);
+  body.append(
+    element('p', 'ledger-summary', `Hoplites: ${count(report.hoplites)}`),
+    section('Companies', tableOrNote(['House', 'Hoplites'], companies, "No companies yet. A Warriors' House trains hoplites at its Drill Ground.")),
   );
   return body;
 }

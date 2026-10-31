@@ -55,6 +55,7 @@ export interface Building {
   growth: number;
   production: number;
   pages: number;
+  hoplites: number;
   performingUntil: number;
   fireRisk: number;
   collapseRisk: number;

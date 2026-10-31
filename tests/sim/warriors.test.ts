@@ -218,9 +218,9 @@ describe("the inspector on a Warriors' House and its Drill Ground", () => {
     expect(description.meters.at(-1)).toEqual({ label: 'Armor', fill: 0, value: 'None', need: 'missing' });
   });
 
-  it('shows the Drill Ground: its tile and workers', () => {
+  it('shows the Drill Ground: its tile, workers and company', () => {
     const { game } = placedWarriors();
-    expect(describeTile(game, 4, 17)).toMatchObject({ title: 'Drill Ground', lines: ['Tile 3, 17', 'Workers 0/8'] });
+    expect(describeTile(game, 4, 17)).toMatchObject({ title: 'Drill Ground', lines: ['Tile 3, 17', 'Workers 0/8', 'Company 0/8 hoplites', 'No workers: no hoplites are trained'] });
   });
 });
 

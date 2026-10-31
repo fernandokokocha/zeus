@@ -256,6 +256,7 @@ export function addBuilding(state: GameState, placement: Placement): Building {
     growth: placement.type === 'oliveTree' ? RIPE_CROP : 0,
     production: 0,
     pages: 0,
+    hoplites: 0,
     performingUntil: 0,
     fireRisk: 0,
     collapseRisk: 0,

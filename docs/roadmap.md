@@ -10,7 +10,6 @@ anywhere.
 
 ## Items
 
-- **Hoplites and the army roster.** Part of: Warriors' House. Spec: same.
 - **Athletes' House.** Needs its design first. Near a Stadium. Charter: full Gymnasium
   coverage with a Stadium built (24 months). Consumes double oil. Annex: Bathhouse, which
   raises appeal. Bonus: the city enters the Olympics every 4 years, with its chance of

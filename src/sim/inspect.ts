@@ -6,6 +6,7 @@ import { CARRIER_SPECS, carrierDestinations, carrierKindsSentBy, givesWayToAnoth
 import { PAGES_PER_WORK_OF_ART } from './scholars';
 import { PAGES_PER_SCROLL, SCRIPTORIUM_INPUT_CAPACITY, copyingTicks, hasScrollRoom, inputInUse } from './scrolls';
 import { ARMORY_BRONZE_CAPACITY, ARMOR_TICKS, canForge } from './armor';
+import { COMPANY_SIZE, HOPLITE_TICKS, drillStatus, type DrillStatus } from './army';
 import { WEAVER_FLEECE_CAPACITY, WEAVING_TICKS, canWeave } from './cloth';
 import { adjacentRoadTiles, agoraVendors, footprint } from './commands';
 import { hasWorkingPalace, houseTax } from './economy';
@@ -191,7 +192,7 @@ function describeBuildingKind(state: GameState, building: Building): Description
   if (building.type === 'scholarsHouse') return describeScholars(state, building);
   if (building.type === 'library') return describeLibrary(building);
   if (building.type === 'warriorsHouse') return describeWarriors(state, building);
-  if (building.type === 'drillGround') return describeDrillGround(building);
+  if (building.type === 'drillGround') return describeDrillGround(state, building);
   return describeWorkplace(state, building);
 }
 
@@ -419,6 +420,7 @@ function describeWarriors(state: GameState, warriors: Building): Description {
     `Tile ${warriors.x}, ${warriors.y}`,
     `Residents ${warriors.residents}/${houseCapacity(warriors)}`,
     taxStatus(state, warriors),
+    companyLine(warriors),
     missingStatus(warriors, missing),
   ];
   return { title: BUILDING_SPECS.warriorsHouse.name, meters: eliteMeters(state, warriors, missing), lines };
@@ -446,10 +448,28 @@ function describeLibrary(library: Building): Description {
   return { title: BUILDING_SPECS.library.name, meters: [], lines };
 }
 
-function describeDrillGround(drillGround: Building): Description {
-  const lines = [`Tile ${drillGround.x}, ${drillGround.y}`, `Workers ${drillGround.workers}/${BUILDING_SPECS.drillGround.workers}`];
+function describeDrillGround(state: GameState, drillGround: Building): Description {
+  const warriors = eliteOfAnnex(state, drillGround);
+  const lines = [
+    `Tile ${drillGround.x}, ${drillGround.y}`,
+    `Workers ${drillGround.workers}/${BUILDING_SPECS.drillGround.workers}`,
+    companyLine(warriors),
+    DRILL_STATUS[drillStatus(warriors, drillGround)](drillGround),
+  ];
   return { title: BUILDING_SPECS.drillGround.name, meters: [], lines };
 }
+
+function companyLine(warriors: Building): string {
+  return `Company ${warriors.hoplites}/${COMPANY_SIZE} hoplites`;
+}
+
+const DRILL_STATUS: Record<DrillStatus, (drillGround: Building) => string> = {
+  training: (drillGround) => `Training: ${Math.round((drillGround.production / HOPLITE_TICKS) * 100)}% of a hoplite`,
+  full: () => 'Company full',
+  unstarted: () => 'Not training: waiting for its first armor',
+  unarmed: () => 'Not training: the house has no armor',
+  idle: () => 'No workers: no hoplites are trained',
+};
 
 function missingStatus(elite: Building, missing: string[]): string {
   const { good } = ELITE_HOUSING[eliteType(elite)];

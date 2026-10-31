@@ -1,5 +1,6 @@
 import type { GameState } from '../sim/state';
 import { prioritiesReport, setIndustryOpen, setIndustryPriority, type PrioritiesReport } from '../sim/labor';
+import { armyReport } from '../sim/army';
 import { populationReport } from '../sim/population';
 import { productionReport } from '../sim/production';
 import { tradeReport } from '../sim/trade-ledger';
@@ -7,9 +8,9 @@ import { treasuryReport } from '../sim/treasury';
 import { createCharterChapter } from './charters';
 import { byId } from './dom';
 import { createUpgradesChapter } from './upgrades';
-import { populationChapter, prioritiesChapter, productionChapter, tradeChapter, treasuryChapter } from './ledger-chapters';
+import { armyChapter, populationChapter, prioritiesChapter, productionChapter, tradeChapter, treasuryChapter } from './ledger-chapters';
 
-type ChapterId = 'population' | 'production' | 'priorities' | 'treasury' | 'trade' | 'charter' | 'upgrades';
+type ChapterId = 'population' | 'production' | 'priorities' | 'treasury' | 'trade' | 'army' | 'charter' | 'upgrades';
 
 interface Chapter {
   title: string;
@@ -54,6 +55,7 @@ export function createLedger(state: GameState): { update(): void } {
   const production = document.createElement('div');
   const treasury = document.createElement('div');
   const trade = document.createElement('div');
+  const army = document.createElement('div');
 
   const chapters: Record<ChapterId, Chapter> = {
     population: { title: 'Population', body: population },
@@ -61,6 +63,7 @@ export function createLedger(state: GameState): { update(): void } {
     priorities: { title: 'Priorities', body: priorities.body },
     treasury: { title: 'Treasury', body: treasury },
     trade: { title: 'Trade', body: trade },
+    army: { title: 'Army', body: army },
     charter: { title: 'Charter', body: charter.body },
     upgrades: { title: 'Upgrades', body: upgrades.body },
   };
@@ -106,6 +109,7 @@ export function createLedger(state: GameState): { update(): void } {
       production.replaceChildren(productionChapter(productionReport(state)));
       treasury.replaceChildren(treasuryChapter(treasuryReport(state)));
       trade.replaceChildren(tradeChapter(tradeReport(state)));
+      army.replaceChildren(armyChapter(armyReport(state)));
     },
   };
 }

@@ -6,6 +6,7 @@ import { tickImports } from './imports';
 import { tickCloth } from './cloth';
 import { tickScrolls } from './scrolls';
 import { tickArmor } from './armor';
+import { tickArmy } from './army';
 import { readScrolls } from './scholars';
 import { settleMonth } from './economy';
 import { eat, growCrops, harvestIfDue } from './food';
@@ -55,6 +56,7 @@ export function tick(state: GameState): void {
   tickCloth(state);
   tickScrolls(state);
   tickArmor(state);
+  tickArmy(state);
   tickMaterials(state);
   tickSanctuaries(state);
   evolveHouses(state);
