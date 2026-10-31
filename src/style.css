@@ -36,14 +36,18 @@ body {
   top: 8px;
   left: 50%;
   transform: translateX(-50%);
+  max-width: calc(100vw - 16px);
   display: flex;
-  gap: 16px;
+  gap: 12px;
   align-items: center;
+}
+
+#topbar > * {
+  flex-shrink: 0;
 }
 
 #population,
 #treasury,
-#works-of-art,
 #labor {
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
@@ -76,6 +80,8 @@ body {
 #status {
   color: var(--terracotta);
   width: 15em;
+  min-width: 0;
+  flex-shrink: 1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

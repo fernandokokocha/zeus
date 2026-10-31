@@ -15,7 +15,6 @@ const STATUS_SECONDS = 3;
 export function createTopbar(state: GameState): { update(): void; showStatus(text: string): void } {
   const populationLabel = byId('population');
   const treasury = byId('treasury');
-  const worksOfArt = byId('works-of-art');
   const labor = byId('labor');
   const date = byId('date');
   const status = byId('status');
@@ -45,7 +44,6 @@ export function createTopbar(state: GameState): { update(): void; showStatus(tex
       populationLabel.textContent = `Population ${population(state).toLocaleString('en-US')}`;
       treasury.textContent = `${Math.floor(state.treasury).toLocaleString('en-US')} dr`;
       labor.textContent = laborText(state);
-      worksOfArt.textContent = `Works of Art ${state.worksOfArt}`;
       treasury.classList.toggle('negative', state.treasury < 0);
       date.textContent = `${month}, Year ${year}`;
       for (const { button, speed } of buttons) button.classList.toggle('active', speed === state.speed);

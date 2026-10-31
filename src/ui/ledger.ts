@@ -90,10 +90,6 @@ export function createLedger(state: GameState): { update(): void } {
   show('population');
   byId('ledger-button').addEventListener('click', toggle);
   byId('ledger-close').addEventListener('click', toggle);
-  byId('works-of-art').addEventListener('click', () => {
-    show('upgrades');
-    ledger.hidden = false;
-  });
   window.addEventListener('keydown', (e) => {
     if (e.key.toLowerCase() === 'l' && !e.repeat) toggle();
     if (e.key === 'Escape') ledger.hidden = true;
