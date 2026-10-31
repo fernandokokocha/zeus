@@ -79,10 +79,28 @@ describe('the Well dressed charter', () => {
     expect(game.wellDressed).toEqual({ months: 1, reset: null });
   });
 
-  it('is not reset by lower houses without fleece or oil', () => {
+  it('resets when a lower house that wears fleece runs out of it', () => {
     const { game } = cityWithTownhouse();
     placeHouse(game, 8, 4);
-    Object.assign(game.buildings[1], { level: 'apartment', residents: 40 });
+    Object.assign(game.buildings[1], { level: 'homestead', residents: 32, fleece: 0 });
+    tallyWellDressed(game);
+    expect(game.wellDressed.reset).toEqual({ tick: 0, cause: 'Homestead at 8,4 ran out of fleece' });
+  });
+
+  it('resets when an Apartment runs out of oil', () => {
+    const { game } = cityWithTownhouse();
+    placeHouse(game, 8, 4);
+    Object.assign(game.buildings[1], { level: 'apartment', residents: 48, fleece: PLENTY, oil: 0 });
+    tallyWellDressed(game);
+    expect(game.wellDressed.reset).toEqual({ tick: 0, cause: 'Apartment at 8,4 ran out of oil' });
+  });
+
+  it('is not reset by houses without a good they never use', () => {
+    const { game } = cityWithTownhouse();
+    placeHouse(game, 8, 4);
+    placeHouse(game, 12, 4);
+    Object.assign(game.buildings[1], { level: 'tenement', residents: 40, fleece: PLENTY, oil: 0 });
+    Object.assign(game.buildings[2], { level: 'hovel', residents: 24, fleece: 0, oil: 0 });
     tallyWellDressed(game);
     expect(game.wellDressed).toEqual({ months: 1, reset: null });
   });
@@ -305,12 +323,29 @@ describe('the Healthy and well fed charter', () => {
     expect(game.healthyAndWellFed.reset?.cause).toBe('Townhouse at 4,4 ran out of food');
   });
 
-  it('is not reset by lower houses that are hungry or sick', () => {
+  it('resets when a lower house runs out of food', () => {
     const { game } = fedCity();
     placeHouse(game, 8, 4);
-    const apartment = game.buildings[1];
-    Object.assign(apartment, { level: 'apartment', residents: 40, food: 0 });
-    fallSick(game, apartment);
+    Object.assign(game.buildings[1], { level: 'shack', residents: 16, food: 0 });
+    tallyHealthyAndWellFed(game);
+    expect(game.healthyAndWellFed.reset?.cause).toBe('Shack at 8,4 ran out of food');
+  });
+
+  it('resets when a lower house falls sick', () => {
+    const { game } = fedCity();
+    placeHouse(game, 8, 4);
+    const shack = game.buildings[1];
+    Object.assign(shack, { level: 'shack', residents: 16 });
+    shack.food = PLENTY * monthlyUse(shack, 'food');
+    fallSick(game, shack);
+    tallyHealthyAndWellFed(game);
+    expect(game.healthyAndWellFed.reset?.cause).toBe('Shack at 8,4 fell sick');
+  });
+
+  it('is not reset by a Hut, which never eats', () => {
+    const { game } = fedCity();
+    placeHouse(game, 8, 4);
+    Object.assign(game.buildings[1], { level: 'hut', residents: 8, food: 0 });
     tallyHealthyAndWellFed(game);
     expect(game.healthyAndWellFed).toEqual({ months: 1, reset: null });
   });

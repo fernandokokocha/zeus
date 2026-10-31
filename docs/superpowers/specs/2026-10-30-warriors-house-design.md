@@ -99,7 +99,8 @@ spreads to neighbours.
 The Warriors' House charter. Well fed (removed in slice 34) comes back as half of it.
 
 - **Healthy and well fed:** for **24 months in a row**, the city has at least one Townhouse,
-  no Townhouse goes without food, and no Townhouse falls sick.
+  no house goes without food, and no house falls sick. (Widened from Townhouses only after the
+  slice 45 playtest; Huts neither eat nor fall sick, so they never reset it.)
   - "Goes without food" is the old Well fed test: it has to eat and its stock is empty.
   - Elite houses count as Townhouses, as in the other two charters.
   - A month with no Townhouse resets the count.

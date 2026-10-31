@@ -74,7 +74,8 @@ Changes to the Traders' Guild that is already in the game.
 Replaces Well fed as the Traders' Guild charter.
 
 - **Well dressed:** for **24 months in a row**, the city has at least one Townhouse, and no
-  Townhouse goes without fleece or oil.
+  house that uses fleece or oil goes without it. (Widened from Townhouses only after the slice 45
+  playtest.)
   - A Townhouse goes without when it has to use fleece or oil and its stock is empty, the
     same test Well fed uses for food.
   - A month with no Townhouse at all also resets the count.

@@ -1,7 +1,7 @@
 import { CULTURES } from './culture';
 import { TICKS_PER_MONTH } from './clock';
 import { monthlyUse } from './food';
-import { ELITE_NAMES, buildingName, houseLevel, isElite, type EliteType } from './housing';
+import { ELITE_NAMES, buildingName, houseLevel, isElite, isResidence, residentNeeds, type EliteType } from './housing';
 import { postNotice } from './notices';
 import { hasService } from './roamers';
 import type { Building, GameState, PeddledGood } from './state';
@@ -31,7 +31,7 @@ export const WELL_DRESSED: Charter = {
   progress: 'wellDressed',
   grants: 'tradersGuild',
   missed: (_state, house) => {
-    const good = DRESS_GOODS.find((g) => monthEmptiesStock(house, g));
+    const good = DRESS_GOODS.find((g) => runsOut(house, g));
     return good ? `ran out of ${good}` : null;
   },
 };
@@ -42,6 +42,7 @@ export const LEARNED_CITY: Charter = {
   progress: 'learnedCity',
   grants: 'scholarsHouse',
   missed: (state, house) => {
+    if (!countsAsTownhouse(house)) return null;
     const culture = CULTURES.find((c) => !hasService(state, house, c));
     return culture ? `missed ${culture}` : null;
   },
@@ -53,7 +54,7 @@ export const HEALTHY_AND_WELL_FED: Charter = {
   progress: 'healthyAndWellFed',
   grants: 'warriorsHouse',
   missed: (state, house) => {
-    if (monthEmptiesStock(house, 'food')) return 'ran out of food';
+    if (runsOut(house, 'food')) return 'ran out of food';
     if (house.sick || fellSickThisMonth(state, house)) return 'fell sick';
     return null;
   },
@@ -79,7 +80,7 @@ function tally(state: GameState, charter: Charter): void {
     if (state[charter.progress].months > 0) reset(state, charter, NO_TOWNHOUSE);
     return;
   }
-  const cause = firstMiss(state, charter, townhouses);
+  const cause = firstMiss(state, charter, state.buildings.filter(isOccupiedResidence));
   if (cause !== null) {
     reset(state, charter, cause);
     return;
@@ -99,16 +100,20 @@ function countsAsTownhouse(building: Building): boolean {
   return isElite(building) || (building.type === 'house' && houseLevel(building) === 'townhouse');
 }
 
-function firstMiss(state: GameState, charter: Charter, townhouses: Building[]): string | null {
-  for (const house of townhouses) {
+function isOccupiedResidence(building: Building): boolean {
+  return isResidence(building) && building.residents > 0;
+}
+
+function firstMiss(state: GameState, charter: Charter, houses: Building[]): string | null {
+  for (const house of houses) {
     const miss = charter.missed(state, house);
     if (miss) return `${buildingName(house)} at ${house.x},${house.y} ${miss}`;
   }
   return null;
 }
 
-function monthEmptiesStock(house: Building, good: PeddledGood): boolean {
-  return house[good] <= monthlyUse(house, good);
+function runsOut(house: Building, good: PeddledGood): boolean {
+  return residentNeeds(house).includes(good) && house[good] <= monthlyUse(house, good);
 }
 
 function fellSickThisMonth(state: GameState, house: Building): boolean {

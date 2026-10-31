@@ -303,7 +303,8 @@ hold; its workers cart everything else to storehouses (granaries for food).
 - Notices: the log keeps the **50** most recent. A new one shows under the top bar for
   **8 s** of real time and fades over **1 s**, at most **4** at once.
 - Well dressed charter (spec): **24** months in a row with at least one Townhouse and no
-  Townhouse running out of fleece or oil (a guild counts as a Townhouse) grants **1** Traders'
+  house that uses fleece or oil running out of it (Homestead and up for fleece, Apartment and up
+  for oil, elites included) grants **1** Traders'
   Guild permit, then the count restarts. A month with no Townhouse resets a running count.
   Permits are held per elite type.
 - Learned city charter (spec): **24** months in a row with at least one Townhouse and every
@@ -311,7 +312,7 @@ hold; its workers cart everything else to storehouses (granaries for food).
   Townhouses) grants **1** Scholars' House permit, then the count restarts. A month with no
   Townhouse resets a running count.
 - Healthy and well fed charter (spec): **24** months in a row with at least one Townhouse, no
-  Townhouse running out of food and none falling sick (elite houses count as Townhouses) grants
+  house above a Hut running out of food and none falling sick (elites included) grants
   **1** Warriors' House permit, then the count restarts. An onset counts even if a healer cures
   it before month end. A month with no Townhouse resets a running count.
 - Traders' Guild (spec): keeps every resident of its four Townhouses (capacity **240**), who
@@ -349,14 +350,11 @@ hold; its workers cart everything else to storehouses (granaries for food).
   site also needs at least one of its neighbours (the Infirmary, for warriors) within **6** tiles before
   it shows. "A Traders' Guild (Scholars' House, Warriors' House) can now be placed at …" is posted **once per block per type**, named by its corner, the first
   time the block qualifies.
-- Sickness (spec, **ours**): disease risk fills like fire risk, full at **60**. A house at full risk
+- Sickness (spec, **ours**): Huts never fall sick. Disease risk fills like fire risk, full at **60**. A house at full risk
   falls sick at random **once a month on average**, at once next to a sick house. A sick house loses
   **a quarter** of its residents (rounded up) each month end, takes no settlers and adds **60** risk a
   month to houses within **1** tile, until a healer passes or it is empty. A healer resets risk and
   cures, with the usual 2-tile reach.
-- Healthy and well fed charter (spec): **24** months in a row with at least one Townhouse and no
-  Townhouse going without food or falling sick (elites count as Townhouses) grants **1** Warriors'
-  House permit, then the count restarts.
 - Armor (spec, **ours**): Armory holds **4** loads of bronze and **4** of armor. A Warriors' House
   wears **8 units** a month; a peddler fills it to **3 months** (24 units) from an Arms Vendor.
   Ordinary houses take none. Armor is not traded. A load takes **2 months** at full staff. Its

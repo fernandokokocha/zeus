@@ -4,9 +4,9 @@ import { ELITE_NAMES, type EliteType } from '../sim/housing';
 import type { GameState } from '../sim/state';
 
 const GOALS: Record<Charter['progress'], string> = {
-  wellDressed: `The city has a Townhouse, and no Townhouse runs out of fleece or oil, for ${WELL_DRESSED_MONTHS} months in a row. Elite houses count as Townhouses. Grants a Traders' Guild permit.`,
+  wellDressed: `The city has a Townhouse, and no house that wears fleece or oil runs out of it, for ${WELL_DRESSED_MONTHS} months in a row. Grants a Traders' Guild permit.`,
   learnedCity: `The city has a Townhouse, and every Townhouse has philosophy, athletics and drama, for ${LEARNED_CITY_MONTHS} months in a row. Elite houses count as Townhouses. Grants a Scholars' House permit.`,
-  healthyAndWellFed: `The city has a Townhouse, and no Townhouse runs out of food or falls sick, for ${HEALTHY_AND_WELL_FED_MONTHS} months in a row. Elite houses count as Townhouses. Grants a Warriors' House permit.`,
+  healthyAndWellFed: `The city has a Townhouse, and no house above a Hut runs out of food or falls sick, for ${HEALTHY_AND_WELL_FED_MONTHS} months in a row. Grants a Warriors' House permit.`,
 };
 
 export function charterText(charter: Charter, { months, reset }: CharterCount, tick: number): string {
