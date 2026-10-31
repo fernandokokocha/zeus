@@ -246,9 +246,9 @@ describe("the Warriors' House site", () => {
 
   it('colours the block and its Drill Ground in the Elites map mode', () => {
     const { game } = warriorsBlock();
-    for (const [x, y] of [[3, 12], [6, 15], [3, 17], [6, 18]]) expect(readingAt(game, x, y)).toBe(ELITE_SITE_READINGS.warriorsHouse);
+    for (const [x, y] of [[3, 12], [6, 15], [3, 17], [6, 18]]) expect(readingAt(game, x, y)).toBe(ELITE_SITE_READINGS.placeable);
     game.permits.warriorsHouse = 0;
-    expect(readingAt(game, 3, 12)).toBeNull();
+    expect(readingAt(game, 6, 15)).toBe(ELITE_SITE_READINGS.warriorsHouse);
   });
 
   it('is announced once with a notice', () => {

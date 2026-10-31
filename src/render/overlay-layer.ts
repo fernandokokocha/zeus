@@ -21,10 +21,11 @@ const TINT_SCALES: Record<TintOverlay, ColorStop[]> = {
     { at: 20, color: good },
   ],
   eliteSites: [
-    { at: ELITE_SITE_READINGS.guildRange, color: PALETTE.overlayGuildRange },
-    { at: ELITE_SITE_READINGS.tradersGuild, color: PALETTE.overlayTradersGuild },
-    { at: ELITE_SITE_READINGS.scholarsHouse, color: PALETTE.overlayScholarsHouse },
-    { at: ELITE_SITE_READINGS.warriorsHouse, color: PALETTE.overlayWarriorsHouse },
+    { at: ELITE_SITE_READINGS.tradersGuild, color: PALETTE.overlayTradersArea },
+    { at: ELITE_SITE_READINGS.scholarsHouse, color: PALETTE.overlayScholarsArea },
+    { at: ELITE_SITE_READINGS.warriorsHouse, color: PALETTE.overlayWarriorsArea },
+    { at: ELITE_SITE_READINGS.scholarsAndWarriors, color: PALETTE.overlayScholarsAndWarriors },
+    { at: ELITE_SITE_READINGS.placeable, color: PALETTE.overlayElitePlaceable },
   ],
 };
 

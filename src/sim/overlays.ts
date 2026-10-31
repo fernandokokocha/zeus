@@ -4,8 +4,8 @@ import { CULTURES, CULTURE_POINTS, culturePoints } from './culture';
 import { taxPaidLastYear } from './economy';
 import { VENDOR_CAPACITY, houseStockTarget } from './food';
 import { eliteSiteTiles, guildRange, placeableEliteSites } from './elite-sites';
-import { ELITE_HOUSING, buildingName, houseLevel, isResidence, type EliteType } from './housing';
-import { isEliteType } from './elites';
+import { ELITE_HOUSING, ELITE_TYPES, buildingName, houseLevel, isResidence, type EliteType } from './housing';
+import { isEliteType, neighbourhood } from './elites';
 import { SICK_LINE, amount, drachmas } from './inspect';
 import { isUnderConstruction } from './sanctuaries';
 import { COVERAGE_MONTHS, serviceLeft } from './roamers';
@@ -214,16 +214,26 @@ export function overlayReadings(state: GameState, overlay: TintOverlay): Reading
   return eliteSiteReadings(state);
 }
 
-export const ELITE_SITE_READINGS = { guildRange: 0, tradersGuild: 1, scholarsHouse: 2, warriorsHouse: 3 } satisfies Record<EliteType | 'guildRange', number>;
-
-const PAINTED_LAST_WINS: EliteType[] = ['warriorsHouse', 'scholarsHouse', 'tradersGuild'];
+export const ELITE_SITE_READINGS = { tradersGuild: 0, scholarsHouse: 1, warriorsHouse: 2, scholarsAndWarriors: 3, placeable: 4 } satisfies Record<
+  EliteType | 'scholarsAndWarriors' | 'placeable',
+  number
+>;
 
 function eliteSiteReadings(state: GameState): Reading[] {
-  const readings: Reading[] = guildRange(state).map((inRange, i) => (inRange && !state.mainRoad[i] ? ELITE_SITE_READINGS.guildRange : null));
+  const scholars = neighbourhood(state, 'scholarsHouse');
+  const warriors = neighbourhood(state, 'warriorsHouse');
+  const readings = scholars.map((forScholars, i): Reading => {
+    if (forScholars && warriors[i]) return ELITE_SITE_READINGS.scholarsAndWarriors;
+    if (forScholars) return ELITE_SITE_READINGS.scholarsHouse;
+    return warriors[i] ? ELITE_SITE_READINGS.warriorsHouse : null;
+  });
+  guildRange(state).forEach((inRange, i) => {
+    if (inRange && !state.mainRoad[i]) readings[i] = ELITE_SITE_READINGS.tradersGuild;
+  });
   const appeal = appealMap(state);
-  for (const type of PAINTED_LAST_WINS) {
+  for (const type of ELITE_TYPES) {
     for (const site of placeableEliteSites(state, type, appeal)) {
-      for (const tile of eliteSiteTiles(site)) readings[tileIndex(state, tile.x, tile.y)] = ELITE_SITE_READINGS[type];
+      for (const tile of eliteSiteTiles(site)) readings[tileIndex(state, tile.x, tile.y)] = ELITE_SITE_READINGS.placeable;
     }
   }
   return readings;

@@ -3,11 +3,11 @@ import { appealMap } from '../../src/sim/appeal';
 import { TICKS_PER_MONTH } from '../../src/sim/clock';
 import { placeBuilding, placeRoad } from '../../src/sim/commands';
 import { VENDOR_CAPACITY, houseStockTarget } from '../../src/sim/food';
-import { OVERLAYS, SERVING_WALKERS, buildingLook, overlayColumns, overlayReadings, overlayReport, overlayReportAt, type ColumnOverlay } from '../../src/sim/overlays';
+import { ELITE_SITE_READINGS, OVERLAYS, SERVING_WALKERS, buildingLook, overlayColumns, overlayReadings, overlayReport, overlayReportAt, type ColumnOverlay } from '../../src/sim/overlays';
 import { COVERAGE_MONTHS } from '../../src/sim/roamers';
 import { RISK_LIMIT } from '../../src/sim/safety';
 import type { Building, GameState } from '../../src/sim/state';
-import { SCHOLARS_NEIGHBOURS, guildBlock, grassGame, scholarsBlock, placeHouse, placedGuild, supplyGuild } from './helpers';
+import { guildBlock, grassGame, scholarsBlock, placeHouse, placedGuild, supplyGuild, warriorsBlock } from './helpers';
 
 function lastBuilding(game: GameState): Building {
   return game.buildings[game.buildings.length - 1];
@@ -290,43 +290,58 @@ describe("map overlays on a Traders' Guild", () => {
 describe('the guild sites overlay', () => {
   it('shades the guild band on both sides of a straight stretch of Main Road, but not the road itself', () => {
     const { game } = guildBlock();
-    expect(readingAt(game, 'eliteSites', 10, 12)).toBe(0);
-    expect(readingAt(game, 'eliteSites', 10, 20)).toBe(0);
+    expect(readingAt(game, 'eliteSites', 10, 12)).toBe(ELITE_SITE_READINGS.tradersGuild);
+    expect(readingAt(game, 'eliteSites', 10, 20)).toBe(ELITE_SITE_READINGS.tradersGuild);
     expect(readingAt(game, 'eliteSites', 10, 11)).toBeNull();
     expect(readingAt(game, 'eliteSites', 10, 21)).toBeNull();
     expect(readingAt(game, 'eliteSites', 10, 16)).toBeNull();
   });
 
-  it('highlights every tile of a block a guild can be placed on now', () => {
+  it('highlights every tile of a block a guild can be placed on now, in the colour every elite shares', () => {
     const { game } = guildBlock();
-    for (const [x, y] of [[3, 12], [6, 12], [3, 15], [6, 15], [3, 17], [6, 18]]) expect(readingAt(game, 'eliteSites', x, y)).toBe(1);
-    expect(readingAt(game, 'eliteSites', 7, 15)).toBe(0);
+    for (const [x, y] of [[3, 12], [6, 12], [3, 15], [6, 15], [3, 17], [6, 18]]) expect(readingAt(game, 'eliteSites', x, y)).toBe(ELITE_SITE_READINGS.placeable);
+    expect(readingAt(game, 'eliteSites', 7, 15)).toBe(ELITE_SITE_READINGS.tradersGuild);
   });
 
-  it('does not highlight a block that lacks a permit', () => {
+  it('leaves a block that lacks a permit in the band', () => {
     const { game } = guildBlock();
     game.permits.tradersGuild = 0;
-    for (const [x, y] of [[3, 12], [3, 15], [3, 17]]) expect(readingAt(game, 'eliteSites', x, y)).toBe(0);
+    for (const [x, y] of [[3, 12], [3, 15], [3, 17]]) expect(readingAt(game, 'eliteSites', x, y)).toBe(ELITE_SITE_READINGS.tradersGuild);
   });
 });
 
-describe("the elite sites overlay on Scholars' House sites", () => {
-  it("colours every tile of a block a Scholars' House can be placed on now, with no band around it", () => {
-    const { game } = scholarsBlock();
-    for (const [x, y] of [[3, 12], [6, 12], [3, 15], [6, 15], [3, 17], [6, 18]]) expect(readingAt(game, 'eliteSites', x, y)).toBe(2);
-    expect(readingAt(game, 'eliteSites', 7, 15)).toBeNull();
-  });
-
-  it("leaves a block without a permit clear", () => {
+describe("the elite sites overlay for Scholars' and Warriors' Houses", () => {
+  it("shades the ground within 6 tiles of a Theater, a Gymnasium and a Podium together", () => {
     const { game } = scholarsBlock();
     game.permits.scholarsHouse = 0;
-    expect(readingAt(game, 'eliteSites', 3, 12)).toBeNull();
+    expect(readingAt(game, 'eliteSites', 9, 15)).toBe(ELITE_SITE_READINGS.scholarsHouse);
+    expect(readingAt(game, 'eliteSites', 6, 15)).toBe(ELITE_SITE_READINGS.scholarsHouse);
+    expect(readingAt(game, 'eliteSites', 25, 3)).toBeNull();
   });
 
-  it("shows the guild on a block that could take either", () => {
-    const { game } = guildBlock();
-    for (const n of SCHOLARS_NEIGHBOURS) placeBuilding(game, n.type, n.x, n.y);
-    game.permits.scholarsHouse = 1;
-    expect(readingAt(game, 'eliteSites', 3, 12)).toBe(1);
+  it("shades nothing for Scholars until all three stand", () => {
+    const { game } = scholarsBlock(['theater', 'gymnasium']);
+    expect(readingAt(game, 'eliteSites', 9, 15)).toBeNull();
+  });
+
+  it("highlights a block a Scholars' House can be placed on now in the shared colour", () => {
+    const { game } = scholarsBlock();
+    for (const [x, y] of [[3, 12], [6, 12], [3, 15], [6, 15], [3, 17], [6, 18]]) expect(readingAt(game, 'eliteSites', x, y)).toBe(ELITE_SITE_READINGS.placeable);
+  });
+
+  it("shades the ground within 6 tiles of an Infirmary for Warriors", () => {
+    const { game } = warriorsBlock();
+    game.permits.warriorsHouse = 0;
+    expect(readingAt(game, 'eliteSites', 9, 15)).toBe(ELITE_SITE_READINGS.warriorsHouse);
+    expect(readingAt(game, 'eliteSites', 25, 3)).toBeNull();
+  });
+
+  it('marks ground that suits both apart from either', () => {
+    const { game } = scholarsBlock();
+    game.permits.scholarsHouse = 0;
+    placeRoad(game, { x: 13, y: 16 }, { x: 16, y: 16 });
+    expect(placeBuilding(game, 'infirmary', 13, 17)).toEqual({ ok: true });
+    expect(readingAt(game, 'eliteSites', 9, 15)).toBe(ELITE_SITE_READINGS.scholarsAndWarriors);
+    expect(readingAt(game, 'eliteSites', 6, 15)).toBe(ELITE_SITE_READINGS.scholarsHouse);
   });
 });

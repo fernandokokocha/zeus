@@ -163,6 +163,18 @@ function standsNear(state: GameState, elite: Placement, type: BuildingType): boo
   return state.buildings.some((b) => b.type === type && block.some((tile) => footprintDistance(b, tile) <= NEIGHBOURHOOD_RANGE));
 }
 
+export function neighbourhood(state: GameState, type: EliteType): boolean[] {
+  const needed = ELITE_SITES[type].neighbours;
+  const near = needed.map((neighbour) => {
+    const standing = state.buildings.filter((b) => b.type === neighbour);
+    return (tile: Point) => standing.some((b) => footprintDistance(b, tile) <= NEIGHBOURHOOD_RANGE);
+  });
+  return Array.from({ length: state.size * state.size }, (_, i) => {
+    const tile = { x: i % state.size, y: Math.floor(i / state.size) };
+    return near.length > 0 && near.every((isNear) => isNear(tile));
+  });
+}
+
 function houseAt(state: GameState, at: Point): Building | null {
   const building = buildingById(state, state.buildingIdAt[tileIndex(state, at.x, at.y)]);
   return building !== undefined && building.type === 'house' && building.x === at.x && building.y === at.y ? building : null;
