@@ -109,7 +109,10 @@ export function createMapModes(state: GameState, view: View): { shown(): Overlay
     updateTooltip();
   });
   window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') menu.hidden = true;
+    if (e.key === 'Escape') {
+      menu.hidden = true;
+      show(null);
+    }
     if (e.key.toLowerCase() === 'o' && !e.repeat) show(shown ? null : lastShown);
   });
   button.style.width = `${widestLabel(button, choices.map(({ overlay }) => overlay))}px`;

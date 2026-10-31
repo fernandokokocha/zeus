@@ -19,7 +19,7 @@ const QUARTER_TURNS = 4;
 export interface ToolInputDeps {
   view: View;
   state: GameState;
-  toolbar: { current(): Tool | null; clear(): void };
+  toolbar: { current(): Tool | null; reset(): void };
   ghost: { show(tiles: PreviewTile[]): void };
   inspector: Inspector;
   topbar: { showStatus(text: string): void };
@@ -112,7 +112,7 @@ export function attachToolInput({ view, state, toolbar, ghost, inspector, topbar
   window.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
     if (inspector.isOpen()) inspector.close();
-    else toolbar.clear();
+    toolbar.reset();
     dragStart = null;
     refreshGhost();
   });

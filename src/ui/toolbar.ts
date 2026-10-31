@@ -3,7 +3,7 @@ import { GROUP_ICONS, TOOL_ICONS } from './icons';
 import type { GameState } from '../sim/state';
 import { QUICK_TILE_LABELS, QUICK_TOOLS, TOOL_GROUPS, TOOL_LABELS, type Tool, type ToolGroup, toolEnabled, toolLabel } from './tools';
 
-export function createToolbar(state: GameState, onChange: () => void): { current(): Tool | null; clear(): void; update(): void } {
+export function createToolbar(state: GameState, onChange: () => void): { current(): Tool | null; reset(): void; update(): void } {
   const box = byId('toolbar');
   let current: Tool | null = null;
   let openGroup: ToolGroup | null = null;
@@ -86,5 +86,10 @@ function render(): void {
 
   render();
 
-  return { current: () => current, clear: () => select(null), update };
+  function reset(): void {
+    openGroup = null;
+    select(null);
+  }
+
+  return { current: () => current, reset, update };
 }
