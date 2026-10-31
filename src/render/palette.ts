@@ -141,7 +141,6 @@ export const PALETTE = {
   overlayTradersArea: 0x5f8fd8,
   overlayScholarsArea: 0x9a62d0,
   overlayWarriorsArea: 0xd0583f,
-  overlayScholarsAndWarriors: 0xc04f98,
   overlayElitePlaceable: 0xf2c230,
   flatBase: 0xd8ccb2,
   columnStub: 0xece4d4,

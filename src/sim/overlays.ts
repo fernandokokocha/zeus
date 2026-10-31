@@ -214,16 +214,12 @@ export function overlayReadings(state: GameState, overlay: TintOverlay): Reading
   return eliteSiteReadings(state);
 }
 
-export const ELITE_SITE_READINGS = { tradersGuild: 0, scholarsHouse: 1, warriorsHouse: 2, scholarsAndWarriors: 3, placeable: 4 } satisfies Record<
-  EliteType | 'scholarsAndWarriors' | 'placeable',
-  number
->;
+export const ELITE_SITE_READINGS = { tradersGuild: 0, scholarsHouse: 1, warriorsHouse: 2, placeable: 3 } satisfies Record<EliteType | 'placeable', number>;
 
 function eliteSiteReadings(state: GameState): Reading[] {
   const scholars = neighbourhood(state, 'scholarsHouse');
   const warriors = neighbourhood(state, 'warriorsHouse');
   const readings = scholars.map((forScholars, i): Reading => {
-    if (forScholars && warriors[i]) return ELITE_SITE_READINGS.scholarsAndWarriors;
     if (forScholars) return ELITE_SITE_READINGS.scholarsHouse;
     return warriors[i] ? ELITE_SITE_READINGS.warriorsHouse : null;
   });

@@ -336,12 +336,12 @@ describe("the elite sites overlay for Scholars' and Warriors' Houses", () => {
     expect(readingAt(game, 'eliteSites', 25, 3)).toBeNull();
   });
 
-  it('marks ground that suits both apart from either', () => {
+  it("shows ground that suits both in the Scholars' colour, with no colour of its own", () => {
     const { game } = scholarsBlock();
     game.permits.scholarsHouse = 0;
-    placeRoad(game, { x: 13, y: 16 }, { x: 16, y: 16 });
     expect(placeBuilding(game, 'infirmary', 14, 17)).toEqual({ ok: true });
-    expect(readingAt(game, 'eliteSites', 9, 15)).toBe(ELITE_SITE_READINGS.scholarsAndWarriors);
-    expect(readingAt(game, 'eliteSites', 6, 15)).toBe(ELITE_SITE_READINGS.scholarsHouse);
+    expect(readingAt(game, 'eliteSites', 9, 15)).toBe(ELITE_SITE_READINGS.scholarsHouse);
+    expect(readingAt(game, 'eliteSites', 15, 15)).toBe(ELITE_SITE_READINGS.warriorsHouse);
+    expect(Object.keys(ELITE_SITE_READINGS)).toEqual(['tradersGuild', 'scholarsHouse', 'warriorsHouse', 'placeable']);
   });
 });

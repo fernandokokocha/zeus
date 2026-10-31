@@ -172,9 +172,11 @@ The guild's site help (slice 17) becomes every elite type's.
   site", with what is still missing. For scholars that list adds "no Theater within 6 tiles"
   (likewise for the Gymnasium and the Podium) and "the Library's ground across the road isn't
   clear". A house can show both types.
-- **Map mode:** **Guilds** becomes **Elites**. It shows qualifying blocks for every type, in
-  the type's colour (traders blue, scholars purple). Where a type has a range (the guild's
-  Main Road), it is shaded too.
+- **Map mode:** **Guilds** becomes **Elites**. It shades where each type may go, in the
+  type's colour: traders blue along a straight stretch of Main Road, scholars purple within 6
+  tiles of a Theater, a Gymnasium and a Podium, warriors red within 6 tiles of an Infirmary.
+  Ground that suits both scholars and warriors shows purple; there is no colour of its own.
+  Blocks any elite can be placed on now are one shared yellow.
 - **Notice:** "A Scholars' House can now be placed at …", once per block per type.
 
 ## Upgrades

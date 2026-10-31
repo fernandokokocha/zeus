@@ -24,7 +24,6 @@ const ELITE_SITES_KEY = [
   { at: ELITE_SITE_READINGS.tradersGuild, label: "Traders' Guild: along a straight stretch of the Main Road" },
   { at: ELITE_SITE_READINGS.scholarsHouse, label: "Scholars' House: within 6 tiles of a Theater, a Gymnasium and a Podium" },
   { at: ELITE_SITE_READINGS.warriorsHouse, label: "Warriors' House: within 6 tiles of an Infirmary" },
-  { at: ELITE_SITE_READINGS.scholarsAndWarriors, label: "Scholars' House or Warriors' House" },
   { at: ELITE_SITE_READINGS.placeable, label: 'An elite house can be placed here now' },
 ];
 
