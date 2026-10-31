@@ -115,7 +115,6 @@ describe('describeTile', () => {
         'Appeal 0',
         'No tax collector has passed',
         'Needs for Shack: food',
-        'Disease risk 2%',
         'Fire risk 1%',
       ],
     });
@@ -152,7 +151,6 @@ describe('describeTile for services', () => {
       'Appeal 16',
       'Pays 0.72 dr tax a month',
       'Needs for Shack: food',
-      'Disease risk 0%',
       'Fire risk 0%',
     ]);
     expect(meter(game, 2, 8, 'Water')).toEqual({ label: 'Water', fill: 0.25, value: '25% left', need: null });

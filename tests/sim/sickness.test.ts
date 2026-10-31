@@ -9,7 +9,7 @@ import { HOUSE_LEVELS, type HouseLevel } from '../../src/sim/housing';
 import { ROAMER_REST_TICKS, ROAMER_SPECS } from '../../src/sim/roamers';
 import { RISK_LIMIT, riskShare } from '../../src/sim/safety';
 import { closestLotWithRoom } from '../../src/sim/settlers';
-import { DISEASE_RISK_INCREMENTS, ELITE_DISEASE_RISK_INCREMENT, fallSick } from '../../src/sim/sickness';
+import { DISEASE_RISK_INCREMENTS, ELITE_DISEASE_RISK_INCREMENT, fallSick, type SickableLevel } from '../../src/sim/sickness';
 import type { Building, GameState } from '../../src/sim/state';
 import { tick } from '../../src/sim/tick';
 import { walkerTile } from '../../src/sim/walking';
@@ -17,7 +17,7 @@ import { grassGame, placeHouse, placedScholars, runTicks } from './helpers';
 
 const FULL_RISK = RISK_LIMIT * TICKS_PER_MONTH;
 
-function house(game: GameState, x: number, y: number, level: HouseLevel = 'hut', residents = 8): Building {
+function house(game: GameState, x: number, y: number, level: HouseLevel = 'shack', residents = 8): Building {
   placeHouse(game, x, y);
   const placed = game.buildings[game.buildings.length - 1];
   Object.assign(placed, { level, residents });
@@ -42,8 +42,7 @@ function ticksUntil(game: GameState, happened: () => boolean, limit: number): nu
 }
 
 describe('disease risk', () => {
-  it.each<[HouseLevel, number]>([
-    ['hut', 20],
+  it.each<[SickableLevel, number]>([
     ['shack', 15],
     ['hovel', 15],
     ['homestead', 10],
@@ -74,13 +73,21 @@ describe('disease risk', () => {
     expect(game.buildings.map((b) => b.diseaseRisk)).toEqual([0, 0]);
   });
 
-  it('is full at 60, after 3 months in a Hut', () => {
+  it('is full at 60', () => {
     const game = grassGame();
-    const hut = house(game, 4, 4);
-    runTicks(game, 3 * TICKS_PER_MONTH - 1);
-    expect(riskShare(hut.diseaseRisk)).toBeLessThan(1);
+    const shack = house(game, 4, 4);
+    shack.diseaseRisk = FULL_RISK - 15 * (TICKS_PER_MONTH / 2);
+    runTicks(game, TICKS_PER_MONTH / 2 - 1);
+    expect(riskShare(shack.diseaseRisk)).toBeLessThan(1);
     tick(game);
-    expect(riskShare(hut.diseaseRisk)).toBe(1);
+    expect(riskShare(shack.diseaseRisk)).toBe(1);
+  });
+
+  it('never builds up in a Hut, which keeps no food to spoil', () => {
+    const game = grassGame();
+    const hut = house(game, 4, 4, 'hut');
+    runTicks(game, TICKS_PER_MONTH);
+    expect(hut.diseaseRisk).toBe(0);
   });
 });
 
@@ -101,6 +108,16 @@ describe('falling sick', () => {
     expect(hut.sick).toBe(false);
   });
 
+  it('never happens to a Hut, even next to a sick house', () => {
+    const game = grassGame();
+    const sick = house(game, 4, 4);
+    const hut = house(game, 6, 4, 'hut');
+    fallSick(game, sick);
+    runTicks(game, TICKS_PER_MONTH);
+    expect(hut.sick).toBe(false);
+    expect(hut.diseaseRisk).toBe(0);
+  });
+
   it('happens at once to a house at full risk next to a sick one', () => {
     const game = grassGame();
     const sick = house(game, 4, 4);
@@ -113,7 +130,7 @@ describe('falling sick', () => {
 
   it('posts a notice once per outbreak', () => {
     const game = grassGame();
-    const hut = house(game, 4, 4, 'hut', 40);
+    const hut = house(game, 4, 4, 'shack', 40);
     hut.diseaseRisk = FULL_RISK;
     ticksUntil(game, () => hut.sick, 6 * TICKS_PER_MONTH);
     runTicks(game, TICKS_PER_MONTH);
@@ -149,14 +166,14 @@ describe('a sick house', () => {
     const game = grassGame();
     placeRoad(game, { x: 0, y: 6 }, { x: 19, y: 6 });
     game.entry = { x: 0, y: 6 };
-    const sick = house(game, 4, 4, 'hut', 4);
+    const sick = house(game, 4, 4, 'shack', 4);
     fallSick(game, sick);
     expect(closestLotWithRoom(game, game.entry)).toBeNull();
   });
 
   it('is cured once it is empty, and its risk is gone', () => {
     const game = grassGame();
-    const sick = house(game, 4, 4, 'hut', 1);
+    const sick = house(game, 4, 4, 'shack', 1);
     fallSick(game, sick);
     untilMonthEnd(game);
     expect(sick).toMatchObject({ residents: 0, sick: false, diseaseRisk: 0 });
@@ -181,7 +198,7 @@ describe('the Infirmary', () => {
     const game = grassGame();
     placeRoad(game, { x: 0, y: 10 }, { x: 19, y: 10 });
     placeBuilding(game, 'infirmary', 0, 11);
-    house(game, 16, 16, 'hut', 40);
+    house(game, 16, 16, 'shack', 40);
     return game;
   }
 
@@ -263,7 +280,7 @@ describe('the inspector on an Infirmary', () => {
     const game = grassGame();
     placeRoad(game, { x: 0, y: 10 }, { x: 19, y: 10 });
     placeBuilding(game, 'infirmary', 0, 11);
-    house(game, 16, 16, 'hut', 40);
+    house(game, 16, 16, 'shack', 40);
     runTicks(game, 1);
     expect(describeTile(game, 0, 11).lines).toEqual(['Tile 0, 11', 'Workers 11/11', 'Healer getting ready', 'Fire risk 0%', 'Collapse risk 0%']);
     runTicks(game, ROAMER_REST_TICKS);

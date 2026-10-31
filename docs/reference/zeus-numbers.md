@@ -139,7 +139,7 @@ Source: https://zeus.heavengames.com/gameinfo/housinglevels/ (disease risk incre
 
 | Hut | Shack | Hovel | Homestead | Tenement | Apartment | Townhouse | Elite house |
 |---|---|---|---|---|---|---|---|
-| 20 | 15 | 15 | 10 | 10 | 5 | 5 | 5 (**ours**; Zeus 0) |
+| 0 (**ours**; Zeus 20) | 15 | 15 | 10 | 10 | 5 | 5 | 5 (**ours**; Zeus 0) |
 
 - Spread and effects are not documented; see "Sickness (spec)" under our choices.
 

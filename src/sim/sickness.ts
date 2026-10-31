@@ -7,8 +7,9 @@ import { nextRandom } from './rng';
 import { RISK_LIMIT } from './safety';
 import type { Building, GameState } from './state';
 
-export const DISEASE_RISK_INCREMENTS: Record<HouseLevel, number> = {
-  hut: 20,
+export type SickableLevel = Exclude<HouseLevel, 'hut'>;
+
+export const DISEASE_RISK_INCREMENTS: Record<SickableLevel, number> = {
   shack: 15,
   hovel: 15,
   homestead: 10,
@@ -25,11 +26,11 @@ export const ONSET_CHANCE_PER_TICK = 1 / TICKS_PER_MONTH;
 const FULL_RISK = RISK_LIMIT * TICKS_PER_MONTH;
 
 export function canFallSick(building: Building): boolean {
-  return isResidence(building) && building.residents > 0;
+  return isResidence(building) && building.residents > 0 && (isElite(building) || building.level !== 'hut');
 }
 
 function diseaseIncrement(residence: Building): number {
-  return isElite(residence) ? ELITE_DISEASE_RISK_INCREMENT : DISEASE_RISK_INCREMENTS[residence.level];
+  return isElite(residence) ? ELITE_DISEASE_RISK_INCREMENT : DISEASE_RISK_INCREMENTS[residence.level as SickableLevel];
 }
 
 function atMost(risk: number): number {
