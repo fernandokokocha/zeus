@@ -327,8 +327,8 @@ hold; its workers cart everything else to storehouses (granaries for food).
 - Scholars' House (spec): keeps every resident of its four Townhouses (capacity **240**), in the
   labor pool; pays a Townhouse's tax (multiplier **2**). Placed over four Townhouses in an exact
   4×4 block whose front lines a straight **4**-tile stretch of any road, with its **4×2** Library
-  across it on clear ground, a Theater, a Gymnasium and a Podium each within **6** tiles of the
-  block (**ours**), and block appeal at least **25**. Needs a Townhouse's needs ×4, culture **45**,
+  across it on clear ground, the whole block within **6** tiles of a Theater, a Gymnasium and a
+  Podium (**ours**), and block appeal at least **25**. Needs a Townhouse's needs ×4, culture **45**,
   appeal **25**, and scrolls; any need missing for **1 month** breaks it into four vacant lots,
   and its Library is lost.
 - Unstarted elites (**ours**): a new elite's need clock waits for its first cloth or scroll. Until
@@ -362,8 +362,8 @@ hold; its workers cart everything else to storehouses (granaries for food).
   Ordinary houses take none. Armor is not traded. A load takes **2 months** at full staff. Its
   buyer takes bronze from storehouses only, keeping none back; Foundry carts still prefer a
   Sculpture Studio with room. The Arms Vendor holds **8** loads and its buyer fetches **4**.
-- Warriors' House (spec): placed like the Scholars' House, but with an Infirmary within **6** tiles
-  of the block and no appeal test; needs a Townhouse's needs ×4, culture **45** and armor, no appeal.
+- Warriors' House (spec): placed like the Scholars' House, but with the whole block within **6** tiles
+  of an Infirmary and no appeal test; needs a Townhouse's needs ×4, culture **45** and armor, no appeal.
   Taxes at multiplier **2**.
 - Drill Ground (**ours**, **8** workers): trains **1** hoplite every **2** months at full staff while its
   house is started and has armor; a company holds at most **8**. Hoplites count among the house's

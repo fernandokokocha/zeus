@@ -130,7 +130,7 @@ The Warriors' House charter. Well fed (removed in slice 34) comes back as half o
 |---|---|
 | Blueprint | 4×4 house, a straight 4-tile stretch of road, 4×2 Drill Ground across it, the same 7×4 shape as the other elites |
 | Road | any road |
-| Neighbourhood | an **Infirmary** with its nearest tile within **6 tiles** of the house's block |
+| Neighbourhood | every tile of the house's block within **6 tiles** of an **Infirmary** |
 | Charter | Healthy and well fed |
 | Residents | everyone from the four Townhouses (up to 240), in the labor pool |
 | Needs | a Townhouse's needs ×4, culture 45, plus **armor**. **No appeal need** |

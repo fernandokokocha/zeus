@@ -64,10 +64,10 @@ describe("placing a Warriors' House", () => {
     expect(place(game)).toEqual({ ok: false, reason: "The Drill Ground's ground across the road isn't clear" });
   });
 
-  it('needs an Infirmary within 6 tiles, counted by its nearest tile', () => {
+  it('needs the whole block within 6 tiles of an Infirmary', () => {
     expect(place(warriorsBlock(null).game)).toEqual({ ok: false, reason: 'Needs an Infirmary within 6 tiles' });
-    expect(place(warriorsBlock({ x: 13, y: 17 }).game)).toEqual({ ok: false, reason: 'Needs an Infirmary within 6 tiles' });
-    expect(place(warriorsBlock({ x: 12, y: 17 }).game)).toEqual({ ok: true });
+    expect(place(warriorsBlock({ x: 10, y: 17 }).game)).toEqual({ ok: false, reason: 'Needs an Infirmary within 6 tiles' });
+    expect(place(warriorsBlock({ x: 9, y: 17 }).game)).toEqual({ ok: true });
   });
 
   it('needs a permit from Healthy and well fed', () => {

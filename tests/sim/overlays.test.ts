@@ -340,7 +340,7 @@ describe("the elite sites overlay for Scholars' and Warriors' Houses", () => {
     const { game } = scholarsBlock();
     game.permits.scholarsHouse = 0;
     placeRoad(game, { x: 13, y: 16 }, { x: 16, y: 16 });
-    expect(placeBuilding(game, 'infirmary', 13, 17)).toEqual({ ok: true });
+    expect(placeBuilding(game, 'infirmary', 14, 17)).toEqual({ ok: true });
     expect(readingAt(game, 'eliteSites', 9, 15)).toBe(ELITE_SITE_READINGS.scholarsAndWarriors);
     expect(readingAt(game, 'eliteSites', 6, 15)).toBe(ELITE_SITE_READINGS.scholarsHouse);
   });

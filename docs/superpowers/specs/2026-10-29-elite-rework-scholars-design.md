@@ -129,7 +129,7 @@ The Scholars' House charter.
 |---|---|
 | Blueprint | 4×4 house, a straight 4-tile stretch of road, 4×2 Library across it, the same 7×4 shape as the guild |
 | Road | **any** road, ordinary or Main Road |
-| Neighbourhood | a **Theater**, a **Gymnasium** and a **Podium**, each with its nearest tile within **6 tiles** of the house's block (**ours**) |
+| Neighbourhood | a **Theater**, a **Gymnasium** and a **Podium**, with every tile of the house's block within **6 tiles** of each (**ours**; *changed 2026-10-31: it used to be the block's nearest tile*) |
 | Charter | Learned city |
 | Residents | everyone from the four Townhouses (up to 240), in the labor pool |
 | Needs | a Townhouse's needs ×4 (as the reworked guild), culture 45, appeal 25, plus **scrolls** |

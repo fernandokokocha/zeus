@@ -82,12 +82,11 @@ describe("placing a Scholars' House", () => {
     expect(place(scholarsBlock(['theater', 'gymnasium']).game)).toEqual({ ok: false, reason: 'Needs a Podium within 6 tiles' });
   });
 
-  it('counts a neighbour by its nearest tile, 6 tiles out and no further', () => {
+  it('needs the whole block within 6 tiles of a neighbour, not just its nearest tile', () => {
     const near = scholarsBlock(['theater', 'gymnasium']).game;
-    placeRoad(near, { x: 13, y: 16 }, { x: 14, y: 16 });
-    placeBuilding(near, 'podium', 13, 17);
+    placeBuilding(near, 'podium', 7, 19);
     expect(place(near)).toEqual({ ok: false, reason: 'Needs a Podium within 6 tiles' });
-    placeBuilding(near, 'podium', 7, 20);
+    placeBuilding(near, 'podium', 7, 17);
     expect(place(near)).toEqual({ ok: true });
   });
 
@@ -216,8 +215,8 @@ describe("a Scholars' House's scrolls", () => {
     const { game, scholars } = placedScholars();
     supplyScholars(scholars);
     const vendor = scrollMarket(game);
-    placeRoad(game, { x: 13, y: 16 }, { x: 16, y: 16 });
-    expect(placeBuilding(game, 'storehouse', 13, 17)).toEqual({ ok: true });
+    placeRoad(game, { x: 13, y: 16 }, { x: 17, y: 16 });
+    expect(placeBuilding(game, 'storehouse', 14, 17)).toEqual({ ok: true });
     const store = game.buildings.find((b) => b.type === 'storehouse')!;
     store.scrolls = 600;
     for (let i = 0; i < TICKS_PER_MONTH && vendor.scrolls === 0; i++) tick(game);

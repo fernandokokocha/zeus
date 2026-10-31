@@ -131,8 +131,8 @@ export function emptyCity(state: GameState): void {
 
 export const SCHOLARS_ROAD_Y = 16;
 export const SCHOLARS_NEIGHBOURS = [
-  { type: 'theater', x: 10, y: 10 },
-  { type: 'gymnasium', x: 10, y: 17 },
+  { type: 'theater', x: 9, y: 17 },
+  { type: 'gymnasium', x: 9, y: 12 },
   { type: 'podium', x: 7, y: 17 },
 ] as const;
 

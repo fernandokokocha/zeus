@@ -159,16 +159,17 @@ export function surveyEliteSite(state: GameState, elite: Placement, appeal = app
 }
 
 function standsNear(state: GameState, elite: Placement, type: BuildingType): boolean {
-  const block = footprint(elite);
-  return state.buildings.some((b) => b.type === type && block.some((tile) => footprintDistance(b, tile) <= NEIGHBOURHOOD_RANGE));
+  const isNear = nearOne(state, type);
+  return footprint(elite).every(isNear);
+}
+
+function nearOne(state: GameState, type: BuildingType): (tile: Point) => boolean {
+  const standing = state.buildings.filter((b) => b.type === type);
+  return (tile) => standing.some((b) => footprintDistance(b, tile) <= NEIGHBOURHOOD_RANGE);
 }
 
 export function neighbourhood(state: GameState, type: EliteType): boolean[] {
-  const needed = ELITE_SITES[type].neighbours;
-  const near = needed.map((neighbour) => {
-    const standing = state.buildings.filter((b) => b.type === neighbour);
-    return (tile: Point) => standing.some((b) => footprintDistance(b, tile) <= NEIGHBOURHOOD_RANGE);
-  });
+  const near = ELITE_SITES[type].neighbours.map((neighbour) => nearOne(state, neighbour));
   return Array.from({ length: state.size * state.size }, (_, i) => {
     const tile = { x: i % state.size, y: Math.floor(i / state.size) };
     return near.length > 0 && near.every((isNear) => isNear(tile));
