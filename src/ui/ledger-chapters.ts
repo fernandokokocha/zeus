@@ -3,8 +3,10 @@ import type { Accounts, TreasuryReport } from '../sim/treasury';
 import { UNITS_PER_LOAD } from '../sim/food';
 import type { PopulationReport } from '../sim/population';
 import type { ProductionReport } from '../sim/production';
-import { NO_PRIORITY, type Industry, type Priority } from '../sim/industries';
-import type { PrioritiesReport } from '../sim/labor';
+import { CLOSED, type Branch, type Priority } from '../sim/branches';
+import type { Industry } from '../sim/industries';
+import type { BranchRow, PrioritiesReport } from '../sim/labor';
+import { FARM_ICONS, GOOD_ICONS } from './good-icons';
 import type { Tally } from '../sim/trade-books';
 import type { ArmyReport } from '../sim/army';
 import type { GoodRow, TradeReport } from '../sim/trade-ledger';
@@ -14,7 +16,20 @@ const AXIS_STEPS = [1, 2, 5];
 const MONTHS_PER_YEAR = 12;
 const NO_YEAR = '–';
 const NO_CARGO = '–';
-const PRIORITIES: Priority[] = [NO_PRIORITY, 1, 2, 3];
+const PRIORITIES: Priority[] = [CLOSED, 1, 2, 3];
+const INDUSTRY_ICONS: Record<Industry, string> = {
+  ...FARM_ICONS,
+  cardingShed: GOOD_ICONS.fleece,
+  growersLodge: GOOD_ICONS.olives,
+  olivePress: GOOD_ICONS.oil,
+  weaver: GOOD_ICONS.cloth,
+  scriptorium: GOOD_ICONS.scrolls,
+  timberMill: GOOD_ICONS.wood,
+  masonryShop: GOOD_ICONS.marble,
+  foundry: GOOD_ICONS.bronze,
+  sculptureStudio: GOOD_ICONS.sculptures,
+  armory: GOOD_ICONS.armor,
+};
 const INCOME: (keyof Accounts)[] = ['taxes', 'trade'];
 const SPENDING: (keyof Accounts)[] = ['wages', 'construction', 'sheep', 'imports'];
 const ACCOUNT_NAMES: Record<keyof Accounts, string> = { taxes: 'Taxes', trade: 'Trade', wages: 'Wages', construction: 'Construction', sheep: 'Sheep', imports: 'Imports' };
@@ -157,38 +172,38 @@ export function productionChapter(report: ProductionReport): HTMLElement {
 }
 
 export interface PriorityControls {
-  setPriority(industry: Industry, priority: Priority): void;
-  setOpen(industry: Industry, open: boolean): void;
+  setPriority(branch: Branch, priority: Priority): void;
 }
 
-function priorityPicker(industry: Industry, current: Priority, controls: PriorityControls): HTMLElement {
+function priorityPicker(branch: Branch, current: Priority, controls: PriorityControls): HTMLElement {
   const picker = element('div', 'priority-picker');
   for (const priority of PRIORITIES) {
-    const button = element('button', priority === current ? 'active' : '', priority === NO_PRIORITY ? '–' : String(priority));
-    button.title = priority === NO_PRIORITY ? 'No priority' : `Priority ${priority}`;
-    button.addEventListener('click', () => controls.setPriority(industry, priority));
+    const button = element('button', priority === current ? 'active' : '', priority === CLOSED ? '–' : String(priority));
+    button.title = priority === CLOSED ? 'Closed' : `Priority ${priority}`;
+    button.addEventListener('click', () => controls.setPriority(branch, priority));
     picker.append(button);
   }
   return picker;
 }
 
-function openSwitch(industry: Industry, open: boolean, controls: PriorityControls): HTMLElement {
-  const button = element('button', open ? 'open-switch' : 'open-switch closed', open ? 'Open' : 'Closed');
-  button.addEventListener('click', () => controls.setOpen(industry, !open));
-  return button;
+function industryName(industry: Industry, name: string): HTMLElement {
+  const icon = element('span', 'good-icon');
+  icon.innerHTML = INDUSTRY_ICONS[industry];
+  return element('span', 'branch-name', icon, name);
+}
+
+function branchCells({ buildings, workers, jobs, priority, branch }: BranchRow, controls: PriorityControls): (string | HTMLElement)[] {
+  return [count(buildings), `${count(workers)} / ${count(jobs)}`, priorityPicker(branch, priority, controls)];
 }
 
 export function prioritiesChapter(report: PrioritiesReport, controls: PriorityControls): HTMLElement {
   const body = element('div');
   const summary = element('p', 'ledger-summary', `Workers ${count(report.workers)} for ${count(report.jobs)} jobs`);
-  const rows = report.industries.map(({ industry, name, buildings, workers, jobs, priority, open }) => [
-    name,
-    count(buildings),
-    `${count(workers)} / ${count(jobs)}`,
-    priorityPicker(industry, priority, controls),
-    openSwitch(industry, open, controls),
-  ]);
-  body.append(summary, section('Industries', table(['Industry', 'Buildings', 'Workers', 'Priority', ''], rows)));
+  const industries = report.industries.map((row) => [industryName(row.branch, row.name), ...branchCells(row, controls)]);
+  const services = report.services.map((row) => [row.name, ...branchCells(row, controls)]);
+  const tables = [table(['Industry', 'Buildings', 'Workers', 'Priority'], industries), table(['Service', 'Buildings', 'Workers', 'Priority'], services)];
+  for (const t of tables) t.classList.add('priorities-table');
+  body.append(summary, section('Industries', tables[0]), section('Services', tables[1]));
   return body;
 }
 

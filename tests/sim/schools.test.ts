@@ -44,7 +44,7 @@ describe('a college', () => {
   });
 
   it('takes twice as long at half staff', () => {
-    const game = town(20);
+    const game = town(16);
     placeBuilding(game, 'podium', 12, 13);
     placeBuilding(game, 'college', 2, 12);
     expect(lastBuilding(game).workers).toBe(0);

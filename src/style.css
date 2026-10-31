@@ -528,13 +528,18 @@ button.active {
   width: 24px;
 }
 
-.open-switch {
-  width: 64px;
+.priorities-table {
+  table-layout: fixed;
 }
 
-.open-switch.closed {
-  background: #d8cdb6;
-  color: #6b5a44;
+.priorities-table th:first-child {
+  width: 34%;
+}
+
+.branch-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .ledger-table .negative {

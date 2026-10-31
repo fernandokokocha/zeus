@@ -1,3 +1,4 @@
+import { CLOSED } from '../../src/sim/branches';
 import { describe, expect, it } from 'vitest';
 import { BUILDING_SPECS } from '../../src/sim/buildings';
 import { houseStockTarget } from '../../src/sim/food';
@@ -186,6 +187,7 @@ describe("a Scholars' House's reading", () => {
 
   it('makes no pages with an unstaffed Library, though the scrolls are still read', () => {
     const { game, scholars, library } = placedScholars();
+    game.priorities.culture = CLOSED;
     supplyScholars(scholars);
     for (const b of game.buildings) b.residents = b === scholars ? 1 : 0;
     untilMonthEnd(game);

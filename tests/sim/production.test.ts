@@ -7,7 +7,8 @@ import { CASTING_TICKS } from '../../src/sim/materials';
 import { PRESSING_TICKS, OIL_LOADS_PER_YEAR } from '../../src/sim/olives';
 import { WEAVING_TICKS } from '../../src/sim/cloth';
 import { copyingTicks } from '../../src/sim/scrolls';
-import { setIndustryOpen } from '../../src/sim/labor';
+import { setPriority } from '../../src/sim/labor';
+import { CLOSED } from '../../src/sim/branches';
 import { productionReport, productionStatus, type GoodReport } from '../../src/sim/production';
 import { materialNeeded } from '../../src/sim/sanctuaries';
 import type { GameState, Good } from '../../src/sim/state';
@@ -270,7 +271,7 @@ describe('a closed industry', () => {
   it('books nothing it could make or would take in', () => {
     const game = town();
     place(game, 'olivePress', 10, 13);
-    setIndustryOpen(game, 'olivePress', false);
+    setPriority(game, 'olivePress', CLOSED);
     runMaintained(game, 2);
     expect(row(game, 'oil').possible).toBe(0);
     expect(row(game, 'olives').wanted).toBe(0);

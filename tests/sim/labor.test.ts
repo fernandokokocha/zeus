@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { placeBuilding, placeRoad } from '../../src/sim/commands';
-import { assignWorkers, laborSummary, prioritiesReport, setIndustryOpen, setIndustryPriority, workforce } from '../../src/sim/labor';
+import { assignWorkers, laborSummary, prioritiesReport, setPriority, workforce } from '../../src/sim/labor';
+import { BUILDING_SPECS, type BuildingType } from '../../src/sim/buildings';
+import { CLOSED, DEFAULT_PRIORITY, SERVICES, SERVICE_SPECS, branchOf } from '../../src/sim/branches';
 import { runTicks } from './helpers';
 import { PRESS_OLIVE_CAPACITY } from '../../src/sim/olives';
 import { UNITS_PER_LOAD } from '../../src/sim/food';
@@ -23,20 +25,20 @@ describe('workforce', () => {
 });
 
 describe('assignWorkers', () => {
-  it('staffs buildings in placement order until the workforce runs out', () => {
+  it('splits a short workforce across buildings in proportion to their posts', () => {
     const game = gameWithPopulation(12);
     placeBuilding(game, 'taxOffice', 2, 11);
     placeBuilding(game, 'fountain', 5, 11);
     assignWorkers(game);
-    expect(game.buildings.map((b) => b.workers)).toEqual([0, 6, 0]);
+    expect(game.buildings.map((b) => b.workers)).toEqual([0, 4, 2]);
   });
 
-  it('fills an earlier building first and gives the rest to later ones', () => {
+  it('gives the workers left after rounding to the largest shares, not to the oldest building', () => {
     const game = gameWithPopulation(20);
     placeBuilding(game, 'fountain', 2, 11);
     placeBuilding(game, 'taxOffice', 5, 11);
     assignWorkers(game);
-    expect(game.buildings.map((b) => b.workers)).toEqual([0, 4, 6]);
+    expect(game.buildings.map((b) => b.workers)).toEqual([0, 3, 7]);
   });
 
   it('staffs a vendor whose agora touches the road', () => {
@@ -94,40 +96,51 @@ function cityWith(people: number, ...types: Parameters<typeof placeBuilding>[1][
 
 const staffing = (game: GameState) => game.buildings.slice(1).map((b) => b.workers);
 
-describe('industry priorities', () => {
-  it('staffs priority 1 industries before everything else', () => {
+describe('priorities', () => {
+  it('puts every branch at priority 2 until the player changes it', () => {
+    const report = prioritiesReport(grassGame());
+    expect([...report.industries, ...report.services].every((row) => row.priority === DEFAULT_PRIORITY)).toBe(true);
+    expect(DEFAULT_PRIORITY).toBe(2);
+  });
+
+  it('staffs priority 1 first and splits the rest across priority 2', () => {
     const game = cityWith(40, 'fountain', 'olivePress', 'weaver');
-    setIndustryPriority(game, 'weaver', 1);
-    expect(staffing(game)).toEqual([4, 4, 12]);
+    setPriority(game, 'weaver', 1);
+    expect(staffing(game)).toEqual([2, 6, 12]);
   });
 
-  it('staffs priority 1, then 2, then 3, then the rest in placement order', () => {
+  it('staffs priority 1, then 2, then 3', () => {
     const game = cityWith(80, 'taxOffice', 'masonryShop', 'olivePress', 'weaver', 'timberMill');
-    setIndustryPriority(game, 'timberMill', 3);
-    setIndustryPriority(game, 'olivePress', 2);
-    setIndustryPriority(game, 'weaver', 1);
-    expect(staffing(game)).toEqual([5, 0, 12, 12, 12]);
+    setPriority(game, 'weaver', 1);
+    setPriority(game, 'masonryShop', 3);
+    setPriority(game, 'timberMill', 3);
+    expect(staffing(game)).toEqual([8, 5, 12, 12, 4]);
   });
 
-  it('keeps services and houses in placement order with industries that have no priority', () => {
-    const game = cityWith(40, 'olivePress', 'fountain', 'taxOffice');
-    expect(staffing(game)).toEqual([12, 4, 4]);
-    setIndustryPriority(game, 'olivePress', 0);
-    expect(staffing(game)).toEqual([12, 4, 4]);
+  it('sets a service branch for all its buildings at once', () => {
+    const game = cityWith(20, 'olivePress', 'fountain', 'maintenanceOffice');
+    setPriority(game, 'hygiene', 1);
+    expect(staffing(game)).toEqual([1, 4, 5]);
   });
 
-  it('gives a closed industry no workers, and opening it restores them', () => {
+  it('gives a closed industry no workers, and reopening it restores them', () => {
     const game = cityWith(40, 'olivePress', 'fountain');
-    setIndustryOpen(game, 'olivePress', false);
+    setPriority(game, 'olivePress', CLOSED);
     expect(staffing(game)).toEqual([0, 4]);
     expect(laborSummary(game).jobs).toBe(4);
-    setIndustryOpen(game, 'olivePress', true);
+    setPriority(game, 'olivePress', 2);
     expect(staffing(game)).toEqual([12, 4]);
   });
 
-  it('applies to industry buildings placed later', () => {
+  it('gives a closed service branch no workers', () => {
+    const game = cityWith(40, 'olivePress', 'fountain', 'taxOffice');
+    setPriority(game, 'hygiene', CLOSED);
+    expect(staffing(game)).toEqual([12, 0, 8]);
+  });
+
+  it('applies to buildings placed later', () => {
     const game = cityWith(40, 'fountain');
-    setIndustryOpen(game, 'weaver', false);
+    setPriority(game, 'weaver', CLOSED);
     placeBuilding(game, 'weaver', 8, 11);
     runTicks(game, 1);
     expect(staffing(game)).toEqual([4, 0]);
@@ -137,34 +150,53 @@ describe('industry priorities', () => {
     const game = cityWith(80, 'olivePress', 'growersLodge');
     const [, press, lodge] = game.buildings;
     lodge.olives = 4 * UNITS_PER_LOAD;
-    setIndustryOpen(game, 'olivePress', false);
+    setPriority(game, 'olivePress', CLOSED);
     runTicks(game, 200);
     expect(press.olives).toBe(0);
-    setIndustryOpen(game, 'olivePress', true);
+    setPriority(game, 'olivePress', 2);
     runTicks(game, 200);
     expect(press.olives + press.oil).toBeGreaterThan(0);
     expect(press.olives).toBeLessThanOrEqual(PRESS_OLIVE_CAPACITY);
   });
 });
 
+describe('branches', () => {
+  const types = Object.keys(BUILDING_SPECS) as BuildingType[];
+
+  it('give every building with posts a branch', () => {
+    for (const type of types.filter((t) => BUILDING_SPECS[t].workers > 0)) expect(() => branchOf(type)).not.toThrow();
+  });
+
+  it('never share a building', () => {
+    const members = SERVICES.flatMap((service) => SERVICE_SPECS[service].buildings);
+    expect(new Set(members).size).toBe(members.length);
+  });
+
+  it('refuse a building that employs nobody', () => {
+    expect(() => branchOf('house')).toThrow();
+  });
+});
+
 describe('prioritiesReport', () => {
-  it('lists every industry with its buildings, workers, full staff and settings', () => {
+  it('lists every industry together, then every service branch, with buildings, workers, full staff and priority', () => {
     const game = cityWith(30, 'olivePress', 'olivePress', 'fountain');
-    setIndustryPriority(game, 'olivePress', 2);
-    setIndustryOpen(game, 'weaver', false);
+    setPriority(game, 'olivePress', 1);
+    setPriority(game, 'weaver', CLOSED);
     const report = prioritiesReport(game);
     expect(report.workers).toBe(15);
     expect(report.jobs).toBe(28);
-    expect(report.industries.map((row) => row.industry)).toEqual([
+    expect(report.industries.map((row) => row.branch)).toEqual([
       'wheatFarm', 'carrotFarm', 'cardingShed', 'growersLodge', 'olivePress', 'weaver', 'scriptorium', 'timberMill', 'masonryShop', 'foundry', 'sculptureStudio', 'armory',
     ]);
-    expect(report.industries[4]).toEqual({ industry: 'olivePress', name: 'Olive Press', buildings: 2, workers: 15, jobs: 24, priority: 2, open: true });
-    expect(report.industries[5]).toEqual({ industry: 'weaver', name: 'Weaver', buildings: 0, workers: 0, jobs: 0, priority: 0, open: false });
+    expect(report.services.map((row) => row.name)).toEqual(['Distribution', 'Hygiene & Safety', 'Administration', 'Culture', 'Military', 'Sanctuaries']);
+    expect(report.industries[4]).toEqual({ branch: 'olivePress', name: 'Olive Press', buildings: 2, workers: 15, jobs: 24, priority: 1 });
+    expect(report.industries[5]).toEqual({ branch: 'weaver', name: 'Weaver', buildings: 0, workers: 0, jobs: 0, priority: CLOSED });
+    expect(report.services[1]).toEqual({ branch: 'hygiene', name: 'Hygiene & Safety', buildings: 1, workers: 0, jobs: 4, priority: 2 });
   });
 
-  it('counts the full staff of a closed industry, so the player sees what opening it takes', () => {
+  it('counts the full staff of a closed branch, so the player sees what opening it takes', () => {
     const game = cityWith(30, 'olivePress');
-    setIndustryOpen(game, 'olivePress', false);
+    setPriority(game, 'olivePress', CLOSED);
     expect(prioritiesReport(game).industries[4]).toMatchObject({ workers: 0, jobs: 12 });
   });
 });

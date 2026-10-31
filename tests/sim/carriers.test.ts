@@ -15,6 +15,7 @@ function farmTown(people = 100): { game: GameState; farm: Building; granary: Bui
   placeRoad(game, { x: 0, y: 15 }, { x: 29, y: 15 });
   placeHouse(game, 0, 28);
   game.buildings[0].residents = people;
+  game.priorities.distribution = 3;
   setMeadow(game, 2, 12, 3, 3);
   placeBuilding(game, 'wheatFarm', 2, 12);
   placeBuilding(game, 'granary', 10, 11);

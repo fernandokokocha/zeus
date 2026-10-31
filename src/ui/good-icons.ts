@@ -70,6 +70,25 @@ export const GOOD_ICONS: Record<StoredGood, string> = {
   ),
 };
 
+const WHEAT_STALKS = [-24, -12, 0, 12, 24];
+
+function wheatStalk(turn: number): string {
+  const grains = [5, 7.5, 10].map((y) => `<ellipse cx="10.6" cy="${y}" rx="1.4" ry="2"/><ellipse cx="13.4" cy="${y}" rx="1.4" ry="2"/>`).join('');
+  return (
+    `<g transform="rotate(${turn} 12 15)"><path d="M12 21V4" stroke="#b8902e" stroke-width="1.2"/>` +
+    `<g fill="#e2b84c" stroke="${INK}" stroke-width=".7">${grains}<ellipse cx="12" cy="3.4" rx="1.3" ry="1.9"/></g></g>`
+  );
+}
+
+export const FARM_ICONS = {
+  wheatFarm: icon(WHEAT_STALKS.map(wheatStalk).join('') + `<path d="M8.6 15.5h6.8" stroke="${INK}" stroke-width="1.6" stroke-linecap="round"/>`),
+  carrotFarm: icon(
+    `<path d="M12 8C9 5 8.5 3 9 1.8M12 8c0-3 1-5 2.4-6M12 8c2.4-2 4.6-2.5 6-2" fill="none" stroke="#4f8a2e" stroke-width="1.6" stroke-linecap="round"/>` +
+      `<path d="M8.4 8.6c1.8-1.4 5.4-1.4 7.2 0L12.6 21.6c-.3.7-.9.7-1.2 0z" fill="#e07a24" stroke="${INK}" stroke-width="1.2" stroke-linejoin="round"/>` +
+      `<path d="M10.2 12h2M11 15.5h2.2M11.4 18.5h1.4" stroke="#a8501a" stroke-width=".9" stroke-linecap="round"/>`,
+  ),
+};
+
 export const GOOD_COLORS: Record<StoredGood, string> = {
   fleece: '#efe7cf',
   olives: '#6f7f34',

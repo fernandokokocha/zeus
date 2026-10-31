@@ -18,6 +18,7 @@ function armorTown(people = 100): { game: GameState; storehouse: Building; armor
   placeRoad(game, { x: 0, y: 15 }, { x: 29, y: 15 });
   placeHouse(game, 0, 28);
   game.buildings[0].residents = people;
+  game.priorities.armory = 3;
   placeBuilding(game, 'storehouse', 10, 12);
   placeBuilding(game, 'armory', 20, 13);
   const [, storehouse, armory] = game.buildings;

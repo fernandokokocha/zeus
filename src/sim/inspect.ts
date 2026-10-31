@@ -11,7 +11,7 @@ import { WEAVER_FLEECE_CAPACITY, WEAVING_TICKS, canWeave } from './cloth';
 import { adjacentRoadTiles, agoraVendors, footprint } from './commands';
 import { hasWorkingPalace, houseTax } from './economy';
 import { granaryCapacity, harvestMonth, UNITS_PER_LOAD, VENDOR_CAPACITY, houseStockTarget, monthlyUse } from './food';
-import { isClosed } from './industries';
+import { isClosed } from './branches';
 import { PLACES } from './greece';
 import { YARD_CART_PUSHERS, caravanLimit, caravansOf, slotHoldings, yardMerchants } from './exports';
 import { PARTNERS, TRADE_GOODS, routeOf, routeStatus } from './trade';

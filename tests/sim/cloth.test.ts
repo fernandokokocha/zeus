@@ -15,6 +15,7 @@ function clothTown(people = 100): { game: GameState; storehouse: Building; weave
   placeRoad(game, { x: 0, y: 15 }, { x: 29, y: 15 });
   placeHouse(game, 0, 28);
   game.buildings[0].residents = people;
+  game.priorities.weaver = 3;
   placeBuilding(game, 'storehouse', 10, 12);
   placeBuilding(game, 'weaver', 20, 13);
   const [, storehouse, weaver] = game.buildings;

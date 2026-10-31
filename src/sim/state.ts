@@ -3,7 +3,7 @@ import type { CharterCount } from './charters';
 import { emptyFlows, type FlowBook } from './flows';
 import type { EliteType, HouseLevel } from './housing';
 import type { EarnedMonument, MonumentKind, RaisedMonument } from './monuments';
-import { defaultIndustrySettings, type IndustrySettings } from './industries';
+import { defaultPriorities, type Priorities } from './branches';
 import { DEFAULT_SEED, MAP_SIZE, generateTerrain } from './map';
 import { clampPoint, type Point } from './point';
 import type { RoadUpgrade } from './road-upgrades';
@@ -295,7 +295,7 @@ export interface GameState {
   tradeBooks: TradeBooks;
   populationHistory: number[];
   flows: FlowBook;
-  industries: IndustrySettings;
+  priorities: Priorities;
   lastMonth: { taxes: number; wages: number };
   tick: number;
   speed: Speed;
@@ -363,7 +363,7 @@ export function newGameState(size: number, terrain: Terrain[], mainRoad: Point[]
     tradeBooks: { thisYear: emptyTradeYear(), lastYear: emptyTradeYear() },
     populationHistory: [0],
     flows: { thisMonth: emptyFlows(), months: [] },
-    industries: defaultIndustrySettings(),
+    priorities: defaultPriorities(),
     lastMonth: { taxes: 0, wages: 0 },
     tick: 0,
     speed: 1,

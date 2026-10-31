@@ -101,8 +101,9 @@ A house the collector never reaches shows only its base.
   a status (surplus, enough, short, idle). Real figures, not theoretical ones: the gap
   between made and possible is the point.
 - **Priorities.** Workers against jobs, then one row per industry (building type that
-  makes goods): buildings, workers have/need, a priority (none, 1, 2, 3) and an
-  Open/Closed switch.
+  makes goods, shown with the good it makes), then one row per service branch
+  (Distribution, Hygiene & Safety, Administration, Culture, Military, Sanctuaries):
+  buildings, workers have/need and a priority (–, 1, 2, 3), where – means closed.
 - **Treasury.** Treasury now; then income and spending by category for this year so far
   and for last year: taxes, wages, construction, sheep, and the net.
 - **Charter.** What the Charters panel shows today: Well fed progress, its goal and last
@@ -110,10 +111,12 @@ A house the collector never reaches shows only its base.
 
 ### The priorities rule (slice 24)
 
-This is a game rule, not only a report. Workers fill priority 1 industries first, then
-2, then 3, then everything without a priority, in today's order within each group. A
-closed industry gets no workers, takes no goods and makes nothing; opening it again
-restores it. Services and houses are not industries and keep today's assignment.
+This is a game rule, not only a report. Every industry and service branch starts at
+priority 2. Workers fill priority 1 first, then 2, then 3. When a priority cannot be
+fully staffed, its workers are split across its buildings in proportion to their posts,
+with the workers left after rounding going to the largest remainders; placement order
+plays no part. A closed branch (–) gets no workers; a closed industry takes no goods and
+makes nothing. Reopening it restores it.
 
 ### Slices
 

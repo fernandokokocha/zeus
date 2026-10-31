@@ -10,7 +10,8 @@ import { SHEARING_REST_TICKS, sheepTile } from '../../src/sim/sheep';
 import { TICKS_PER_MONTH } from '../../src/sim/clock';
 import { ROAMER_REST_TICKS } from '../../src/sim/roamers';
 import { tileIndex, type Building, type GameState } from '../../src/sim/state';
-import { setIndustryOpen } from '../../src/sim/labor';
+import { setPriority } from '../../src/sim/labor';
+import { CLOSED } from '../../src/sim/branches';
 import { describeTile, inspectTile, type Meter, type StorehouseView } from '../../src/sim/inspect';
 import { setGoodAccepted, STOREHOUSE_CAPACITY } from '../../src/sim/storehouse';
 import { FIRE_BURN_TICKS, RISK_LIMIT, catchFire } from '../../src/sim/safety';
@@ -230,7 +231,7 @@ it("says when a building's industry is closed in the Ledger", () => {
   placeHouse(game, 0, 18);
   game.buildings[0].residents = 40;
   placeBuilding(game, 'olivePress', 2, 11);
-  setIndustryOpen(game, 'olivePress', false);
+  setPriority(game, 'olivePress', CLOSED);
   expect(describeTile(game, 2, 11).lines).toEqual(['Tile 2, 11', 'Workers 0/12', 'Closed in the Ledger: does not work', 'Olives: 0 of 4 loads', 'Waits for olives', 'Collapse risk 0%']);
 });
 

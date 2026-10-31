@@ -199,6 +199,7 @@ describe("a growers' lodge", () => {
 
 function oilTown(people = 100): { game: GameState; lodge: Building; press: Building } {
   const { game, lodge } = grove(people);
+  game.priorities.olivePress = 3;
   placeBuilding(game, 'olivePress', 10, 13);
   return { game, lodge, press: game.buildings[2] };
 }

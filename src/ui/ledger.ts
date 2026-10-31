@@ -1,5 +1,5 @@
 import type { GameState } from '../sim/state';
-import { prioritiesReport, setIndustryOpen, setIndustryPriority, type PrioritiesReport } from '../sim/labor';
+import { prioritiesReport, setPriority, type PrioritiesReport } from '../sim/labor';
 import { armyReport } from '../sim/army';
 import { populationReport } from '../sim/population';
 import { productionReport } from '../sim/production';
@@ -23,12 +23,8 @@ function createPrioritiesChapter(state: GameState): { body: HTMLElement; update(
   const render = (report: PrioritiesReport) =>
     body.replaceChildren(
       prioritiesChapter(report, {
-        setPriority(industry, priority) {
-          setIndustryPriority(state, industry, priority);
-          update();
-        },
-        setOpen(industry, open) {
-          setIndustryOpen(state, industry, open);
+        setPriority(branch, priority) {
+          setPriority(state, branch, priority);
           update();
         },
       }),

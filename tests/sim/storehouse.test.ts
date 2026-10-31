@@ -25,6 +25,7 @@ function woolTown(people = 100): { game: GameState; shed: Building; storehouse: 
   placeRoad(game, { x: 0, y: 15 }, { x: 29, y: 15 });
   placeHouse(game, 0, 28);
   game.buildings[0].residents = people;
+  game.priorities.distribution = 3;
   placeBuilding(game, 'cardingShed', 2, 13);
   placeBuilding(game, 'storehouse', 10, 12);
   const [, shed, storehouse] = game.buildings;

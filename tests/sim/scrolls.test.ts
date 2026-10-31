@@ -19,6 +19,7 @@ function scrollTown(people = 100): { game: GameState; storehouse: Building; scri
   placeRoad(game, { x: 0, y: 15 }, { x: 29, y: 15 });
   placeHouse(game, 0, 28);
   game.buildings[0].residents = people;
+  game.priorities.scriptorium = 3;
   placeBuilding(game, 'storehouse', 10, 12);
   placeBuilding(game, 'scriptorium', 20, 13);
   const [, storehouse, scriptorium] = game.buildings;
