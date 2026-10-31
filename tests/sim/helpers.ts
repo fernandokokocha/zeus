@@ -166,3 +166,36 @@ export function supplyScholars(scholars: Building): void {
   Object.assign(scholars, { food: 300, fleece: 24, oil: 24, scrolls: 24, started: true });
   Object.assign(scholars.coveredUntil, { water: FOREVER, athletics: FOREVER, drama: FOREVER });
 }
+
+export const WARRIORS_INFIRMARY = { x: 9, y: 17 };
+
+export function warriorsBlock(infirmary: Point | null = WARRIORS_INFIRMARY): { game: GameState; houses: Building[] } {
+  const { game, houses } = guildBlock(25);
+  game.permits.tradersGuild = 0;
+  game.permits.warriorsHouse = 1;
+  placeRoad(game, { x: 0, y: SCHOLARS_ROAD_Y }, { x: 20, y: SCHOLARS_ROAD_Y });
+  if (infirmary) {
+    const placed = placeBuilding(game, 'infirmary', infirmary.x, infirmary.y);
+    if (!placed.ok) throw new Error(placed.reason);
+  }
+  return { game, houses };
+}
+
+export function warriorsOf(state: GameState): Building {
+  const warriors = state.buildings.find((b) => b.type === 'warriorsHouse');
+  if (!warriors) throw new Error("No Warriors' House");
+  return warriors;
+}
+
+export function placedWarriors(): { game: GameState; warriors: Building; drillGround: Building } {
+  const { game } = warriorsBlock();
+  const placed = placeBuilding(game, 'warriorsHouse', GUILD_BLOCK.x, GUILD_BLOCK.y);
+  if (!placed.ok) throw new Error(placed.reason);
+  const warriors = warriorsOf(game);
+  return { game, warriors, drillGround: annexOf(game, warriors) };
+}
+
+export function supplyWarriors(warriors: Building): void {
+  Object.assign(warriors, { food: 300, fleece: 24, oil: 24, armor: 24, started: true });
+  Object.assign(warriors.coveredUntil, { water: FOREVER, athletics: FOREVER, drama: FOREVER });
+}

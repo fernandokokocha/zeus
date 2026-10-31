@@ -65,6 +65,8 @@ const LOOKS: Record<BuildingType, Look> = {
   tradeYard: unchanging,
   scholarsHouse: (b) => [isMissingNeed(b)],
   library: (b) => [b.workers > 0],
+  warriorsHouse: (b) => [isMissingNeed(b)],
+  drillGround: (b) => [b.workers > 0],
   ruins: (b, state) => [isBurning(state, b)],
 };
 

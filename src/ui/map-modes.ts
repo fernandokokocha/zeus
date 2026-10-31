@@ -24,6 +24,7 @@ const ELITE_SITES_KEY = [
   { at: ELITE_SITE_READINGS.guildRange, label: "Traders' Guild: along a straight stretch of the Main Road" },
   { at: ELITE_SITE_READINGS.tradersGuild, label: "A Traders' Guild can be placed now" },
   { at: ELITE_SITE_READINGS.scholarsHouse, label: "A Scholars' House can be placed now" },
+  { at: ELITE_SITE_READINGS.warriorsHouse, label: "A Warriors' House can be placed now" },
 ];
 
 function mapLabel(overlay: Overlay | null): string {

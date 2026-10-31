@@ -10,8 +10,6 @@ anywhere.
 
 ## Items
 
-- **Warriors' House and Drill Ground.** With its elite sites. Part of: Warriors' House.
-  Spec: same.
 - **Hoplites and the army roster.** Part of: Warriors' House. Spec: same.
 - **Athletes' House.** Needs its design first. Near a Stadium. Charter: full Gymnasium
   coverage with a Stadium built (24 months). Consumes double oil. Annex: Bathhouse, which

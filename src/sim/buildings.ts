@@ -47,6 +47,8 @@ export type BuildingType =
   | 'tradeYard'
   | 'scholarsHouse'
   | 'library'
+  | 'warriorsHouse'
+  | 'drillGround'
   | 'ruins';
 
 export interface BuildingSpec {
@@ -107,6 +109,8 @@ export const BUILDING_SPECS: Record<BuildingType, BuildingSpec> = {
   tradeYard: { name: 'Trade Yard', width: 4, height: 2, cost: 0, workers: 28, appeal: [], needsRoad: true },
   scholarsHouse: { name: "Scholars' House", width: 4, height: 4, cost: 100, workers: 0, appeal: [], needsRoad: true },
   library: { name: 'Library', width: 4, height: 2, cost: 0, workers: 8, appeal: [], needsRoad: true },
+  warriorsHouse: { name: "Warriors' House", width: 4, height: 4, cost: 100, workers: 0, appeal: [], needsRoad: true },
+  drillGround: { name: 'Drill Ground', width: 4, height: 2, cost: 0, workers: 8, appeal: [], needsRoad: true },
   ruins: { name: 'Ruins', width: 1, height: 1, cost: 0, workers: 0, appeal: [], needsRoad: false },
 };
 

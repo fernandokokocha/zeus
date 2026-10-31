@@ -214,9 +214,9 @@ export function overlayReadings(state: GameState, overlay: TintOverlay): Reading
   return eliteSiteReadings(state);
 }
 
-export const ELITE_SITE_READINGS = { guildRange: 0, tradersGuild: 1, scholarsHouse: 2 } satisfies Record<EliteType | 'guildRange', number>;
+export const ELITE_SITE_READINGS = { guildRange: 0, tradersGuild: 1, scholarsHouse: 2, warriorsHouse: 3 } satisfies Record<EliteType | 'guildRange', number>;
 
-const PAINTED_LAST_WINS: EliteType[] = ['scholarsHouse', 'tradersGuild'];
+const PAINTED_LAST_WINS: EliteType[] = ['warriorsHouse', 'scholarsHouse', 'tradersGuild'];
 
 function eliteSiteReadings(state: GameState): Reading[] {
   const readings: Reading[] = guildRange(state).map((inRange, i) => (inRange && !state.mainRoad[i] ? ELITE_SITE_READINGS.guildRange : null));

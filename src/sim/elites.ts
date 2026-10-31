@@ -4,13 +4,13 @@ import { CHARTERS } from './charters';
 import { addBuilding, build, footprint, footprintObstacle, lotOrigins, removeBuildings } from './commands';
 import { culturePoints } from './culture';
 import { PLACES } from './greece';
-import { ELITE_HOUSING, ELITE_NAMES, ELITE_TYPES, LEVEL_CHANGE_TICKS, hasNeed, houseLevel, type EliteType } from './housing';
+import { ELITE_HOUSING, ELITE_NAMES, ELITE_TYPES, LEVEL_CHANGE_TICKS, hasNeed, houseLevel, withArticle, type EliteType } from './housing';
 import { postNotice } from './notices';
 import { rectBetween, tilesIn, type Point } from './point';
 import { routeOf } from './trade';
 import { buildingById, inBounds, tileIndex, type Building, type Coverage, type GameState, type PeddledGood } from './state';
 
-export type AnnexType = 'tradeYard' | 'library';
+export type AnnexType = 'tradeYard' | 'library' | 'drillGround';
 type RoadKind = 'mainRoad' | 'roads';
 
 interface EliteSiteRule {
@@ -22,13 +22,14 @@ interface EliteSiteRule {
 export const ELITE_SITES: Record<EliteType, EliteSiteRule> = {
   tradersGuild: { annex: 'tradeYard', road: 'mainRoad', neighbours: [] },
   scholarsHouse: { annex: 'library', road: 'roads', neighbours: ['theater', 'gymnasium', 'podium'] },
+  warriorsHouse: { annex: 'drillGround', road: 'roads', neighbours: ['infirmary'] },
 };
 
 export const NEIGHBOURHOOD_RANGE = 6;
 
 const ANNEX_TYPES = Object.values(ELITE_SITES).map((site) => site.annex);
 const ROAD_NAMES: Record<RoadKind, string> = { mainRoad: 'Main Road', roads: 'road' };
-const ANNEX_CALLED: Record<AnnexType, string> = { tradeYard: 'yard', library: 'Library' };
+const ANNEX_CALLED: Record<AnnexType, string> = { tradeYard: 'yard', library: 'Library', drillGround: 'Drill Ground' };
 const CARRIED_GOODS: PeddledGood[] = ['food', 'fleece', 'oil', 'cloth'];
 const BLOCK_SIDE = BUILDING_SPECS.tradersGuild.width;
 const ROAD_ROW = BLOCK_SIDE;
@@ -96,7 +97,7 @@ const SHORTFALL_REASONS: Record<SiteShortfall, (site: EliteSite) => string> = {
   townhouses: (site) => `A ${ELITE_NAMES[site.type]} goes over four Townhouses forming a 4×4 block`,
   road: (site) => `A ${ELITE_NAMES[site.type]} must line a straight 4-tile stretch of ${ROAD_NAMES[ELITE_SITES[site.type].road]}`,
   annex: (site) => `The ${annexGround(site.type)} isn't clear`,
-  neighbours: (site) => `Needs ${listed(site.missingNeighbours.map((type) => `a ${BUILDING_SPECS[type].name}`))} within ${NEIGHBOURHOOD_RANGE} tiles`,
+  neighbours: (site) => `Needs ${listed(site.missingNeighbours.map((type) => withArticle(BUILDING_SPECS[type].name)))} within ${NEIGHBOURHOOD_RANGE} tiles`,
   permit: (site) => `No ${ELITE_NAMES[site.type]} permit: complete the ${charterFor(site.type)} charter`,
   appeal: (site) => `Needs appeal ${ELITE_HOUSING[site.type].appeal} here (has ${site.appeal})`,
 };
@@ -123,8 +124,13 @@ export function siteShortfalls(site: EliteSite): SiteShortfall[] {
   else if (!site.annexClear) shortfalls.push('annex');
   if (site.missingNeighbours.length > 0) shortfalls.push('neighbours');
   if (!site.permit) shortfalls.push('permit');
-  if (site.appeal < ELITE_HOUSING[site.type].appeal) shortfalls.push('appeal');
+  if (lacksAppeal(site.type, site.appeal)) shortfalls.push('appeal');
   return shortfalls;
+}
+
+export function lacksAppeal(type: EliteType, appeal: number): boolean {
+  const needed = ELITE_HOUSING[type].appeal;
+  return needed !== null && appeal < needed;
 }
 
 export function siteObstacle(site: EliteSite): string | null {
@@ -210,7 +216,7 @@ export function eliteShortfalls(state: GameState, elite: Building, map = appealM
   const culture = culturePoints(state, elite);
   if (culture < housing.culture) missing.push(`culture ${housing.culture} (has ${culture})`);
   const appeal = houseAppeal(state, elite, map);
-  if (appeal < housing.appeal) missing.push(`appeal ${housing.appeal} (has ${appeal})`);
+  if (lacksAppeal(eliteType(elite), appeal)) missing.push(`appeal ${housing.appeal} (has ${appeal})`);
   return missing;
 }
 

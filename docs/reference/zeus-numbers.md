@@ -345,9 +345,9 @@ hold; its workers cart everything else to storehouses (granaries for food).
 - Placing a guild keeps the four houses' food, fleece and oil, summed, their latest water and
   culture coverage, and all their residents.
 - Elite sites (spec): a house shows, for each elite type, the site of the 4×4 block it belongs to
-  whose front lines the type's road and that is closest to qualifying. A Scholars' House site also
-  needs at least one of its neighbours within **6** tiles before it shows. "A Traders' Guild (Scholars'
-  House) can now be placed at …" is posted **once per block per type**, named by its corner, the first
+  whose front lines the type's road and that is closest to qualifying. A Scholars' or Warriors' House
+  site also needs at least one of its neighbours (the Infirmary, for warriors) within **6** tiles before
+  it shows. "A Traders' Guild (Scholars' House, Warriors' House) can now be placed at …" is posted **once per block per type**, named by its corner, the first
   time the block qualifies.
 - Sickness (spec, **ours**): disease risk fills like fire risk, full at **60**. A house at full risk
   falls sick at random **once a month on average**, at once next to a sick house. A sick house loses

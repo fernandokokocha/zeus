@@ -1,6 +1,8 @@
 import * as THREE from 'three';
+import { bakedOnce } from './bake';
+import { bakedFigure } from './staff';
 import { frontWindow, terraceBlock } from './kit/cottage';
-import { posedFigure } from './kit/figure';
+import { type FigureParts, posedFigure } from './kit/figure';
 import { placed } from './kit/gymnasium';
 import { hipRoof, hipRoofAlongZ } from './kit/roofs';
 import {
@@ -34,13 +36,16 @@ function house(group: THREE.Group, x0: number, z0: number, w: number, d: number,
   group.add(roof(x0, z0, w, d, top + EAVES, HOUSE_RISE, 'blueTiles'));
 }
 
-function warrior(group: THREE.Group, x: number, z: number, turn: number, supplied: boolean): void {
-  group.add(posedFigure(x, z, turn, 0, hoplite(), supplied ? 'drill' : 'rest'));
+const WARRIOR = { x: 2.7, z: 2.85 };
+
+function withWarrior(shell: THREE.Object3D, parts: FigureParts, supplied: boolean): THREE.Object3D {
+  shell.add(posedFigure(WARRIOR.x, WARRIOR.z, FACING_EAST, 0, parts, supplied ? 'drill' : 'rest'));
+  return shell;
 }
 
 const TOWER = { x0: 2.7, z0: 0.2, w: 0.95, d: 0.95, top: 2.3 };
 
-export function towerCourt(supplied: boolean): THREE.Object3D {
+function towerCourtShell(supplied: boolean): THREE.Object3D {
   const group = new THREE.Group();
   group.add(sandYard(0.08, 0.08, W - 0.16, D - 0.16));
   house(group, 0.14, 0.14, 1.5, 1.1, 1.6);
@@ -61,7 +66,18 @@ export function towerCourt(supplied: boolean): THREE.Object3D {
   group.add(spearRack(3.45, 1.55, 6), helmetStand(1.95, 1.2), helmetStand(2.3, 1.2));
   group.add(armorStand(1.65, 2.35, FACING_EAST));
   group.add(practicePost(3.15, 2.85), stackedShields(1.35, 3.45, 3));
-  warrior(group, 2.7, 2.85, FACING_EAST, supplied);
   return group;
+}
+
+export function towerCourt(supplied: boolean): THREE.Object3D {
+  return withWarrior(towerCourtShell(supplied), hoplite(), supplied);
+}
+
+const shells = { supplied: bakedOnce(() => towerCourtShell(true)), wanting: bakedOnce(() => towerCourtShell(false)) };
+const bakedHoplite = bakedFigure(hoplite);
+
+export function warriorsHouseModel(missingNeed: boolean): THREE.Object3D {
+  const shell = missingNeed ? shells.wanting() : shells.supplied();
+  return withWarrior(shell, bakedHoplite(), !missingNeed);
 }
 

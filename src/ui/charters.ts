@@ -1,6 +1,6 @@
 import { CHARTERS, HEALTHY_AND_WELL_FED_MONTHS, LEARNED_CITY_MONTHS, WELL_DRESSED_MONTHS, type Charter, type CharterCount } from '../sim/charters';
 import { TICKS_PER_MONTH } from '../sim/clock';
-import { PERMIT_NAMES, type PermitType } from '../sim/housing';
+import { ELITE_NAMES, type EliteType } from '../sim/housing';
 import type { GameState } from '../sim/state';
 
 const GOALS: Record<Charter['progress'], string> = {
@@ -21,8 +21,8 @@ function monthsAgo(ticks: number): string {
   return `${months} ${months === 1 ? 'month' : 'months'} ago`;
 }
 
-export function permitLines(permits: Record<PermitType, number>): string[] {
-  return (Object.keys(permits) as PermitType[]).map((type) => `${PERMIT_NAMES[type]} permits: ${permits[type]}`);
+export function permitLines(permits: Record<EliteType, number>): string[] {
+  return (Object.keys(permits) as EliteType[]).map((type) => `${ELITE_NAMES[type]} permits: ${permits[type]}`);
 }
 
 export function createCharterChapter(state: GameState): { body: HTMLElement; update(): void } {

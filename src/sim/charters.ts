@@ -1,7 +1,7 @@
 import { CULTURES } from './culture';
 import { TICKS_PER_MONTH } from './clock';
 import { monthlyUse } from './food';
-import { PERMIT_NAMES, buildingName, houseLevel, isElite, type PermitType } from './housing';
+import { ELITE_NAMES, buildingName, houseLevel, isElite, type EliteType } from './housing';
 import { postNotice } from './notices';
 import { hasService } from './roamers';
 import type { Building, GameState, PeddledGood } from './state';
@@ -21,7 +21,7 @@ export interface Charter {
   name: string;
   months: number;
   progress: 'wellDressed' | 'learnedCity' | 'healthyAndWellFed';
-  grants: PermitType;
+  grants: EliteType;
   missed(state: GameState, house: Building): string | null;
 }
 
@@ -88,7 +88,7 @@ function tally(state: GameState, charter: Charter): void {
   if (state[charter.progress].months < charter.months) return;
   state[charter.progress] = { months: 0, reset: null };
   state.permits[charter.grants]++;
-  postNotice(state, `Charter complete: ${charter.name}. A ${PERMIT_NAMES[charter.grants]} permit is granted`, null);
+  postNotice(state, `Charter complete: ${charter.name}. A ${ELITE_NAMES[charter.grants]} permit is granted`, null);
 }
 
 function reset(state: GameState, charter: Charter, cause: string): void {

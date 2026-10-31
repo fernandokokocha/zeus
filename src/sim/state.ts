@@ -1,7 +1,7 @@
 import type { BuildingType, Rotation } from './buildings';
 import type { CharterCount } from './charters';
 import { emptyFlows, type FlowBook } from './flows';
-import type { EliteType, HouseLevel, PermitType } from './housing';
+import type { EliteType, HouseLevel } from './housing';
 import type { MonumentKind } from './monuments';
 import { defaultIndustrySettings, type IndustrySettings } from './industries';
 import { DEFAULT_SEED, MAP_SIZE, generateTerrain } from './map';
@@ -278,7 +278,7 @@ export interface GameState {
   wellDressed: CharterCount;
   learnedCity: CharterCount;
   healthyAndWellFed: CharterCount;
-  permits: Record<PermitType, number>;
+  permits: Record<EliteType, number>;
   monumentsToPlace: MonumentKind[];
   worksOfArt: number;
   upgrades: Upgrade[];
@@ -351,7 +351,7 @@ export function newGameState(size: number, terrain: Terrain[], mainRoad: Point[]
     worksOfArt: 0,
     upgrades: [],
     crowdedCityEarned: false,
-    announcedEliteSites: { tradersGuild: [], scholarsHouse: [] },
+    announcedEliteSites: { tradersGuild: [], scholarsHouse: [], warriorsHouse: [] },
     routes: [],
     partnersTraded: [],
     rngState: DEFAULT_SEED,

@@ -18,7 +18,7 @@ import { GOOD_TITLES } from './production';
 import { caravansComing, ordersWaitingForMoney } from './imports';
 import { eliteSiteOf } from './elite-sites';
 import { NEIGHBOURHOOD_RANGE, annexGround, eliteOfAnnex, eliteShortfalls, siteShortfalls, annexOf, eliteType, type EliteSite } from './elites';
-import { type HouseLevel, type HouseNeed, type ResidentNeed, ELITE_HOUSING, ELITE_NAMES, ELITE_TYPES, type EliteType, HOUSE_LEVELS, LEVEL_CHANGE_TICKS, SCHOLARS_HOUSE, TRADERS_GUILD, NEXT_LEVEL, PREVIOUS_LEVEL, houseCapacity, houseLevel, evolutionBlockers, houseName, lacksCulture, missingNeeds } from './housing';
+import { type HouseLevel, type HouseNeed, type ResidentNeed, ELITE_HOUSING, ELITE_NAMES, ELITE_TYPES, type EliteType, HOUSE_LEVELS, LEVEL_CHANGE_TICKS, NEXT_LEVEL, PREVIOUS_LEVEL, houseCapacity, houseLevel, evolutionBlockers, houseName, lacksCulture, missingNeeds } from './housing';
 import { ROAMER_SPECS, hasGoodsToSell, hasService, type RoamerSpec, roamerKindSentBy, serviceLeft } from './roamers';
 import { TRAINEE_SPECS, isPerforming, staffedVenues, traineeKindFor, traineeKindSentBy } from './schools';
 import {
@@ -190,6 +190,8 @@ function describeBuildingKind(state: GameState, building: Building): Description
   if (building.type === 'tradeYard') return describeYard(state, building);
   if (building.type === 'scholarsHouse') return describeScholars(state, building);
   if (building.type === 'library') return describeLibrary(building);
+  if (building.type === 'warriorsHouse') return describeWarriors(state, building);
+  if (building.type === 'drillGround') return describeDrillGround(building);
   return describeWorkplace(state, building);
 }
 
@@ -314,7 +316,7 @@ function describeHouse(state: GameState, house: Building): Description {
   return { title: houseName(house), meters: supplyMeters(state, house, next ?? level), lines };
 }
 
-const SITE_CALLED: Record<EliteType, string> = { tradersGuild: 'guild site', scholarsHouse: "Scholars' House site" };
+const SITE_CALLED: Record<EliteType, string> = { tradersGuild: 'guild site', scholarsHouse: "Scholars' House site", warriorsHouse: "Warriors' House site" };
 
 function eliteSiteLines(state: GameState, house: Building): string[] {
   const appeal = appealMap(state);
@@ -395,16 +397,7 @@ function describeGuild(state: GameState, guild: Building): Description {
     ...(routeOf(state, guild) ? [`Caravans out ${caravansOf(state, guild).length} of ${caravanLimit(annexOf(state, guild))}`] : []),
     missingStatus(guild, missing),
   ];
-  const needFor = (need: ResidentNeed): Need => (missing.includes(need) ? 'missing' : 'met');
-  const meters = [
-    stockMeter(guild, 'food', needFor('food')),
-    waterMeter(state, guild, needFor('water')),
-    stockMeter(guild, 'fleece', needFor('fleece')),
-    stockMeter(guild, 'oil', needFor('oil')),
-    cultureMeter(state, guild, culturePoints(state, guild) < TRADERS_GUILD.culture ? 'missing' : 'met'),
-    stockMeter(guild, 'cloth', needFor('cloth')),
-  ];
-  return { title: BUILDING_SPECS.tradersGuild.name, meters, lines, ...(route.canOpen ? { openRoute: guild.id } : {}) };
+  return { title: BUILDING_SPECS.tradersGuild.name, meters: eliteMeters(state, guild, missing), lines, ...(route.canOpen ? { openRoute: guild.id } : {}) };
 }
 
 function describeScholars(state: GameState, scholars: Building): Description {
@@ -417,16 +410,31 @@ function describeScholars(state: GameState, scholars: Building): Description {
     `Reading: ${Math.floor((scholars.pages / PAGES_PER_WORK_OF_ART) * 100)}% of the way to the next Work of Art`,
     missingStatus(scholars, missing),
   ];
-  const needFor = (need: string): Need => (missing.includes(need) ? 'missing' : 'met');
-  const meters = [
-    stockMeter(scholars, 'food', needFor('food')),
-    waterMeter(state, scholars, needFor('water')),
-    stockMeter(scholars, 'fleece', needFor('fleece')),
-    stockMeter(scholars, 'oil', needFor('oil')),
-    cultureMeter(state, scholars, culturePoints(state, scholars) < SCHOLARS_HOUSE.culture ? 'missing' : 'met'),
-    stockMeter(scholars, 'scrolls', needFor('scrolls')),
+  return { title: BUILDING_SPECS.scholarsHouse.name, meters: eliteMeters(state, scholars, missing), lines };
+}
+
+function describeWarriors(state: GameState, warriors: Building): Description {
+  const missing = eliteShortfalls(state, warriors);
+  const lines = [
+    `Tile ${warriors.x}, ${warriors.y}`,
+    `Residents ${warriors.residents}/${houseCapacity(warriors)}`,
+    taxStatus(state, warriors),
+    missingStatus(warriors, missing),
   ];
-  return { title: BUILDING_SPECS.scholarsHouse.name, meters, lines };
+  return { title: BUILDING_SPECS.warriorsHouse.name, meters: eliteMeters(state, warriors, missing), lines };
+}
+
+function eliteMeters(state: GameState, elite: Building, missing: string[]): Meter[] {
+  const { culture, good } = ELITE_HOUSING[eliteType(elite)];
+  const needFor = (need: ResidentNeed): Need => (missing.includes(need) ? 'missing' : 'met');
+  return [
+    stockMeter(elite, 'food', needFor('food')),
+    waterMeter(state, elite, needFor('water')),
+    stockMeter(elite, 'fleece', needFor('fleece')),
+    stockMeter(elite, 'oil', needFor('oil')),
+    cultureMeter(state, elite, culturePoints(state, elite) < culture ? 'missing' : 'met'),
+    stockMeter(elite, good, needFor(good)),
+  ];
 }
 
 function describeLibrary(library: Building): Description {
@@ -436,6 +444,11 @@ function describeLibrary(library: Building): Description {
   ];
   if (library.workers === 0) lines.push('No workers: reading makes no Works of Art');
   return { title: BUILDING_SPECS.library.name, meters: [], lines };
+}
+
+function describeDrillGround(drillGround: Building): Description {
+  const lines = [`Tile ${drillGround.x}, ${drillGround.y}`, `Workers ${drillGround.workers}/${BUILDING_SPECS.drillGround.workers}`];
+  return { title: BUILDING_SPECS.drillGround.name, meters: [], lines };
 }
 
 function missingStatus(elite: Building, missing: string[]): string {

@@ -9,7 +9,7 @@ import type { Building, GameState } from './state';
 export type HouseLevel = 'hut' | 'shack' | 'hovel' | 'homestead' | 'tenement' | 'apartment' | 'townhouse';
 
 export type HouseNeed = 'food' | 'water' | 'fleece' | 'oil';
-export type EliteGood = 'cloth' | 'scrolls';
+export type EliteGood = 'cloth' | 'scrolls' | 'armor';
 export type ResidentNeed = HouseNeed | EliteGood;
 
 export interface HouseLevelSpec {
@@ -59,16 +59,13 @@ export const HOUSE_LEVELS: Record<HouseLevel, HouseLevelSpec> = {
   },
 };
 
-export type EliteType = 'tradersGuild' | 'scholarsHouse';
+export type EliteType = 'tradersGuild' | 'scholarsHouse' | 'warriorsHouse';
 
 export const ELITE_NAMES: Record<EliteType, string> = {
   tradersGuild: BUILDING_SPECS.tradersGuild.name,
   scholarsHouse: BUILDING_SPECS.scholarsHouse.name,
+  warriorsHouse: BUILDING_SPECS.warriorsHouse.name,
 };
-
-export type PermitType = EliteType | 'warriorsHouse';
-
-export const PERMIT_NAMES: Record<PermitType, string> = { ...ELITE_NAMES, warriorsHouse: "Warriors' House" };
 
 export interface EliteHousing {
   houses: number;
@@ -77,12 +74,14 @@ export interface EliteHousing {
   taxMultiplier: number;
   needs: ResidentNeed[];
   culture: number;
-  appeal: number;
+  appeal: number | null;
 }
 
 const ELITE_HOUSES = 4;
 
-function eliteHousing(taxMultiplier: number, good: EliteGood): EliteHousing {
+const TOWNHOUSE_APPEAL = HOUSE_LEVELS.townhouse.appeal.devolve;
+
+function eliteHousing(taxMultiplier: number, good: EliteGood, appeal: number | null): EliteHousing {
   return {
     houses: ELITE_HOUSES,
     good,
@@ -90,13 +89,14 @@ function eliteHousing(taxMultiplier: number, good: EliteGood): EliteHousing {
     taxMultiplier,
     needs: [...HOUSE_LEVELS.townhouse.needs, good],
     culture: HOUSE_LEVELS.townhouse.culture,
-    appeal: HOUSE_LEVELS.townhouse.appeal.devolve,
+    appeal,
   };
 }
 
 export const ELITE_HOUSING: Record<EliteType, EliteHousing> = {
-  tradersGuild: eliteHousing(1, 'cloth'),
-  scholarsHouse: eliteHousing(HOUSE_LEVELS.townhouse.taxMultiplier, 'scrolls'),
+  tradersGuild: eliteHousing(1, 'cloth', TOWNHOUSE_APPEAL),
+  scholarsHouse: eliteHousing(HOUSE_LEVELS.townhouse.taxMultiplier, 'scrolls', TOWNHOUSE_APPEAL),
+  warriorsHouse: eliteHousing(HOUSE_LEVELS.townhouse.taxMultiplier, 'armor', null),
 };
 
 export const ELITE_TYPES = Object.keys(ELITE_HOUSING) as EliteType[];
@@ -232,6 +232,6 @@ function postDevolved(state: GameState, house: Building, level: HouseLevel): voi
   postNotice(state, `${from} at ${house.x},${house.y} devolved to ${withArticle(HOUSE_LEVELS[level].name)}`, house);
 }
 
-function withArticle(name: string): string {
+export function withArticle(name: string): string {
   return `${/^[AEIOU]/.test(name) ? 'an' : 'a'} ${name}`;
 }

@@ -6,7 +6,7 @@ import { SANCTUARY_SPECS, type Sanctuary } from '../sim/sanctuaries';
 import { hasUpgrade } from '../sim/upgrades';
 import { ROADBLOCK_COST, ROAD_TILE_COST, SHEEP_COST } from '../sim/treasury';
 
-export type SingleBuilding = Exclude<BuildingType, 'house' | 'ruins' | 'tradeYard' | 'library' | 'monument'>;
+export type SingleBuilding = Exclude<BuildingType, 'house' | 'ruins' | 'tradeYard' | 'library' | 'drillGround' | 'monument'>;
 export const UPGRADE_TOOLS = { ornateRoad: 'ornate', fastRoad: 'fast' } as const satisfies Record<string, RoadUpgrade>;
 export type UpgradeTool = keyof typeof UPGRADE_TOOLS;
 export const MONUMENT_TOOLS = { crowdedCityMonument: 'crowdedCity', tradeRouteMonument: 'tradeRoute' } as const satisfies Record<string, MonumentKind>;
@@ -68,6 +68,7 @@ export const TOOL_LABELS: Record<Tool, string> = {
   armory: priced('armory'),
   tradersGuild: permitted('tradersGuild'),
   scholarsHouse: permitted('scholarsHouse'),
+  warriorsHouse: permitted('warriorsHouse'),
   weaver: priced('weaver'),
   scriptorium: priced('scriptorium'),
   timberMill: priced('timberMill'),
@@ -120,7 +121,7 @@ export const TOOL_GROUPS: ToolGroup[] = [
   { name: 'Mythology', tileLabel: 'Mythology', tools: ['artisansGuild', 'demeterSanctuary', 'athenaSanctuary', 'hephaestusSanctuary'] },
   { name: 'Culture', tileLabel: 'Culture', tools: ['college', 'podium', 'gymnasium', 'dramaSchool', 'theater'] },
   { name: 'Aesthetics', tileLabel: 'Aesthetics', tools: ['park', 'column', 'flowerGarden', 'crowdedCityMonument', 'tradeRouteMonument', 'ornateRoad'] },
-  { name: 'Elite', tileLabel: 'Elite', tools: ['tradersGuild', 'scholarsHouse'] },
+  { name: 'Elite', tileLabel: 'Elite', tools: ['tradersGuild', 'scholarsHouse', 'warriorsHouse'] },
 ];
 
 export function toolLabel(tool: Tool, state: GameState): string {

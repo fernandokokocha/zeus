@@ -325,7 +325,7 @@ describe("the inspector on a Scholars' House and its Library", () => {
 describe("a Scholars' House in the reports", () => {
   it('has its row in the population chapter', () => {
     const { game, scholars } = placedScholars();
-    expect(populationReport(game).levels.at(-1)).toEqual({ name: "Scholars' House", houses: 1, people: scholars.residents });
+    expect(populationReport(game).levels.find((l) => l.name === "Scholars' House")).toEqual({ name: "Scholars' House", houses: 1, people: scholars.residents });
   });
 
   it('shows food, fleece, oil and scrolls in the supplies column', () => {

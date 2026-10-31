@@ -38,7 +38,7 @@ describe('housing by level', () => {
     settle(game, 6, 2, 'hovel', 20);
     placeHouse(game, 8, 2);
     const levels = populationReport(game).levels;
-    expect(levels.map(({ name }) => name)).toEqual([...Object.values(HOUSE_LEVELS).map(({ name }) => name), "Traders' Guild", "Scholars' House"]);
+    expect(levels.map(({ name }) => name)).toEqual([...Object.values(HOUSE_LEVELS).map(({ name }) => name), "Traders' Guild", "Scholars' House", "Warriors' House"]);
     expect(levels[0]).toEqual({ name: 'Hut', houses: 2, people: 13 });
     expect(levels[1]).toEqual({ name: 'Shack', houses: 0, people: 0 });
     expect(levels[2]).toEqual({ name: 'Hovel', houses: 1, people: 20 });
@@ -46,7 +46,7 @@ describe('housing by level', () => {
 
   it("counts a Traders' Guild and its merchants", () => {
     const { game, guild } = placedGuild();
-    expect(populationReport(game).levels.at(-2)).toEqual({ name: "Traders' Guild", houses: 1, people: guild.residents });
+    expect(populationReport(game).levels.find((l) => l.name === "Traders' Guild")).toEqual({ name: "Traders' Guild", houses: 1, people: guild.residents });
   });
 });
 

@@ -24,6 +24,7 @@ const TINT_SCALES: Record<TintOverlay, ColorStop[]> = {
     { at: ELITE_SITE_READINGS.guildRange, color: PALETTE.overlayGuildRange },
     { at: ELITE_SITE_READINGS.tradersGuild, color: PALETTE.overlayTradersGuild },
     { at: ELITE_SITE_READINGS.scholarsHouse, color: PALETTE.overlayScholarsHouse },
+    { at: ELITE_SITE_READINGS.warriorsHouse, color: PALETTE.overlayWarriorsHouse },
   ],
 };
 

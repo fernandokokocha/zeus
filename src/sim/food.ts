@@ -19,6 +19,7 @@ export const FLEECE_PER_HOUSE_PER_MONTH = 2;
 export const OIL_PER_HOUSE_PER_MONTH = 2;
 export const CLOTH_PER_GUILD_PER_MONTH = 8;
 export const SCROLLS_PER_SCHOLARS_PER_MONTH = 8;
+export const ARMOR_PER_WARRIORS_PER_MONTH = 8;
 
 export function wholeLoads(units: number): number {
   return Math.floor(units / UNITS_PER_LOAD) * UNITS_PER_LOAD;
@@ -81,7 +82,7 @@ const MONTHLY_NEED: Record<PeddledGood, (residence: Building) => number> = {
   oil: (residence) => housesIn(residence) * OIL_PER_HOUSE_PER_MONTH,
   cloth: (residence) => (residence.type === 'tradersGuild' ? CLOTH_PER_GUILD_PER_MONTH : 0),
   scrolls: (residence) => (residence.type === 'scholarsHouse' ? SCROLLS_PER_SCHOLARS_PER_MONTH : 0),
-  armor: () => 0,
+  armor: (residence) => (residence.type === 'warriorsHouse' ? ARMOR_PER_WARRIORS_PER_MONTH : 0),
 };
 
 const HOUSE_STOCK_MONTHS: Record<PeddledGood, number> = { food: 5, fleece: 5, oil: 5, cloth: 3, scrolls: 3, armor: 3 };

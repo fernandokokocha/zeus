@@ -30,6 +30,8 @@ import { tradeYardModel } from './trade-yard-models';
 import { libraryModel } from './library-models';
 import { infirmaryModel } from './infirmary-models';
 import { scholarsHouseModel } from './scholars-models';
+import { warriorsHouseModel } from './warriors-models';
+import { drillGroundModel } from './drill-ground-models';
 import { tradersGuildModel } from './traders-guild-models';
 import { collegeModel } from './college-models';
 import { dramaSchoolModel } from './drama-school-models';
@@ -667,6 +669,8 @@ const MODELS: Record<Exclude<BuildingType, 'house'>, (building: Building, state:
   tradeYard: tradeYardModel,
   scholarsHouse: (b) => scholarsHouseModel(isMissingNeed(b)),
   library: libraryModel,
+  warriorsHouse: (b) => warriorsHouseModel(isMissingNeed(b)),
+  drillGround: drillGroundModel,
   ruins: (b, state) => ruinsModel(b, isBurning(state, b)),
 };
 
