@@ -310,11 +310,20 @@ function describeHouse(state: GameState, house: Building): Description {
   }
   const appeal = houseAppeal(state, house);
   const next = NEXT_LEVEL[level];
-  lines.push(`Appeal ${appeal}`, taxStatus(state, house));
+  lines.push(taxStatus(state, house));
   if (next) lines.push(nextLevelStatus(state, house, level, next, appeal));
   if (house.pendingLevel) lines.push(levelChangeStatus(house, level, house.pendingLevel));
   lines.push(...sites);
-  return { title: houseName(house), meters: supplyMeters(state, house, next ?? level), lines };
+  return { title: houseName(house), meters: [...supplyMeters(state, house, next ?? level), appealMeter(level, appeal)], lines };
+}
+
+function appealMeter(level: HouseLevel, appeal: number): Meter {
+  const { evolve, devolve } = HOUSE_LEVELS[level].appeal;
+  const topLevel = NEXT_LEVEL[level] === null;
+  const needed = topLevel ? devolve : evolve;
+  const met = appeal >= needed;
+  const fill = needed > 0 ? Math.min(1, Math.max(0, appeal / needed)) : met ? 1 : 0;
+  return { label: 'Appeal', fill, value: `${appeal} (needs ${needed}${topLevel ? ' to stay' : ''})`, need: met ? 'met' : 'missing' };
 }
 
 const SITE_CALLED: Record<EliteType, string> = { tradersGuild: 'Guild site', scholarsHouse: "Scholars' House site", warriorsHouse: "Warriors' House site" };

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { houseAppeal } from '../../src/sim/appeal';
 import { demolish, placeBuilding, placeOliveTrees, placeRoad, placeRoadblock, placeSheep } from '../../src/sim/commands';
 import { WEAVING_TICKS } from '../../src/sim/cloth';
 import { copyingTicks } from '../../src/sim/scrolls';
@@ -108,16 +109,34 @@ describe('describeTile', () => {
         { label: 'Fleece', fill: 0, value: 'None', need: null },
         { label: 'Oil', fill: 0, value: 'None', need: null },
         { label: 'Culture', fill: 0, value: 'None', need: null },
+        { label: 'Appeal', fill: 1, value: '0 (needs -10)', need: 'met' },
       ],
       lines: [
         'Tile 2, 8',
         'Residents 8/8',
-        'Appeal 0',
         'No tax collector has passed',
         'Needs for Shack: food',
         'Fire risk 1%',
       ],
     });
+  });
+
+  it("shows appeal against what a house's next level demands", () => {
+    const game = grassGame();
+    placeHouse(game, 2, 8);
+    Object.assign(game.buildings[0], { level: 'tenement', residents: 40 });
+    placeBuilding(game, 'park', 5, 8);
+    const appeal = houseAppeal(game, game.buildings[0]);
+    expect(appeal).toBeGreaterThan(0);
+    expect(appeal).toBeLessThan(20);
+    expect(meter(game, 2, 8, 'Appeal')).toEqual({ label: 'Appeal', fill: appeal / 20, value: `${appeal} (needs 20)`, need: 'missing' });
+  });
+
+  it('shows the appeal a Townhouse needs to stay one', () => {
+    const game = grassGame();
+    placeHouse(game, 2, 8);
+    Object.assign(game.buildings[0], { level: 'townhouse', residents: 60 });
+    expect(meter(game, 2, 8, 'Appeal')).toEqual({ label: 'Appeal', fill: 0, value: '0 (needs 25 to stay)', need: 'missing' });
   });
 
   it('describes a settler on the road tile it stands on', () => {
@@ -148,7 +167,6 @@ describe('describeTile for services', () => {
     expect(describeTile(game, 2, 8).lines).toEqual([
       'Tile 2, 8',
       'Residents 8/8',
-      'Appeal 16',
       'Pays 0.72 dr tax a month',
       'Needs for Shack: food',
       'Fire risk 0%',
@@ -292,8 +310,9 @@ describe('describeTile for food and appeal', () => {
     const { game, house } = street();
     placeBuilding(game, 'granary', 4, 11);
     house.food = 3;
-    expect(describeTile(game, 2, 13).lines).toEqual(expect.arrayContaining(['Appeal -11', 'Needs for Shack: appeal -10 (has -11)']));
+    expect(describeTile(game, 2, 13).lines).toEqual(expect.arrayContaining(['Needs for Shack: appeal -10 (has -11)']));
     expect(meter(game, 2, 13, 'Food')).toMatchObject({ value: '3 units', need: 'met' });
+    expect(meter(game, 2, 13, 'Appeal')).toEqual({ label: 'Appeal', fill: 0, value: '-11 (needs -10)', need: 'missing' });
     house.food = 0;
     expect(describeTile(game, 2, 13).lines).toContain('Needs for Shack: food, appeal -10 (has -11)');
   });
