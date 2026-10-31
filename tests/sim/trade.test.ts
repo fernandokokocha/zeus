@@ -82,7 +82,7 @@ describe('opening a route', () => {
 
   it('earns a trade-route monument for the first route to a partner', () => {
     const { game } = opened('corinth');
-    expect(game.monumentsToPlace).toEqual(['tradeRoute']);
+    expect(game.monumentsToPlace).toEqual([{ kind: 'tradeRoute', honours: 'the first trade route to Corinth' }]);
   });
 
   it('earns nothing when a route to that partner was opened before', () => {
@@ -90,7 +90,7 @@ describe('opening a route', () => {
     demolish(game, guild, guild);
     const second = raiseElite(game, SECOND_GUILD);
     expect(openRoute(game, second.id, 'corinth')).toEqual({ ok: true });
-    expect(game.monumentsToPlace).toEqual(['tradeRoute']);
+    expect(game.monumentsToPlace).toEqual([{ kind: 'tradeRoute', honours: 'the first trade route to Corinth' }]);
     expect(game.notices.at(-1)?.text).toBe('Trade route to Corinth opened');
   });
 

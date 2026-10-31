@@ -2,7 +2,7 @@ import type { BuildingType, Rotation } from './buildings';
 import type { CharterCount } from './charters';
 import { emptyFlows, type FlowBook } from './flows';
 import type { EliteType, HouseLevel } from './housing';
-import type { MonumentKind } from './monuments';
+import type { EarnedMonument, MonumentKind, RaisedMonument } from './monuments';
 import { defaultIndustrySettings, type IndustrySettings } from './industries';
 import { DEFAULT_SEED, MAP_SIZE, generateTerrain } from './map';
 import { clampPoint, type Point } from './point';
@@ -64,7 +64,7 @@ export interface Building {
   fellSickAt: number | null;
   burningUntil: number;
   taxPaid: number[];
-  monument: MonumentKind | null;
+  monument: RaisedMonument | null;
   tradeSlots: TradeSlot[];
 }
 
@@ -280,10 +280,10 @@ export interface GameState {
   learnedCity: CharterCount;
   healthyAndWellFed: CharterCount;
   permits: Record<EliteType, number>;
-  monumentsToPlace: MonumentKind[];
+  monumentsToPlace: EarnedMonument[];
   worksOfArt: number;
   upgrades: Upgrade[];
-  crowdedCityEarned: boolean;
+  populationMonumentsEarned: MonumentKind[];
   announcedEliteSites: Record<EliteType, number[]>;
   routes: Route[];
   partnersTraded: Partner[];
@@ -351,7 +351,7 @@ export function newGameState(size: number, terrain: Terrain[], mainRoad: Point[]
     monumentsToPlace: [],
     worksOfArt: 0,
     upgrades: [],
-    crowdedCityEarned: false,
+    populationMonumentsEarned: [],
     announcedEliteSites: { tradersGuild: [], scholarsHouse: [], warriorsHouse: [] },
     routes: [],
     partnersTraded: [],

@@ -1,6 +1,6 @@
 import { appealMap, houseAppeal } from './appeal';
 import { BUILDING_SPECS, vendorGood } from './buildings';
-import { MONTH_NAMES, TICKS_PER_MONTH } from './clock';
+import { MONTH_NAMES, TICKS_PER_MONTH, gameDate } from './clock';
 import { MAX_CULTURE_POINTS, culturePoints, culturesPassed } from './culture';
 import { CARRIER_SPECS, carrierDestinations, carrierKindsSentBy, givesWayToAnother, keptBack, tripSharers } from './carriers';
 import { PAGES_PER_WORK_OF_ART } from './scholars';
@@ -193,6 +193,7 @@ function describeBuildingKind(state: GameState, building: Building): Description
   if (building.type === 'library') return describeLibrary(building);
   if (building.type === 'warriorsHouse') return describeWarriors(state, building);
   if (building.type === 'drillGround') return describeDrillGround(state, building);
+  if (building.type === 'monument') return describeMonument(state, building);
   return describeWorkplace(state, building);
 }
 
@@ -430,6 +431,15 @@ function eliteMeters(state: GameState, elite: Building, missing: string[]): Mete
     cultureMeter(state, elite, culturePoints(state, elite) < culture ? 'missing' : 'met'),
     stockMeter(elite, good, needFor(good)),
   ];
+}
+
+function describeMonument(state: GameState, building: Building): Description {
+  const { monument } = building;
+  if (monument === null) throw new Error(`Monument ${building.id} honours nothing`);
+  const description = describeWorkplace(state, building);
+  const { month, year } = gameDate(monument.raisedAt);
+  description.lines.push(`Raised in ${month}, Year ${year}`, `Honours ${monument.honours}`);
+  return description;
 }
 
 function describeLibrary(library: Building): Description {

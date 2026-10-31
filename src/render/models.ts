@@ -617,11 +617,11 @@ function sanctuaryModel(site: Building): THREE.Object3D {
   return group;
 }
 
-const EMBLEMS: Record<MonumentKind, Emblem> = { crowdedCity: CROWDED_CITY, tradeRoute: TRADE_ROUTE };
+const EMBLEMS: Record<MonumentKind, Emblem> = { crowdedCity: CROWDED_CITY, greatCity: CROWDED_CITY, tradeRoute: TRADE_ROUTE };
 
 function emblemOf(monument: Building): Emblem {
   if (monument.monument === null) throw new Error(`Monument ${monument.id} has no kind`);
-  return EMBLEMS[monument.monument];
+  return EMBLEMS[monument.monument.kind];
 }
 
 const MODELS: Record<Exclude<BuildingType, 'house'>, (building: Building, state: GameState) => THREE.Object3D> = {

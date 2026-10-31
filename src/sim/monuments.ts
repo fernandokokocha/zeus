@@ -2,30 +2,45 @@ import { postNotice } from './notices';
 import { population } from './settlers';
 import type { GameState } from './state';
 
-export type MonumentKind = 'crowdedCity' | 'tradeRoute';
+export type MonumentKind = 'crowdedCity' | 'greatCity' | 'tradeRoute';
 
-export const MONUMENT_NAMES: Record<MonumentKind, string> = { crowdedCity: '1,000 citizens', tradeRoute: 'trade route' };
+export interface EarnedMonument {
+  kind: MonumentKind;
+  honours: string;
+}
 
-export const MONUMENT_POPULATION = 1000;
-export const MONUMENT_EARNED_NOTICE = 'The city has grown to 1,000 citizens. A monument can be raised.';
+export interface RaisedMonument extends EarnedMonument {
+  raisedAt: number;
+}
+
+export const MONUMENT_NAMES: Record<MonumentKind, string> = { crowdedCity: '1,000 citizens', greatCity: '2,000 citizens', tradeRoute: 'trade route' };
+
+const POPULATION_MONUMENTS: { kind: MonumentKind; population: number }[] = [
+  { kind: 'crowdedCity', population: 1000 },
+  { kind: 'greatCity', population: 2000 },
+];
 
 export function earnMonuments(state: GameState): void {
-  if (state.crowdedCityEarned || population(state) < MONUMENT_POPULATION) return;
-  state.crowdedCityEarned = true;
-  state.monumentsToPlace.push('crowdedCity');
-  postNotice(state, MONUMENT_EARNED_NOTICE, null);
+  const reached = population(state);
+  for (const { kind, population: needed } of POPULATION_MONUMENTS) {
+    if (state.populationMonumentsEarned.includes(kind) || reached < needed) continue;
+    const citizens = `${needed.toLocaleString('en-US')} citizens`;
+    state.populationMonumentsEarned.push(kind);
+    state.monumentsToPlace.push({ kind, honours: `the city reaching ${citizens}` });
+    postNotice(state, `The city has grown to ${citizens}. A monument can be raised.`, null);
+  }
 }
 
 export function monumentsWaiting(state: GameState, kind: MonumentKind): number {
-  return state.monumentsToPlace.filter((waiting) => waiting === kind).length;
+  return state.monumentsToPlace.filter((waiting) => waiting.kind === kind).length;
 }
 
 export function monumentObstacle(state: GameState, kind: MonumentKind): string | null {
   return monumentsWaiting(state, kind) > 0 ? null : `No ${MONUMENT_NAMES[kind]} monument is waiting`;
 }
 
-export function takeMonument(state: GameState, kind: MonumentKind): void {
-  const at = state.monumentsToPlace.indexOf(kind);
+export function takeMonument(state: GameState, kind: MonumentKind): EarnedMonument {
+  const at = state.monumentsToPlace.findIndex((waiting) => waiting.kind === kind);
   if (at === -1) throw new Error(`No ${kind} monument is waiting`);
-  state.monumentsToPlace.splice(at, 1);
+  return state.monumentsToPlace.splice(at, 1)[0];
 }

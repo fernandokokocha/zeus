@@ -99,7 +99,7 @@ https://zeus.heavengames.com/gameinfo/appeal/. Fire/collapse are risk increments
 | Park | 1×1 | — | 6 | 3,2,1 | — | — |
 | Column | 1×1 | — | 8 | 4,2,0 | — | — |
 | Flower Garden | 2×2 | — | 20 | 8,7,6 | — | — |
-| Monument (**ours**, earned: first at **1,000** citizens, once per game; one per partner's first trade route) | 3×3 | — | free | 20,20,18,16,14,12 | — | — |
+| Monument (**ours**, earned: at **1,000** and at **2,000** citizens, once each per game; one per partner's first trade route) | 3×3 | — | free | 20,20,18,16,14,12 | — | — |
 | Any sanctuary | see below | | | 20,18,16,14,12,10 | — | — |
 | Traders' Guild (**ours**, elite house) | 4×4 | — (240 residents, in the labor pool) | 100 + 1 permit | — | 8 | — |
 | Trade Yard (spec, placed with its guild) | 4×2 | 28: 8 cart pushers, then 20 merchants (**ours**) | part of the guild's 100 | — | — | — |

@@ -122,7 +122,7 @@ export function openRoute(state: GameState, guildId: number, partner: Partner): 
   const first = !state.partnersTraded.includes(partner);
   if (first) {
     state.partnersTraded.push(partner);
-    state.monumentsToPlace.push('tradeRoute');
+    state.monumentsToPlace.push({ kind: 'tradeRoute', honours: `the first trade route to ${PLACES[partner].name}` });
   }
   postNotice(state, `Trade route to ${PLACES[partner].name} opened${first ? '. A monument can be raised.' : ''}`, guild);
   state.version++;

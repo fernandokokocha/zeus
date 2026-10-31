@@ -217,8 +217,8 @@ export function placeMonument(state: GameState, kind: MonumentKind, x: number, y
   const placement: Placement = { type: 'monument', x, y, rotation };
   const obstacle = monumentObstacle(state, kind) ?? footprintObstacle(state, placement);
   if (obstacle) return fail(obstacle);
-  takeMonument(state, kind);
-  addBuilding(state, placement).monument = kind;
+  const earned = takeMonument(state, kind);
+  addBuilding(state, placement).monument = { ...earned, raisedAt: state.tick };
   state.version++;
   return OK;
 }
