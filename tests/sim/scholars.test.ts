@@ -170,18 +170,19 @@ describe("a Scholars' House's reading", () => {
     supplyScholars(scholars);
     untilMonthEnd(game);
     expect(library.workers).toBe(8);
-    expect(scholars).toMatchObject({ scrolls: 16, pages: 8 });
+    expect(scholars.scrolls).toBe(16);
+    expect(library.pages).toBe(8);
   });
 
-  it('makes a Work of Art of every 100 pages, with a notice', () => {
-    const { game, scholars } = placedScholars();
+  it('makes a Work of Art at the Library of every 100 pages, with a notice', () => {
+    const { game, scholars, library } = placedScholars();
     supplyScholars(scholars);
-    scholars.pages = 95;
+    library.pages = 95;
     expect(game.worksOfArt).toBe(0);
     untilMonthEnd(game);
     expect(game.worksOfArt).toBe(1);
-    expect(scholars.pages).toBe(3);
-    expect(game.notices.map((n) => n.text)).toContain('The scholars at 3,12 completed a Work of Art');
+    expect(library.pages).toBe(3);
+    expect(game.notices.map((n) => n.text)).toContain('The Library at 3,17 completed a Work of Art');
   });
 
   it('makes no pages with an unstaffed Library, though the scrolls are still read', () => {
@@ -191,7 +192,8 @@ describe("a Scholars' House's reading", () => {
     for (const b of game.buildings) b.residents = b === scholars ? 1 : 0;
     untilMonthEnd(game);
     expect(library.workers).toBe(0);
-    expect(scholars).toMatchObject({ scrolls: 16, pages: 0 });
+    expect(scholars.scrolls).toBe(16);
+    expect(library.pages).toBe(0);
   });
 });
 
@@ -291,14 +293,12 @@ describe("a Scholars' House's demotion", () => {
 });
 
 describe("the inspector on a Scholars' House and its Library", () => {
-  it('shows the house: residents, reading, supplies and scrolls', () => {
+  it('shows the house: residents, supplies and scrolls', () => {
     const { game, scholars } = placedScholars();
     supplyScholars(scholars);
-    scholars.pages = 42;
     const description = describeTile(game, 3, 12);
     expect(description.title).toBe("Scholars' House");
     expect(description.lines).toContain('Residents 240/240');
-    expect(description.lines).toContain('Reading: 42% of the way to the next Work of Art');
     expect(description.lines).toContain('Fully supplied');
     expect(description.meters.map((m) => m.label)).toEqual(['Food', 'Water', 'Fleece', 'Oil', 'Culture', 'Scrolls']);
     expect(description.meters.at(-1)).toEqual({ label: 'Scrolls', fill: 1, value: '24 units (3 months)', need: 'met' });
@@ -318,8 +318,16 @@ describe("the inspector on a Scholars' House and its Library", () => {
     const { game } = placedScholars();
     expect(describeTile(game, 4, 17)).toMatchObject({
       title: 'Library',
-      lines: ['Tile 3, 17', 'Workers 0/8', 'No workers: reading makes no Works of Art'],
+      lines: ['Tile 3, 17', 'Workers 0/8', 'Writing: 0% of the way to the next Work of Art', 'No workers: reading makes no Works of Art'],
     });
+  });
+
+  it("shows how far the Library is to the next Work of Art, at the Lyceum's page count once bought", () => {
+    const { game, library } = placedScholars();
+    library.pages = 42;
+    expect(describeTile(game, 4, 17).lines).toContain('Writing: 42% of the way to the next Work of Art');
+    game.upgrades.push('lyceum');
+    expect(describeTile(game, 4, 17).lines).toContain('Writing: 56% of the way to the next Work of Art');
   });
 });
 

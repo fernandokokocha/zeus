@@ -147,9 +147,10 @@ The Scholars' House charter.
   storehouses, and the Agora's peddler stocks the house with 3 months of them. Ordinary
   houses take none. *(Changed in slice 38: the Library used to fetch and hold the scrolls.)*
 - **Reading:** the house reads **8 units a month** from its own stock, taken at month end with
-  its other goods, the same as the guild's cloth. Each unit read is a page at the Library's
-  staffing (a whole page with all 8 workers, none with an empty Library). **100 pages** make
-  **1 Work of Art**, with a notice: "The scholars at 31,18 completed a Work of Art".
+  its other goods, the same as the guild's cloth. Each unit read is a page the Library writes at its
+  staffing (a whole page with all 8 workers, none with an empty Library). **100 pages** at the
+  Library make **1 Work of Art**, with a notice: "The Library at 31,18 completed a Work of Art".
+  The Library's inspector shows how far it is to the next one.
 - **Scrolls are a need.** A house without scrolls for a month demotes, the same way a guild
   without cloth does. An unstaffed Library makes no Works of Art but does not end the house.
 - **Unstarted at placement,** for every elite type *(slice 38, replacing "no grace")*: a new

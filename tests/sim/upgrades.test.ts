@@ -63,13 +63,13 @@ describe('buying an upgrade', () => {
 
 describe('Lyceum', () => {
   it('makes a Work of Art of 75 pages', () => {
-    const { game, scholars } = placedScholars();
+    const { game, scholars, library } = placedScholars();
     owning(game, 'lyceum');
     supplyScholars(scholars);
-    scholars.pages = 70;
+    library.pages = 70;
     untilMonthEnd(game);
     expect(game.worksOfArt).toBe(1);
-    expect(scholars.pages).toBe(3);
+    expect(library.pages).toBe(3);
   });
 });
 

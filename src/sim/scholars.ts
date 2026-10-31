@@ -18,10 +18,10 @@ export function readScrolls(state: GameState): void {
 
 function read(state: GameState, scholars: Building, library: Building): void {
   const unitsRead = Math.min(scholars.scrolls, monthlyUse(scholars, 'scrolls'));
-  scholars.pages += (unitsRead * library.workers) / BUILDING_SPECS.library.workers;
-  if (scholars.pages < pagesPerWorkOfArt(state)) return;
-  scholars.pages -= pagesPerWorkOfArt(state);
+  library.pages += (unitsRead * library.workers) / BUILDING_SPECS.library.workers;
+  if (library.pages < pagesPerWorkOfArt(state)) return;
+  library.pages -= pagesPerWorkOfArt(state);
   state.worksOfArt++;
-  postNotice(state, `The scholars at ${scholars.x},${scholars.y} completed a Work of Art`, scholars);
+  postNotice(state, `The Library at ${library.x},${library.y} completed a Work of Art`, library);
   state.version++;
 }

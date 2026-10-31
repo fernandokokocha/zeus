@@ -336,7 +336,7 @@ hold; its workers cart everything else to storehouses (granaries for food).
 - Scrolls (**ours**): a Scholars' House reads **8 units** a month; a peddler fills it to **3 months**
   (24 units) from a **Scroll Vendor** (Agora stall, 2×2, **4** workers, **10** dr, holds **8** loads,
   its buyer fetches **4**). Ordinary houses take no scrolls.
-- Library (**ours**, **8** workers): holds no scrolls. Each unit read is a page at the Library's
+- Library (**ours**, **8** workers): holds no scrolls. Each unit read is a page the Library writes at its
   staffing (a whole page at 8 of 8); **100** pages are **1 Work of Art**, a city count that survives
   demotion. An unstaffed Library makes no Works of Art but does not end the house.
 - Upgrades (**ours**): each costs **1** Work of Art. Lyceum: **75** pages a Work of Art. Crop

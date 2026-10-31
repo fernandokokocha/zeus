@@ -3,7 +3,7 @@ import { BUILDING_SPECS, vendorGood } from './buildings';
 import { MONTH_NAMES, TICKS_PER_MONTH, gameDate } from './clock';
 import { MAX_CULTURE_POINTS, culturePoints, culturesPassed } from './culture';
 import { CARRIER_SPECS, carrierDestinations, carrierKindsSentBy, givesWayToAnother, keptBack, tripSharers } from './carriers';
-import { PAGES_PER_WORK_OF_ART } from './scholars';
+import { pagesPerWorkOfArt } from './scholars';
 import { PAGES_PER_SCROLL, SCRIPTORIUM_INPUT_CAPACITY, copyingTicks, hasScrollRoom, inputInUse } from './scrolls';
 import { ARMORY_BRONZE_CAPACITY, ARMOR_TICKS, canForge } from './armor';
 import { COMPANY_SIZE, HOPLITE_TICKS, drillStatus, type DrillStatus } from './army';
@@ -190,7 +190,7 @@ function describeBuildingKind(state: GameState, building: Building): Description
   if (building.type === 'tradersGuild') return describeGuild(state, building);
   if (building.type === 'tradeYard') return describeYard(state, building);
   if (building.type === 'scholarsHouse') return describeScholars(state, building);
-  if (building.type === 'library') return describeLibrary(building);
+  if (building.type === 'library') return describeLibrary(state, building);
   if (building.type === 'warriorsHouse') return describeWarriors(state, building);
   if (building.type === 'drillGround') return describeDrillGround(state, building);
   if (building.type === 'monument') return describeMonument(state, building);
@@ -402,7 +402,6 @@ function describeScholars(state: GameState, scholars: Building): Description {
     `Residents ${scholars.residents}/${houseCapacity(scholars)}`,
     `Appeal ${houseAppeal(state, scholars)}`,
     taxStatus(state, scholars),
-    `Reading: ${Math.floor((scholars.pages / PAGES_PER_WORK_OF_ART) * 100)}% of the way to the next Work of Art`,
     missingStatus(scholars, missing),
   ];
   return { title: BUILDING_SPECS.scholarsHouse.name, meters: eliteMeters(state, scholars, missing), lines };
@@ -442,10 +441,11 @@ function describeMonument(state: GameState, building: Building): Description {
   return description;
 }
 
-function describeLibrary(library: Building): Description {
+function describeLibrary(state: GameState, library: Building): Description {
   const lines = [
     `Tile ${library.x}, ${library.y}`,
     `Workers ${library.workers}/${BUILDING_SPECS.library.workers}`,
+    `Writing: ${Math.floor((library.pages / pagesPerWorkOfArt(state)) * 100)}% of the way to the next Work of Art`,
   ];
   if (library.workers === 0) lines.push('No workers: reading makes no Works of Art');
   return { title: BUILDING_SPECS.library.name, meters: [], lines };
