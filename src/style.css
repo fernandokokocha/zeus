@@ -235,6 +235,12 @@ button.active {
   color: var(--parchment);
 }
 
+#music-button {
+  position: fixed;
+  right: 8px;
+  bottom: 8px;
+}
+
 #speed {
   display: flex;
   gap: 2px;

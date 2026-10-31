@@ -17,6 +17,7 @@ import { byId } from './ui/dom';
 import { createInspector } from './ui/inspector';
 import { createLedger } from './ui/ledger';
 import { createMapModes } from './ui/map-modes';
+import { attachMusic } from './ui/music';
 import { createNotices } from './ui/notices';
 import { attachToolInput } from './ui/tool-input';
 import { createToolbar } from './ui/toolbar';
@@ -67,6 +68,7 @@ const input = attachToolInput({
   topbar,
   toolbar,
 });
+attachMusic();
 window.addEventListener('resize', () => resizeView(view));
 
 let last = performance.now();
