@@ -48,12 +48,14 @@ Roaming range (tiles walked before turning home by the shortest route):
 
 | Walker | From | Range |
 |---|---|---|
-| Water carrier | Fountain | 27 |
-| Healer | Infirmary | 27 |
+| Water carrier | Fountain | 30 |
+| Healer | Infirmary | 30 |
 | Tax clerk | Tax Office | 35 |
 | Philosopher, athlete, actor | Podium, Gymnasium, Theater | 35 |
 | Peddler | Agora | 44 |
 | Superintendent | Maintenance Office | 44 |
+
+Water carrier and healer raised from Zeus's 27 by the owner's call.
 
 - Speed: 54.4 tiles per month for ordinary walkers. Sheep 54.4. Gods 68.
 - Exit tile: first road tile touching the building, searching clockwise from north.

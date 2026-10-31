@@ -191,7 +191,7 @@ describe('a sick house', () => {
 describe('the Infirmary', () => {
   it('has Zeus numbers', () => {
     expect(BUILDING_SPECS.infirmary).toMatchObject({ name: 'Infirmary', width: 4, height: 4, cost: 35, workers: 11, appeal: [-2, -2, -2, -2] });
-    expect(ROAMER_SPECS.healer).toMatchObject({ name: 'Healer', home: 'infirmary', range: 27 });
+    expect(ROAMER_SPECS.healer).toMatchObject({ name: 'Healer', home: 'infirmary', range: 30 });
   });
 
   function staffedInfirmary(): GameState {
@@ -285,6 +285,6 @@ describe('the inspector on an Infirmary', () => {
     expect(describeTile(game, 0, 11).lines).toEqual(['Tile 0, 11', 'Workers 11/11', 'Healer getting ready', 'Fire risk 0%', 'Collapse risk 0%']);
     runTicks(game, ROAMER_REST_TICKS);
     const { x, y } = walkerTile(game.roamers[0]);
-    expect(describeTile(game, x, y)).toMatchObject({ title: 'Healer', lines: ['From the Infirmary at 0, 11', `Walked ${game.roamers[0].step} of 27 tiles`] });
+    expect(describeTile(game, x, y)).toMatchObject({ title: 'Healer', lines: ['From the Infirmary at 0, 11', `Walked ${game.roamers[0].step} of 30 tiles`] });
   });
 });

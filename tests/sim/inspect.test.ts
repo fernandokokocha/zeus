@@ -253,7 +253,7 @@ it("says when a building's industry is closed in the Ledger", () => {
     expect(describeTile(game, 0, 10)).toEqual({
       title: 'Water Carrier',
       meters: [],
-      lines: ['From the Fountain at 0, 11', 'Walked 0 of 27 tiles'],
+      lines: ['From the Fountain at 0, 11', 'Walked 0 of 30 tiles'],
     });
     game.roamers[0].returning = true;
     expect(describeTile(game, 0, 10).lines).toContain('Returning home');
@@ -1136,7 +1136,7 @@ describe('inspectTile', () => {
     const carrier = game.roamers[0];
     while (walkerTile(carrier).x === 0) runTicks(game, 1);
     expect(game.roamers).toContain(carrier);
-    expect(look().description).toMatchObject({ title: 'Water Carrier', lines: ['From the Fountain at 0, 11', 'Walked 0 of 27 tiles'] });
+    expect(look().description).toMatchObject({ title: 'Water Carrier', lines: ['From the Fountain at 0, 11', 'Walked 0 of 30 tiles'] });
   });
 
   it('describes the tile again once the walker is gone', () => {

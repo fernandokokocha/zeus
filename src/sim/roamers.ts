@@ -20,14 +20,14 @@ export interface RoamerSpec {
 }
 
 export const ROAMER_SPECS: Record<RoamerKind, RoamerSpec> = {
-  waterCarrier: { name: 'Water Carrier', home: 'fountain', range: 27, service: 'water' },
+  waterCarrier: { name: 'Water Carrier', home: 'fountain', range: 30, service: 'water' },
   taxCollector: { name: 'Tax Collector', home: 'taxOffice', range: 35, service: 'tax' },
   peddler: { name: 'Peddler', home: 'agora', range: 44, service: 'goods' },
   philosopher: { name: 'Philosopher', home: 'podium', range: 35, service: 'philosophy' },
   athlete: { name: 'Athlete', home: 'gymnasium', range: 35, service: 'athletics' },
   actor: { name: 'Actor', home: 'theater', range: 35, service: 'drama' },
   superintendent: { name: 'Superintendent', home: 'maintenanceOffice', range: 44, service: 'maintenance' },
-  healer: { name: 'Healer', home: 'infirmary', range: 27, service: 'health' },
+  healer: { name: 'Healer', home: 'infirmary', range: 30, service: 'health' },
 };
 
 export const SERVICE_REACH = 2;
