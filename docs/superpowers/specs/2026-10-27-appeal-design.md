@@ -75,7 +75,7 @@ from the original game.
 | Size | 3×3 |
 | Workers | none |
 | Road | not needed |
-| Appeal | `[20, 20, 18, 16, 14, 12]` (**ours**, a little above the Palace) |
+| Appeal | `[30, 28, 24, 22, 18, 14]` (**ours**; raised from `[20, 20, 18, 16, 14, 12]` when the Agora lost its appeal: alone it keeps a 7×7 block’s corner Townhouses but readies no road for Ornate, and with a Park on each side it raises Townhouses and readies the road around the block) |
 | Cost | free, but needs an earned monument |
 | Fire, collapse | none |
 
@@ -103,6 +103,6 @@ from the original game.
 
 - Upgrades take marble directly from storehouse stock rather than by cart.
 - The Ornate gate reads the road tile's own appeal.
-- Ornate appeal `[2, 1]`, Fast ×1.5, Monument appeal `[20, 20, 18, 16, 14, 12]`, all
+- Ornate appeal `[2, 1]`, Fast ×1.5, Monument appeal `[30, 28, 24, 22, 18, 14]`, all
   **ours** and recorded in `zeus-numbers.md`.
 - The 1,000-citizens monument is earned once per game.

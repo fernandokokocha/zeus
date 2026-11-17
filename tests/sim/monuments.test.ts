@@ -126,7 +126,7 @@ describe('placing a monument', () => {
     expect(describeTile(game, 10, 10)).toEqual({
       title: 'Monument',
       meters: [],
-      lines: ['Tile 10, 10', 'Appeal 20, 20, 18, 16, 14, 12 by distance', 'Raised in March, Year 2', 'Honours the first trade route to Corinth'],
+      lines: ['Tile 10, 10', 'Appeal 30, 28, 24, 22, 18, 14 by distance', 'Raised in March, Year 2', 'Honours the first trade route to Corinth'],
     });
   });
 
