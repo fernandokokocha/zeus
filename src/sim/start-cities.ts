@@ -70,6 +70,7 @@ function layDistrictRoads(state: GameState): void {
   road(state, { x: 10, y: 40 }, { x: 10, y: MAIN_ROAD_Y - 1 });
   road(state, { x: 24, y: 40 }, { x: 24, y: 45 });
   ensure(placeRoadblock(state, SCHOLARS_CITY.roadblock));
+  for (const y of [40, 45]) for (let x = 10; x <= 24; x++) state.roadUpgrades[tileIndex(state, x, y)] = 'ornate';
 }
 
 function townhouseBlock(state: GameState, corner: Point): void {
@@ -96,6 +97,8 @@ function districtServices(state: GameState): void {
   ]);
   vendors(state, place(state, 'agora', 27, 34, 0), [['scrollVendor', 'scrolls']]);
   place(state, 'fountain', 17, 46);
+  for (const y of [46, 47]) place(state, 'park', 19, y);
+  for (let y = 41; y <= 44; y++) place(state, 'park', 11, y);
   place(state, 'gymnasium', 24, 46);
   place(state, 'infirmary', 29, 38);
   for (const venue of state.buildings.filter((b) => b.type === 'theater' || b.type === 'podium')) venue.performingUntil = PERFORMANCE_TICKS;

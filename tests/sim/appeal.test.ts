@@ -40,8 +40,8 @@ describe('appealMap', () => {
 
   it('stops at the map edge', () => {
     const game = grassGame();
-    placeBuilding(game, 'agora', 0, 0);
-    expect(appealAt(game, 0, 0)).toBe(12);
+    placeBuilding(game, 'flowerGarden', 0, 0);
+    expect(appealAt(game, 0, 0)).toBe(8);
   });
 });
 
