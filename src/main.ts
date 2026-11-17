@@ -13,6 +13,7 @@ import { TICKS_PER_SECOND } from './sim/clock';
 import { tick } from './sim/tick';
 import { createGame } from './sim/state';
 import { isStartCity, startCity } from './sim/start-cities';
+import { createCityGallery } from './ui/cities';
 import { byId } from './ui/dom';
 import { createInspector } from './ui/inspector';
 import { createLedger } from './ui/ledger';
@@ -69,6 +70,7 @@ const input = attachToolInput({
   toolbar,
 });
 attachMusic();
+createCityGallery();
 window.addEventListener('resize', () => resizeView(view));
 
 let last = performance.now();

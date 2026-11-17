@@ -23,6 +23,7 @@ body {
 #toolbar,
 #inspector,
 #notice-log,
+#cities,
 #ledger,
 #world {
   position: fixed;
@@ -382,6 +383,45 @@ button.active {
 
 #notice-log button.notice:hover {
   background: #f2d3bf;
+}
+
+#cities {
+  top: 56px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 460px;
+}
+
+#cities-close {
+  float: right;
+}
+
+#cities h2 {
+  margin: 0 0 6px;
+  font-size: 18px;
+}
+
+#cities ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+#cities .city {
+  display: block;
+  padding: 6px 2px;
+  border-bottom: 1px solid #e2d5ba;
+  color: inherit;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+#cities .city:hover {
+  background: #f2d3bf;
+}
+
+#cities .city strong {
+  display: block;
 }
 
 #ledger {
