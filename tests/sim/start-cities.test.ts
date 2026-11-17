@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { TICKS_PER_MONTH, TICKS_PER_YEAR } from '../../src/sim/clock';
+import { appealMap } from '../../src/sim/appeal';
 import { placeBuilding } from '../../src/sim/commands';
-import { SCHOLARS_CITY, isStartCity, startCity } from '../../src/sim/start-cities';
-import type { GameState } from '../../src/sim/state';
+import { canBeOrnate } from '../../src/sim/road-upgrades';
+import { storedMarble } from '../../src/sim/sanctuaries';
+import { MONUMENT_BLOCK, SCHOLARS_CITY, isStartCity, startCity } from '../../src/sim/start-cities';
+import { tileIndex, type GameState } from '../../src/sim/state';
 import { runTicks } from './helpers';
 
 const TWO_YEAR_RUN_TIMEOUT_MS = 20_000;
@@ -54,5 +57,38 @@ describe('the upgrades start city', () => {
     expect(game.worksOfArt).toBe(8);
     expect(townhouses(game)).toBe(12);
     expect(game.permits.scholarsHouse).toBe(1);
+  });
+});
+
+describe('the monument start city', () => {
+  function blockTownhouses(game: GameState): number {
+    return MONUMENT_BLOCK.houses.filter((lot) => {
+      const house = game.buildings.find((b) => b.x === lot.x && b.y === lot.y);
+      return house !== undefined && house.level === 'townhouse';
+    }).length;
+  }
+
+  function ornateReadyRingTiles(game: GameState): number {
+    const appeal = appealMap(game);
+    return MONUMENT_BLOCK.ring.filter((p) => game.roads[tileIndex(game, p.x, p.y)] && canBeOrnate(game, p, appeal)).length;
+  }
+
+  it('is the scholars city with a Monument block of four Townhouses beside it', () => {
+    const game = startCity('monument');
+    expect(game.buildings.filter((b) => b.type === 'monument')).toHaveLength(1);
+    expect(blockTownhouses(game)).toBe(4);
+    expect(townhouses(game)).toBe(16);
+  });
+
+  it('keeps the Monument block’s four Townhouses for two years', () => {
+    const game = startCity('monument');
+    runTicks(game, 2 * TICKS_PER_YEAR);
+    expect(blockTownhouses(game)).toBe(4);
+  }, TWO_YEAR_RUN_TIMEOUT_MS);
+
+  it('has road around the Monument block ready for Ornate, and marble to pay for it', () => {
+    const game = startCity('monument');
+    expect(ornateReadyRingTiles(game)).toBeGreaterThanOrEqual(MONUMENT_BLOCK.ring.length / 2);
+    expect(storedMarble(game)).toBeGreaterThan(0);
   });
 });

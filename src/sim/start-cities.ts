@@ -1,6 +1,6 @@
 import type { BuildingType, Rotation } from './buildings';
 import { TICKS_PER_MONTH } from './clock';
-import { footprint, placeBuilding, placeHouses, placeRoad, placeRoadblock, vendorSpotAt } from './commands';
+import { footprint, placeBuilding, placeHouses, placeMonument, placeRoad, placeRoadblock, vendorSpotAt } from './commands';
 import { GRANARY_CAPACITY, UNITS_PER_LOAD, VENDOR_CAPACITY, houseStockTarget } from './food';
 import { HOUSE_LEVELS } from './housing';
 import { assignWorkers } from './labor';
@@ -12,18 +12,43 @@ import { newGameState, tileIndex, type Building, type Coverage, type GameState, 
 import type { Terrain } from './terrain';
 import { UPGRADES } from './upgrades';
 
-export const START_CITIES = ['scholars', 'upgrades'] as const;
+export const START_CITIES = ['scholars', 'upgrades', 'monument'] as const;
 export type StartCity = (typeof START_CITIES)[number];
 
 const MAIN_ROAD_Y = 50;
 const STARTING_FUNDS = 50_000;
 const UPGRADES_CITY_WORKS_OF_ART = UPGRADES.length;
 const HOUSE_GOODS: HouseGood[] = ['food', 'fleece', 'oil'];
+const HOUSE_GOOD_STALLS: [BuildingType, PeddledGood][] = [
+  ['foodVendor', 'food'],
+  ['fleeceVendor', 'fleece'],
+  ['oilVendor', 'oil'],
+];
+const MONUMENT_CITY_MARBLE_LOADS = 16;
 
 export const SCHOLARS_CITY = {
   blocks: [12, 16, 20].map((x) => ({ x, y: 41 })),
   site: { x: 20, y: 41, rotation: 0 as Rotation },
-  roadblock: { x: 10, y: 47 },
+  roadblock: { x: 10, y: 49 },
+};
+
+const MONUMENT_RING = { near: { x: 2, y: 40 }, far: { x: 10, y: 48 } };
+
+export const MONUMENT_BLOCK = {
+  monument: { x: 5, y: 43 },
+  houses: [
+    { x: 3, y: 41 },
+    { x: 8, y: 41 },
+    { x: 3, y: 46 },
+    { x: 8, y: 46 },
+  ],
+  parks: [
+    { x: 6, y: 41 },
+    { x: 3, y: 44 },
+    { x: 9, y: 44 },
+    { x: 6, y: 47 },
+  ],
+  ring: borderTiles(MONUMENT_RING.near, MONUMENT_RING.far),
 };
 
 export function isStartCity(name: string): name is StartCity {
@@ -34,7 +59,7 @@ export function startCity(name: StartCity): GameState {
   return START_CITY_BUILDERS[name]();
 }
 
-const START_CITY_BUILDERS: Record<StartCity, () => GameState> = { scholars: scholarsCity, upgrades: upgradesCity };
+const START_CITY_BUILDERS: Record<StartCity, () => GameState> = { scholars: scholarsCity, upgrades: upgradesCity, monument: monumentCity };
 
 function flatMap(): GameState {
   const terrain = new Array<Terrain>(MAP_SIZE * MAP_SIZE).fill('grass');
@@ -60,6 +85,42 @@ function upgradesCity(): GameState {
   return state;
 }
 
+function monumentCity(): GameState {
+  const state = scholarsCity();
+  monumentBlock(state);
+  monumentBlockServices(state);
+  buildingAt(state, { x: 6, y: 51 }).marble = MONUMENT_CITY_MARBLE_LOADS * UNITS_PER_LOAD;
+  assignWorkers(state);
+  return state;
+}
+
+function monumentBlock(state: GameState): void {
+  const { near, far } = MONUMENT_RING;
+  road(state, near, { x: far.x, y: near.y });
+  road(state, near, { x: near.x, y: far.y });
+  road(state, { x: near.x, y: far.y }, far);
+  state.monumentsToPlace.push({ kind: 'crowdedCity', honours: 'the city reaching 1,000 citizens' });
+  ensure(placeMonument(state, 'crowdedCity', MONUMENT_BLOCK.monument.x, MONUMENT_BLOCK.monument.y));
+  for (const lot of MONUMENT_BLOCK.houses) townhouse(state, lot);
+  for (const park of MONUMENT_BLOCK.parks) place(state, 'park', park.x, park.y);
+}
+
+function monumentBlockServices(state: GameState): void {
+  place(state, 'theater', 3, 35).performingUntil = PERFORMANCE_TICKS;
+  place(state, 'gymnasium', 8, 37);
+  place(state, 'fountain', 0, 40);
+  vendors(state, place(state, 'agora', 0, 42), HOUSE_GOOD_STALLS);
+  place(state, 'podium', 0, 48).performingUntil = PERFORMANCE_TICKS;
+}
+
+function borderTiles(from: Point, to: Point): Point[] {
+  const tiles: Point[] = [];
+  for (let y = from.y; y <= to.y; y++) {
+    for (let x = from.x; x <= to.x; x++) if (x === from.x || x === to.x || y === from.y || y === to.y) tiles.push({ x, y });
+  }
+  return tiles;
+}
+
 function road(state: GameState, from: Point, to: Point): void {
   ensure(placeRoad(state, from, to));
 }
@@ -75,12 +136,18 @@ function layDistrictRoads(state: GameState): void {
 
 function townhouseBlock(state: GameState, corner: Point): void {
   ensure(placeHouses(state, corner, { x: corner.x + 3, y: corner.y + 3 }));
-  for (const lot of [corner, { x: corner.x + 2, y: corner.y }, { x: corner.x, y: corner.y + 2 }, { x: corner.x + 2, y: corner.y + 2 }]) {
-    const house = buildingAt(state, lot);
-    Object.assign(house, { level: 'townhouse', residents: HOUSE_LEVELS.townhouse.capacity });
-    for (const good of HOUSE_GOODS) house[good] = houseStockTarget(house, good);
-    for (const service of Object.keys(COVERAGE_MONTHS) as Coverage[]) house.coveredUntil[service] = COVERAGE_MONTHS[service] * TICKS_PER_MONTH;
-  }
+  for (const lot of [corner, { x: corner.x + 2, y: corner.y }, { x: corner.x, y: corner.y + 2 }, { x: corner.x + 2, y: corner.y + 2 }]) stockTownhouse(buildingAt(state, lot));
+}
+
+function townhouse(state: GameState, lot: Point): void {
+  ensure(placeHouses(state, lot, lot));
+  stockTownhouse(buildingAt(state, lot));
+}
+
+function stockTownhouse(house: Building): void {
+  Object.assign(house, { level: 'townhouse', residents: HOUSE_LEVELS.townhouse.capacity });
+  for (const good of HOUSE_GOODS) house[good] = houseStockTarget(house, good);
+  for (const service of Object.keys(COVERAGE_MONTHS) as Coverage[]) house.coveredUntil[service] = COVERAGE_MONTHS[service] * TICKS_PER_MONTH;
 }
 
 function districtServices(state: GameState): void {
@@ -90,11 +157,7 @@ function districtServices(state: GameState): void {
   place(state, 'flowerGarden', 25, 41);
   place(state, 'maintenanceOffice', 25, 43);
   const agora = place(state, 'agora', 11, 46, 1);
-  vendors(state, agora, [
-    ['foodVendor', 'food'],
-    ['fleeceVendor', 'fleece'],
-    ['oilVendor', 'oil'],
-  ]);
+  vendors(state, agora, HOUSE_GOOD_STALLS);
   vendors(state, place(state, 'agora', 27, 34, 0), [['scrollVendor', 'scrolls']]);
   place(state, 'fountain', 17, 46);
   for (const y of [46, 47]) place(state, 'park', 19, y);
