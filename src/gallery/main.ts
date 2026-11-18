@@ -56,7 +56,7 @@ const SETS: Record<string, DesignSet> = {
   townhouse: { title: 'Townhouse', needs: 'Level 7 · 60 people · needs food, water, fleece, oil and top culture and appeal', options: TOWNHOUSE_OPTIONS, chosen: 1, previous: APARTMENT_OPTIONS[2], strip: true },
   wheatFarm: { title: 'Wheat Farm', needs: '3×3 · 10 workers · every growth stage, without and with workers', options: FARM_OPTIONS, chosen: 0, footprint: [3, 3], strip: true },
   carrotFarm: { title: 'Carrot Farm', needs: '3×3 · 10 workers · every growth stage, without and with workers', options: CARROT_FARM_OPTIONS, chosen: 0, footprint: [3, 3], strip: true },
-  maintenance: { title: 'Maintenance Office', needs: '2×2 · 5 workers · each option without and with workers', options: MAINTENANCE_OPTIONS, chosen: 1, strip: true },
+  maintenance: { title: 'Maintenance Office', needs: '2×2 · 5 workers · each option without and with workers', options: MAINTENANCE_OPTIONS, chosen: 0 },
   masonry: { title: 'Masonry Shop', needs: '2×2 · 15 workers · each option without and with workers, holding 3 loads of marble', options: MASONRY_OPTIONS, chosen: 1, strip: true },
   palace: { title: 'Palace', needs: '9×6 · no workers · always animated, guards at the gate', options: PALACE_OPTIONS, chosen: 2, footprint: [9, 6] },
   taxOffice: { title: 'Tax Office', needs: '2×2 · 8 workers · each option without and with workers', options: TAX_OPTIONS, chosen: 2, strip: true },
