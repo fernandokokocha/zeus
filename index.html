@@ -11,7 +11,20 @@
   </head>
   <body>
     <canvas id="view"></canvas>
+    <aside id="menu" hidden>
+      <button id="menu-close" aria-label="Close">×</button>
+      <h2>Menu</h2>
+      <h3>New map</h3>
+      <form id="menu-map">
+        <label>Seed <input id="menu-seed" name="seed" type="number" min="0" /></label>
+        <button type="submit">Open</button>
+        <button id="menu-random" type="button">Random</button>
+      </form>
+      <h3>Example cities</h3>
+      <ul id="menu-cities"></ul>
+    </aside>
     <header id="topbar">
+      <button id="menu-button" title="Menu: example cities and map seeds">☰</button>
       <span id="population"></span>
       <span id="labor"></span>
       <span id="treasury"></span>
