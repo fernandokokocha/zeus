@@ -243,10 +243,12 @@ button.active {
   color: var(--parchment);
 }
 
-#music-button {
+#corner-buttons {
   position: fixed;
   right: 8px;
   bottom: 8px;
+  display: flex;
+  gap: 4px;
 }
 
 #speed {
@@ -386,9 +388,8 @@ button.active {
 }
 
 #menu {
-  top: 56px;
-  left: 50%;
-  transform: translateX(-50%);
+  right: 8px;
+  bottom: 40px;
   width: 460px;
 }
 
