@@ -147,14 +147,14 @@ export function populationChapter(report: PopulationReport): HTMLElement {
   return body;
 }
 
-export function ledgerBar(share: number, label: string): HTMLElement {
-  const fill = element('div', 'fill');
-  fill.style.width = `${share * 100}%`;
-  return element('div', 'ledger-bar', element('div', 'track', fill), element('span', '', label));
-}
-
 function productionBar(made: number, possible: number): HTMLElement {
-  return ledgerBar(madeShare(made, possible), possible === 0 ? 'no buildings' : `${loads(made)} / ${loads(possible)}`);
+  const bar = element('div', 'production-bar');
+  const track = element('div', 'possible');
+  const solid = element('div', 'made');
+  solid.style.width = `${madeShare(made, possible) * 100}%`;
+  track.append(solid);
+  bar.append(track, element('span', '', possible === 0 ? 'no buildings' : `${loads(made)} / ${loads(possible)}`));
+  return bar;
 }
 
 export function productionChapter(report: ProductionReport): HTMLElement {

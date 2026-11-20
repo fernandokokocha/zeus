@@ -524,20 +524,20 @@ button.active {
   stroke-linejoin: round;
 }
 
-.ledger-bar {
+.production-bar {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-.ledger-bar .track {
+.production-bar .possible {
   width: 160px;
   height: 12px;
   border: 1px solid var(--ink);
   background: repeating-linear-gradient(45deg, #e2d5ba 0 3px, transparent 3px 6px);
 }
 
-.ledger-bar .fill {
+.production-bar .made {
   height: 100%;
   background: var(--terracotta);
 }
@@ -598,16 +598,41 @@ button.active {
   margin-bottom: 4px;
 }
 
-.charter-grant {
-  font-size: 12px;
-  font-style: italic;
+.charter-permit {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 14px;
 }
 
-.charter .ledger-bar .track {
+.charter-permit b {
+  font-size: 15px;
+}
+
+.charter-months {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.charter-blocks {
   flex: 1;
+  display: flex;
+  gap: 2px;
 }
 
-.charter .ledger-bar span {
+.charter-blocks span {
+  flex: 1;
+  height: 12px;
+  border: 1px solid var(--ink);
+  background: repeating-linear-gradient(45deg, #e2d5ba 0 3px, transparent 3px 6px);
+}
+
+.charter-blocks .filled {
+  background: var(--terracotta);
+}
+
+.charter-months > span {
   min-width: 6.5em;
   text-align: right;
 }
@@ -646,16 +671,6 @@ button.active {
   margin: 4px 0 0;
   font-size: 12px;
   color: #8a7a66;
-}
-
-.charter-chapter .charter-permits {
-  margin-top: 10px;
-}
-
-.charter-chapter .charter-permits p {
-  margin: 2px 0 0;
-  font-size: inherit;
-  font-weight: bold;
 }
 
 #inspector-storehouse {

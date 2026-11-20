@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { TICKS_PER_MONTH } from '../../src/sim/clock';
 import { placeBuilding } from '../../src/sim/commands';
 import { HEALTHY_AND_WELL_FED, WELL_DRESSED } from '../../src/sim/charters';
-import { charterReport, monthsText, permitLines, resetText } from '../../src/ui/charters';
+import { charterReport, heldText, monthsText, resetText } from '../../src/ui/charters';
 import { GUILD_BLOCK, grassGame, guildBlock } from '../sim/helpers';
 
 const month = (count: number) => count * TICKS_PER_MONTH;
@@ -22,6 +22,13 @@ describe('charterReport', () => {
     const reset = { tick: 30, cause: 'Townhouse at 4,4 ran out of oil' };
     game.wellDressed = { months: 9, reset };
     expect(charterReport(game, WELL_DRESSED)).toMatchObject({ name: 'Well dressed', grants: "Traders' Guild", months: 9, total: 24, reset });
+  });
+
+  it('holds the unspent permits of the type it grants', () => {
+    const { game } = guildBlock();
+    game.permits.tradersGuild = 2;
+    placeBuilding(game, 'tradersGuild', GUILD_BLOCK.x, GUILD_BLOCK.y);
+    expect(charterReport(game, WELL_DRESSED).held).toBe(1);
   });
 });
 
@@ -44,23 +51,10 @@ describe('resetText', () => {
   });
 });
 
-describe('permitLines', () => {
-  it('lists the permits of every elite type', () => {
-    expect(permitLines({ tradersGuild: 1, scholarsHouse: 2, warriorsHouse: 3 })).toEqual([
-      "Traders' Guild permits: 1",
-      "Scholars' House permits: 2",
-      "Warriors' House permits: 3",
-    ]);
-  });
-
-  it('counts only the unspent ones once a guild is placed', () => {
-    const { game } = guildBlock();
-    game.permits.tradersGuild = 2;
-    placeBuilding(game, 'tradersGuild', GUILD_BLOCK.x, GUILD_BLOCK.y);
-    expect(permitLines(game.permits)).toEqual([
-      "Traders' Guild permits: 1",
-      "Scholars' House permits: 0",
-      "Warriors' House permits: 0",
-    ]);
+describe('heldText', () => {
+  it('counts the permits held, in the singular for one', () => {
+    expect(heldText(0)).toBe('0 permits held');
+    expect(heldText(1)).toBe('1 permit held');
+    expect(heldText(2)).toBe('2 permits held');
   });
 });

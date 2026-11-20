@@ -1,13 +1,13 @@
 import { TICKS_PER_MONTH } from '../sim/clock';
 import { CHARTERS, type Charter, type CharterCount } from '../sim/charters';
-import { ELITE_NAMES, type EliteType } from '../sim/housing';
+import { ELITE_NAMES } from '../sim/housing';
 import type { GameState } from '../sim/state';
 import { element } from './dom';
-import { ledgerBar } from './ledger-chapters';
 
 export interface CharterReport {
   name: string;
   grants: string;
+  held: number;
   months: number;
   total: number;
   conditions: { label: string; met: boolean }[];
@@ -19,6 +19,7 @@ export function charterReport(state: GameState, charter: Charter): CharterReport
   return {
     name: charter.name,
     grants: ELITE_NAMES[charter.grants],
+    held: state.permits[charter.grants],
     months,
     total: charter.months,
     conditions: [...charter.requires, ...charter.keeps].map((c) => ({ label: c.label, met: c.unmet(state) === null })),
@@ -40,18 +41,24 @@ function monthsAgo(ticks: number): string {
   return `${months} ${months === 1 ? 'month' : 'months'} ago`;
 }
 
-export function permitLines(permits: Record<EliteType, number>): string[] {
-  return (Object.keys(permits) as EliteType[]).map((type) => `${ELITE_NAMES[type]} permits: ${permits[type]}`);
+export function heldText(held: number): string {
+  return `${held} ${held === 1 ? 'permit' : 'permits'} held`;
+}
+
+function monthBlocks(months: number, total: number): HTMLElement {
+  const blocks = Array.from({ length: total }, (_, i) => element('span', i < months ? 'filled' : ''));
+  return element('div', 'charter-months', element('div', 'charter-blocks', ...blocks), element('span', '', monthsText(months, total)));
 }
 
 function charterSection(report: CharterReport, tick: number): HTMLElement {
-  const head = element('div', 'charter-head', element('strong', '', report.name), element('span', 'charter-grant', `Grants a ${report.grants} permit`));
+  const permit = element('span', 'charter-permit', element('em', '', `Grants a ${report.grants} permit`), element('b', '', heldText(report.held)));
+  const head = element('div', 'charter-head', element('strong', '', report.name), permit);
   const conditions = element(
     'ul',
     'charter-conditions',
     ...report.conditions.map(({ label, met }) => element('li', met ? 'met' : '', element('span', 'charter-check', met ? '✓' : ''), label)),
   );
-  const section = element('section', 'charter', head, ledgerBar(report.months / report.total, monthsText(report.months, report.total)), conditions);
+  const section = element('section', 'charter', head, monthBlocks(report.months, report.total), conditions);
   if (report.reset) section.append(element('p', 'charter-reset', resetText(report.reset, tick)));
   return section;
 }
@@ -61,10 +68,7 @@ export function createCharterChapter(state: GameState): { body: HTMLElement; upd
   return {
     body,
     update() {
-      body.replaceChildren(
-        ...CHARTERS.map((charter) => charterSection(charterReport(state, charter), state.tick)),
-        element('div', 'charter-permits', ...permitLines(state.permits).map((line) => element('p', '', line))),
-      );
+      body.replaceChildren(...CHARTERS.map((charter) => charterSection(charterReport(state, charter), state.tick)));
     },
   };
 }
