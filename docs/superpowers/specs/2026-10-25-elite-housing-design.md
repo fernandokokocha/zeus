@@ -111,6 +111,13 @@ spine of the city and the future route of traders.
 - **Why Well fed:** a city only trades with other cities once it can feed itself.
 - Before slice 16 exists, the panel shows the permit as "Traders' Guild permit: 1",
   with nothing to spend it on yet.
+- *Changed 2026-11-20:* the Charter chapter shows each charter as a progress bar with
+  its months ("9 / 24 months"), the permit it grants, one row per condition with a
+  checkbox ticked when the city meets it right now, and the last reset under them.
+- A charter's conditions come in two kinds. What the city **requires** (a Townhouse, a
+  staffed Infirmary…) resets only a running count when it is missing, so the last real
+  reset stays on show. What every house **keeps** (food, culture…) resets whenever a house
+  misses it.
 
 ## The Traders' Guild (slice 16)
 

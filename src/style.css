@@ -586,17 +586,66 @@ button.active {
   color: #b02a1a;
 }
 
-.charter-chapter p {
-  margin: 2px 0 0;
+.charter {
+  margin-bottom: 14px;
+}
+
+.charter-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.charter-grant {
+  font-size: 12px;
+  font-style: italic;
+}
+
+.charter .ledger-bar .track {
+  flex: 1;
+}
+
+.charter .ledger-bar span {
+  min-width: 6.5em;
+  text-align: right;
+}
+
+.charter-conditions {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
   font-size: 13px;
 }
 
-.charter-chapter strong {
-  display: block;
+.charter-conditions li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
 }
 
-.charter-chapter p + strong {
-  margin-top: 10px;
+.charter-check {
+  flex: none;
+  width: 11px;
+  height: 11px;
+  border: 1px solid var(--ink);
+  font-size: 10px;
+  line-height: 11px;
+  text-align: center;
+}
+
+.charter-conditions .met .charter-check {
+  background: #4f7a2a;
+  border-color: #4f7a2a;
+  color: var(--parchment);
+}
+
+.charter-reset {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #8a7a66;
 }
 
 .charter-chapter .charter-permits {
@@ -604,6 +653,7 @@ button.active {
 }
 
 .charter-chapter .charter-permits p {
+  margin: 2px 0 0;
   font-size: inherit;
   font-weight: bold;
 }

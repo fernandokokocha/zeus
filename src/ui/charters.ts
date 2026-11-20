@@ -1,18 +1,37 @@
-import { CHARTERS, HEALTHY_AND_WELL_FED_MONTHS, LEARNED_CITY_MONTHS, WELL_DRESSED_MONTHS, type Charter, type CharterCount } from '../sim/charters';
 import { TICKS_PER_MONTH } from '../sim/clock';
+import { CHARTERS, type Charter, type CharterCount } from '../sim/charters';
 import { ELITE_NAMES, type EliteType } from '../sim/housing';
 import type { GameState } from '../sim/state';
+import { element } from './dom';
+import { ledgerBar } from './ledger-chapters';
 
-const GOALS: Record<Charter['progress'], string> = {
-  wellDressed: `The city has a Townhouse, and no house that wears fleece or oil runs out of it, for ${WELL_DRESSED_MONTHS} months in a row. Grants a Traders' Guild permit.`,
-  learnedCity: `The city has a Townhouse, and every Townhouse has philosophy, athletics and drama, for ${LEARNED_CITY_MONTHS} months in a row. Elite houses count as Townhouses. Grants a Scholars' House permit.`,
-  healthyAndWellFed: `The city has a Townhouse, and no house above a Hut runs out of food or falls sick, for ${HEALTHY_AND_WELL_FED_MONTHS} months in a row. Grants a Warriors' House permit.`,
-};
+export interface CharterReport {
+  name: string;
+  grants: string;
+  months: number;
+  total: number;
+  conditions: { label: string; met: boolean }[];
+  reset: CharterCount['reset'];
+}
 
-export function charterText(charter: Charter, { months, reset }: CharterCount, tick: number): string {
-  const progress = `${charter.name}: ${months} / ${charter.months} months`;
-  if (reset === null) return progress;
-  return `${progress}, reset ${monthsAgo(tick - reset.tick)} (${reset.cause})`;
+export function charterReport(state: GameState, charter: Charter): CharterReport {
+  const { months, reset } = state[charter.progress];
+  return {
+    name: charter.name,
+    grants: ELITE_NAMES[charter.grants],
+    months,
+    total: charter.months,
+    conditions: [...charter.requires, ...charter.keeps].map((c) => ({ label: c.label, met: c.unmet(state) === null })),
+    reset,
+  };
+}
+
+export function monthsText(months: number, total: number): string {
+  return `${months} / ${total} months`;
+}
+
+export function resetText(reset: NonNullable<CharterCount['reset']>, tick: number): string {
+  return `Reset ${monthsAgo(tick - reset.tick)}: ${reset.cause}`;
 }
 
 function monthsAgo(ticks: number): string {
@@ -25,32 +44,26 @@ export function permitLines(permits: Record<EliteType, number>): string[] {
   return (Object.keys(permits) as EliteType[]).map((type) => `${ELITE_NAMES[type]} permits: ${permits[type]}`);
 }
 
-export function createCharterChapter(state: GameState): { body: HTMLElement; update(): void } {
-  const body = document.createElement('div');
-  body.className = 'charter-chapter';
-  const progressLines = CHARTERS.map((charter) => {
-    const progress = document.createElement('strong');
-    const goal = document.createElement('p');
-    goal.textContent = GOALS[charter.progress];
-    body.append(progress, goal);
-    return { charter, progress };
-  });
-  const permits = document.createElement('div');
-  permits.className = 'charter-permits';
-  body.append(permits);
+function charterSection(report: CharterReport, tick: number): HTMLElement {
+  const head = element('div', 'charter-head', element('strong', '', report.name), element('span', 'charter-grant', `Grants a ${report.grants} permit`));
+  const conditions = element(
+    'ul',
+    'charter-conditions',
+    ...report.conditions.map(({ label, met }) => element('li', met ? 'met' : '', element('span', 'charter-check', met ? '✓' : ''), label)),
+  );
+  const section = element('section', 'charter', head, ledgerBar(report.months / report.total, monthsText(report.months, report.total)), conditions);
+  if (report.reset) section.append(element('p', 'charter-reset', resetText(report.reset, tick)));
+  return section;
+}
 
+export function createCharterChapter(state: GameState): { body: HTMLElement; update(): void } {
+  const body = element('div', 'charter-chapter');
   return {
     body,
     update() {
-      for (const { charter, progress } of progressLines) {
-        progress.textContent = charterText(charter, state[charter.progress], state.tick);
-      }
-      permits.replaceChildren(
-        ...permitLines(state.permits).map((line) => {
-          const p = document.createElement('p');
-          p.textContent = line;
-          return p;
-        }),
+      body.replaceChildren(
+        ...CHARTERS.map((charter) => charterSection(charterReport(state, charter), state.tick)),
+        element('div', 'charter-permits', ...permitLines(state.permits).map((line) => element('p', '', line))),
       );
     },
   };
