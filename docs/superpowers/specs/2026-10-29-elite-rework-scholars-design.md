@@ -117,11 +117,13 @@ Replaces Well fed as the Traders' Guild charter.
 
 The Scholars' House charter.
 
-- **Learned city:** for **24 months in a row**, the city has at least one Townhouse, and
-  every Townhouse has **full culture**: philosophy, athletics and drama all passed recently
-  (60 points). Elite houses count as Townhouses here.
+- **Learned city:** for **24 months in a row**, the city has at least one house from Hovel
+  up, and every house from Hovel up (the levels that need culture) has **full culture**:
+  philosophy, athletics and drama all passed recently (60 points). Elite houses count.
+  *Changed 2026-11-20:* it used to cover Townhouses only and need a Townhouse, which tied
+  its start to the other two charters'.
 - One permit per completion. The count restarts. It is shown in the Charters panel with what
-  last reset it ("Townhouse at 31,18 missed drama").
+  last reset it ("Hovel at 31,18 missed drama").
 
 ## The Scholars' House and the Library
 
@@ -225,7 +227,7 @@ city-wide, and each changes one rule.
   before fleece.
 - Elites count as Townhouses in both charters.
 - Elites stand unstarted until their first special good (slice 38).
-- Learned city counts elites as Townhouses, and needs at least one Townhouse.
+- Learned city counts elites, and covers every house from Hovel up (since 2026-11-20).
 - The Scholars' House can use any road, not only the Main Road.
 - Scholars' neighbourhood range: 6 tiles from the block.
 - Scholars' appeal is 25, the same as the guild's. An earlier idea of 40 was dropped with

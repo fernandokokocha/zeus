@@ -98,12 +98,15 @@ spreads to neighbours.
 
 The Warriors' House charter. Well fed (removed in slice 34) comes back as half of it.
 
-- **Healthy and well fed:** for **24 months in a row**, the city has at least one Townhouse,
-  no house goes without food, and no house falls sick. (Widened from Townhouses only after the
-  slice 45 playtest; Huts neither eat nor fall sick, so they never reset it.)
+- **Healthy and well fed:** for **24 months in a row**, the city has a **staffed Infirmary**
+  and at least **1000 people**, no house goes without food, and no house falls sick.
+  (Widened from Townhouses only after the slice 45 playtest; Huts neither eat nor fall sick,
+  so they never reset it. *Changed 2026-11-20:* the Infirmary and the 1000 people replace
+  "at least one Townhouse", which had nothing to do with this charter.)
   - "Goes without food" is the old Well fed test: it has to eat and its stock is empty.
-  - Elite houses count as Townhouses, as in the other two charters.
-  - A month with no Townhouse resets the count.
+  - Elite houses are checked like any other house.
+  - A month without a staffed Infirmary, or with fewer than 1000 people, resets a running
+    count.
   - The Charters panel shows it like the others, with what last reset it: "Townhouse at
     40,22 ran out of food" or "Townhouse at 40,22 fell sick".
 - Completing it grants **one Warriors' House permit** and posts a notice. The count
@@ -181,11 +184,13 @@ The Warriors' House charter. Well fed (removed in slice 34) comes back as half o
 - Elite houses gain disease risk 5, a Townhouse's (Zeus gives elites 0 on Beginner), since
   they keep the Townhouses' families.
 - The Infirmary's appeal is a flat -2 out to 4 tiles (Zeus gives -2 with range 4, no step).
-- The charter counts sickness and hunger in Townhouses (and elites) only, like the others.
+- The charter's 1000 people is a flat number (**ours**), counting everyone housed.
 - 1 bronze makes 1 armor. Armor is not traded.
 - The Warriors' House has no appeal need and no appeal test at placement.
 - Its neighbourhood is an Infirmary within 6 tiles, the Scholars' range. The horizon's
-  Gymnasium and Foundry are dropped.
+  Gymnasium and Foundry are dropped. The Infirmary is a placeholder: it is too easy, and the
+  owner rejected the Armory and the other stand-ins. The neighbourhood moves to near a
+  Gatehouse once walls exist (see the roadmap).
 - Armor is worn at 8 units a month, the other elites' amount.
 - Drill Ground: 8 workers, one hoplite every 2 months at full staff, a company of 8.
 - Hoplites are lost when their house demotes, unlike Works of Art.

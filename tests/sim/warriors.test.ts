@@ -129,13 +129,6 @@ describe("a Warriors' House", () => {
     expect(game.buildingIdAt[tileIndex(game, 3, 17)]).toBe(0);
   });
 
-  it('counts as a Townhouse for Healthy and well fed', () => {
-    const { game, warriors } = placedWarriors();
-    supplyWarriors(warriors);
-    warriors.food = 0;
-    untilMonthEnd(game);
-    expect(game.healthyAndWellFed.reset?.cause).toBe("Warriors' House at 3,12 ran out of food");
-  });
 });
 
 describe("a Warriors' House's armor", () => {

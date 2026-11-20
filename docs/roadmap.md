@@ -20,6 +20,9 @@ anywhere.
 - **Trireme Crew.** Needs its design first. Near the shore. Charter: the Warriors' one, and
   its permit fits either house. Consumes wood and armor. Annex: Dock. Bonus: a warship on
   the roster.
+- **Walls and gatehouses.** Needs its design first. Walls, towers and gatehouses, with
+  something to defend against. The Warriors' House neighbourhood moves from the Infirmary
+  placeholder to near a Gatehouse.
 - **Elite levels.** Needs its design first. For example Horsemen, from the Warriors' House.
 - **Nobles' Court.** Needs its design first. Near the Palace.
 - **Great Works.** Needs its design first. Wonders built like sanctuaries, over time and

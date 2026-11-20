@@ -309,14 +309,15 @@ hold; its workers cart everything else to storehouses (granaries for food).
   for oil, elites included) grants **1** Traders'
   Guild permit, then the count restarts. A month with no Townhouse resets a running count.
   Permits are held per elite type.
-- Learned city charter (spec): **24** months in a row with at least one Townhouse and every
-  Townhouse covered by philosophy, athletics and drama at month end (elite houses count as
-  Townhouses) grants **1** Scholars' House permit, then the count restarts. A month with no
-  Townhouse resets a running count.
-- Healthy and well fed charter (spec): **24** months in a row with at least one Townhouse, no
-  house above a Hut running out of food and none falling sick (elites included) grants
-  **1** Warriors' House permit, then the count restarts. An onset counts even if a healer cures
-  it before month end. A month with no Townhouse resets a running count.
+- Learned city charter (spec): **24** months in a row with at least one house from Hovel up and
+  every house from Hovel up covered by philosophy, athletics and drama at month end (elites
+  included) grants **1** Scholars' House permit, then the count restarts. A month with no house
+  from Hovel up resets a running count.
+- Healthy and well fed charter (spec): **24** months in a row with a staffed Infirmary, at
+  least **1000** people (**ours**, flat), no house above a Hut running out of food and none
+  falling sick (elites included) grants **1** Warriors' House permit, then the count restarts.
+  An onset counts even if a healer cures it before month end. A month without the Infirmary
+  or the people resets a running count.
 - Traders' Guild (spec): keeps every resident of its four Townhouses (capacity **240**), who
   join the labor pool, and settlers top it up; pays tax at multiplier **1** (**ours**, half a
   Townhouse's). Placed over four Townhouses in an exact 4×4 block whose front lines a straight **4**-tile

@@ -1,7 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { HEALTHY_AND_WELL_FED_MONTHS, LEARNED_CITY_MONTHS, WELL_DRESSED_MONTHS, tallyHealthyAndWellFed, tallyLearnedCity, tallyWellDressed } from '../../src/sim/charters';
+import { BUILDING_SPECS } from '../../src/sim/buildings';
+import {
+  HEALTHY_AND_WELL_FED_MONTHS,
+  HEALTHY_AND_WELL_FED_POPULATION,
+  LEARNED_CITY_MONTHS,
+  WELL_DRESSED_MONTHS,
+  tallyHealthyAndWellFed,
+  tallyLearnedCity,
+  tallyWellDressed,
+} from '../../src/sim/charters';
+import { placeBuilding } from '../../src/sim/commands';
 import { FLEECE_PER_HOUSE_PER_MONTH, OIL_PER_HOUSE_PER_MONTH, monthlyUse } from '../../src/sim/food';
-import { HOUSE_LEVELS } from '../../src/sim/housing';
+import { HOUSE_LEVELS, type HouseLevel } from '../../src/sim/housing';
+import { population } from '../../src/sim/settlers';
 import { TICKS_PER_MONTH } from '../../src/sim/clock';
 import { tick } from '../../src/sim/tick';
 import type { Building, GameState } from '../../src/sim/state';
@@ -10,11 +21,13 @@ import { grassGame, placeHouse, placedGuild, placedScholars, supplyGuild } from 
 
 const PLENTY = 10;
 
-function addTownhouse(game: GameState, x: number, y: number): Building {
+function addHouse(game: GameState, x: number, y: number, attributes: Partial<Building>): Building {
   placeHouse(game, x, y);
-  const house = game.buildings[game.buildings.length - 1];
-  Object.assign(house, { level: 'townhouse', residents: HOUSE_LEVELS.townhouse.capacity, fleece: PLENTY, oil: PLENTY });
-  return house;
+  return Object.assign(game.buildings[game.buildings.length - 1], attributes);
+}
+
+function addTownhouse(game: GameState, x: number, y: number): Building {
+  return addHouse(game, x, y, { level: 'townhouse', residents: HOUSE_LEVELS.townhouse.capacity, fleece: PLENTY, oil: PLENTY });
 }
 
 function cityWithTownhouse(): { game: GameState; house: Building } {
@@ -195,22 +208,37 @@ describe("the Learned city charter", () => {
     expect(game.learnedCity.reset).toEqual({ tick: 0, cause: "Townhouse at 4,4 missed athletics" });
   });
 
-  it("is not reset by lower houses without culture", () => {
+  it("resets when a lower house from Hovel up misses a culture", () => {
     const { game } = learnedCity();
-    placeHouse(game, 8, 4);
-    Object.assign(game.buildings[1], { level: "apartment", residents: 40 });
+    addHouse(game, 8, 4, { level: "hovel", residents: 24 });
+    tallyLearnedCity(game);
+    expect(game.learnedCity.reset).toEqual({ tick: 0, cause: "Hovel at 8,4 missed philosophy" });
+  });
+
+  it("is not reset by a Shack or a Hut without culture", () => {
+    const { game } = learnedCity();
+    addHouse(game, 8, 4, { level: "shack", residents: 16 });
+    addHouse(game, 12, 4, { level: "hut", residents: 8 });
     tallyLearnedCity(game);
     expect(game.learnedCity).toEqual({ months: 1, reset: null });
   });
 
-  it("resets a running count in a month with no Townhouse", () => {
+  it("counts a city of Hovels with full culture and no Townhouse", () => {
     const game = grassGame();
-    game.learnedCity.months = 10;
+    cover(addHouse(game, 8, 4, { level: "hovel", residents: 24 }));
     tallyLearnedCity(game);
-    expect(game.learnedCity).toEqual({ months: 0, reset: { tick: 0, cause: "no Townhouse in the city" } });
+    expect(game.learnedCity).toEqual({ months: 1, reset: null });
   });
 
-  it("counts a Traders' Guild as a Townhouse, and is reset by one missing a culture", () => {
+  it("resets a running count in a month with no house from Hovel up", () => {
+    const game = grassGame();
+    addHouse(game, 8, 4, { level: "shack", residents: 16 });
+    game.learnedCity.months = 10;
+    tallyLearnedCity(game);
+    expect(game.learnedCity).toEqual({ months: 0, reset: { tick: 0, cause: "no house from Hovel up in the city" } });
+  });
+
+  it("counts a Traders' Guild, and is reset by one missing a culture", () => {
     const { game, guild } = placedGuild();
     for (const house of game.buildings.filter((b) => b.type === "house")) house.residents = 0;
     cover(guild);
@@ -239,10 +267,34 @@ it("is tallied at the end of every month", () => {
   });
 });
 
-function fedCity(): { game: GameState; house: Building } {
-  const { game, house } = cityWithTownhouse();
+function feed(house: Building): Building {
   house.food = PLENTY * monthlyUse(house, 'food');
-  return { game, house };
+  return house;
+}
+
+function placeFromTheBottom(game: GameState, place: (x: number, y: number) => { ok: boolean }): Building {
+  for (let y = game.size - 1; y >= 0; y--) {
+    for (let x = 0; x < game.size; x++) {
+      if (place(x, y).ok) return game.buildings[game.buildings.length - 1];
+    }
+  }
+  throw new Error('No room left');
+}
+
+function staffedInfirmaryAndCrowd(game: GameState, level: HouseLevel = 'townhouse'): Building {
+  const infirmary = placeFromTheBottom(game, (x, y) => placeBuilding(game, 'infirmary', x, y));
+  infirmary.workers = BUILDING_SPECS.infirmary.workers;
+  while (population(game) < HEALTHY_AND_WELL_FED_POPULATION) {
+    const house = placeFromTheBottom(game, (x, y) => placeHouse(game, x, y));
+    feed(Object.assign(house, { level, residents: HOUSE_LEVELS[level].capacity }));
+  }
+  return infirmary;
+}
+
+function fedCity(): { game: GameState; house: Building; infirmary: Building } {
+  const { game, house } = cityWithTownhouse();
+  feed(house);
+  return { game, house, infirmary: staffedInfirmaryAndCrowd(game) };
 }
 
 describe('the Healthy and well fed charter', () => {
@@ -252,7 +304,7 @@ describe('the Healthy and well fed charter', () => {
     expect(game.permits.warriorsHouse).toBe(0);
   });
 
-  it('counts a month in which every Townhouse keeps food and stays healthy', () => {
+  it('counts a month in which every house keeps food and stays healthy', () => {
     const { game } = fedCity();
     tallyHealthyAndWellFed(game);
     tallyHealthyAndWellFed(game);
@@ -325,18 +377,14 @@ describe('the Healthy and well fed charter', () => {
 
   it('resets when a lower house runs out of food', () => {
     const { game } = fedCity();
-    placeHouse(game, 8, 4);
-    Object.assign(game.buildings[1], { level: 'shack', residents: 16, food: 0 });
+    addHouse(game, 8, 4, { level: 'shack', residents: 16, food: 0 });
     tallyHealthyAndWellFed(game);
     expect(game.healthyAndWellFed.reset?.cause).toBe('Shack at 8,4 ran out of food');
   });
 
   it('resets when a lower house falls sick', () => {
     const { game } = fedCity();
-    placeHouse(game, 8, 4);
-    const shack = game.buildings[1];
-    Object.assign(shack, { level: 'shack', residents: 16 });
-    shack.food = PLENTY * monthlyUse(shack, 'food');
+    const shack = feed(addHouse(game, 8, 4, { level: 'shack', residents: 16 }));
     fallSick(game, shack);
     tallyHealthyAndWellFed(game);
     expect(game.healthyAndWellFed.reset?.cause).toBe('Shack at 8,4 fell sick');
@@ -344,22 +392,43 @@ describe('the Healthy and well fed charter', () => {
 
   it('is not reset by a Hut, which never eats', () => {
     const { game } = fedCity();
-    placeHouse(game, 8, 4);
-    Object.assign(game.buildings[1], { level: 'hut', residents: 8, food: 0 });
+    addHouse(game, 8, 4, { level: 'hut', residents: 8, food: 0 });
     tallyHealthyAndWellFed(game);
     expect(game.healthyAndWellFed).toEqual({ months: 1, reset: null });
   });
 
-  it('resets a running count in a month with no Townhouse', () => {
+  it('counts a city with no Townhouse', () => {
     const game = grassGame();
-    game.healthyAndWellFed.months = 10;
+    staffedInfirmaryAndCrowd(game, 'tenement');
     tallyHealthyAndWellFed(game);
-    expect(game.healthyAndWellFed).toEqual({ months: 0, reset: { tick: 0, cause: 'no Townhouse in the city' } });
+    expect(game.healthyAndWellFed).toEqual({ months: 1, reset: null });
   });
 
-  it("counts a Scholars' House as a Townhouse, and is reset by it falling sick", () => {
+  it('resets a running count in a month without a staffed Infirmary', () => {
+    const { game, infirmary } = fedCity();
+    infirmary.workers = 0;
+    game.healthyAndWellFed.months = 10;
+    tallyHealthyAndWellFed(game);
+    expect(game.healthyAndWellFed).toEqual({ months: 0, reset: { tick: 0, cause: 'no staffed Infirmary in the city' } });
+  });
+
+  it(`counts with exactly ${HEALTHY_AND_WELL_FED_POPULATION} people and resets a running count with one fewer`, () => {
+    const { game, house } = fedCity();
+    house.residents -= population(game) - HEALTHY_AND_WELL_FED_POPULATION;
+    tallyHealthyAndWellFed(game);
+    expect(game.healthyAndWellFed).toEqual({ months: 1, reset: null });
+    house.residents--;
+    tallyHealthyAndWellFed(game);
+    expect(game.healthyAndWellFed).toEqual({
+      months: 0,
+      reset: { tick: 0, cause: `fewer than ${HEALTHY_AND_WELL_FED_POPULATION} people in the city` },
+    });
+  });
+
+  it("counts a Scholars' House among the houses, and is reset by it falling sick", () => {
     const { game, scholars } = placedScholars();
-    scholars.food = PLENTY * monthlyUse(scholars, 'food');
+    feed(scholars);
+    staffedInfirmaryAndCrowd(game);
     tallyHealthyAndWellFed(game);
     expect(game.healthyAndWellFed).toEqual({ months: 1, reset: null });
     fallSick(game, scholars);
@@ -368,8 +437,9 @@ describe('the Healthy and well fed charter', () => {
   });
 
   it('is tallied at the end of every month', () => {
-    const { game } = fedCity();
+    const game = grassGame();
+    game.healthyAndWellFed.months = 10;
     for (let i = 0; i < TICKS_PER_MONTH; i++) tick(game);
-    expect(game.healthyAndWellFed).toEqual({ months: 1, reset: null });
+    expect(game.healthyAndWellFed.reset?.cause).toBe('no staffed Infirmary in the city');
   });
 });
